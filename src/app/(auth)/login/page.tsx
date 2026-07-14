@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { APP_NAME, APP_TAGLINE } from "@/config/app";
 import { LoginForm } from "@/features/auth/components/login-form";
+import { enterDemoWorkspace } from "@/features/auth/actions/demo-login";
+import { Button } from "@/components/ui/button";
 
 // Bare title — the root layout template appends "· AI NEX OS".
 export const metadata: Metadata = { title: "Sign in" };
@@ -48,6 +50,24 @@ export default async function LoginPage({
         ) : null}
 
         <LoginForm next={next} />
+
+        {process.env.DEMO_MODE === "true" && (
+          <div className="mt-6">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+            <form action={enterDemoWorkspace}>
+              <Button type="submit" variant="outline" className="w-full">
+                Enter Demo Workspace
+              </Button>
+            </form>
+          </div>
+        )}
 
         <p className="text-muted-foreground mt-8 text-center text-xs">
           Internal workspace. Client access is provided through secure share

@@ -2,6 +2,43 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { PermissionMap } from "@/features/permissions";
+import { cookies } from "next/headers";
+
+export const DEMO_ADMIN_USER: CurrentUser = {
+  userId: "demo-admin-001",
+  organizationId: "demo-org-001",
+  email: "admin@demo.local",
+  firstName: "Demo",
+  lastName: "Administrator",
+  avatarUrl: null,
+  designation: "Principal Admin",
+  roleId: "demo-role-admin",
+  roleKey: "admin",
+  roleName: "Administrator",
+  permissions: {
+    projects: ["create", "read", "update", "delete"],
+    tasks: ["create", "read", "update", "delete"],
+    clients: ["create", "read", "update", "delete"],
+    files: ["create", "read", "update", "delete"],
+    deliverables: ["create", "read", "update", "delete"],
+    approvals: ["create", "read", "update", "delete"],
+    meetings: ["create", "read", "update", "delete"],
+    notifications: ["create", "read", "update", "delete"],
+    analytics: ["create", "read", "update", "delete"],
+    ai_workspace: ["create", "read", "update", "delete"],
+    automation: ["create", "read", "update", "delete"],
+    knowledge_graph: ["create", "read", "update", "delete"],
+    ai_agents: ["create", "read", "update", "delete"],
+    events: ["create", "read", "update", "delete"],
+    revisions: ["create", "read", "update", "delete"],
+    shares: ["create", "read", "update", "delete"],
+    timelines: ["create", "read", "update", "delete"],
+  } as unknown as PermissionMap,
+  departmentId: "demo-dept-001",
+  organizationName: "AI NEX OS Demo",
+  organizationSlug: "demo-workspace",
+  organizationLogoUrl: null,
+};
 
 export type CurrentUser = {
   userId: string;
@@ -27,6 +64,13 @@ export type CurrentUser = {
  * Cached per request via React cache().
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
+  const cookieStore = await cookies();
+  const isDemo = process.env.DEMO_MODE === "true" && cookieStore.get("demo_session")?.value === "true";
+
+  if (isDemo) {
+    return DEMO_ADMIN_USER;
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

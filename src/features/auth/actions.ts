@@ -1,98 +1,27 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { APP_URL } from "@/config/app";
-import { createClient } from "@/lib/supabase/server";
-import { loginSchema, magicLinkSchema } from "./schemas";
+import * as real from "./real-actions";
+import * as mock from "./mock-actions";
 
-export type AuthActionState = {
-  error?: string;
-  success?: string;
-};
+export type { AuthActionState } from "./real-actions";
 
-/** Only same-site relative paths may be used as post-login destinations. */
-function safeInternalPath(path: FormDataEntryValue | null): string {
-  if (typeof path !== "string") return "/dashboard";
-  if (!path.startsWith("/") || path.startsWith("//")) return "/dashboard";
-  if (path.startsWith("/portal") || path.startsWith("/auth")) {
-    return "/dashboard";
-  }
-  return path;
+export async function signInWithPassword(...args: Parameters<typeof real.signInWithPassword>): Promise<Awaited<ReturnType<typeof real.signInWithPassword>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).signInWithPassword(...args);
+  return (real as any).signInWithPassword(...args);
 }
 
-/**
- * Internal users only (PRD §9): authentication never creates accounts.
- * Users are provisioned by an admin; unknown emails simply fail to sign in.
- */
-export async function signInWithPassword(
-  _prev: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
-  const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-
-  if (error) {
-    // Do not leak whether the account exists.
-    return { error: "Invalid email or password." };
-  }
-
-  redirect(safeInternalPath(formData.get("next")));
+export async function signInWithMagicLink(...args: Parameters<typeof real.signInWithMagicLink>): Promise<Awaited<ReturnType<typeof real.signInWithMagicLink>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).signInWithMagicLink(...args);
+  return (real as any).signInWithMagicLink(...args);
 }
 
-export async function signInWithMagicLink(
-  _prev: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
-  const parsed = magicLinkSchema.safeParse({ email: formData.get("email") });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
-  const next = safeInternalPath(formData.get("next"));
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data.email,
-    options: {
-      // Never auto-provision accounts — internal team only.
-      shouldCreateUser: false,
-      emailRedirectTo: `${APP_URL}/auth/callback?next=${encodeURIComponent(next)}`,
-    },
-  });
-
-  if (error) {
-    return { error: "Could not send the magic link. Try again shortly." };
-  }
-  return {
-    success:
-      "If this email belongs to a team member, a sign-in link is on its way.",
-  };
+export async function signInWithGoogle(...args: Parameters<typeof real.signInWithGoogle>): Promise<Awaited<ReturnType<typeof real.signInWithGoogle>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).signInWithGoogle(...args);
+  return (real as any).signInWithGoogle(...args);
 }
 
-export async function signInWithGoogle(formData: FormData): Promise<void> {
-  const next = safeInternalPath(formData.get("next"));
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${APP_URL}/auth/callback?next=${encodeURIComponent(next)}`,
-    },
-  });
-  if (error || !data.url) {
-    redirect("/login?error=oauth");
-  }
-  redirect(data.url);
+export async function signOut(...args: Parameters<typeof real.signOut>): Promise<Awaited<ReturnType<typeof real.signOut>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).signOut(...args);
+  return (real as any).signOut(...args);
 }
 
-export async function signOut(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/login");
-}

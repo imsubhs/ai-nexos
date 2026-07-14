@@ -25,7 +25,7 @@ type HeaderUser = {
   roleName: string;
 };
 
-export function AppHeader({ user }: Readonly<{ user: HeaderUser }>) {
+export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser, isDemo?: boolean }>) {
   const { setTheme, resolvedTheme } = useTheme();
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
   const initials = fullName
@@ -39,6 +39,12 @@ export function AppHeader({ user }: Readonly<{ user: HeaderUser }>) {
     <header className="bg-background/80 sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b px-4 backdrop-blur-sm">
       <SidebarTrigger />
       <Separator orientation="vertical" className="h-5" />
+
+      {isDemo && (
+        <div className="bg-primary/20 text-primary flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+          Demo Mode
+        </div>
+      )}
 
       {/* Global search (SDS §26) — command palette lands with universal search. */}
       <div className="relative hidden max-w-md flex-1 md:block">

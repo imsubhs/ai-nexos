@@ -1,4 +1,4 @@
-import { index, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { auditFields } from "./_shared";
 import { entityStatusEnum } from "./enums";
 
@@ -32,5 +32,19 @@ export const organizations = pgTable(
   (table) => [
     uniqueIndex("uq_organizations_slug").on(table.slug),
     index("idx_organizations_status").on(table.status),
+  ],
+);
+
+export const organizationSequences = pgTable(
+  "organization_sequences",
+  {
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.organizationId, { onDelete: "cascade" }),
+    entityType: text("entity_type").notNull(),
+    nextValue: integer("next_value").notNull().default(1),
+  },
+  (table) => [
+    uniqueIndex("uq_org_seq_entity").on(table.organizationId, table.entityType),
   ],
 );

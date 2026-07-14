@@ -1,0 +1,45 @@
+import { z } from "zod";
+
+export const createApprovalCycleSchema = z.object({
+  organizationId: z.string().uuid(),
+  entityType: z.enum([
+    "deliverable",
+    "file",
+    "brand_asset",
+    "creative_brief",
+    "contract",
+    "invoice",
+    "prompt_pack",
+    "campaign",
+    "ai_content",
+  ]),
+  entityId: z.string().uuid(),
+  workflowId: z.string().uuid().optional(),
+});
+
+export const submitReviewSchema = z.object({
+  reviewId: z.string().uuid(),
+  status: z.enum([
+    "approved",
+    "rejected",
+    "approved_with_conditions",
+    "abstained",
+  ]),
+  comments: z.string().optional(),
+  conditions: z.array(z.string()).optional(), // Array of condition text strings
+  externalToken: z.string().optional(), // Used if the reviewer is an external client
+});
+
+export const delegateReviewSchema = z.object({
+  reviewId: z.string().uuid(),
+  delegateToUserId: z.string().uuid().optional(),
+  externalEmail: z.string().email().optional(),
+  comments: z.string().optional(),
+}).refine((data) => data.delegateToUserId || data.externalEmail, {
+  message: "Must provide either an internal user ID or an external email for delegation.",
+});
+
+export const resolveConditionSchema = z.object({
+  conditionId: z.string().uuid(),
+  externalToken: z.string().optional(),
+});

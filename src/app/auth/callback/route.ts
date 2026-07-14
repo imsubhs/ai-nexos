@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import { safeInternalPath } from "@/features/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
-
-function safeInternalPath(path: string | null): string {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return "/dashboard";
-  }
-  return path;
-}
 
 /**
  * Auth callback for both flows:
