@@ -63,7 +63,9 @@ async function timelineFor(
     return {
       eventId: e.eventId,
       eventName:
-        typeof payload.eventName === "string" ? payload.eventName : e.aggregateType,
+        typeof payload.eventName === "string"
+          ? payload.eventName
+          : e.aggregateType,
       at: e.createdAt.toISOString(),
       actorId: e.actorId ?? null,
       payload,
@@ -71,7 +73,10 @@ async function timelineFor(
   });
 }
 
-function toListItem(r: CorrectionRow, employeeName: string): CorrectionListItem {
+function toListItem(
+  r: CorrectionRow,
+  employeeName: string,
+): CorrectionListItem {
   return {
     correctionId: r.correctionId,
     correctionCode: r.correctionCode,
@@ -197,7 +202,11 @@ export const realCorrectionRepository: CorrectionRepository = {
     return runList(base, filters);
   },
 
-  async listQueue(organizationId, scopeUserIds, filters: CorrectionListFilters) {
+  async listQueue(
+    organizationId,
+    scopeUserIds,
+    filters: CorrectionListFilters,
+  ) {
     const base = [eq(attendanceCorrections.organizationId, organizationId)];
     if (scopeUserIds) {
       base.push(inArray(attendanceCorrections.userId, scopeUserIds));
@@ -302,10 +311,7 @@ async function runList(
       .orderBy(desc(attendanceCorrections.createdAt))
       .limit(filters.pageSize)
       .offset((filters.page - 1) * filters.pageSize),
-    db
-      .select({ value: count() })
-      .from(attendanceCorrections)
-      .where(where),
+    db.select({ value: count() }).from(attendanceCorrections).where(where),
   ]);
 
   const items = await Promise.all(

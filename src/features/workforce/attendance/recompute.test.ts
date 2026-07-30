@@ -24,7 +24,10 @@ describe("runValidation → engine", () => {
       clockInIso: iso(9),
       clockOutIso: iso(17),
       breaks: [
-        { startAt: new Date(iso(12)).getTime(), endAt: new Date(iso(13)).getTime() },
+        {
+          startAt: new Date(iso(12)).getTime(),
+          endAt: new Date(iso(13)).getTime(),
+        },
       ],
       policy,
     });
@@ -64,7 +67,12 @@ describe("toAttendanceMetrics", () => {
   });
 
   it("finalizeMetrics equals toAttendanceMetrics(runValidation) — one path", () => {
-    const input = { clockInIso: iso(9), clockOutIso: iso(17), breaks: [], policy };
+    const input = {
+      clockInIso: iso(9),
+      clockOutIso: iso(17),
+      breaks: [],
+      policy,
+    };
     expect(finalizeMetrics(input)).toEqual(
       toAttendanceMetrics(runValidation(input), policy),
     );

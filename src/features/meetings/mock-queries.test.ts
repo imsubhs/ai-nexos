@@ -16,7 +16,9 @@ describe("getMeetings (mock)", () => {
   it("orders by startTime descending", async () => {
     const result = await getMeetings();
     for (let i = 1; i < result.length; i++) {
-      expect(result[i - 1].startTime!.getTime()).toBeGreaterThanOrEqual(result[i].startTime!.getTime());
+      expect(result[i - 1].startTime!.getTime()).toBeGreaterThanOrEqual(
+        result[i].startTime!.getTime(),
+      );
     }
   });
 

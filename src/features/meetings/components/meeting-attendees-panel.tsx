@@ -70,17 +70,26 @@ export function MeetingAttendeesPanel({
   const [role, setRole] = useState<string>("participant");
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  const alreadyInvited = new Set(attendees.map((a) => a.userId).filter(Boolean));
-  const selectable = members.filter((member) => !alreadyInvited.has(member.userId));
+  const alreadyInvited = new Set(
+    attendees.map((a) => a.userId).filter(Boolean),
+  );
+  const selectable = members.filter(
+    (member) => !alreadyInvited.has(member.userId),
+  );
 
   const changeRsvp = async (attendee: AttendeeRow, rsvpStatus: string) => {
     setPendingId(attendee.attendeeId);
     try {
-      await updateMeetingAttendee({ attendeeId: attendee.attendeeId, rsvpStatus: rsvpStatus as never });
+      await updateMeetingAttendee({
+        attendeeId: attendee.attendeeId,
+        rsvpStatus: rsvpStatus as never,
+      });
       await onChanged();
       toast.success(`RSVP set to ${humanizeToken(rsvpStatus)}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not update the RSVP");
+      toast.error(
+        error instanceof Error ? error.message : "Could not update the RSVP",
+      );
     } finally {
       setPendingId(null);
     }
@@ -96,7 +105,9 @@ export function MeetingAttendeesPanel({
       </div>
 
       {attendees.length === 0 ? (
-        <p className="text-muted-foreground text-xs">No attendees invited yet.</p>
+        <p className="text-muted-foreground text-xs">
+          No attendees invited yet.
+        </p>
       ) : (
         <ul className="space-y-2">
           {attendees.map((attendee) => (
@@ -105,7 +116,9 @@ export function MeetingAttendeesPanel({
               className="flex items-center justify-between gap-2 rounded-md border px-3 py-2"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{attendeeName(attendee)}</p>
+                <p className="truncate text-sm font-medium">
+                  {attendeeName(attendee)}
+                </p>
                 <Badge variant="outline" className="mt-1 text-[10px]">
                   {humanizeToken(attendee.role ?? "participant")}
                 </Badge>
@@ -174,7 +187,9 @@ export function MeetingAttendeesPanel({
               <option value="">— none —</option>
               {selectable.map((member) => (
                 <option key={member.userId} value={member.userId}>
-                  {[member.firstName, member.lastName].filter(Boolean).join(" ")}
+                  {[member.firstName, member.lastName]
+                    .filter(Boolean)
+                    .join(" ")}
                 </option>
               ))}
             </select>

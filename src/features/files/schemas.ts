@@ -37,7 +37,17 @@ export const initializeUploadSchema = z.object({
   folderId: z.string().uuid().nullable().optional(),
   title: z.string().min(1).max(500),
   description: z.string().optional(),
-  fileType: z.enum(["image", "video", "audio", "document", "archive", "3d_model", "font", "code", "other"]),
+  fileType: z.enum([
+    "image",
+    "video",
+    "audio",
+    "document",
+    "archive",
+    "3d_model",
+    "font",
+    "code",
+    "other",
+  ]),
   originalFilename: z.string().min(1),
   mimeType: z.string().min(1),
   sizeBytes: z.number().positive(),
@@ -53,14 +63,32 @@ export const finalizeUploadSchema = z.object({
 
 export const linkFileSchema = z.object({
   fileId: z.string().uuid(),
-  entityType: z.enum(["task", "milestone", "project", "client", "meeting", "deliverable", "comment", "approval", "prompt", "brand_asset"]),
+  entityType: z.enum([
+    "task",
+    "milestone",
+    "project",
+    "client",
+    "meeting",
+    "deliverable",
+    "comment",
+    "approval",
+    "prompt",
+    "brand_asset",
+  ]),
   entityId: z.string().uuid(),
 });
 
 export const createShareLinkSchema = z.object({
   fileId: z.string().uuid(),
   versionId: z.string().uuid(),
-  accessLevel: z.enum(["preview", "download", "metadata", "comment", "version_upload", "delete"]),
+  accessLevel: z.enum([
+    "preview",
+    "download",
+    "metadata",
+    "comment",
+    "version_upload",
+    "delete",
+  ]),
   expiresInDays: z.number().positive().max(365).optional(),
   maxDownloads: z.number().positive().optional(),
   password: z.string().optional(),

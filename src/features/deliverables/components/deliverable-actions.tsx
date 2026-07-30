@@ -56,7 +56,9 @@ export function DeliverableActions({
   const [reviewType, setReviewType] = useState<string>("internal_review");
   const [reason, setReason] = useState("");
   const [accessLevel, setAccessLevel] = useState<string>("view_only");
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 
   const deliverableId = deliverable.deliverableId as string;
@@ -88,7 +90,11 @@ export function DeliverableActions({
         >
           Approve
         </Button>
-        <Button size="sm" variant="outline" onClick={() => setDialog("revision")}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setDialog("revision")}
+        >
           Request revision
         </Button>
         <Button
@@ -103,7 +109,8 @@ export function DeliverableActions({
 
       {isLocked && (
         <p className="text-muted-foreground text-xs">
-          This deliverable is locked by an approval. Request a revision to reopen it.
+          This deliverable is locked by an approval. Request a revision to
+          reopen it.
         </p>
       )}
       {!sessionId && !isLocked && (
@@ -114,7 +121,9 @@ export function DeliverableActions({
       {shareUrl && (
         <div className="rounded-md border p-3">
           <p className="text-xs font-medium">Share link</p>
-          <p className="text-muted-foreground mt-1 break-all text-xs">{shareUrl}</p>
+          <p className="text-muted-foreground mt-1 text-xs break-all">
+            {shareUrl}
+          </p>
         </div>
       )}
 
@@ -133,7 +142,9 @@ export function DeliverableActions({
           );
           setSelectedSessionId((session as any)?.sessionId ?? null);
           await onChanged();
-          toast.success(`Review session started (${humanizeToken(reviewType)})`);
+          toast.success(
+            `Review session started (${humanizeToken(reviewType)})`,
+          );
         }}
       >
         <div className="space-y-2">
@@ -239,7 +250,9 @@ export function DeliverableActions({
             false,
           );
           const token = (link as any)?.token;
-          setShareUrl(token ? `${window.location.origin}/portal/s/${token}` : null);
+          setShareUrl(
+            token ? `${window.location.origin}/portal/s/${token}` : null,
+          );
           await onChanged();
           toast.success("Share link created");
         }}

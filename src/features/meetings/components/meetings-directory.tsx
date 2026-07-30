@@ -19,16 +19,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/shared/data-table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { MEETING_STATUSES, humanizeToken } from "../constants";
-import { CreateMeetingDialog, type MeetingProjectOption } from "./create-meeting-dialog";
+import {
+  CreateMeetingDialog,
+  type MeetingProjectOption,
+} from "./create-meeting-dialog";
 import { MeetingDetailSheet, type MeetingRow } from "./meeting-detail-sheet";
 import type { MeetingMemberOption } from "./meeting-attendees-panel";
 
 const PAGE_SIZE = 25;
-
 
 const DATE_OPTIONS = [
   { key: "upcoming", label: "Upcoming" },
@@ -67,11 +72,20 @@ export function MeetingsDirectory({
 
   const filtered = useMemo(() => {
     return rows.filter((meeting) => {
-      if (search && !meeting.title.toLowerCase().includes(search.toLowerCase())) return false;
+      if (search && !meeting.title.toLowerCase().includes(search.toLowerCase()))
+        return false;
       if (status && meeting.status !== status) return false;
       if (dateFilter && now !== null) {
-        if (dateFilter === "upcoming" && (!meeting.startTime || new Date(meeting.startTime).getTime() < now)) return false;
-        if (dateFilter === "past" && (!meeting.startTime || new Date(meeting.startTime).getTime() >= now)) return false;
+        if (
+          dateFilter === "upcoming" &&
+          (!meeting.startTime || new Date(meeting.startTime).getTime() < now)
+        )
+          return false;
+        if (
+          dateFilter === "past" &&
+          (!meeting.startTime || new Date(meeting.startTime).getTime() >= now)
+        )
+          return false;
       }
       return true;
     });
@@ -89,7 +103,7 @@ export function MeetingsDirectory({
       key: "type",
       header: "Type",
       cell: (row) => (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           {row.meetingType ? humanizeToken(row.meetingType) : "—"}
         </span>
       ),
@@ -97,7 +111,8 @@ export function MeetingsDirectory({
     {
       key: "startTime",
       header: "Starts",
-      cell: (row) => (row.startTime ? new Date(row.startTime).toLocaleString() : "—"),
+      cell: (row) =>
+        row.startTime ? new Date(row.startTime).toLocaleString() : "—",
     },
     {
       key: "status",
@@ -110,7 +125,7 @@ export function MeetingsDirectory({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             value={search}
             onChange={(event) => {
@@ -133,11 +148,22 @@ export function MeetingsDirectory({
             }
           />
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => { setStatus(null); setPage(1); }}>
+            <DropdownMenuItem
+              onClick={() => {
+                setStatus(null);
+                setPage(1);
+              }}
+            >
               All statuses
             </DropdownMenuItem>
             {MEETING_STATUSES.map((option) => (
-              <DropdownMenuItem key={option} onClick={() => { setStatus(option); setPage(1); }}>
+              <DropdownMenuItem
+                key={option}
+                onClick={() => {
+                  setStatus(option);
+                  setPage(1);
+                }}
+              >
                 {option.replaceAll("_", " ")}
               </DropdownMenuItem>
             ))}
@@ -148,17 +174,30 @@ export function MeetingsDirectory({
           <DropdownMenuTrigger
             render={
               <Button variant="outline" size="sm">
-                {dateFilter ? DATE_OPTIONS.find((o) => o.key === dateFilter)?.label : "All dates"}
+                {dateFilter
+                  ? DATE_OPTIONS.find((o) => o.key === dateFilter)?.label
+                  : "All dates"}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             }
           />
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => { setDateFilter(null); setPage(1); }}>
+            <DropdownMenuItem
+              onClick={() => {
+                setDateFilter(null);
+                setPage(1);
+              }}
+            >
               All dates
             </DropdownMenuItem>
             {DATE_OPTIONS.map((option) => (
-              <DropdownMenuItem key={option.key} onClick={() => { setDateFilter(option.key); setPage(1); }}>
+              <DropdownMenuItem
+                key={option.key}
+                onClick={() => {
+                  setDateFilter(option.key);
+                  setPage(1);
+                }}
+              >
                 {option.label}
               </DropdownMenuItem>
             ))}

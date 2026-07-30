@@ -16,10 +16,12 @@ export function EmptyState({
   action?: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-card p-12 text-center">
-      <Icon className="mb-4 h-12 w-12 text-muted-foreground/50" />
+    <div className="bg-card flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+      <Icon className="text-muted-foreground/50 mb-4 h-12 w-12" />
       <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground mt-2 max-w-sm text-sm">
+        {description}
+      </p>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );

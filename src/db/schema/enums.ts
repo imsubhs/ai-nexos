@@ -63,9 +63,24 @@ export const communicationPreferenceEnum = pgEnum("preferred_communication", [
   "phone",
 ]);
 
-export const projectPriorityEnum = pgEnum("project_priority", ["critical", "high", "medium", "low"]);
-export const projectHealthEnum = pgEnum("project_health", ["on_track", "at_risk", "delayed", "blocked", "completed"]);
-export const projectVisibilityEnum = pgEnum("project_visibility", ["private", "internal", "client_shared"]);
+export const projectPriorityEnum = pgEnum("project_priority", [
+  "critical",
+  "high",
+  "medium",
+  "low",
+]);
+export const projectHealthEnum = pgEnum("project_health", [
+  "on_track",
+  "at_risk",
+  "delayed",
+  "blocked",
+  "completed",
+]);
+export const projectVisibilityEnum = pgEnum("project_visibility", [
+  "private",
+  "internal",
+  "client_shared",
+]);
 export const projectStatusEnum = pgEnum("project_status", [
   "planning",
   "research",
@@ -112,7 +127,12 @@ export const milestoneStatusEnum = pgEnum("milestone_status", [
   "cancelled",
 ]);
 
-export const dependencyTypeEnum = pgEnum("dependency_type", ["FS", "SS", "FF", "SF"]);
+export const dependencyTypeEnum = pgEnum("dependency_type", [
+  "FS",
+  "SS",
+  "FF",
+  "SF",
+]);
 
 export const taskStatusEnum = pgEnum("task_status", [
   "backlog",
@@ -159,7 +179,7 @@ export const taskDependencyTypeEnum = pgEnum("task_dependency_type", [
   "finish_to_finish",
   "start_to_finish",
   "blocking",
-  "related"
+  "related",
 ]);
 
 export const taskActivityEventEnum = pgEnum("task_activity_event", [
@@ -220,7 +240,7 @@ export const fileShareAccessEnum = pgEnum("file_share_access", [
   "metadata",
   "comment",
   "version_upload",
-  "delete"
+  "delete",
 ]);
 
 export const fileActivityEventEnum = pgEnum("file_activity_event", [
@@ -365,7 +385,7 @@ export const revisionTypeEnum = pgEnum("revision_type", [
   "LEGAL",
   "EMERGENCY",
   "ROLLBACK",
-  "HOTFIX"
+  "HOTFIX",
 ]);
 
 export const revisionStatusEnum = pgEnum("revision_status", [
@@ -379,14 +399,14 @@ export const revisionStatusEnum = pgEnum("revision_status", [
   "APPROVED",
   "REJECTED",
   "MERGED",
-  "ARCHIVED"
+  "ARCHIVED",
 ]);
 
 export const revisionPriorityEnum = pgEnum("revision_priority", [
   "LOW",
   "MEDIUM",
   "HIGH",
-  "URGENT"
+  "URGENT",
 ]);
 
 export const meetingTypeEnum = pgEnum("meeting_type", [
@@ -408,7 +428,7 @@ export const meetingTypeEnum = pgEnum("meeting_type", [
   "legal",
   "vendor",
   "emergency",
-  "other"
+  "other",
 ]);
 
 export const meetingStatusEnum = pgEnum("meeting_status", [
@@ -417,7 +437,7 @@ export const meetingStatusEnum = pgEnum("meeting_status", [
   "completed",
   "cancelled",
   "postponed",
-  "archived"
+  "archived",
 ]);
 
 export const meetingOutcomeTypeEnum = pgEnum("meeting_outcome_type", [
@@ -427,7 +447,7 @@ export const meetingOutcomeTypeEnum = pgEnum("meeting_outcome_type", [
   "idea",
   "question",
   "blocker",
-  "action_item"
+  "action_item",
 ]);
 
 export const decisionStatusEnum = pgEnum("decision_status", [
@@ -435,7 +455,7 @@ export const decisionStatusEnum = pgEnum("decision_status", [
   "pending",
   "accepted",
   "implemented",
-  "obsolete"
+  "obsolete",
 ]);
 
 export const decisionTypeEnum = pgEnum("decision_type", [
@@ -445,7 +465,7 @@ export const decisionTypeEnum = pgEnum("decision_type", [
   "technical",
   "financial",
   "resource",
-  "other"
+  "other",
 ]);
 
 export const actionItemStatusEnum = pgEnum("action_item_status", [
@@ -453,14 +473,14 @@ export const actionItemStatusEnum = pgEnum("action_item_status", [
   "in_progress",
   "blocked",
   "completed",
-  "cancelled"
+  "cancelled",
 ]);
 
 export const meetingRecordingStatusEnum = pgEnum("meeting_recording_status", [
   "pending",
   "processing",
   "completed",
-  "failed"
+  "failed",
 ]);
 
 export const meetingProviderEnum = pgEnum("meeting_provider", [
@@ -470,7 +490,7 @@ export const meetingProviderEnum = pgEnum("meeting_provider", [
   "webex",
   "otter",
   "manual",
-  "custom"
+  "custom",
 ]);
 
 // Module 12: Notification & Event Engine
@@ -492,7 +512,7 @@ export const eventTypeEnum = pgEnum("event_type", [
   // Workforce bounded context (merge doc 14 §11.1; Sprint 3A / WP-109).
   "attendance",
   // Corrections aggregate (merge doc 14 §11.1; Sprint 3B / WP-120).
-  "correction"
+  "correction",
 ]);
 
 /**
@@ -537,7 +557,7 @@ export const notificationPriorityEnum = pgEnum("notification_priority", [
   "critical",
   "high",
   "normal",
-  "low"
+  "low",
 ]);
 
 export const notificationStatusEnum = pgEnum("notification_status", [
@@ -547,7 +567,7 @@ export const notificationStatusEnum = pgEnum("notification_status", [
   "read",
   "archived",
   "failed",
-  "dismissed"
+  "dismissed",
 ]);
 
 export const notificationChannelEnum = pgEnum("notification_channel", [
@@ -559,48 +579,40 @@ export const notificationChannelEnum = pgEnum("notification_channel", [
   "discord",
   "whatsapp",
   "sms",
-  "webhook"
+  "webhook",
 ]);
 
-export const notificationDigestFrequencyEnum = pgEnum("notification_digest_frequency", [
-  "instant",
-  "hourly",
-  "daily",
-  "weekly"
-]);
+export const notificationDigestFrequencyEnum = pgEnum(
+  "notification_digest_frequency",
+  ["instant", "hourly", "daily", "weekly"],
+);
 
-export const notificationDeliveryStatusEnum = pgEnum("notification_delivery_status", [
-  "queued",
-  "processing",
-  "sent",
-  "delivered",
-  "failed"
-]);
+export const notificationDeliveryStatusEnum = pgEnum(
+  "notification_delivery_status",
+  ["queued", "processing", "sent", "delivered", "failed"],
+);
 
 export const notificationQueueStatusEnum = pgEnum("notification_queue_status", [
   "pending",
   "processing",
   "completed",
-  "failed"
+  "failed",
 ]);
 
-export const notificationDigestStatusEnum = pgEnum("notification_digest_status", [
-  "collecting",
-  "processing",
-  "sent"
-]);
+export const notificationDigestStatusEnum = pgEnum(
+  "notification_digest_status",
+  ["collecting", "processing", "sent"],
+);
 
-export const notificationActivityTypeEnum = pgEnum("notification_activity_type", [
-  "clicked",
-  "hovered",
-  "expanded"
-]);
+export const notificationActivityTypeEnum = pgEnum(
+  "notification_activity_type",
+  ["clicked", "hovered", "expanded"],
+);
 
-export const notificationPreferenceLevelEnum = pgEnum("notification_preference_level", [
-  "organization",
-  "project",
-  "user"
-]);
+export const notificationPreferenceLevelEnum = pgEnum(
+  "notification_preference_level",
+  ["organization", "project", "user"],
+);
 
 // Module 13: Client Share & Collaboration Engine
 export const shareTypeEnum = pgEnum("share_type", [
@@ -612,7 +624,7 @@ export const shareTypeEnum = pgEnum("share_type", [
   "vendor_review",
   "legal_review",
   "finance_review",
-  "public_showcase"
+  "public_showcase",
 ]);
 
 export const shareSessionStatusEnum = pgEnum("share_session_status", [
@@ -622,7 +634,7 @@ export const shareSessionStatusEnum = pgEnum("share_session_status", [
   "locked",
   "expired",
   "closed",
-  "archived"
+  "archived",
 ]);
 
 export const sharePermissionLevelEnum = pgEnum("share_permission_level", [
@@ -630,7 +642,7 @@ export const sharePermissionLevelEnum = pgEnum("share_permission_level", [
   "commenter",
   "approver",
   "reviewer",
-  "downloader"
+  "downloader",
 ]);
 
 export const annotationTypeEnum = pgEnum("annotation_type", [
@@ -639,19 +651,19 @@ export const annotationTypeEnum = pgEnum("annotation_type", [
   "timestamp",
   "text",
   "drawing",
-  "attachment"
+  "attachment",
 ]);
 
 export const feedbackStatusEnum = pgEnum("feedback_status", [
   "open",
-  "resolved"
+  "resolved",
 ]);
 
 // Module 14: Client Portal
 export const portalSessionStatusEnum = pgEnum("portal_session_status", [
   "active",
   "revoked",
-  "expired"
+  "expired",
 ]);
 
 export const portalWidgetTypeEnum = pgEnum("portal_widget_type", [
@@ -662,7 +674,7 @@ export const portalWidgetTypeEnum = pgEnum("portal_widget_type", [
   "meetings",
   "activity",
   "notifications",
-  "custom"
+  "custom",
 ]);
 
 // Module 16: AI Workspace
@@ -675,7 +687,7 @@ export const aiCapabilityEnum = pgEnum("ai_capability", [
   "vision",
   "tool_use",
   "reasoning",
-  "creative"
+  "creative",
 ]);
 
 export const aiProviderEnum = pgEnum("ai_provider", [
@@ -684,14 +696,14 @@ export const aiProviderEnum = pgEnum("ai_provider", [
   "google",
   "meta",
   "cohere",
-  "custom"
+  "custom",
 ]);
 
 export const aiMemoryLayerEnum = pgEnum("ai_memory_layer", [
   "conversation",
   "session",
   "project",
-  "organization"
+  "organization",
 ]);
 
 export const aiMessageRoleEnum = pgEnum("ai_message_role", [
@@ -699,7 +711,7 @@ export const aiMessageRoleEnum = pgEnum("ai_message_role", [
   "user",
   "assistant",
   "tool",
-  "function"
+  "function",
 ]);
 
 export const aiApprovalStatusEnum = pgEnum("ai_approval_status", [
@@ -707,7 +719,7 @@ export const aiApprovalStatusEnum = pgEnum("ai_approval_status", [
   "approved",
   "rejected",
   "bypassed",
-  "auto_approved"
+  "auto_approved",
 ]);
 
 // Module 17: Automation Engine
@@ -716,7 +728,7 @@ export const automationTriggerTypeEnum = pgEnum("automation_trigger_type", [
   "schedule",
   "webhook",
   "manual",
-  "api"
+  "api",
 ]);
 
 export const automationActionTypeEnum = pgEnum("automation_action_type", [
@@ -732,26 +744,27 @@ export const automationActionTypeEnum = pgEnum("automation_action_type", [
   "send_email",
   "webhook",
   "ai_workspace",
-  "compensation"
+  "compensation",
 ]);
 
-export const automationWorkflowStatusEnum = pgEnum("automation_workflow_status", [
-  "draft",
-  "active",
-  "paused",
-  "archived"
-]);
+export const automationWorkflowStatusEnum = pgEnum(
+  "automation_workflow_status",
+  ["draft", "active", "paused", "archived"],
+);
 
-export const automationExecutionStatusEnum = pgEnum("automation_execution_status", [
-  "queued",
-  "running",
-  "paused",
-  "completed",
-  "failed",
-  "cancelled",
-  "compensating",
-  "compensated"
-]);
+export const automationExecutionStatusEnum = pgEnum(
+  "automation_execution_status",
+  [
+    "queued",
+    "running",
+    "paused",
+    "completed",
+    "failed",
+    "cancelled",
+    "compensating",
+    "compensated",
+  ],
+);
 
 export const automationVariableTypeEnum = pgEnum("automation_variable_type", [
   "string",
@@ -760,7 +773,7 @@ export const automationVariableTypeEnum = pgEnum("automation_variable_type", [
   "date",
   "enum",
   "json",
-  "secret_reference"
+  "secret_reference",
 ]);
 
 // Module 19: AI Agents
@@ -774,25 +787,24 @@ export const agentStateEnum = pgEnum("agent_state", [
   "REPLANNING",
   "COMPLETED",
   "FAILED",
-  "CANCELLED"
+  "CANCELLED",
 ]);
 
-export const agentConfidenceThresholdEnum = pgEnum("agent_confidence_threshold", [
-  "auto_execute",
-  "human_approval",
-  "abort"
-]);
+export const agentConfidenceThresholdEnum = pgEnum(
+  "agent_confidence_threshold",
+  ["auto_execute", "human_approval", "abort"],
+);
 
 export const agentMemoryTypeEnum = pgEnum("agent_memory_type", [
   "session",
   "working",
   "persistent",
-  "reflection"
+  "reflection",
 ]);
 
 export const agentPlanStatusEnum = pgEnum("agent_plan_status", [
   "active",
   "superseded",
   "failed",
-  "completed"
+  "completed",
 ]);

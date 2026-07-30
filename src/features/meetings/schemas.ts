@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { 
+import {
   meetingTypeEnum,
   meetingStatusEnum,
   meetingOutcomeTypeEnum,
@@ -8,7 +8,7 @@ import {
   actionItemStatusEnum,
   taskPriorityEnum,
   meetingRecordingStatusEnum,
-  meetingProviderEnum
+  meetingProviderEnum,
 } from "@/db/schema/enums";
 
 export const createMeetingSchema = z.object({
@@ -20,7 +20,7 @@ export const createMeetingSchema = z.object({
   endTime: z.date().optional(),
   timezone: z.string().optional(),
   location: z.string().optional(),
-  meetingUrl: z.string().url().optional().or(z.literal('')),
+  meetingUrl: z.string().url().optional().or(z.literal("")),
   provider: z.enum(meetingProviderEnum.enumValues).optional(),
   isPrivate: z.boolean().default(false),
   isConfidential: z.boolean().default(false),
@@ -44,8 +44,17 @@ export const updateMeetingSchema = createMeetingSchema
  * ATTENDEES — meeting_attendees supports either an internal user or an
  * external email, which is why neither is required on its own.
  */
-export const meetingAttendeeRoleValues = ["organizer", "participant", "optional"] as const;
-export const meetingAttendeeRsvpValues = ["pending", "accepted", "declined", "tentative"] as const;
+export const meetingAttendeeRoleValues = [
+  "organizer",
+  "participant",
+  "optional",
+] as const;
+export const meetingAttendeeRsvpValues = [
+  "pending",
+  "accepted",
+  "declined",
+  "tentative",
+] as const;
 
 export const addMeetingAttendeeSchema = z
   .object({

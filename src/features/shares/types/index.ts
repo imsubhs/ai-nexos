@@ -102,7 +102,6 @@ export type NewShareLabel = InferInsertModel<typeof shareLabels>;
 export type ShareTag = InferSelectModel<typeof shareTags>;
 export type NewShareTag = InferInsertModel<typeof shareTags>;
 
-
 // UI Abstraction Types for Asset Viewer
 export type ViewerFormat = "IMAGE" | "VIDEO" | "PDF" | "UNKNOWN";
 

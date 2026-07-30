@@ -124,7 +124,11 @@ export function TaskDashboard({
 
       <div className="min-h-0 flex-1">
         {view === "list" ? (
-          <TaskList tasks={tasks} loading={loading} onTaskClick={setSelectedId} />
+          <TaskList
+            tasks={tasks}
+            loading={loading}
+            onTaskClick={setSelectedId}
+          />
         ) : (
           <TaskBoard
             tasks={tasks}

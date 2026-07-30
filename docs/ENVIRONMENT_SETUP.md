@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-07-28
 **Applies to:** `v1.0.0-beta` (demo persistence)
-**Source of truth for variable *names*:** `.env.example`
+**Source of truth for variable _names_:** `.env.example`
 
 > **No secret values appear in this document.** Every value shown is a placeholder or an instruction to obtain one.
 
@@ -25,7 +25,7 @@ This is tracked as finding F-3 in `REPOSITORY_STABILIZATION_REPORT.md` §6.1. Th
 
 ### 1.2 `DATABASE_URL` is required even in demo mode
 
-`src/db/index.ts` throws `DATABASE_URL is not set` **at module evaluation**, not on first query. `next build` imports the module graph while collecting page data, so any route that transitively reaches it fails the build — regardless of `DEMO_MODE`, because the dispatcher chooses its branch at *call* time while the import happens at *module* time.
+`src/db/index.ts` throws `DATABASE_URL is not set` **at module evaluation**, not on first query. `next build` imports the module graph while collecting page data, so any route that transitively reaches it fails the build — regardless of `DEMO_MODE`, because the dispatcher chooses its branch at _call_ time while the import happens at _module_ time.
 
 **A placeholder DSN is sufficient. No database is contacted in demo mode.**
 
@@ -39,13 +39,13 @@ Finding F-2 / TD-23. The correct fix is lazy client initialisation; that is a co
 
 ## 2. Prerequisites
 
-| Requirement | Version | Notes |
-|---|---|---|
-| Node.js | **24.x** | Verified on v24.15.0. CI uses 24. **Not pinned in the repo** — no `engines`, no `.nvmrc` (Commit 13 adds them). |
-| npm | 11.x | Verified on 11.12.1. Lockfile is v3. |
-| git | any recent | |
-| Supabase project | — | **Not required for demo mode.** Sprint 13 onward only. |
-| PostgreSQL | — | **Not required for demo mode.** |
+| Requirement      | Version    | Notes                                                                                                           |
+| ---------------- | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| Node.js          | **24.x**   | Verified on v24.15.0. CI uses 24. **Not pinned in the repo** — no `engines`, no `.nvmrc` (Commit 13 adds them). |
+| npm              | 11.x       | Verified on 11.12.1. Lockfile is v3.                                                                            |
+| git              | any recent |                                                                                                                 |
+| Supabase project | —          | **Not required for demo mode.** Sprint 13 onward only.                                                          |
+| PostgreSQL       | —          | **Not required for demo mode.**                                                                                 |
 
 ---
 
@@ -94,41 +94,41 @@ Every variable in `.env.example`, plus `DEMO_MODE`, with its true requirement pe
 
 **Legend:** ● required · ◐ optional · ○ not needed · ✕ unused by any code path
 
-| Variable | Demo | CI | Production | Notes |
-|---|:--:|:--:|:--:|---|
-| **`DEMO_MODE`** | **●** | **●** | **●** | ⚠️ **Absent from `.env.example`.** `"true"` for demo/CI. Sprint 15 must make `"true"` unbootable in a production build (P2-06). |
-| **`DATABASE_URL`** | **●** | **●** | **●** | Demo/CI: any syntactically valid DSN. Production: Supabase **pooler**, port **6543**, `?pgbouncer=true`. Requires `prepare:false` (already set). |
-| **`NEXT_PUBLIC_SUPABASE_URL`** | **●** | **●** | **●** | Placeholder fine in demo/CI. |
-| **`NEXT_PUBLIC_SUPABASE_ANON_KEY`** | **●** | **●** | **●** | RLS-enforced, browser-safe. Placeholder fine in demo/CI. |
-| `DIRECT_DATABASE_URL` | ○ | ○ | **●** | Direct connection, port **5432**. **The pooler breaks DDL** — `drizzle-kit migrate` must use this. |
-| `SUPABASE_SERVICE_ROLE_KEY` | ○ | ○ | **●** | **Bypasses RLS. Server only. Never prefix `NEXT_PUBLIC_`.** Needed by workers, the portal service layer, and seeding. |
-| `NEXT_PUBLIC_APP_DOMAIN` | ◐ | ○ | **●** | Unset → localhost:3000. |
-| `NEXT_PUBLIC_PORTAL_DOMAIN` | ◐ | ○ | **●** | Test locally via `http://portal.localhost:3000`. |
-| `NEXT_PUBLIC_APP_URL` | ◐ | ○ | **●** | |
-| `NEXT_PUBLIC_PORTAL_URL` | ◐ | ○ | **●** | |
-| `SEED_ORG_NAME` | ◐ | ○ | **●** | `scripts/seed.ts`. Org identity is configuration, never code. |
-| `SEED_ORG_SLUG` | ◐ | ○ | **●** | |
-| `SEED_ORG_TIMEZONE` | ◐ | ○ | **●** | |
-| `SEED_ORG_CURRENCY` | ◐ | ○ | **●** | |
-| `SEED_OWNER_EMAIL` | ◐ | ○ | **●** | |
-| `SEED_OWNER_PASSWORD` | ◐ | ○ | **●** | ⚠️ Template default is `"change-me-immediately"`. Sprint 15 should **reject this value at seed time**, not merely document it. |
-| `SEED_OWNER_FIRST_NAME` | ◐ | ○ | **●** | |
-| `SEED_OWNER_LAST_NAME` | ◐ | ○ | ◐ | |
-| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | ◐ | ○ | **●** | Template says `documents`; the migration plan provisions **`nexos-assets`**. **Reconcile in Sprint 14.** |
-| `RESEND_API_KEY` | ○ | ○ | **●** (S16) | `EmailChannel.deliver()` is `console.log` until Sprint 16. |
-| `SENTRY_DSN` | ○ | ○ | **●** (S16) | Variable exists; **no SDK installed**. |
-| `REDIS_URL` | ◐ | ○ | **●** (S16) | Unset → warning stub. `InMemoryQueueProvider` **throws** in production unless `DEMO_MODE=true` — a deliberate guard that will fire on day one of a real deploy. |
-| `OPENAI_API_KEY` | ○ | ○ | ○ | Out of v1.0 scope (TD-03). `executeProvider()` returns a canned string. |
-| `ANTHROPIC_API_KEY` | ○ | ○ | ○ | Same. |
-| `GEMINI_API_KEY` | ○ | ○ | ○ | Same. |
-| `NEXTAUTH_SECRET` | ✕ | ✕ | ✕ | **Unused.** The platform uses Supabase Auth natively. Remove from `.env.example` at the next revision. |
+| Variable                              | Demo  |  CI   | Production  | Notes                                                                                                                                                           |
+| ------------------------------------- | :---: | :---: | :---------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`DEMO_MODE`**                       | **●** | **●** |    **●**    | ⚠️ **Absent from `.env.example`.** `"true"` for demo/CI. Sprint 15 must make `"true"` unbootable in a production build (P2-06).                                 |
+| **`DATABASE_URL`**                    | **●** | **●** |    **●**    | Demo/CI: any syntactically valid DSN. Production: Supabase **pooler**, port **6543**, `?pgbouncer=true`. Requires `prepare:false` (already set).                |
+| **`NEXT_PUBLIC_SUPABASE_URL`**        | **●** | **●** |    **●**    | Placeholder fine in demo/CI.                                                                                                                                    |
+| **`NEXT_PUBLIC_SUPABASE_ANON_KEY`**   | **●** | **●** |    **●**    | RLS-enforced, browser-safe. Placeholder fine in demo/CI.                                                                                                        |
+| `DIRECT_DATABASE_URL`                 |   ○   |   ○   |    **●**    | Direct connection, port **5432**. **The pooler breaks DDL** — `drizzle-kit migrate` must use this.                                                              |
+| `SUPABASE_SERVICE_ROLE_KEY`           |   ○   |   ○   |    **●**    | **Bypasses RLS. Server only. Never prefix `NEXT_PUBLIC_`.** Needed by workers, the portal service layer, and seeding.                                           |
+| `NEXT_PUBLIC_APP_DOMAIN`              |   ◐   |   ○   |    **●**    | Unset → localhost:3000.                                                                                                                                         |
+| `NEXT_PUBLIC_PORTAL_DOMAIN`           |   ◐   |   ○   |    **●**    | Test locally via `http://portal.localhost:3000`.                                                                                                                |
+| `NEXT_PUBLIC_APP_URL`                 |   ◐   |   ○   |    **●**    |                                                                                                                                                                 |
+| `NEXT_PUBLIC_PORTAL_URL`              |   ◐   |   ○   |    **●**    |                                                                                                                                                                 |
+| `SEED_ORG_NAME`                       |   ◐   |   ○   |    **●**    | `scripts/seed.ts`. Org identity is configuration, never code.                                                                                                   |
+| `SEED_ORG_SLUG`                       |   ◐   |   ○   |    **●**    |                                                                                                                                                                 |
+| `SEED_ORG_TIMEZONE`                   |   ◐   |   ○   |    **●**    |                                                                                                                                                                 |
+| `SEED_ORG_CURRENCY`                   |   ◐   |   ○   |    **●**    |                                                                                                                                                                 |
+| `SEED_OWNER_EMAIL`                    |   ◐   |   ○   |    **●**    |                                                                                                                                                                 |
+| `SEED_OWNER_PASSWORD`                 |   ◐   |   ○   |    **●**    | ⚠️ Template default is `"change-me-immediately"`. Sprint 15 should **reject this value at seed time**, not merely document it.                                  |
+| `SEED_OWNER_FIRST_NAME`               |   ◐   |   ○   |    **●**    |                                                                                                                                                                 |
+| `SEED_OWNER_LAST_NAME`                |   ◐   |   ○   |      ◐      |                                                                                                                                                                 |
+| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` |   ◐   |   ○   |    **●**    | Template says `documents`; the migration plan provisions **`nexos-assets`**. **Reconcile in Sprint 14.**                                                        |
+| `RESEND_API_KEY`                      |   ○   |   ○   | **●** (S16) | `EmailChannel.deliver()` is `console.log` until Sprint 16.                                                                                                      |
+| `SENTRY_DSN`                          |   ○   |   ○   | **●** (S16) | Variable exists; **no SDK installed**.                                                                                                                          |
+| `REDIS_URL`                           |   ◐   |   ○   | **●** (S16) | Unset → warning stub. `InMemoryQueueProvider` **throws** in production unless `DEMO_MODE=true` — a deliberate guard that will fire on day one of a real deploy. |
+| `OPENAI_API_KEY`                      |   ○   |   ○   |      ○      | Out of v1.0 scope (TD-03). `executeProvider()` returns a canned string.                                                                                         |
+| `ANTHROPIC_API_KEY`                   |   ○   |   ○   |      ○      | Same.                                                                                                                                                           |
+| `GEMINI_API_KEY`                      |   ○   |   ○   |      ○      | Same.                                                                                                                                                           |
+| `NEXTAUTH_SECRET`                     |   ✕   |   ✕   |      ✕      | **Unused.** The platform uses Supabase Auth natively. Remove from `.env.example` at the next revision.                                                          |
 
 ### Recommended `.env.example` amendments
 
 Not applied in Phase C.1. Each is a one-line change.
 
-1. **Add `DEMO_MODE`** with the comment block from §1.1. *(Critical.)*
-2. **Note that `DATABASE_URL` is required in demo mode** and a placeholder suffices. *(Critical.)*
+1. **Add `DEMO_MODE`** with the comment block from §1.1. _(Critical.)_
+2. **Note that `DATABASE_URL` is required in demo mode** and a placeholder suffices. _(Critical.)_
 3. **Remove `NEXTAUTH_SECRET`** — unused by any code path.
 4. **Reconcile the storage bucket name** — `documents` vs `nexos-assets`.
 
@@ -141,9 +141,9 @@ Not applied in Phase C.1. Each is a one-line change.
 **It currently provides only two variables**, and therefore **its build step fails**:
 
 ```yaml
-    env:
-      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+env:
+  NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
 ```
 
 `DATABASE_URL` is missing, so `npm run build` dies collecting page data for `/api/approvals/verify` (§1.2). `format:check` fails independently on 341 files. There is no remote, so this workflow has **never executed** and neither failure has ever been observed.
@@ -151,11 +151,11 @@ Not applied in Phase C.1. Each is a one-line change.
 Required fix (Commit 10):
 
 ```yaml
-    env:
-      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
-      DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/postgres
-      DEMO_MODE: "true"
+env:
+  NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+  DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/postgres
+  DEMO_MODE: "true"
 ```
 
 `format:check` needs `npm run format -- --write` across 341 files — its own commit (11), after the tag.
@@ -170,33 +170,33 @@ Required fix (Commit 10):
 
 ### 6.1 Variable groups by sprint
 
-| Sprint | Variables to configure | Gate |
-|---|---|---|
-| **13 — Persistence** | `DATABASE_URL` (pooler 6543), `DIRECT_DATABASE_URL` (direct 5432), `SUPABASE_SERVICE_ROLE_KEY`, real `NEXT_PUBLIC_SUPABASE_*`, all 8 `SEED_*`, `DEMO_MODE=false` | Tenant isolation proven by test |
-| **14 — Storage** | `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` (reconciled) | Real virus scanning; org-scoped dedup |
-| **15 — Auth** | OAuth redirect URLs, all four `NEXT_PUBLIC_*_DOMAIN`/`_URL` | `DEMO_MODE=true` fails to start |
-| **16 — Runtime** | `RESEND_API_KEY`, `REDIS_URL`, `SENTRY_DSN` | Delivery, scheduler, observability live |
-| **17 — Deployment** | TLS, DNS, rate limiting, backup | Restore rehearsed and timed |
+| Sprint               | Variables to configure                                                                                                                                           | Gate                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **13 — Persistence** | `DATABASE_URL` (pooler 6543), `DIRECT_DATABASE_URL` (direct 5432), `SUPABASE_SERVICE_ROLE_KEY`, real `NEXT_PUBLIC_SUPABASE_*`, all 8 `SEED_*`, `DEMO_MODE=false` | Tenant isolation proven by test         |
+| **14 — Storage**     | `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` (reconciled)                                                                                                               | Real virus scanning; org-scoped dedup   |
+| **15 — Auth**        | OAuth redirect URLs, all four `NEXT_PUBLIC_*_DOMAIN`/`_URL`                                                                                                      | `DEMO_MODE=true` fails to start         |
+| **16 — Runtime**     | `RESEND_API_KEY`, `REDIS_URL`, `SENTRY_DSN`                                                                                                                      | Delivery, scheduler, observability live |
+| **17 — Deployment**  | TLS, DNS, rate limiting, backup                                                                                                                                  | Restore rehearsed and timed             |
 
 ### 6.2 The pooler/direct split
 
 This is the one production configuration detail that reliably wastes a day if missed.
 
-| Connection | Port | Mode | Used by |
-|---|---|---|---|
+| Connection | Port | Mode        | Used by                                                                                                                                                      |
+| ---------- | ---- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Pooler** | 6543 | Transaction | The app at runtime — `DATABASE_URL`. Requires `?pgbouncer=true` and `prepare: false` (both already configured in `src/db/index.ts` and `drizzle.config.ts`). |
-| **Direct** | 5432 | Session | `drizzle-kit migrate` only — `DIRECT_DATABASE_URL`. **DDL fails through the transaction pooler.** |
+| **Direct** | 5432 | Session     | `drizzle-kit migrate` only — `DIRECT_DATABASE_URL`. **DDL fails through the transaction pooler.**                                                            |
 
 ### 6.3 Secrets management
 
-| Item | Current state |
-|---|---|
-| `.env*` gitignored, `.env.example` re-included | ✅ Correct. Deny-then-allow ordering. |
-| Any `.env` tracked in git | ✅ None — verified against `git ls-files`. |
-| Real secrets in `.env.example` | ✅ None. All placeholders. |
-| Vault / secret manager | ❌ None. Checklist 7.15 ⚠️ |
-| Rotation policy | ❌ None. |
-| Production secret store | ❌ Not provisioned. Vercel environment variables are the intended mechanism. |
+| Item                                           | Current state                                                                |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| `.env*` gitignored, `.env.example` re-included | ✅ Correct. Deny-then-allow ordering.                                        |
+| Any `.env` tracked in git                      | ✅ None — verified against `git ls-files`.                                   |
+| Real secrets in `.env.example`                 | ✅ None. All placeholders.                                                   |
+| Vault / secret manager                         | ❌ None. Checklist 7.15 ⚠️                                                   |
+| Rotation policy                                | ❌ None.                                                                     |
+| Production secret store                        | ❌ Not provisioned. Vercel environment variables are the intended mechanism. |
 
 **Rules that hold regardless of provisioning state:**
 
@@ -209,18 +209,18 @@ This is the one production configuration detail that reliably wastes a day if mi
 
 ## 7. Troubleshooting
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| `Error: DATABASE_URL is not set` during `npm run build` | §1.2 — module-eval guard | Add a placeholder `DATABASE_URL` |
-| Build fails collecting page data for `/projects/[projectId]/timeline` or `/api/approvals/verify` | Same | Same |
-| `/api/health` reports `"demoMode":false` | `DEMO_MODE` unset or not `"true"` | Set `DEMO_MODE="true"`; restart dev server |
-| Every page errors; stack traces mention Drizzle or `postgres` | `DEMO_MODE` falsy → real adapters, which have never run | Set `DEMO_MODE="true"` |
-| `npm run format:check` exits 1 | Known — 341 files unformatted (F-1) | Not your change. Commit 11. |
-| `drizzle-kit migrate` hangs or errors on DDL | Using the pooler | Use `DIRECT_DATABASE_URL`, port 5432 |
-| Portal routes 404 locally | Portal is domain-routed | `http://portal.localhost:3000` |
-| Data resets on restart | Expected | DemoStore lives on `globalThis`; it is a fixture, not a database |
-| CI red on `build` | Workflow omits `DATABASE_URL` | Commit 10 |
+| Symptom                                                                                          | Cause                                                   | Fix                                                              |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------- | ---------------------------------------------------------------- |
+| `Error: DATABASE_URL is not set` during `npm run build`                                          | §1.2 — module-eval guard                                | Add a placeholder `DATABASE_URL`                                 |
+| Build fails collecting page data for `/projects/[projectId]/timeline` or `/api/approvals/verify` | Same                                                    | Same                                                             |
+| `/api/health` reports `"demoMode":false`                                                         | `DEMO_MODE` unset or not `"true"`                       | Set `DEMO_MODE="true"`; restart dev server                       |
+| Every page errors; stack traces mention Drizzle or `postgres`                                    | `DEMO_MODE` falsy → real adapters, which have never run | Set `DEMO_MODE="true"`                                           |
+| `npm run format:check` exits 1                                                                   | Known — 341 files unformatted (F-1)                     | Not your change. Commit 11.                                      |
+| `drizzle-kit migrate` hangs or errors on DDL                                                     | Using the pooler                                        | Use `DIRECT_DATABASE_URL`, port 5432                             |
+| Portal routes 404 locally                                                                        | Portal is domain-routed                                 | `http://portal.localhost:3000`                                   |
+| Data resets on restart                                                                           | Expected                                                | DemoStore lives on `globalThis`; it is a fixture, not a database |
+| CI red on `build`                                                                                | Workflow omits `DATABASE_URL`                           | Commit 10                                                        |
 
 ---
 
-*Demo setup verified against a clean clone with no local state (`REPOSITORY_STABILIZATION_REPORT.md` §7). Production sections are unverified — no environment has been provisioned.*
+_Demo setup verified against a clean clone with no local state (`REPOSITORY_STABILIZATION_REPORT.md` §7). Production sections are unverified — no environment has been provisioned._

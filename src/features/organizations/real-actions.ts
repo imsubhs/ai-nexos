@@ -21,7 +21,7 @@ function logActivity(
   entityId: string,
   entityType: string,
   description: string,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ) {
   return db.insert(activityLogs).values({
     organizationId: orgId,
@@ -47,11 +47,15 @@ export async function getOrganization() {
   return org ?? null;
 }
 
-export async function updateOrganization(data: z.infer<typeof updateOrganizationSchema>) {
+export async function updateOrganization(
+  data: z.infer<typeof updateOrganizationSchema>,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "organization", "update");
 
-  const parsed = normalizeOrganizationInput(updateOrganizationSchema.parse(data));
+  const parsed = normalizeOrganizationInput(
+    updateOrganizationSchema.parse(data),
+  );
 
   const [org] = await db
     .update(organizations)
@@ -72,7 +76,7 @@ export async function updateOrganization(data: z.infer<typeof updateOrganization
     org.organizationId,
     "organization",
     "Updated organization profile",
-    parsed
+    parsed,
   );
 
   revalidatePath("/settings/organization");
@@ -85,7 +89,10 @@ export async function getRoles() {
 
   const orgRoles = await db.query.roles.findMany({
     where: eq(roles.organizationId, user.organizationId),
-    orderBy: (roles, { asc, desc }) => [desc(roles.isSystem), asc(roles.roleName)],
+    orderBy: (roles, { asc, desc }) => [
+      desc(roles.isSystem),
+      asc(roles.roleName),
+    ],
   });
 
   return orgRoles;
@@ -107,16 +114,26 @@ export async function getOrganizationMembers() {
   return members;
 }
 
-async function checkOwnerProtection(organizationId: string, userId: string, isRemovingOwnerRole: boolean) {
+async function checkOwnerProtection(
+  organizationId: string,
+  userId: string,
+  isRemovingOwnerRole: boolean,
+) {
   const [targetUser] = await db
     .select({ roleKey: roles.roleKey, status: users.status })
     .from(users)
     .innerJoin(roles, eq(users.roleId, roles.roleId))
-    .where(and(eq(users.userId, userId), eq(users.organizationId, organizationId)));
+    .where(
+      and(eq(users.userId, userId), eq(users.organizationId, organizationId)),
+    );
 
   if (!targetUser) throw new Error("User not found");
 
-  if (targetUser.roleKey === "owner" && targetUser.status === "active" && isRemovingOwnerRole) {
+  if (
+    targetUser.roleKey === "owner" &&
+    targetUser.status === "active" &&
+    isRemovingOwnerRole
+  ) {
     const [result] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(users)
@@ -125,8 +142,8 @@ async function checkOwnerProtection(organizationId: string, userId: string, isRe
         and(
           eq(users.organizationId, organizationId),
           eq(roles.roleKey, "owner"),
-          eq(users.status, "active")
-        )
+          eq(users.status, "active"),
+        ),
       );
 
     if (result && result.count <= 1) {
@@ -135,17 +152,26 @@ async function checkOwnerProtection(organizationId: string, userId: string, isRe
   }
 }
 
-export async function updateUserRole(data: z.infer<typeof updateUserRoleSchema>) {
+export async function updateUserRole(
+  data: z.infer<typeof updateUserRoleSchema>,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "roles", "update");
 
   const parsed = updateUserRoleSchema.parse(data);
 
-  const [newRole] = await db.select().from(roles).where(eq(roles.roleId, parsed.roleId));
+  const [newRole] = await db
+    .select()
+    .from(roles)
+    .where(eq(roles.roleId, parsed.roleId));
   if (!newRole) throw new Error("Role not found");
 
   const isRemovingOwner = newRole.roleKey !== "owner";
-  await checkOwnerProtection(user.organizationId, parsed.userId, isRemovingOwner);
+  await checkOwnerProtection(
+    user.organizationId,
+    parsed.userId,
+    isRemovingOwner,
+  );
 
   const [updatedUser] = await db
     .update(users)
@@ -154,7 +180,12 @@ export async function updateUserRole(data: z.infer<typeof updateUserRoleSchema>)
       updatedAt: new Date(),
       updatedBy: user.userId,
     })
-    .where(and(eq(users.userId, parsed.userId), eq(users.organizationId, user.organizationId)))
+    .where(
+      and(
+        eq(users.userId, parsed.userId),
+        eq(users.organizationId, user.organizationId),
+      ),
+    )
     .returning();
 
   if (!updatedUser) throw new Error("User not found");
@@ -166,7 +197,7 @@ export async function updateUserRole(data: z.infer<typeof updateUserRoleSchema>)
     updatedUser.userId,
     "user",
     `Updated user role to ${newRole.roleName}`,
-    { roleId: parsed.roleId }
+    { roleId: parsed.roleId },
   );
 
   revalidatePath("/settings/organization");
@@ -192,7 +223,12 @@ export async function deactivateUser(data: z.infer<typeof userActionSchema>) {
       updatedAt: new Date(),
       updatedBy: user.userId,
     })
-    .where(and(eq(users.userId, parsed.userId), eq(users.organizationId, user.organizationId)))
+    .where(
+      and(
+        eq(users.userId, parsed.userId),
+        eq(users.organizationId, user.organizationId),
+      ),
+    )
     .returning();
 
   if (!updatedUser) throw new Error("User not found");
@@ -203,7 +239,7 @@ export async function deactivateUser(data: z.infer<typeof userActionSchema>) {
     "update",
     updatedUser.userId,
     "user",
-    "Deactivated user"
+    "Deactivated user",
   );
 
   revalidatePath("/settings/organization");
@@ -223,7 +259,12 @@ export async function reactivateUser(data: z.infer<typeof userActionSchema>) {
       updatedAt: new Date(),
       updatedBy: user.userId,
     })
-    .where(and(eq(users.userId, parsed.userId), eq(users.organizationId, user.organizationId)))
+    .where(
+      and(
+        eq(users.userId, parsed.userId),
+        eq(users.organizationId, user.organizationId),
+      ),
+    )
     .returning();
 
   if (!updatedUser) throw new Error("User not found");
@@ -234,7 +275,7 @@ export async function reactivateUser(data: z.infer<typeof userActionSchema>) {
     "update",
     updatedUser.userId,
     "user",
-    "Reactivated user"
+    "Reactivated user",
   );
 
   revalidatePath("/settings/organization");

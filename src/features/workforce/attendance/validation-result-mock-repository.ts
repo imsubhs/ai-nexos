@@ -40,9 +40,7 @@ export const mockValidationResultRepository: ValidationResultRepository = {
   async listForRange(organizationId, from, to) {
     return snapshots().filter(
       (s) =>
-        s.organizationId === organizationId &&
-        s.date >= from &&
-        s.date <= to,
+        s.organizationId === organizationId && s.date >= from && s.date <= to,
     );
   },
 };

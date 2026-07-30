@@ -25,9 +25,7 @@ describe("safeInternalPath (open-redirect guard)", () => {
     expect(safeInternalPath("/portal/s/token")).toBe(
       DEFAULT_AUTHENTICATED_PATH,
     );
-    expect(safeInternalPath("/auth/callback")).toBe(
-      DEFAULT_AUTHENTICATED_PATH,
-    );
+    expect(safeInternalPath("/auth/callback")).toBe(DEFAULT_AUTHENTICATED_PATH);
   });
 
   it("handles null/undefined/non-string FormData values", () => {

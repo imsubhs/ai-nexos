@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { createShareSessionAction as real_createShareSessionAction, resolveExternalIdentityAction as real_resolveExternalIdentityAction, submitExternalCommentAction as real_submitExternalCommentAction, submitExternalAnnotationAction as real_submitExternalAnnotationAction, submitExternalApprovalAction as real_submitExternalApprovalAction, requestShareMeetingAction as real_requestShareMeetingAction } from "./real-index";
+import type {
+  createShareSessionAction as real_createShareSessionAction,
+  resolveExternalIdentityAction as real_resolveExternalIdentityAction,
+  submitExternalCommentAction as real_submitExternalCommentAction,
+  submitExternalAnnotationAction as real_submitExternalAnnotationAction,
+  submitExternalApprovalAction as real_submitExternalApprovalAction,
+  requestShareMeetingAction as real_requestShareMeetingAction,
+} from "./real-index";
 import { getDemoStore, nextDemoId } from "@/lib/demo/store";
 
 const SHARE_EXPIRY_DAYS = 14;
@@ -19,7 +26,14 @@ function nextShareToken(store: any): string {
   return `shr_${nextDemoId(store).replace(/-/g, "")}`;
 }
 
-function emitShareEvent(store: any, organizationId: string, projectId: string, sessionId: string, eventType: string, payload: Record<string, unknown>) {
+function emitShareEvent(
+  store: any,
+  organizationId: string,
+  projectId: string,
+  sessionId: string,
+  eventType: string,
+  payload: Record<string, unknown>,
+) {
   const event = {
     id: nextDemoId(store),
     organizationId,
@@ -39,7 +53,9 @@ function findSessionItem(store: any, itemId: string) {
   return sessionItem;
 }
 
-export async function createShareSessionAction(...args: Parameters<typeof real_createShareSessionAction>): Promise<Awaited<ReturnType<typeof real_createShareSessionAction>>> {
+export async function createShareSessionAction(
+  ...args: Parameters<typeof real_createShareSessionAction>
+): Promise<Awaited<ReturnType<typeof real_createShareSessionAction>>> {
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
@@ -55,7 +71,9 @@ export async function createShareSessionAction(...args: Parameters<typeof real_c
     secureToken: nextShareToken(store),
     status: "published",
     publishedAt: now,
-    expiresAt: new Date(now.getTime() + SHARE_EXPIRY_DAYS * 24 * 60 * 60 * 1000),
+    expiresAt: new Date(
+      now.getTime() + SHARE_EXPIRY_DAYS * 24 * 60 * 60 * 1000,
+    ),
     downloadCount: 0,
     createdAt: now,
     updatedAt: now,
@@ -74,20 +92,29 @@ export async function createShareSessionAction(...args: Parameters<typeof real_c
     });
   });
 
-  emitShareEvent(store, payload.organizationId, payload.projectId, session.id, "Share.Created", {
-    title: session.title,
-    type: session.shareType,
-  });
+  emitShareEvent(
+    store,
+    payload.organizationId,
+    payload.projectId,
+    session.id,
+    "Share.Created",
+    {
+      title: session.title,
+      type: session.shareType,
+    },
+  );
 
   return session as any;
 }
 
-export async function resolveExternalIdentityAction(...args: Parameters<typeof real_resolveExternalIdentityAction>): Promise<Awaited<ReturnType<typeof real_resolveExternalIdentityAction>>> {
+export async function resolveExternalIdentityAction(
+  ...args: Parameters<typeof real_resolveExternalIdentityAction>
+): Promise<Awaited<ReturnType<typeof real_resolveExternalIdentityAction>>> {
   const [organizationId, email, displayName] = args;
   const store = shareCollections(getDemoStore());
 
   let identity = store.externalIdentities.find(
-    (i: any) => i.organizationId === organizationId && i.email === email
+    (i: any) => i.organizationId === organizationId && i.email === email,
   );
 
   if (!identity) {
@@ -108,7 +135,9 @@ export async function resolveExternalIdentityAction(...args: Parameters<typeof r
   return identity as any;
 }
 
-export async function submitExternalCommentAction(...args: Parameters<typeof real_submitExternalCommentAction>): Promise<Awaited<ReturnType<typeof real_submitExternalCommentAction>>> {
+export async function submitExternalCommentAction(
+  ...args: Parameters<typeof real_submitExternalCommentAction>
+): Promise<Awaited<ReturnType<typeof real_submitExternalCommentAction>>> {
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
@@ -127,15 +156,24 @@ export async function submitExternalCommentAction(...args: Parameters<typeof rea
   };
   store.shareComments.push(comment);
 
-  emitShareEvent(store, sessionItem.organizationId, sessionItem.projectId, payload.sessionId, "Share.CommentAdded", {
-    commentId: comment.id,
-    itemId: payload.itemId,
-  });
+  emitShareEvent(
+    store,
+    sessionItem.organizationId,
+    sessionItem.projectId,
+    payload.sessionId,
+    "Share.CommentAdded",
+    {
+      commentId: comment.id,
+      itemId: payload.itemId,
+    },
+  );
 
   return comment as any;
 }
 
-export async function submitExternalAnnotationAction(...args: Parameters<typeof real_submitExternalAnnotationAction>): Promise<Awaited<ReturnType<typeof real_submitExternalAnnotationAction>>> {
+export async function submitExternalAnnotationAction(
+  ...args: Parameters<typeof real_submitExternalAnnotationAction>
+): Promise<Awaited<ReturnType<typeof real_submitExternalAnnotationAction>>> {
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
@@ -158,15 +196,24 @@ export async function submitExternalAnnotationAction(...args: Parameters<typeof 
   };
   store.shareAnnotations.push(annotation);
 
-  emitShareEvent(store, sessionItem.organizationId, sessionItem.projectId, payload.sessionId, "Share.AnnotationAdded", {
-    annotationId: annotation.id,
-    type: annotation.type,
-  });
+  emitShareEvent(
+    store,
+    sessionItem.organizationId,
+    sessionItem.projectId,
+    payload.sessionId,
+    "Share.AnnotationAdded",
+    {
+      annotationId: annotation.id,
+      type: annotation.type,
+    },
+  );
 
   return annotation as any;
 }
 
-export async function submitExternalApprovalAction(...args: Parameters<typeof real_submitExternalApprovalAction>): Promise<Awaited<ReturnType<typeof real_submitExternalApprovalAction>>> {
+export async function submitExternalApprovalAction(
+  ...args: Parameters<typeof real_submitExternalApprovalAction>
+): Promise<Awaited<ReturnType<typeof real_submitExternalApprovalAction>>> {
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
@@ -176,27 +223,43 @@ export async function submitExternalApprovalAction(...args: Parameters<typeof re
 
   const sessionItem = findSessionItem(store, payload.itemId);
 
-  const event = emitShareEvent(store, sessionItem.organizationId, sessionItem.projectId, payload.sessionId, "Share.ApprovalSubmitted", {
-    itemId: payload.itemId,
-    identityId: payload.identityId,
-    decision: payload.decision,
-    reason: payload.reason,
-  });
+  const event = emitShareEvent(
+    store,
+    sessionItem.organizationId,
+    sessionItem.projectId,
+    payload.sessionId,
+    "Share.ApprovalSubmitted",
+    {
+      itemId: payload.itemId,
+      identityId: payload.identityId,
+      decision: payload.decision,
+      reason: payload.reason,
+    },
+  );
 
   return event as any;
 }
 
-export async function requestShareMeetingAction(...args: Parameters<typeof real_requestShareMeetingAction>): Promise<Awaited<ReturnType<typeof real_requestShareMeetingAction>>> {
+export async function requestShareMeetingAction(
+  ...args: Parameters<typeof real_requestShareMeetingAction>
+): Promise<Awaited<ReturnType<typeof real_requestShareMeetingAction>>> {
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
   const sessionItem = findSessionItem(store, payload.itemId);
 
-  const event = emitShareEvent(store, sessionItem.organizationId, sessionItem.projectId, payload.sessionId, "Share.MeetingRequested", {
-    itemId: payload.itemId,
-    commentId: payload.commentId,
-    identityId: payload.identityId,
-  });
+  const event = emitShareEvent(
+    store,
+    sessionItem.organizationId,
+    sessionItem.projectId,
+    payload.sessionId,
+    "Share.MeetingRequested",
+    {
+      itemId: payload.itemId,
+      commentId: payload.commentId,
+      identityId: payload.identityId,
+    },
+  );
 
   return event as any;
 }

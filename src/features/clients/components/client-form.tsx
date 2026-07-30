@@ -25,7 +25,8 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
       companyName: initialData?.companyName || "",
       industry: initialData?.industry || "",
       website: initialData?.website || "",
-      status: (initialData?.status as "active" | "prospect" | "archived") || "active",
+      status:
+        (initialData?.status as "active" | "prospect" | "archived") || "active",
       clientHealth: initialData?.clientHealth || null,
       country: initialData?.country || "",
       address: initialData?.address || "",
@@ -45,7 +46,9 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
       }
       onSuccess?.();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setIsPending(false);
     }
@@ -57,7 +60,9 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
         <Label htmlFor="companyName">Company Name *</Label>
         <Input id="companyName" {...form.register("companyName")} />
         {form.formState.errors.companyName && (
-          <p className="text-sm text-destructive">{form.formState.errors.companyName.message}</p>
+          <p className="text-destructive text-sm">
+            {form.formState.errors.companyName.message}
+          </p>
         )}
       </div>
 
@@ -68,9 +73,15 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="website">Website</Label>
-          <Input id="website" {...form.register("website")} placeholder="https://" />
+          <Input
+            id="website"
+            {...form.register("website")}
+            placeholder="https://"
+          />
           {form.formState.errors.website && (
-            <p className="text-sm text-destructive">{form.formState.errors.website.message}</p>
+            <p className="text-destructive text-sm">
+              {form.formState.errors.website.message}
+            </p>
           )}
         </div>
       </div>
@@ -86,9 +97,13 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
         </div>
       </div>
 
-      <div className="pt-4 flex justify-end space-x-2">
+      <div className="flex justify-end space-x-2 pt-4">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : initialData ? "Save Changes" : "Create Client"}
+          {isPending
+            ? "Saving..."
+            : initialData
+              ? "Save Changes"
+              : "Create Client"}
         </Button>
       </div>
     </form>

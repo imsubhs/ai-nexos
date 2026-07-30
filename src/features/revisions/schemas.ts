@@ -6,11 +6,20 @@ export const insertRevisionSchema = z.object({
   taskId: z.string().uuid().optional().nullable(),
   name: z.string().min(1, "Revision name is required"),
   description: z.string().optional().nullable(),
-  type: z.enum([
-    "MINOR", "MAJOR", "CLIENT_REQUESTED", "INTERNAL", 
-    "CREATIVE", "TECHNICAL", "LEGAL", "EMERGENCY", 
-    "ROLLBACK", "HOTFIX"
-  ]).default("MINOR"),
+  type: z
+    .enum([
+      "MINOR",
+      "MAJOR",
+      "CLIENT_REQUESTED",
+      "INTERNAL",
+      "CREATIVE",
+      "TECHNICAL",
+      "LEGAL",
+      "EMERGENCY",
+      "ROLLBACK",
+      "HOTFIX",
+    ])
+    .default("MINOR"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
   // Architectural overrides
   parentRevisionId: z.string().uuid().optional().nullable(),
@@ -19,9 +28,17 @@ export const insertRevisionSchema = z.object({
 
 export const updateRevisionStatusSchema = z.object({
   status: z.enum([
-    "REQUESTED", "CREATED", "ASSIGNED", "WIP", 
-    "INTERNAL_REVIEW", "QA", "READY_FOR_APPROVAL", 
-    "APPROVED", "REJECTED", "MERGED", "ARCHIVED"
+    "REQUESTED",
+    "CREATED",
+    "ASSIGNED",
+    "WIP",
+    "INTERNAL_REVIEW",
+    "QA",
+    "READY_FOR_APPROVAL",
+    "APPROVED",
+    "REJECTED",
+    "MERGED",
+    "ARCHIVED",
   ]),
 });
 
@@ -42,4 +59,3 @@ export const mergePreviewDataSchema = z.object({
   filesToRemove: z.array(z.string().uuid()),
   canMergeCleanly: z.boolean(),
 });
-

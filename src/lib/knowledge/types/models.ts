@@ -1,13 +1,13 @@
 export enum SemanticLayer {
-  OPERATIONAL = 'OPERATIONAL',
-  BUSINESS = 'BUSINESS',
-  AI = 'AI',
-  ANALYTICS = 'ANALYTICS'
+  OPERATIONAL = "OPERATIONAL",
+  BUSINESS = "BUSINESS",
+  AI = "AI",
+  ANALYTICS = "ANALYTICS",
 }
 
 export interface KnowledgeNode {
   internal_id: string; // Internal Graph ID (UUID)
-  entity_id: string;   // Immutable External Entity ID
+  entity_id: string; // Immutable External Entity ID
   entity_type: string; // e.g., 'USER', 'PROJECT', 'TASK'
   layer: SemanticLayer;
   organization_id: string;
@@ -27,21 +27,21 @@ export interface EdgeProperties {
 }
 
 export enum EdgeType {
-  OWNS = 'OWNS',
-  BELONGS_TO = 'BELONGS_TO',
-  ASSIGNED_TO = 'ASSIGNED_TO',
-  DEPENDS_ON = 'DEPENDS_ON',
-  REFERENCES = 'REFERENCES',
-  GENERATED = 'GENERATED',
-  APPROVED = 'APPROVED',
-  REQUESTED = 'REQUESTED',
-  ATTENDED = 'ATTENDED',
-  MENTIONED = 'MENTIONED',
-  CREATED = 'CREATED',
-  UPDATED = 'UPDATED',
-  LINKED = 'LINKED',
-  RELATED = 'RELATED',
-  CUSTOM = 'CUSTOM'
+  OWNS = "OWNS",
+  BELONGS_TO = "BELONGS_TO",
+  ASSIGNED_TO = "ASSIGNED_TO",
+  DEPENDS_ON = "DEPENDS_ON",
+  REFERENCES = "REFERENCES",
+  GENERATED = "GENERATED",
+  APPROVED = "APPROVED",
+  REQUESTED = "REQUESTED",
+  ATTENDED = "ATTENDED",
+  MENTIONED = "MENTIONED",
+  CREATED = "CREATED",
+  UPDATED = "UPDATED",
+  LINKED = "LINKED",
+  RELATED = "RELATED",
+  CUSTOM = "CUSTOM",
 }
 
 export interface KnowledgeEdge {
@@ -53,7 +53,7 @@ export interface KnowledgeEdge {
   organization_id: string;
   created_at: string;
   is_deleted?: boolean; // Tombstone for append-only deletion
-  version?: number;     // For append-only versioning
+  version?: number; // For append-only versioning
 }
 
 export interface ProjectionCheckpoint {

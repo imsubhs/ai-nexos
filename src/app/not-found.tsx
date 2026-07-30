@@ -8,14 +8,14 @@ import Link from "next/link";
 export default function RootNotFound() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-8 text-center">
-      <p className="font-mono text-sm text-muted-foreground">404</p>
+      <p className="text-muted-foreground font-mono text-sm">404</p>
       <h1 className="text-2xl font-semibold tracking-tight">Page not found</h1>
-      <p className="max-w-md text-sm text-muted-foreground">
+      <p className="text-muted-foreground max-w-md text-sm">
         This page does not exist or has not been built yet.
       </p>
       <Link
         href="/dashboard"
-        className="text-sm font-medium text-primary underline underline-offset-4"
+        className="text-primary text-sm font-medium underline underline-offset-4"
       >
         Go to dashboard
       </Link>

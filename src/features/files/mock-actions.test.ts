@@ -62,7 +62,9 @@ describe("getFiles / getFolder / searchFiles (mock)", () => {
   it("searches files by title substring", async () => {
     const result = await searchFiles("Sprint 11B");
     expect(result.length).toBeGreaterThan(0);
-    expect(result.every((f: any) => f.title.toLowerCase().includes("sprint 11b"))).toBe(true);
+    expect(
+      result.every((f: any) => f.title.toLowerCase().includes("sprint 11b")),
+    ).toBe(true);
   });
 
   it("returns an empty array when nothing matches", async () => {

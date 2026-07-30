@@ -138,19 +138,22 @@ export function TaskDetailModal({
     setAssignees(assigneeRows as unknown as AssigneeRow[]);
     setComments(commentRows as unknown as CommentRow[]);
     setActivity(activityRows as unknown as ActivityRow[]);
-    setActiveTimerId((timer as { timeEntryId?: string } | undefined)?.timeEntryId ?? null);
+    setActiveTimerId(
+      (timer as { timeEntryId?: string } | undefined)?.timeEntryId ?? null,
+    );
   }, [taskId]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [assigneeRows, commentRows, activityRows, timer] = await Promise.all([
-          getTaskAssignees(taskId),
-          getTaskComments(taskId, 25),
-          getTaskActivity(taskId, 20),
-          getActiveTaskTimer(taskId),
-        ]);
+        const [assigneeRows, commentRows, activityRows, timer] =
+          await Promise.all([
+            getTaskAssignees(taskId),
+            getTaskComments(taskId, 25),
+            getTaskActivity(taskId, 20),
+            getActiveTaskTimer(taskId),
+          ]);
         if (cancelled) return;
         setAssignees(assigneeRows as unknown as AssigneeRow[]);
         setComments(commentRows as unknown as CommentRow[]);
@@ -176,14 +179,21 @@ export function TaskDetailModal({
   // missing field must render an em dash, not throw while rendering.
   const priority = task.priority ? humanizeToken(String(task.priority)) : null;
   const taskType = task.taskType ? humanizeToken(String(task.taskType)) : null;
-  const progress = typeof task.progress === "number" ? `${task.progress}%` : null;
+  const progress =
+    typeof task.progress === "number" ? `${task.progress}%` : null;
   const logged = task.actualDurationMins ?? 0;
   const estimated = task.estimatedDurationMins ?? 0;
 
   const assignedIds = new Set(assignees.map((row) => row.userId));
-  const assignable = members.filter((member) => !assignedIds.has(member.userId));
+  const assignable = members.filter(
+    (member) => !assignedIds.has(member.userId),
+  );
 
-  const run = async (key: string, work: () => Promise<void>, message: string) => {
+  const run = async (
+    key: string,
+    work: () => Promise<void>,
+    message: string,
+  ) => {
     setPending(key);
     try {
       await work();
@@ -191,7 +201,9 @@ export function TaskDetailModal({
       await onChanged();
       toast.success(message);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setPending(null);
     }
@@ -206,7 +218,9 @@ export function TaskDetailModal({
       await onChanged();
       toast.success(`Status set to ${humanizeToken(status)}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not change status");
+      toast.error(
+        error instanceof Error ? error.message : "Could not change status",
+      );
     } finally {
       setStatusPending(false);
     }
@@ -288,7 +302,9 @@ export function TaskDetailModal({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium">Assignees ({assignees.length})</p>
+                <p className="text-sm font-medium">
+                  Assignees ({assignees.length})
+                </p>
                 {assignable.length > 0 && (
                   <div className="flex items-center gap-2">
                     <select
@@ -326,7 +342,9 @@ export function TaskDetailModal({
               </div>
 
               {assignees.length === 0 ? (
-                <p className="text-muted-foreground text-xs">No one is assigned.</p>
+                <p className="text-muted-foreground text-xs">
+                  No one is assigned.
+                </p>
               ) : (
                 <ul className="flex flex-wrap gap-2">
                   {assignees.map((assignee) => (
@@ -343,7 +361,10 @@ export function TaskDetailModal({
                         onClick={() =>
                           run(
                             `unassign-${assignee.userId}`,
-                            () => unassignTask(taskId, assignee.userId).then(() => undefined),
+                            () =>
+                              unassignTask(taskId, assignee.userId).then(
+                                () => undefined,
+                              ),
                             "Assignee removed",
                           )
                         }
@@ -365,7 +386,8 @@ export function TaskDetailModal({
                   typeof task.description === "string" ? (
                     task.description
                   ) : (
-                    commentText(task.description) || JSON.stringify(task.description)
+                    commentText(task.description) ||
+                    JSON.stringify(task.description)
                   )
                 ) : (
                   <span className="text-muted-foreground italic">
@@ -378,7 +400,9 @@ export function TaskDetailModal({
             <div className="bg-muted/50 space-y-2 rounded-lg border p-4">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-foreground text-sm font-medium">Time Tracking</h3>
+                  <h3 className="text-foreground text-sm font-medium">
+                    Time Tracking
+                  </h3>
                   <p className="text-muted-foreground mt-1 text-xs">
                     Logged: {logged}m / Est: {estimated}m
                   </p>
@@ -391,7 +415,8 @@ export function TaskDetailModal({
                     onClick={() =>
                       run(
                         "timer",
-                        () => stopTaskTimer(activeTimerId).then(() => undefined),
+                        () =>
+                          stopTaskTimer(activeTimerId).then(() => undefined),
                         "Timer stopped",
                       )
                     }
@@ -404,7 +429,11 @@ export function TaskDetailModal({
                     variant="outline"
                     disabled={pending === "timer"}
                     onClick={() =>
-                      run("timer", () => startTaskTimer(taskId).then(() => undefined), "Timer started")
+                      run(
+                        "timer",
+                        () => startTaskTimer(taskId).then(() => undefined),
+                        "Timer started",
+                      )
                     }
                   >
                     Start timer
@@ -414,7 +443,9 @@ export function TaskDetailModal({
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">Comments ({comments.length})</p>
+              <p className="text-sm font-medium">
+                Comments ({comments.length})
+              </p>
               <div className="flex items-end gap-2">
                 <div className="flex-1 space-y-1">
                   <Label htmlFor="task-comment" className="sr-only">
@@ -446,11 +477,16 @@ export function TaskDetailModal({
               </div>
 
               {comments.length === 0 ? (
-                <p className="text-muted-foreground text-xs">No comments yet.</p>
+                <p className="text-muted-foreground text-xs">
+                  No comments yet.
+                </p>
               ) : (
                 <ul className="space-y-2">
                   {comments.map((row) => (
-                    <li key={row.commentId} className="rounded-md border px-3 py-2">
+                    <li
+                      key={row.commentId}
+                      className="rounded-md border px-3 py-2"
+                    >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-medium">
                           {personName(row.firstName, row.lastName)}
@@ -469,7 +505,9 @@ export function TaskDetailModal({
             <div className="space-y-2">
               <p className="text-sm font-medium">History ({activity.length})</p>
               {activity.length === 0 ? (
-                <p className="text-muted-foreground text-xs">No history recorded.</p>
+                <p className="text-muted-foreground text-xs">
+                  No history recorded.
+                </p>
               ) : (
                 <ul className="space-y-1">
                   {activity.map((entry) => (

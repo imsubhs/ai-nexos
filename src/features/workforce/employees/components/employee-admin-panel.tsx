@@ -7,7 +7,13 @@
  */
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Archive, ArchiveRestore, Pencil, UserCheck, UserMinus } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  Pencil,
+  UserCheck,
+  UserMinus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,7 +35,10 @@ import { EmployeeFormDialog, type ManagerOption } from "./employee-form-dialog";
 
 type Confirm = "archive" | "restore" | "deactivate" | "activate" | null;
 
-const CONFIRM_COPY: Record<Exclude<Confirm, null>, { title: string; body: string; cta: string }> = {
+const CONFIRM_COPY: Record<
+  Exclude<Confirm, null>,
+  { title: string; body: string; cta: string }
+> = {
   archive: {
     title: "Archive employee?",
     body: "Archived employees leave the directory and lose workforce access. Their history is preserved and they can be restored later.",
@@ -183,7 +192,7 @@ export function EmployeeAdminPanel({
                 </DialogDescription>
               </DialogHeader>
               {error ? (
-                <p role="alert" className="text-sm text-destructive">
+                <p role="alert" className="text-destructive text-sm">
                   {error}
                 </p>
               ) : null}

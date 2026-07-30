@@ -19,7 +19,11 @@ import type { EngineConfig } from "./config";
 import { IntervalEngine } from "./interval-engine";
 import type { Finding } from "./types";
 import type { BuiltSession } from "./session-builder";
-import { type Interval, periodToInterval, type TimePeriod } from "./value-objects";
+import {
+  type Interval,
+  periodToInterval,
+  type TimePeriod,
+} from "./value-objects";
 
 export interface DetectedIdle {
   /** Disjoint, sorted idle blocks: inside the session, outside every break. */
@@ -54,7 +58,8 @@ export function detectIdle(
       findings.push({
         code: "idle-below-threshold-reclassified",
         severity: "warning",
-        message: "Idle block shorter than the policy minimum; counted as effective work.",
+        message:
+          "Idle block shorter than the policy minimum; counted as effective work.",
         interval: { start: block.start, end: block.end },
       });
       continue;
@@ -70,5 +75,9 @@ export function detectIdle(
     kept.push(block);
   }
 
-  return { intervals: kept, idleMs: IntervalEngine.totalDuration(kept), findings };
+  return {
+    intervals: kept,
+    idleMs: IntervalEngine.totalDuration(kept),
+    findings,
+  };
 }

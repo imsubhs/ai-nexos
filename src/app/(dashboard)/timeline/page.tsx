@@ -50,7 +50,9 @@ export default async function TimelinePage() {
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Timeline</h1>
-        <p className="text-sm text-muted-foreground">Every project timeline in one feed.</p>
+        <p className="text-muted-foreground text-sm">
+          Every project timeline in one feed.
+        </p>
       </div>
       <TimelineFeed initialRows={rows} projectNames={projectNames} />
     </div>

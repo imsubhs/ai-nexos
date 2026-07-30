@@ -13,10 +13,7 @@
 import { CorrectionError } from "./repository";
 import type { CorrectionStatus } from "../shared/enums";
 
-export type CorrectionCommand =
-  | "cancel"
-  | "markUnderReview"
-  | "review"; // approve or reject
+export type CorrectionCommand = "cancel" | "markUnderReview" | "review"; // approve or reject
 
 const ALLOWED: Record<CorrectionCommand, CorrectionStatus[]> = {
   cancel: ["PENDING", "UNDER_REVIEW"],

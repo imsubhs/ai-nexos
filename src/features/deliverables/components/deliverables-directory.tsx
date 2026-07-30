@@ -17,18 +17,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/shared/data-table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { deliverables } from "@/db/schema/deliverables";
 import { DELIVERABLE_STATUSES, humanizeToken } from "../constants";
-import { CreateDeliverableDialog, type ProjectOption } from "./create-deliverable-dialog";
+import {
+  CreateDeliverableDialog,
+  type ProjectOption,
+} from "./create-deliverable-dialog";
 import { DeliverableDetailSheet } from "./deliverable-detail-sheet";
 
 export type Deliverable = typeof deliverables.$inferSelect;
 
 const SEARCH_DEBOUNCE_MS = 300;
-
 
 export function DeliverablesDirectory({
   rows,
@@ -88,7 +93,7 @@ export function DeliverablesDirectory({
       key: "type",
       header: "Type",
       cell: (row) => (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           {row.type ? humanizeToken(row.type) : "—"}
         </span>
       ),
@@ -109,7 +114,7 @@ export function DeliverablesDirectory({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
@@ -123,13 +128,17 @@ export function DeliverablesDirectory({
           <DropdownMenuTrigger
             render={
               <Button variant="outline" size="sm">
-                {activeStatus ? activeStatus.replaceAll("_", " ") : "All statuses"}
+                {activeStatus
+                  ? activeStatus.replaceAll("_", " ")
+                  : "All statuses"}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             }
           />
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setParams({ status: null, page: null })}>
+            <DropdownMenuItem
+              onClick={() => setParams({ status: null, page: null })}
+            >
               All statuses
             </DropdownMenuItem>
             {DELIVERABLE_STATUSES.map((status) => (

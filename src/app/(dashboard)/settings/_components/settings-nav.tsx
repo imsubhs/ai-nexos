@@ -31,13 +31,13 @@ export function SettingsNav() {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+              "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
               isActive
                 ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
             )}
           >
-            <Icon className="w-4 h-4 mr-3 shrink-0" />
+            <Icon className="mr-3 h-4 w-4 shrink-0" />
             {item.title}
           </Link>
         );

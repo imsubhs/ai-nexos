@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/i, "Invalid hex color format");
+const hexColorSchema = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/i, "Invalid hex color format");
 // IANA timezone: either a single-segment zone (UTC, GMT) or Region/City
 // (America/New_York, America/Argentina/Buenos_Aires). Sprint 12A widened this
 // from the Region/City-only form — the seeded and default organization
@@ -10,20 +12,40 @@ const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/i, "Invalid hex color
 const timezoneSchema = z
   .string()
   .regex(/^[A-Za-z_]+(\/[A-Za-z_+-]+)*$/, "Invalid IANA timezone format");
-const currencySchema = z.string().regex(/^[A-Z]{3}$/, "Invalid ISO 4217 currency code");
+const currencySchema = z
+  .string()
+  .regex(/^[A-Z]{3}$/, "Invalid ISO 4217 currency code");
 
 export const updateOrganizationSchema = z.object({
-  organizationName: z.string().min(2, "Organization name is required").optional(),
+  organizationName: z
+    .string()
+    .min(2, "Organization name is required")
+    .optional(),
   legalName: z.string().optional().nullable(),
   slug: z.string().min(2, "Slug is required").optional(),
-  logoUrl: z.string().url("Must be a valid URL").optional().nullable().or(z.literal("")),
-  website: z.string().url("Must be a valid URL").optional().nullable().or(z.literal("")),
+  logoUrl: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  website: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   industry: z.string().optional().nullable(),
   timezone: timezoneSchema.optional(),
   currency: currencySchema.optional(),
   country: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
-  contactEmail: z.string().email("Invalid email").optional().nullable().or(z.literal("")),
+  contactEmail: z
+    .string()
+    .email("Invalid email")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   contactPhone: z.string().optional().nullable(),
   // `.or(z.literal(""))` matches logoUrl/website/contactEmail above: an
   // emptied optional field must clear, not fail validation. Sprint 12A —

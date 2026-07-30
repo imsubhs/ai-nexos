@@ -18,7 +18,7 @@ export class ExecutionContext {
   public finalItems: ContextItem[] = [];
   public totalTokens: number = 0;
   private messageId: string | null = null;
-  
+
   constructor(public readonly organizationId: string) {}
 
   appendToolResults(results: unknown[]) {
@@ -28,13 +28,15 @@ export class ExecutionContext {
       sourceType: "tool_execution",
       content: toolResultString,
       relevanceScore: 1.0,
-      tokenCount: Math.ceil(toolResultString.length / 4)
+      tokenCount: Math.ceil(toolResultString.length / 4),
     });
     this.totalTokens += Math.ceil(toolResultString.length / 4);
   }
 
   get formattedString(): string {
-    return this.finalItems.map(item => `[Source: ${item.sourceType}]\n${item.content}`).join("\n\n");
+    return this.finalItems
+      .map((item) => `[Source: ${item.sourceType}]\n${item.content}`)
+      .join("\n\n");
   }
 
   async persist(messageId: string) {
@@ -43,7 +45,7 @@ export class ExecutionContext {
       messageId,
       rawContext: this.rawItems,
       compressedContext: this.finalItems,
-      totalTokens: this.totalTokens
+      totalTokens: this.totalTokens,
     });
   }
 }
@@ -61,8 +63,8 @@ export class ContextBuilder {
         sourceType: "system",
         content: `Current time: ${new Date().toISOString()}`,
         relevanceScore: 1.0,
-        tokenCount: 15
-      }
+        tokenCount: 15,
+      },
     ];
 
     // Security: Enforce tenant boundary dynamically here before injecting Project Context
@@ -70,12 +72,14 @@ export class ContextBuilder {
       const project = await db.query.projects.findFirst({
         where: and(
           eq(projects.projectId, req.projectId),
-          eq(projects.organizationId, req.organizationId) // Tenant boundary enforcement!
-        )
+          eq(projects.organizationId, req.organizationId), // Tenant boundary enforcement!
+        ),
       });
 
       if (!project) {
-        throw new Error(`Security Violation: Project ${req.projectId} does not exist or belongs to a different organization.`);
+        throw new Error(
+          `Security Violation: Project ${req.projectId} does not exist or belongs to a different organization.`,
+        );
       }
 
       rawItems.push({
@@ -83,31 +87,34 @@ export class ContextBuilder {
         sourceType: "project",
         content: `Project Context: ${JSON.stringify(project)}`,
         relevanceScore: 0.9,
-        tokenCount: Math.ceil(JSON.stringify(project).length / 4) + 10
+        tokenCount: Math.ceil(JSON.stringify(project).length / 4) + 10,
       });
     }
 
     context.rawItems = rawItems;
 
     const budget: ContextBudget = {
-      maxTokens: 8000, 
+      maxTokens: 8000,
       remainingTokens: 8000,
       priorityWeights: {
-        "system": 1.0,
-        "project": 0.9,
-        "file": 0.8,
-        "meeting": 0.7
-      }
+        system: 1.0,
+        project: 0.9,
+        file: 0.8,
+        meeting: 0.7,
+      },
     };
 
     let budgetedItems = ContextBudgetManager.applyBudget(rawItems, budget);
 
     budgetedItems = await Promise.all(
-      budgetedItems.map(item => ContextBudgetManager.compressContext(item))
+      budgetedItems.map((item) => ContextBudgetManager.compressContext(item)),
     );
 
     context.finalItems = budgetedItems;
-    context.totalTokens = budgetedItems.reduce((acc, item) => acc + item.tokenCount, 0);
+    context.totalTokens = budgetedItems.reduce(
+      (acc, item) => acc + item.tokenCount,
+      0,
+    );
 
     return context;
   }

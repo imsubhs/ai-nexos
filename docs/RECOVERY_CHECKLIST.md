@@ -9,19 +9,19 @@
 
 ## 0. Current Recovery Posture — read this first
 
-| Capability | State |
-|---|---|
-| Rebuild the app from the repository | ✅ **Verified.** §3 |
+| Capability                                | State                                            |
+| ----------------------------------------- | ------------------------------------------------ |
+| Rebuild the app from the repository       | ✅ **Verified.** §3                              |
 | Recover the repository if this disk fails | ❌ **IMPOSSIBLE.** No remote. No tag. No bundle. |
-| Roll back a failed migration | ❌ Nothing to roll back to |
-| Restore production data | ❌ No production, no backup |
-| Restore from backup | ❌ Never configured, never rehearsed |
+| Roll back a failed migration              | ❌ Nothing to roll back to                       |
+| Restore production data                   | ❌ No production, no backup                      |
+| Restore from backup                       | ❌ Never configured, never rehearsed             |
 
 **552 files. Two commits. One disk.**
 
 Three months of work — every sprint since the M0 baseline — is uncommitted, untagged and unmirrored. A disk failure, an accidental `rm -rf`, or a single `git checkout .` is **total, unrecoverable loss.**
 
-The parent `WebsiteCreation` directory is a *separate* git repository that does **not** track `ai-nexos`. Backing up the parent backs up nothing here. Anyone assuming otherwise has no backup at all.
+The parent `WebsiteCreation` directory is a _separate_ git repository that does **not** track `ai-nexos`. Backing up the parent backs up nothing here. Anyone assuming otherwise has no backup at all.
 
 > **§1 is the only section that changes this.** Everything else in this document is a procedure for recovering a repository that can currently only be recovered if it has not been lost.
 
@@ -34,29 +34,29 @@ Ordered. Each blocks the next. Full detail in `VERSION_CONTROL_PLAN.md` §8 and 
 - [ ] **1. Commit the migrations first, atomically, with explicit paths.**
 
       ```bash
-      git add database/migrations/0008_same_johnny_storm.sql \
-              database/migrations/0009_mute_wallow.sql \
-              database/migrations/meta/0008_snapshot.json \
-              database/migrations/meta/0009_snapshot.json \
-              database/migrations/meta/_journal.json
-      git status --short database/          # all five staged? nothing missing?
-      git commit -m "fix(db): journal migrations 0008 and 0009"
-      ```
+              git add database/migrations/0008_same_johnny_storm.sql \
+                      database/migrations/0009_mute_wallow.sql \
+                      database/migrations/meta/0008_snapshot.json \
+                      database/migrations/meta/0009_snapshot.json \
+                      database/migrations/meta/_journal.json
+              git status --short database/          # all five staged? nothing missing?
+              git commit -m "fix(db): journal migrations 0008 and 0009"
+              ```
 
-      ⛔ **Never `git add -u` or `git commit -a` here.** Both stage the modified `_journal.json` while ignoring the untracked `.sql` files, producing a repository whose journal references migrations that do not exist. This is the one ordering detail that must survive any shortcut.
+              ⛔ **Never `git add -u` or `git commit -a` here.** Both stage the modified `_journal.json` while ignoring the untracked `.sql` files, producing a repository whose journal references migrations that do not exist. This is the one ordering detail that must survive any shortcut.
 
 - [ ] **2. Commit the sprint history** — Commits 2–8 (`REPOSITORY_STABILIZATION_REPORT.md` §8).
 - [ ] **3. Commit documentation** — Commit 9; set `package.json` version to `1.0.0-beta`.
 - [ ] **4. Tag, annotated:** `v1.0.0-beta` on Commit 9; `v1.0.0-baseline` on `1b17234`.
 - [ ] **5. Fast-forward `main`:** `git checkout main && git merge --ff-only phase-03-core-product`
-- [ ] **6. ⛔ Add a private remote and push branches *and* tags.**
+- [ ] **6. ⛔ Add a private remote and push branches _and_ tags.**
 
       ```bash
-      git remote add origin git@github.com:<org>/ai-nexos.git
-      git push -u origin main
-      git push origin phase-03-core-product
-      git push origin --tags
-      ```
+              git remote add origin git@github.com:<org>/ai-nexos.git
+              git push -u origin main
+              git push origin phase-03-core-product
+              git push origin --tags
+              ```
 
 - [ ] **7. Verify the push actually protected the work** — §2. A remote that has never been cloned from is an assumption, not a backup.
 - [ ] **8. Create an offline bundle** as a second copy — §5.
@@ -75,21 +75,21 @@ Run **after** step 6, on a different directory — ideally a different machine.
 - [ ] Refs exist remotely
 
       ```bash
-      git ls-remote --heads origin      # main present?
-      git ls-remote --tags  origin      # v1.0.0-beta AND v1.0.0-baseline present?
-      git rev-parse HEAD                # equals origin/main?
-      git rev-parse origin/main
-      ```
+              git ls-remote --heads origin      # main present?
+              git ls-remote --tags  origin      # v1.0.0-beta AND v1.0.0-baseline present?
+              git rev-parse HEAD                # equals origin/main?
+              git rev-parse origin/main
+              ```
 
 - [ ] **Clone it somewhere else and run §3 against the clone.** This is the actual test. Everything above only proves bytes moved.
 - [ ] Confirm the clone's migration set is consistent:
 
       ```bash
-      ls database/migrations/*.sql | wc -l                        # 10
-      grep -c '"tag"' database/migrations/meta/_journal.json      # 10
-      ```
+              ls database/migrations/*.sql | wc -l                        # 10
+              grep -c '"tag"' database/migrations/meta/_journal.json      # 10
+              ```
 
-      **If these disagree, the journal hazard fired.** Fix on the source and re-push before doing anything else.
+              **If these disagree, the journal hazard fired.** Fix on the source and re-push before doing anything else.
 
 - [ ] Confirm no secret travelled: `git log --all --name-only | grep -E '^\.env' | grep -v '\.env\.example'` returns nothing.
 
@@ -102,55 +102,55 @@ This section was executed in Phase C.1 against a clean copy of the full committa
 - [ ] **Clone and install**
 
       ```bash
-      git clone <remote> ai-nexos && cd ai-nexos
-      node -v                    # 24.x — CI uses 24; repo has no engines/.nvmrc pin
-      npm ci                     # ✅ exit 0, clean from package-lock.json (v3)
-      ```
+              git clone <remote> ai-nexos && cd ai-nexos
+              node -v                    # 24.x — CI uses 24; repo has no engines/.nvmrc pin
+              npm ci                     # ✅ exit 0, clean from package-lock.json (v3)
+              ```
 
 - [ ] **Environment — the 4-variable minimum**
 
       ```bash
-      cat > .env.local <<'EOF'
-      DEMO_MODE="true"
-      DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/postgres"
-      NEXT_PUBLIC_SUPABASE_URL="https://placeholder.supabase.co"
-      NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder-anon-key"
-      EOF
-      ```
+              cat > .env.local <<'EOF'
+              DEMO_MODE="true"
+              DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/postgres"
+              NEXT_PUBLIC_SUPABASE_URL="https://placeholder.supabase.co"
+              NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder-anon-key"
+              EOF
+              ```
 
-      ⚠️ `DEMO_MODE` is **not** in `.env.example` (F-3). ⚠️ `DATABASE_URL` is required even in demo mode (F-2) — module-eval guard in `src/db/index.ts`; nothing connects.
+              ⚠️ `DEMO_MODE` is **not** in `.env.example` (F-3). ⚠️ `DATABASE_URL` is required even in demo mode (F-2) — module-eval guard in `src/db/index.ts`; nothing connects.
 
 - [ ] **Gates — expected results**
 
       | Command | Verified result |
-      |---|---|
-      | `npm run lint` | ✅ exit 0 — **0 errors, 109 warnings** (warnings are the baseline) |
-      | `npm run typecheck` | ✅ exit 0, strict |
-      | `npm test` | ✅ **240 passed (240)**, 22 files, 2.72 s |
-      | `npm run build` | ✅ green, **35 routes**, 3.4 s compile |
-      | `npm run format:check` | ❌ **exit 1 — 341 files. Known (F-1). Not a recovery failure.** |
+              |---|---|
+              | `npm run lint` | ✅ exit 0 — **0 errors, 109 warnings** (warnings are the baseline) |
+              | `npm run typecheck` | ✅ exit 0, strict |
+              | `npm test` | ✅ **240 passed (240)**, 22 files, 2.72 s |
+              | `npm run build` | ✅ green, **35 routes**, 3.4 s compile |
+              | `npm run format:check` | ❌ **exit 1 — 341 files. Known (F-1). Not a recovery failure.** |
 
 - [ ] **Runtime**
 
       ```bash
-      npm run dev                                    # ✅ Ready in 176 ms
-      curl -s http://localhost:3000/api/health       # ✅ {"status":"healthy","demoMode":true,...}
-      curl -o /dev/null -w '%{http_code}\n' http://localhost:3000/login   # ✅ 200
-      ```
+              npm run dev                                    # ✅ Ready in 176 ms
+              curl -s http://localhost:3000/api/health       # ✅ {"status":"healthy","demoMode":true,...}
+              curl -o /dev/null -w '%{http_code}\n' http://localhost:3000/login   # ✅ 200
+              ```
 
-      **`"demoMode":true` is the check that matters.** If it reads `false`, `DEMO_MODE` is not being read and nothing downstream will behave.
+              **`"demoMode":true` is the check that matters.** If it reads `false`, `DEMO_MODE` is not being read and nothing downstream will behave.
 
 - [ ] **Confirm no dependency on local-only state.** Verified in Phase C.1: nothing outside the four environment variables. No file outside the repository is required.
 
 ### Recovery time objective — measured
 
-| Step | Time |
-|---|---|
-| `npm ci` | ~1–2 min |
-| Write `.env.local` | seconds |
-| Gates (lint + typecheck + test) | < 1 min |
-| `npm run build` | ~10 s |
-| Dev server ready | < 1 s |
+| Step                                        | Time            |
+| ------------------------------------------- | --------------- |
+| `npm ci`                                    | ~1–2 min        |
+| Write `.env.local`                          | seconds         |
+| Gates (lint + typecheck + test)             | < 1 min         |
+| `npm run build`                             | ~10 s           |
+| Dev server ready                            | < 1 s           |
 | **Total: repository → running application** | **≈ 3 minutes** |
 
 **RTO for the codebase is minutes, provided a copy exists.** That proviso is the entire problem, and step 6 of §1 is the entire fix.
@@ -170,7 +170,7 @@ This section was executed in Phase C.1 against a clean copy of the full committa
 
 Demo data needs no recovery: the DemoStore is an in-memory fixture on `globalThis` that reseeds on every restart. Losing it is the design.
 
-> **An unrehearsed backup is not a backup.** Sprint 17's acceptance criterion is a *rehearsed and timed* restore with a documented RTO — not a configured one. Configuring PITR and declaring the gate closed is the failure mode this line exists to prevent.
+> **An unrehearsed backup is not a backup.** Sprint 17's acceptance criterion is a _rehearsed and timed_ restore with a documented RTO — not a configured one. Configuring PITR and declaring the gate closed is the failure mode this line exists to prevent.
 
 ---
 
@@ -181,16 +181,16 @@ A single remote is one provider outage or one account lockout away from unavaila
 - [ ] Create a bundle after tagging:
 
       ```bash
-      git bundle create ai-nexos-$(date +%Y%m%d)-v1.0.0-beta.bundle --all
-      git bundle verify ai-nexos-*.bundle
-      ```
+              git bundle create ai-nexos-$(date +%Y%m%d)-v1.0.0-beta.bundle --all
+              git bundle verify ai-nexos-*.bundle
+              ```
 
 - [ ] **Verify it restores** — the same discipline as §4 demands of database backups:
 
       ```bash
-      git clone ai-nexos-20260728-v1.0.0-beta.bundle /tmp/restore-test
-      cd /tmp/restore-test && git log --oneline && git tag
-      ```
+              git clone ai-nexos-20260728-v1.0.0-beta.bundle /tmp/restore-test
+              cd /tmp/restore-test && git log --oneline && git tag
+              ```
 
 - [ ] Store the bundle off the working disk — external drive or cloud storage, **not** the same machine.
 - [ ] Refresh at each tag: `v1.0.0-beta`, `v1.0.0-rc.1`, `v1.0.0`.
@@ -200,20 +200,20 @@ A single remote is one provider outage or one account lockout away from unavaila
 
 ## 6. Disaster Scenarios
 
-| Scenario | Recoverable today? | Recoverable after §1? | Procedure |
-|---|---|---|---|
-| Accidental `git checkout .` / `reset --hard` / `clean -fd` | ❌ **Total loss** | ✅ | `git reset --hard origin/main` |
-| Disk failure | ❌ **Total loss** | ✅ | Clone from remote → §3 |
-| `rm -rf` the project directory | ❌ **Total loss** | ✅ | Clone from remote → §3 |
-| Corrupted `node_modules` | ✅ | ✅ | `rm -rf node_modules && npm ci` |
-| Corrupted `.next` | ✅ | ✅ | `rm -rf .next && npm run build` |
-| Lost `.env.local` | ✅ | ✅ | Recreate from §3 — 4 variables |
-| Broken migration journal (`git add -u`) | ⚠️ Fixable while the working tree survives | ✅ | Restore the 4 files + journal; commit atomically (§1 step 1) |
-| Remote provider outage | ❌ | ⚠️ Local clone + bundle (§5) | Work locally; re-push when restored |
-| Remote account lockout | ❌ | ⚠️ Bundle only (§5) | Restore from bundle to a new remote |
-| Failed Sprint 13 migration | ❌ Nothing to roll back to | ✅ | `DEMO_MODE=true` — the cheapest rollback in the plan |
-| Production data loss | N/A — no production | ❌ Sprint 17 | PITR, once rehearsed |
-| Leaked service-role key | N/A | ⚠️ | Rotate in Supabase; audit access logs. **No rotation policy exists** (checklist 7.15) |
+| Scenario                                                   | Recoverable today?                         | Recoverable after §1?        | Procedure                                                                             |
+| ---------------------------------------------------------- | ------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------- |
+| Accidental `git checkout .` / `reset --hard` / `clean -fd` | ❌ **Total loss**                          | ✅                           | `git reset --hard origin/main`                                                        |
+| Disk failure                                               | ❌ **Total loss**                          | ✅                           | Clone from remote → §3                                                                |
+| `rm -rf` the project directory                             | ❌ **Total loss**                          | ✅                           | Clone from remote → §3                                                                |
+| Corrupted `node_modules`                                   | ✅                                         | ✅                           | `rm -rf node_modules && npm ci`                                                       |
+| Corrupted `.next`                                          | ✅                                         | ✅                           | `rm -rf .next && npm run build`                                                       |
+| Lost `.env.local`                                          | ✅                                         | ✅                           | Recreate from §3 — 4 variables                                                        |
+| Broken migration journal (`git add -u`)                    | ⚠️ Fixable while the working tree survives | ✅                           | Restore the 4 files + journal; commit atomically (§1 step 1)                          |
+| Remote provider outage                                     | ❌                                         | ⚠️ Local clone + bundle (§5) | Work locally; re-push when restored                                                   |
+| Remote account lockout                                     | ❌                                         | ⚠️ Bundle only (§5)          | Restore from bundle to a new remote                                                   |
+| Failed Sprint 13 migration                                 | ❌ Nothing to roll back to                 | ✅                           | `DEMO_MODE=true` — the cheapest rollback in the plan                                  |
+| Production data loss                                       | N/A — no production                        | ❌ Sprint 17                 | PITR, once rehearsed                                                                  |
+| Leaked service-role key                                    | N/A                                        | ⚠️                           | Rotate in Supabase; audit access logs. **No rotation policy exists** (checklist 7.15) |
 
 **Every ❌ in column two becomes ✅ or ⚠️ by completing §1 steps 1–8.** That is the entire argument for doing them before Sprint 13.
 
@@ -221,7 +221,7 @@ A single remote is one provider outage or one account lockout away from unavaila
 
 ## 7. Pre-Sprint-13 Sign-Off
 
-Sprint 13 must not begin until every line is checked. `PRODUCTION_MIGRATION_PLAN.md` §3 states the reason plainly: *"Migrating on 136 uncommitted files means a failed migration has nothing to roll back to."*
+Sprint 13 must not begin until every line is checked. `PRODUCTION_MIGRATION_PLAN.md` §3 states the reason plainly: _"Migrating on 136 uncommitted files means a failed migration has nothing to roll back to."_
 
 - [ ] Working tree fully committed — `git status` clean
 - [ ] Migration journal consistent — 10 `.sql` files, 10 journal entries, **verified in a fresh clone** (§2)
@@ -236,8 +236,8 @@ Sprint 13 must not begin until every line is checked. `PRODUCTION_MIGRATION_PLAN
 - [ ] Branch protection enabled on `main` (after CI is green — required checks against a broken pipeline block all merges)
 - [ ] `sprint-13-persistence` cut from `main`
 
-**Signed:** ______________________  **Date:** ____________
+**Signed:** ______________________ **Date:** ____________
 
 ---
 
-*§3 verified by execution in Phase C.1. §2, §4 and §5 are unexecuted procedures — §4 in particular describes infrastructure that does not exist. No code was modified, committed, tagged or pushed in Phase C.1.*
+_§3 verified by execution in Phase C.1. §2, §4 and §5 are unexecuted procedures — §4 in particular describes infrastructure that does not exist. No code was modified, committed, tagged or pushed in Phase C.1._

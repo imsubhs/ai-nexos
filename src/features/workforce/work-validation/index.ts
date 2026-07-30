@@ -11,7 +11,11 @@
 // ============================================================
 
 // ── Orchestrator ────────────────────────────────────────────
-export { validateWorkDay, computeWorkValidation, msToMinutes } from "./work-validation-engine";
+export {
+  validateWorkDay,
+  computeWorkValidation,
+  msToMinutes,
+} from "./work-validation-engine";
 
 // ── Sub-engines (composable, individually testable) ─────────
 export { IntervalEngine } from "./interval-engine";

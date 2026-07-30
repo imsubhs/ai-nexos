@@ -26,12 +26,16 @@ import type {
 } from "./real-actions";
 
 function requireTimeline(timelineId: string) {
-  const timeline = getDemoStore().timelines.find((t) => t.timelineId === timelineId);
+  const timeline = getDemoStore().timelines.find(
+    (t) => t.timelineId === timelineId,
+  );
   if (!timeline) throw new Error("Not found");
   return timeline;
 }
 
-export async function createTimelineSnapshot(...args: Parameters<typeof real_createTimelineSnapshot>): Promise<Awaited<ReturnType<typeof real_createTimelineSnapshot>>> {
+export async function createTimelineSnapshot(
+  ...args: Parameters<typeof real_createTimelineSnapshot>
+): Promise<Awaited<ReturnType<typeof real_createTimelineSnapshot>>> {
   const [timelineId] = args as unknown as [string];
   const store = getDemoStore();
   const timeline = requireTimeline(timelineId);
@@ -40,10 +44,14 @@ export async function createTimelineSnapshot(...args: Parameters<typeof real_cre
     versionId: nextDemoId(store),
     timelineId,
     organizationId: DEMO_ORG_ID,
-    versionNumber: store.timelineVersions.filter((v) => v.timelineId === timelineId).length + 1,
+    versionNumber:
+      store.timelineVersions.filter((v) => v.timelineId === timelineId).length +
+      1,
     snapshot: {
       milestones: store.milestones.filter((m) => m.timelineId === timelineId),
-      dependencies: store.timelineDependencies.filter((d) => d.timelineId === timelineId),
+      dependencies: store.timelineDependencies.filter(
+        (d) => d.timelineId === timelineId,
+      ),
     },
     createdAt: new Date(),
     createdBy: DEMO_USER_ID,
@@ -54,7 +62,9 @@ export async function createTimelineSnapshot(...args: Parameters<typeof real_cre
   return version as any;
 }
 
-export async function createTimeline(...args: Parameters<typeof real_createTimeline>): Promise<Awaited<ReturnType<typeof real_createTimeline>>> {
+export async function createTimeline(
+  ...args: Parameters<typeof real_createTimeline>
+): Promise<Awaited<ReturnType<typeof real_createTimeline>>> {
   const [data] = args;
   const store = getDemoStore();
 
@@ -94,13 +104,22 @@ export async function createTimeline(...args: Parameters<typeof real_createTimel
     });
   });
 
-  logDemoActivity(store, "timelines", "created", "timeline", timeline.timelineId, "Created project timeline");
+  logDemoActivity(
+    store,
+    "timelines",
+    "created",
+    "timeline",
+    timeline.timelineId,
+    "Created project timeline",
+  );
 
   revalidatePath(`/projects/${data.projectId}/timeline`);
   return timeline as any;
 }
 
-export async function getProjectTimeline(...args: Parameters<typeof real_getProjectTimeline>): Promise<Awaited<ReturnType<typeof real_getProjectTimeline>>> {
+export async function getProjectTimeline(
+  ...args: Parameters<typeof real_getProjectTimeline>
+): Promise<Awaited<ReturnType<typeof real_getProjectTimeline>>> {
   const [projectId] = args;
   const store = getDemoStore();
 
@@ -119,7 +138,9 @@ export async function getProjectTimeline(...args: Parameters<typeof real_getProj
   } as any;
 }
 
-export async function getTimelines(...args: Parameters<typeof real_getTimelines>): Promise<Awaited<ReturnType<typeof real_getTimelines>>> {
+export async function getTimelines(
+  ...args: Parameters<typeof real_getTimelines>
+): Promise<Awaited<ReturnType<typeof real_getTimelines>>> {
   const [cursorOffset = 0, limit = 50] = args;
   const store = getDemoStore();
 
@@ -135,7 +156,9 @@ export async function getTimelines(...args: Parameters<typeof real_getTimelines>
     })) as any;
 }
 
-export async function getTimelineMilestones(...args: Parameters<typeof real_getTimelineMilestones>): Promise<Awaited<ReturnType<typeof real_getTimelineMilestones>>> {
+export async function getTimelineMilestones(
+  ...args: Parameters<typeof real_getTimelineMilestones>
+): Promise<Awaited<ReturnType<typeof real_getTimelineMilestones>>> {
   const [timelineId, limit = 50, cursorOffset = 0] = args;
   const store = getDemoStore();
   requireTimeline(timelineId);
@@ -151,15 +174,21 @@ export async function getTimelineMilestones(...args: Parameters<typeof real_getT
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
 
-export async function getTimelineDependencies(...args: Parameters<typeof real_getTimelineDependencies>): Promise<Awaited<ReturnType<typeof real_getTimelineDependencies>>> {
+export async function getTimelineDependencies(
+  ...args: Parameters<typeof real_getTimelineDependencies>
+): Promise<Awaited<ReturnType<typeof real_getTimelineDependencies>>> {
   const [timelineId] = args;
   const store = getDemoStore();
   requireTimeline(timelineId);
 
-  return store.timelineDependencies.filter((d) => d.timelineId === timelineId) as any;
+  return store.timelineDependencies.filter(
+    (d) => d.timelineId === timelineId,
+  ) as any;
 }
 
-export async function createMilestone(...args: Parameters<typeof real_createMilestone>): Promise<Awaited<ReturnType<typeof real_createMilestone>>> {
+export async function createMilestone(
+  ...args: Parameters<typeof real_createMilestone>
+): Promise<Awaited<ReturnType<typeof real_createMilestone>>> {
   const [data] = args;
   const store = getDemoStore();
   const timeline = requireTimeline(data.timelineId);
@@ -183,13 +212,22 @@ export async function createMilestone(...args: Parameters<typeof real_createMile
   };
   store.milestones.push(milestone);
 
-  logDemoActivity(store, "timelines", "milestone_created", "milestone", milestone.milestoneId, `Created milestone ${milestone.name}`);
+  logDemoActivity(
+    store,
+    "timelines",
+    "milestone_created",
+    "milestone",
+    milestone.milestoneId,
+    `Created milestone ${milestone.name}`,
+  );
 
   revalidatePath(`/projects/${timeline.projectId}/timeline`);
   return milestone as any;
 }
 
-export async function addTimelineDependency(...args: Parameters<typeof real_addTimelineDependency>): Promise<Awaited<ReturnType<typeof real_addTimelineDependency>>> {
+export async function addTimelineDependency(
+  ...args: Parameters<typeof real_addTimelineDependency>
+): Promise<Awaited<ReturnType<typeof real_addTimelineDependency>>> {
   const [data] = args;
   const store = getDemoStore();
   const timeline = requireTimeline(data.timelineId);
@@ -215,25 +253,32 @@ export async function addTimelineDependency(...args: Parameters<typeof real_addT
   return dependency as any;
 }
 
-export async function recalculateTimelineProgress(...args: Parameters<typeof real_recalculateTimelineProgress>): Promise<Awaited<ReturnType<typeof real_recalculateTimelineProgress>>> {
+export async function recalculateTimelineProgress(
+  ...args: Parameters<typeof real_recalculateTimelineProgress>
+): Promise<Awaited<ReturnType<typeof real_recalculateTimelineProgress>>> {
   const [timelineId] = args;
   const store = getDemoStore();
 
   const timeline = store.timelines.find((t) => t.timelineId === timelineId);
   if (!timeline) return undefined as any;
 
-  const timelineMilestones = store.milestones.filter((m) => m.timelineId === timelineId);
+  const timelineMilestones = store.milestones.filter(
+    (m) => m.timelineId === timelineId,
+  );
   const progress =
     timelineMilestones.length === 0
       ? 0
       : Math.round(
-          timelineMilestones.reduce((sum, m) => sum + (m.progress ?? 0), 0) / timelineMilestones.length,
+          timelineMilestones.reduce((sum, m) => sum + (m.progress ?? 0), 0) /
+            timelineMilestones.length,
         );
 
   timeline.overallProgress = progress;
   timeline.updatedAt = new Date();
 
-  const project = store.projects.find((p) => p.projectId === timeline.projectId);
+  const project = store.projects.find(
+    (p) => p.projectId === timeline.projectId,
+  );
   if (project) {
     project.completionPercentage = progress;
     project.updatedAt = new Date();

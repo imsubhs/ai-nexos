@@ -6,20 +6,33 @@ const iv = (start: number, end: number): Interval => ({ start, end });
 
 describe("IntervalEngine.normalize", () => {
   it("drops zero/negative-length intervals and sorts by start", () => {
-    const out = IntervalEngine.normalize([iv(10, 5), iv(3, 3), iv(8, 12), iv(1, 4)]);
+    const out = IntervalEngine.normalize([
+      iv(10, 5),
+      iv(3, 3),
+      iv(8, 12),
+      iv(1, 4),
+    ]);
     expect(out).toEqual([iv(1, 4), iv(8, 12)]);
   });
 });
 
 describe("IntervalEngine.merge", () => {
   it("collapses overlapping and touching intervals", () => {
-    const out = IntervalEngine.merge([iv(0, 5), iv(5, 8), iv(4, 6), iv(20, 25)]);
+    const out = IntervalEngine.merge([
+      iv(0, 5),
+      iv(5, 8),
+      iv(4, 6),
+      iv(20, 25),
+    ]);
     expect(out).toEqual([iv(0, 8), iv(20, 25)]);
   });
 
   it("joins intervals within the configured gap", () => {
     expect(IntervalEngine.merge([iv(0, 5), iv(7, 10)], 2)).toEqual([iv(0, 10)]);
-    expect(IntervalEngine.merge([iv(0, 5), iv(8, 10)], 2)).toEqual([iv(0, 5), iv(8, 10)]);
+    expect(IntervalEngine.merge([iv(0, 5), iv(8, 10)], 2)).toEqual([
+      iv(0, 5),
+      iv(8, 10),
+    ]);
   });
 
   it("is idempotent (merging a merged set changes nothing)", () => {
@@ -50,7 +63,9 @@ describe("IntervalEngine.subtract", () => {
   });
 
   it("is unaffected by holes outside the base", () => {
-    expect(IntervalEngine.subtract([iv(0, 10)], [iv(20, 30)])).toEqual([iv(0, 10)]);
+    expect(IntervalEngine.subtract([iv(0, 10)], [iv(20, 30)])).toEqual([
+      iv(0, 10),
+    ]);
   });
 });
 

@@ -10,7 +10,7 @@ export type ContextData = Record<string, any>;
 export async function createImmutableContextSnapshot(
   organizationId: string,
   stepId: string,
-  contextData: ContextData
+  contextData: ContextData,
 ) {
   const [snapshot] = await db
     .insert(aiAgentContext)
@@ -21,6 +21,6 @@ export async function createImmutableContextSnapshot(
       isImmutable: true,
     })
     .returning();
-    
+
   return snapshot;
 }

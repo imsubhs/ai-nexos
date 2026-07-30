@@ -89,7 +89,9 @@ export function MeetingOutcomesPanel({
   const [decisionStatus, setDecisionStatus] = useState<string>("open");
   const [actionStatus, setActionStatus] = useState<string>("open");
   const [priority, setPriority] = useState<string>("medium");
-  const [milestoneId, setMilestoneId] = useState<string>(milestones[0]?.milestoneId ?? "");
+  const [milestoneId, setMilestoneId] = useState<string>(
+    milestones[0]?.milestoneId ?? "",
+  );
 
   const canPromote = Boolean(timelineId) && milestones.length > 0;
 
@@ -103,22 +105,35 @@ export function MeetingOutcomesPanel({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium">Decisions ({decisions.length})</p>
-          <Button size="sm" variant="outline" onClick={() => setDialog("decision")}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setDialog("decision")}
+          >
             Record decision
           </Button>
         </div>
         {decisions.length === 0 ? (
-          <p className="text-muted-foreground text-xs">No decisions recorded.</p>
+          <p className="text-muted-foreground text-xs">
+            No decisions recorded.
+          </p>
         ) : (
           <ul className="space-y-2">
             {decisions.map((decision) => (
-              <li key={decision.decisionId} className="rounded-md border px-3 py-2">
+              <li
+                key={decision.decisionId}
+                className="rounded-md border px-3 py-2"
+              >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="min-w-0 text-sm font-medium">{decision.title}</p>
+                  <p className="min-w-0 text-sm font-medium">
+                    {decision.title}
+                  </p>
                   <StatusBadge status={decision.status} />
                 </div>
                 {decision.description ? (
-                  <p className="text-muted-foreground mt-1 text-xs">{decision.description}</p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {decision.description}
+                  </p>
                 ) : null}
                 <Badge variant="outline" className="mt-2 text-[10px]">
                   {humanizeToken(decision.decisionType)}
@@ -131,30 +146,45 @@ export function MeetingOutcomesPanel({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">Action items ({actionItems.length})</p>
-          <Button size="sm" variant="outline" onClick={() => setDialog("action")}>
+          <p className="text-sm font-medium">
+            Action items ({actionItems.length})
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setDialog("action")}
+          >
             Add action item
           </Button>
         </div>
         {actionItems.length === 0 ? (
-          <p className="text-muted-foreground text-xs">No action items recorded.</p>
+          <p className="text-muted-foreground text-xs">
+            No action items recorded.
+          </p>
         ) : (
           <ul className="space-y-2">
             {actionItems.map((item) => (
-              <li key={item.actionItemId} className="rounded-md border px-3 py-2">
+              <li
+                key={item.actionItemId}
+                className="rounded-md border px-3 py-2"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <p className="min-w-0 text-sm font-medium">{item.title}</p>
                   <StatusBadge status={item.status} />
                 </div>
                 {item.description ? (
-                  <p className="text-muted-foreground mt-1 text-xs">{item.description}</p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {item.description}
+                  </p>
                 ) : null}
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <Badge variant="outline" className="text-[10px]">
                     {humanizeToken(item.priority)}
                   </Badge>
                   {item.promotedToTaskId ? (
-                    <span className="text-muted-foreground text-xs">Promoted to a task</span>
+                    <span className="text-muted-foreground text-xs">
+                      Promoted to a task
+                    </span>
                   ) : (
                     <Button
                       size="sm"
@@ -177,8 +207,8 @@ export function MeetingOutcomesPanel({
         )}
         {!canPromote && actionItems.some((item) => !item.promotedToTaskId) && (
           <p className="text-muted-foreground text-xs">
-            Promotion needs a timeline milestone to file the new task under; this
-            project has none yet.
+            Promotion needs a timeline milestone to file the new task under;
+            this project has none yet.
           </p>
         )}
       </div>
@@ -340,8 +370,11 @@ export function MeetingOutcomesPanel({
         confirmLabel="Create task"
         pendingLabel="Promoting…"
         onConfirm={async () => {
-          const milestone = milestones.find((m) => m.milestoneId === milestoneId);
-          if (!milestone || !timelineId) throw new Error("Choose a milestone first.");
+          const milestone = milestones.find(
+            (m) => m.milestoneId === milestoneId,
+          );
+          if (!milestone || !timelineId)
+            throw new Error("Choose a milestone first.");
           await promoteActionItemToTask({
             actionItemId: promoting!.actionItemId,
             projectId,

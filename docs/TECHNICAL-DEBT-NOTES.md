@@ -1,6 +1,7 @@
 # Technical Debt Notes - Sprint 11A
 
 ## Identified Missing Core Infrastructure
+
 During Sprint 11A's prerequisite verification phase, a significant gap in the read-layer for several certified modules was identified.
 
 1. **Deliverables Module** — RESOLVED in Sprint 11B.
@@ -16,9 +17,11 @@ During Sprint 11A's prerequisite verification phase, a significant gap in the re
    - `getTimelines()` implemented in `src/features/timelines/actions.ts`, `real-actions.ts`, `mock-actions.ts`. Existing `getProjectTimeline` (still `projectId`-scoped) is unchanged and remains the project-detail fetcher.
 
 ## Architectural Enforcement
+
 Per the strict "verify-before-implement" rule, no local mock data or ad-hoc fetchers were invented in the UI layer. Items 1-4 above are now resolved at the Data Layer; the Presentation Layer (workspace pages) remains separately scoped to Sprint 11A completion / Sprint 12.
 
 ## New Debt Identified in Sprint 11B
+
 5. **Meetings mock-mode stub gap** (pre-existing, discovered while implementing item 3 above — not introduced this sprint).
    - **Gap**: `getMeetingsForProject`, `getMeetingById`, `getMeetingDecisions`, `getMeetingActionItems` in `src/features/meetings/mock-queries.ts` are hardcoded stubs that do not read `DemoStore.meetings`/`meetingOutcomes`/`meetingDecisions`/`meetingActionItems` — e.g. `getMeetingsForProject` always returns `[]` regardless of seed data.
    - **Impact**: In DEMO_MODE, a future Meetings workspace page's project-level drill-down would render empty/incorrect data even though the global list (via the new `getMeetings`) is correct. `getMeetings` was deliberately implemented to read the DemoStore directly rather than compose these broken stubs, so it is unaffected — but the underlying stubs are still broken for their own callers.
@@ -26,6 +29,7 @@ Per the strict "verify-before-implement" rule, no local mock data or ad-hoc fetc
    - **Recommendation**: Back-fill these four mock implementations against the DemoStore before the Meetings workspace page ships.
 
 ## New Debt Identified in Sprint 11A (Resumed)
+
 The Meetings workspace page has now shipped (item 5 above is no longer purely hypothetical): its detail drawer cannot show Decision Summary/Action Items because of the stub gap, and states this to the user instead of rendering broken data. Back-filling item 5 remains the fix.
 
 6. **No total-count query for Deliverables/Files reads**
@@ -56,8 +60,8 @@ The Meetings workspace page has now shipped (item 5 above is no longer purely hy
   are now schema-parallel and the parity is enforced by
   `tests/unit/demo-store-schema-parity.test.ts`. This was Phase A §9's
   architectural recommendation.
-- **TD-14 (sign out)** — resolved via `<form action={signOut}>`. *TD-14 should
-  be reclassified from Low to P1 in the v1.0 baseline before it is closed:* it
+- **TD-14 (sign out)** — resolved via `<form action={signOut}>`. _TD-14 should
+  be reclassified from Low to P1 in the v1.0 baseline before it is closed:_ it
   was recorded as a no-JS progressive-enhancement nicety, but it was a total
   functional failure with JavaScript enabled.
 - **Item 8 (files breadcrumb deep links)** — still open, unchanged.
@@ -110,7 +114,7 @@ Each of these blocks a user-facing interaction that was deliberately not built.
       exist; no actions do. `startTaskTimer` exists but `stopTaskTimer` needs a
       `timeEntryId` that no public read returns, and the real `startTaskTimer`
       returns `void`.
-    - **Impact**: The task detail dialog offers status, edit and time *totals*
+    - **Impact**: The task detail dialog offers status, edit and time _totals_
       only. The previously-disabled "Start Timer" button was removed rather than
       wired — starting a timer the user cannot stop is worse than no timer.
     - **Location**: `src/features/tasks/{actions,real-actions}.ts`.
@@ -127,7 +131,7 @@ Each of these blocks a user-facing interaction that was deliberately not built.
 ## Carried forward unchanged
 
 - **TD-02 (mock storage signed URLs)** — still the single largest blocker to a
-  credible DAM. It is now the *only* reason Files has no inline preview and no
+  credible DAM. It is now the _only_ reason Files has no inline preview and no
   download; upload registers the record, version and a real SHA-256 but cannot
   transfer bytes.
 - Items 6 (total-count queries), 7 (server-side filters for
@@ -149,8 +153,8 @@ action or read it named — no table, column, enum or migration was added.
 - **Item 9 — No `updateMeeting` action.** Added, with `cancelMeeting` /
   `completeMeeting`, attendee management and agenda editing. Status changes are
   guarded by `MEETING_STATUS_TRANSITIONS` (8 unit tests, plus UI assertions in
-  workflow checks W1.9/W1.10). *This item was also the reason meetings could not
-  carry notes; the `notes` jsonb column now has a writer.*
+  workflow checks W1.9/W1.10). _This item was also the reason meetings could not
+  carry notes; the `notes` jsonb column now has a writer._
 - **Item 10 — No review-session read for deliverables.**
   `getReviewSessions(deliverableId)` added. Workflow check W3.3 is written to
   reproduce the recorded failure precisely — start a session, close the drawer,
@@ -197,7 +201,7 @@ outlived the page it was started on. Checklists remain open — see item 15.
     - **Location**: `src/features/tasks/real-actions.ts`.
 
 17. **The mock and real adapters can diverge behaviourally without detection**
-    - **Gap**: `tests/unit/demo-store-schema-parity.test.ts` asserts *row shape*
+    - **Gap**: `tests/unit/demo-store-schema-parity.test.ts` asserts _row shape_
       parity. It cannot see that two adapters emit different side effects for the
       same call.
     - **How this surfaced**: `real.startTaskTimer` / `stopTaskTimer` log a
@@ -217,7 +221,7 @@ outlived the page it was started on. Checklists remain open — see item 15.
     - **Impact**: they typecheck and follow the existing patterns, but "reviewed"
       is not "verified". Two constructs in particular deserve attention at
       migration time: the recursive-CTE descendant check in `updateFolder`, and
-      `sql\`${meetings.startTime} DESC NULLS LAST\`` in `getMeetings`.
+      `sql\`${meetings.startTime} DESC NULLS LAST\``in`getMeetings`.
     - **Location**: `src/features/{meetings,files,deliverables,tasks,notifications}/real-*.ts`.
 
 19. **Soft deletes have no exposed reversal**
@@ -240,7 +244,7 @@ outlived the page it was started on. Checklists remain open — see item 15.
 ## Carried forward unchanged
 
 - **TD-02 (mock storage signed URLs)** — still the single largest blocker to a
-  credible DAM, and now the *only* reason Files and Deliverables have no inline
+  credible DAM, and now the _only_ reason Files and Deliverables have no inline
   preview and no download. Rename, move, delete, folder operations, version
   history and share links are all real; the bytes are not.
 - Items 6 (total-count queries), 7 (server-side filters for
@@ -345,7 +349,7 @@ TD-01 (Redis), TD-03, TD-10 (portal auth), TD-13, and register items 6, 7, 8,
 # Technical Debt Notes — Phase C.1 (Repository Stabilization)
 
 Phase C.1 modified no code. Nothing below is resolved. Three items are **new**,
-all three found by *executing* the repository — installing it from nothing,
+all three found by _executing_ the repository — installing it from nothing,
 building it without a `.env.local`, and running every script in `package.json` —
 rather than by reading `src/`.
 
@@ -354,7 +358,7 @@ rather than by reading `src/`.
 23. **`src/db/index.ts` throws at module evaluation, so a demo-mode build
     requires `DATABASE_URL`**
     - **Gap**: the `DATABASE_URL is not set` guard fires when the module is
-      *imported*, not when a query is issued. `next build` walks the module graph
+      _imported_, not when a query is issued. `next build` walks the module graph
       while collecting page data, so any route transitively reaching `src/db/`
       fails the build — **regardless of `DEMO_MODE`**, because the dispatcher
       selects its branch at call time while the import happens at module time.
@@ -397,7 +401,7 @@ rather than by reading `src/`.
 25. **`DEMO_MODE` is absent from `.env.example`**
     - **Gap**: the variable that selects the entire persistence layer —
       `DEMO_MODE === "true"` routes ~20 dispatcher files to the DemoStore — is
-      not in the only environment template the repository provides. It *is*
+      not in the only environment template the repository provides. It _is_
       present in the local `.env.local`, which is how it has gone unnoticed.
     - **Impact**: following the template verbatim yields `DEMO_MODE` unset →
       falsy → every read and write routed to the ~35 real adapters that have
@@ -426,11 +430,11 @@ while `src/workers/` contains one file. Phase C.1 checked the whole tree rather
 than one directory. **All three workers exist, and all three are tracked in
 git:**
 
-| Worker | Path | Tracked |
-|---|---|---|
-| `agent-executor` | `src/workers/agent-executor.ts` | ✅ |
-| `sla-worker` | `src/features/approvals/sla-worker.ts` | ✅ |
-| `SessionCleanupWorker` | `src/lib/portal/workers/SessionCleanupWorker.ts` | ✅ |
+| Worker                 | Path                                             | Tracked |
+| ---------------------- | ------------------------------------------------ | ------- |
+| `agent-executor`       | `src/workers/agent-executor.ts`                  | ✅      |
+| `sla-worker`           | `src/features/approvals/sla-worker.ts`           | ✅      |
+| `SessionCleanupWorker` | `src/lib/portal/workers/SessionCleanupWorker.ts` | ✅      |
 
 The baseline was **accurate**. Phase C's correction searched only
 `src/workers/`, concluded the other two did not exist, and propagated that claim
@@ -446,7 +450,7 @@ corrected") should be **withdrawn, not completed**; there is nothing to correct.
 What is true of all three, and is the actual content of TD-05: **none has an
 invoker.** Verified by grep — the only reference to any of them outside its own
 file is a comment in `src/lib/ai/memory.ts:94`. Sprint 16 therefore has three
-workers to wire, not one to wire and two to write. That is a *smaller* job than
+workers to wire, not one to wire and two to write. That is a _smaller_ job than
 Phase C assumed, and it is worth knowing before the sprint is estimated.
 
 ## Process debt — restated precisely
@@ -470,13 +474,13 @@ clone would carry a journal pointing at files that do not exist." **That is not
 true of `HEAD`**, which has 8 journal entries and 8 migration files and is
 internally consistent. The working tree is also consistent: 10 and 10.
 
-The hazard is real but it is *prospective*, and it has one specific trigger:
+The hazard is real but it is _prospective_, and it has one specific trigger:
 
-| State | Journal entries | `.sql` present | Consistent |
-|---|---|---|---|
-| `HEAD` | 8 | 8 | ✅ |
-| Working tree | 10 | 10 | ✅ |
-| **After `git add -u`** | **10** | **8** | ❌ **BROKEN** |
+| State                  | Journal entries | `.sql` present | Consistent    |
+| ---------------------- | --------------- | -------------- | ------------- |
+| `HEAD`                 | 8               | 8              | ✅            |
+| Working tree           | 10              | 10             | ✅            |
+| **After `git add -u`** | **10**          | **8**          | ❌ **BROKEN** |
 
 `_journal.json` is tracked-and-modified; the four migration/snapshot files are
 untracked. `git add -u` and `git commit -a` stage the former and ignore the
@@ -500,7 +504,7 @@ Recorded here rather than as numbered items, because remediation is a
   `components.json`, misplaced in `dependencies`). Verified by import-specifier
   grep across `src/`, `tests/` and `scripts/`, with `tw-animate-css` (imported by
   `globals.css:2`) and `react-dom` (required peer) cleared as false positives.
-- **19 advisories — 13 high, 6 moderate, 0 critical.** Three are *direct*:
+- **19 advisories — 13 high, 6 moderate, 0 critical.** Three are _direct_:
   `next` (≤16.3.0-preview.7), `eslint`, `eslint-config-next`. The advertised fix
   for `next` is **16.2.12** — a patch bump inside the current minor, non-breaking,
   and the highest-value single upgrade available. Recommended as the first action

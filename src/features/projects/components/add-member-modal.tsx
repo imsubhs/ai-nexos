@@ -36,7 +36,9 @@ export function AddMemberModal({ projectId }: { projectId: string }) {
       setUserId("");
       setRole("member");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to add member");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add member",
+      );
     } finally {
       setIsPending(false);
     }
@@ -44,12 +46,14 @@ export function AddMemberModal({ projectId }: { projectId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={
-        <Button variant="outline" size="sm">
-          <UserPlusIcon className="w-4 h-4 mr-2" />
-          Add Member
-        </Button>
-      } />
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm">
+            <UserPlusIcon className="mr-2 h-4 w-4" />
+            Add Member
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Project Member</DialogTitle>
@@ -57,20 +61,20 @@ export function AddMemberModal({ projectId }: { projectId: string }) {
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="space-y-2">
             <Label htmlFor="userId">User ID</Label>
-            <Input 
-              id="userId" 
-              value={userId} 
-              onChange={(e) => setUserId(e.target.value)} 
-              placeholder="UUID of the user" 
+            <Input
+              id="userId"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="UUID of the user"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <select 
-              id="role" 
+            <select
+              id="role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
             >
               <option value="viewer">Viewer</option>
               <option value="member">Member</option>
@@ -78,7 +82,7 @@ export function AddMemberModal({ projectId }: { projectId: string }) {
               <option value="manager">Manager</option>
             </select>
           </div>
-          <div className="pt-4 flex justify-end">
+          <div className="flex justify-end pt-4">
             <Button type="submit" disabled={isPending}>
               {isPending ? "Adding..." : "Add Member"}
             </Button>

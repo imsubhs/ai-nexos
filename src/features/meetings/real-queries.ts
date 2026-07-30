@@ -21,7 +21,7 @@ export async function getMeetingsForProject(projectId: string) {
   const meetingsList = await db.query.meetings.findMany({
     where: and(
       eq(meetings.projectId, projectId),
-      eq(meetings.organizationId, user.organizationId)
+      eq(meetings.organizationId, user.organizationId),
     ),
     orderBy: [desc(meetings.startTime)],
     // with: { template: true } - omitting for now since relations aren't declared in meetings.ts yet
@@ -36,7 +36,7 @@ export async function getMeetingById(meetingId: string) {
   const meeting = await db.query.meetings.findFirst({
     where: and(
       eq(meetings.meetingId, meetingId),
-      eq(meetings.organizationId, user.organizationId)
+      eq(meetings.organizationId, user.organizationId),
     ),
   });
 
@@ -49,12 +49,15 @@ export async function getMeetingDecisions(projectId: string) {
   const decisions = await db
     .select()
     .from(meetingDecisions)
-    .innerJoin(meetingOutcomes, eq(meetingDecisions.outcomeId, meetingOutcomes.outcomeId))
+    .innerJoin(
+      meetingOutcomes,
+      eq(meetingDecisions.outcomeId, meetingOutcomes.outcomeId),
+    )
     .where(
       and(
         eq(meetingOutcomes.projectId, projectId),
-        eq(meetingDecisions.organizationId, user.organizationId)
-      )
+        eq(meetingDecisions.organizationId, user.organizationId),
+      ),
     );
 
   return decisions;
@@ -63,7 +66,10 @@ export async function getMeetingDecisions(projectId: string) {
 /**
  * PUBLIC READ LAYER (Sprint 11B) — global, cross-project meeting listing.
  */
-export async function getMeetings(cursorOffset: number = 0, limit: number = 50) {
+export async function getMeetings(
+  cursorOffset: number = 0,
+  limit: number = 50,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "meetings", "read");
 
@@ -106,8 +112,8 @@ export async function getMeetingAttendees(meetingId: string) {
     .where(
       and(
         eq(meetingAttendees.meetingId, meetingId),
-        eq(meetingAttendees.organizationId, user.organizationId)
-      )
+        eq(meetingAttendees.organizationId, user.organizationId),
+      ),
     )
     .orderBy(asc(meetingAttendees.createdAt));
 }
@@ -119,7 +125,7 @@ export async function getMeetingAgenda(meetingId: string) {
   return db.query.meetingAgenda.findMany({
     where: and(
       eq(meetingAgenda.meetingId, meetingId),
-      eq(meetingAgenda.organizationId, user.organizationId)
+      eq(meetingAgenda.organizationId, user.organizationId),
     ),
     orderBy: [asc(meetingAgenda.orderIndex)],
   });
@@ -137,23 +143,29 @@ export async function getMeetingOutcomes(meetingId: string) {
   const decisionRows = await db
     .select()
     .from(meetingDecisions)
-    .innerJoin(meetingOutcomes, eq(meetingDecisions.outcomeId, meetingOutcomes.outcomeId))
+    .innerJoin(
+      meetingOutcomes,
+      eq(meetingDecisions.outcomeId, meetingOutcomes.outcomeId),
+    )
     .where(
       and(
         eq(meetingOutcomes.meetingId, meetingId),
-        eq(meetingDecisions.organizationId, user.organizationId)
-      )
+        eq(meetingDecisions.organizationId, user.organizationId),
+      ),
     );
 
   const actionItemRows = await db
     .select()
     .from(meetingActionItems)
-    .innerJoin(meetingOutcomes, eq(meetingActionItems.outcomeId, meetingOutcomes.outcomeId))
+    .innerJoin(
+      meetingOutcomes,
+      eq(meetingActionItems.outcomeId, meetingOutcomes.outcomeId),
+    )
     .where(
       and(
         eq(meetingOutcomes.meetingId, meetingId),
-        eq(meetingActionItems.organizationId, user.organizationId)
-      )
+        eq(meetingActionItems.organizationId, user.organizationId),
+      ),
     );
 
   return {
@@ -181,14 +193,17 @@ export async function getMeetingOutcomes(meetingId: string) {
   };
 }
 
-export async function getMeetingActivity(meetingId: string, limit: number = 50) {
+export async function getMeetingActivity(
+  meetingId: string,
+  limit: number = 50,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "meetings", "read");
 
   return db.query.meetingActivity.findMany({
     where: and(
       eq(meetingActivity.meetingId, meetingId),
-      eq(meetingActivity.organizationId, user.organizationId)
+      eq(meetingActivity.organizationId, user.organizationId),
     ),
     orderBy: [desc(meetingActivity.createdAt)],
     limit,
@@ -201,12 +216,15 @@ export async function getMeetingActionItems(projectId: string) {
   const actionItems = await db
     .select()
     .from(meetingActionItems)
-    .innerJoin(meetingOutcomes, eq(meetingActionItems.outcomeId, meetingOutcomes.outcomeId))
+    .innerJoin(
+      meetingOutcomes,
+      eq(meetingActionItems.outcomeId, meetingOutcomes.outcomeId),
+    )
     .where(
       and(
         eq(meetingOutcomes.projectId, projectId),
-        eq(meetingActionItems.organizationId, user.organizationId)
-      )
+        eq(meetingActionItems.organizationId, user.organizationId),
+      ),
     );
 
   return actionItems;

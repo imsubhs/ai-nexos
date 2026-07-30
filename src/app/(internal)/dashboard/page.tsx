@@ -22,17 +22,13 @@ export const metadata: Metadata = { title: "Dashboard" };
 export default async function DashboardPage() {
   const user = await requireCurrentUser();
 
-  const [
-    activeProjects,
-    clientsCount,
-    myOpenTasks,
-    pendingApprovals
-  ] = await Promise.all([
-    getActiveProjectsCount(),
-    getClientsCount(),
-    getMyOpenTasksCount(),
-    getPendingApprovalsCount(),
-  ]);
+  const [activeProjects, clientsCount, myOpenTasks, pendingApprovals] =
+    await Promise.all([
+      getActiveProjectsCount(),
+      getClientsCount(),
+      getMyOpenTasksCount(),
+      getPendingApprovalsCount(),
+    ]);
 
   const METRICS = [
     {

@@ -17,12 +17,14 @@ export function CreateProjectModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={
-        <Button>
-          <PlusIcon className="w-4 h-4 mr-2" />
-          New Project
-        </Button>
-      } />
+      <DialogTrigger
+        render={
+          <Button>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            New Project
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>

@@ -20,7 +20,9 @@ export async function getMyProfile() {
   };
 }
 
-export async function updateMyProfile(data: z.infer<typeof updateProfileSchema>) {
+export async function updateMyProfile(
+  data: z.infer<typeof updateProfileSchema>,
+) {
   const parsed = updateProfileSchema.parse(data);
   return {
     userId: DEMO_ADMIN_USER.userId,
@@ -29,7 +31,7 @@ export async function updateMyProfile(data: z.infer<typeof updateProfileSchema>)
     email: DEMO_ADMIN_USER.email,
     firstName: parsed.firstName,
     lastName: parsed.lastName ?? null,
-    avatarUrl: parsed.avatarUrl === "" ? null : parsed.avatarUrl ?? null,
+    avatarUrl: parsed.avatarUrl === "" ? null : (parsed.avatarUrl ?? null),
     phone: parsed.phone ?? null,
     status: "active",
     joiningDate: "2024-01-01",

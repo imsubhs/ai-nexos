@@ -118,7 +118,11 @@ export async function applyApprovedCorrection(
   }
 
   const isLate = deriveIsLate(clockInIso, policy);
-  const { metrics, status: derivedStatus, validation } = recomputeDay({
+  const {
+    metrics,
+    status: derivedStatus,
+    validation,
+  } = recomputeDay({
     clockInIso,
     clockOutIso,
     breaks,

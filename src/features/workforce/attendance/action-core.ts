@@ -23,10 +23,7 @@ import { DEFAULT_WORKFORCE_POLICY } from "../shared/types";
 import { deriveIsLate, recomputeDay } from "./clock-service";
 import { ensureWorkforceHandlersRegistered } from "../events/handlers";
 import { ATTENDANCE_EVENTS } from "./events";
-import {
-  AttendanceError,
-  type AttendanceRepository,
-} from "./repository";
+import { AttendanceError, type AttendanceRepository } from "./repository";
 import { assertTransition } from "./state-machine";
 import {
   clockInSchema,
@@ -103,7 +100,11 @@ export function buildAttendanceActions(repo: AttendanceRepository) {
         );
       }
       const date = today();
-      const existing = await repo.findDay(user.organizationId, user.userId, date);
+      const existing = await repo.findDay(
+        user.organizationId,
+        user.userId,
+        date,
+      );
       if (existing) {
         throw new AttendanceError(
           "attendance/already-clocked-in",
@@ -130,10 +131,13 @@ export function buildAttendanceActions(repo: AttendanceRepository) {
         clockInContext,
       });
 
-      await publishEvents(user.organizationId, user.userId, view.attendanceId!, [
-        ATTENDANCE_EVENTS.created,
-        ATTENDANCE_EVENTS.clockedIn,
-      ], { date, clockInAt, isLate: view.isLate, wfh: data.wfh ?? false });
+      await publishEvents(
+        user.organizationId,
+        user.userId,
+        view.attendanceId!,
+        [ATTENDANCE_EVENTS.created, ATTENDANCE_EVENTS.clockedIn],
+        { date, clockInAt, isLate: view.isLate, wfh: data.wfh ?? false },
+      );
 
       revalidatePath("/workforce/attendance");
       revalidatePath("/dashboard");
@@ -154,14 +158,19 @@ export function buildAttendanceActions(repo: AttendanceRepository) {
         );
       }
       const clockOutAt = nowIso();
-      if (new Date(clockOutAt).getTime() <= new Date(open.clockInAt).getTime()) {
+      if (
+        new Date(clockOutAt).getTime() <= new Date(open.clockInAt).getTime()
+      ) {
         throw new AttendanceError(
           "attendance/invalid-clock-out",
           "Clock-out must be after clock-in.",
         );
       }
 
-      const detail = await repo.findById(user.organizationId, open.attendanceId);
+      const detail = await repo.findById(
+        user.organizationId,
+        open.attendanceId,
+      );
       const breaks = detail ? toPeriods(detail.breaks) : [];
       const wfh = detail?.notes === "WFH";
       // Sprint 4B: one engine pass produces metrics + status + the rich
@@ -190,10 +199,13 @@ export function buildAttendanceActions(repo: AttendanceRepository) {
         },
       );
 
-      await publishEvents(user.organizationId, user.userId, open.attendanceId, [
-        ATTENDANCE_EVENTS.updated,
-        ATTENDANCE_EVENTS.clockedOut,
-      ], { date: open.date, clockOutAt, status, metrics, validation });
+      await publishEvents(
+        user.organizationId,
+        user.userId,
+        open.attendanceId,
+        [ATTENDANCE_EVENTS.updated, ATTENDANCE_EVENTS.clockedOut],
+        { date: open.date, clockOutAt, status, metrics, validation },
+      );
 
       revalidatePath("/workforce/attendance");
       revalidatePath("/workforce/history");
@@ -225,10 +237,13 @@ export function buildAttendanceActions(repo: AttendanceRepository) {
         nowIso(),
         kind,
       );
-      await publishEvents(user.organizationId, user.userId, open.attendanceId, [
-        ATTENDANCE_EVENTS.breakStarted,
-        ATTENDANCE_EVENTS.updated,
-      ], { kind });
+      await publishEvents(
+        user.organizationId,
+        user.userId,
+        open.attendanceId,
+        [ATTENDANCE_EVENTS.breakStarted, ATTENDANCE_EVENTS.updated],
+        { kind },
+      );
 
       revalidatePath("/workforce/attendance");
       const view = await repo.findDay(
@@ -259,10 +274,13 @@ export function buildAttendanceActions(repo: AttendanceRepository) {
         open.attendanceId,
         nowIso(),
       );
-      await publishEvents(user.organizationId, user.userId, open.attendanceId, [
-        ATTENDANCE_EVENTS.breakEnded,
-        ATTENDANCE_EVENTS.updated,
-      ], {});
+      await publishEvents(
+        user.organizationId,
+        user.userId,
+        open.attendanceId,
+        [ATTENDANCE_EVENTS.breakEnded, ATTENDANCE_EVENTS.updated],
+        {},
+      );
 
       revalidatePath("/workforce/attendance");
       const view = await repo.findDay(

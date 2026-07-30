@@ -5,10 +5,14 @@ import {
   notificationStatusEnum,
 } from "@/db/schema/enums";
 
-export type NotificationStatus = typeof notificationStatusEnum.enumValues[number];
-export type NotificationPriority = typeof notificationPriorityEnum.enumValues[number];
-export type NotificationChannel = typeof notificationChannelEnum.enumValues[number];
-export type NotificationDigestFrequency = typeof notificationDigestFrequencyEnum.enumValues[number];
+export type NotificationStatus =
+  (typeof notificationStatusEnum.enumValues)[number];
+export type NotificationPriority =
+  (typeof notificationPriorityEnum.enumValues)[number];
+export type NotificationChannel =
+  (typeof notificationChannelEnum.enumValues)[number];
+export type NotificationDigestFrequency =
+  (typeof notificationDigestFrequencyEnum.enumValues)[number];
 
 export interface INotification {
   id: string;

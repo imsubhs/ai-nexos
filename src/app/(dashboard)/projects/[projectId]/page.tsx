@@ -1,5 +1,12 @@
-import { getProjectById, getProjectDashboardSummary } from "@/features/projects/actions";
-import { ProjectHealthBadge, ProjectPriorityBadge, ProjectStatusBadge } from "@/features/projects/components/project-badges";
+import {
+  getProjectById,
+  getProjectDashboardSummary,
+} from "@/features/projects/actions";
+import {
+  ProjectHealthBadge,
+  ProjectPriorityBadge,
+  ProjectStatusBadge,
+} from "@/features/projects/components/project-badges";
 import { ProjectMembersTable } from "@/features/projects/components/project-members-table";
 import { AddMemberModal } from "@/features/projects/components/add-member-modal";
 import { notFound } from "next/navigation";
@@ -30,7 +37,7 @@ export default async function ProjectDashboardPage({
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
-      <div className="flex items-center space-x-4 mb-2">
+      <div className="mb-2 flex items-center space-x-4">
         {/* Sprint 12A: icon-only back control with no accessible name — the
             same defect class as P2-03, found by the Phase 8 sweep. */}
         <Button
@@ -42,27 +49,35 @@ export default async function ProjectDashboardPage({
           <ChevronLeftIcon className="h-4 w-4" />
         </Button>
         <div>
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <span className="font-mono bg-muted px-1.5 rounded">{project.projectCode}</span>
+          <div className="text-muted-foreground flex items-center space-x-2 text-sm">
+            <span className="bg-muted rounded px-1.5 font-mono">
+              {project.projectCode}
+            </span>
             <span>•</span>
             <span>{project.client?.companyName || "Internal Project"}</span>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" render={<Link href={`/projects/${project.projectId}/timeline`} />}>
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href={`/projects/${project.projectId}/timeline`} />}
+          >
             View Timeline
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{project.projectName}</h1>
-          <p className="text-muted-foreground max-w-3xl mt-2">
+          <h1 className="text-3xl font-bold tracking-tight">
+            {project.projectName}
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-3xl">
             {project.description || "No description provided for this project."}
           </p>
         </div>
-        
+
         <div className="flex flex-wrap gap-2 pt-2 md:pt-0">
           <ProjectStatusBadge status={project.status} />
           <ProjectHealthBadge health={project.healthStatus} />
@@ -70,21 +85,27 @@ export default async function ProjectDashboardPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4">
+      <div className="grid grid-cols-1 gap-6 pt-4 md:grid-cols-4">
         <Card className="col-span-1 md:col-span-3">
           <CardHeader>
             <CardTitle>Project Summary</CardTitle>
           </CardHeader>
           <CardContent>
             {summary ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
                 <div>
                   <div className="text-muted-foreground">Progress</div>
-                  <div className="font-semibold text-lg">{summary.overallProgress}%</div>
+                  <div className="text-lg font-semibold">
+                    {summary.overallProgress}%
+                  </div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Deadline</div>
-                  <div className="font-semibold">{summary.upcomingDeadline ? new Date(summary.upcomingDeadline).toLocaleDateString() : "None"}</div>
+                  <div className="font-semibold">
+                    {summary.upcomingDeadline
+                      ? new Date(summary.upcomingDeadline).toLocaleDateString()
+                      : "None"}
+                  </div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Pending Tasks</div>
@@ -92,11 +113,15 @@ export default async function ProjectDashboardPage({
                 </div>
                 <div>
                   <div className="text-muted-foreground">Latest Activity</div>
-                  <div className="font-semibold">{summary.latestDeliverable || "None"}</div>
+                  <div className="font-semibold">
+                    {summary.latestDeliverable || "None"}
+                  </div>
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">Summary data not available.</p>
+              <p className="text-muted-foreground text-sm">
+                Summary data not available.
+              </p>
             )}
           </CardContent>
         </Card>

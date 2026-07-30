@@ -34,6 +34,7 @@ Built a deterministic in-memory database at `src/lib/demo/store.ts`:
 Rewrote the four wired mock-action modules (clients, projects, timelines, tasks) to mirror their real counterparts against this store: creates append and appear in lists, updates persist, archives soft-delete and cascade (client → contacts, project → members), search/pagination/sorting work, activity is logged, project codes generate sequentially (`AIC-2026-XXXX`), and `revalidatePath` fires so the UI refreshes.
 
 This also fixed two pre-existing demo-mode crashes surfaced in the Product Completion Audit:
+
 - `getProjectTimeline` returned `[]` instead of an object with `.phases`, crashing the timeline dashboard.
 - Tasks exposed a `title` field while every component read `.name`, rendering blank task titles.
 
@@ -42,6 +43,7 @@ The project dashboard summary now computes open/completed task counts from the s
 ### 2.4–2.6 Loading / error / not-found boundaries
 
 Added to every implemented route group:
+
 - `(dashboard)`: `loading.tsx`, `error.tsx`, `not-found.tsx`
 - `(internal)`: `loading.tsx`, `error.tsx`, `not-found.tsx`
 - `(auth)`: `loading.tsx`, `error.tsx`
@@ -59,28 +61,28 @@ Added to every implemented route group:
 
 ## 3. Files Changed
 
-| File | Change |
-|---|---|
-| `src/components/layout/app-shell.tsx` | New — shared authenticated shell |
-| `src/app/(dashboard)/layout.tsx` | New — missing group layout |
-| `src/app/(internal)/layout.tsx` | Refactored to shared shell |
-| `src/app/(dashboard)/projects/[projectId]/page.tsx` | Await `params` Promise |
-| `src/lib/demo/store.ts` | New — deterministic in-memory demo DB |
-| `src/features/clients/mock-actions.ts` | Rewritten — store-backed CRUD |
-| `src/features/projects/mock-actions.ts` | Rewritten — store-backed CRUD + computed summary |
-| `src/features/timelines/mock-actions.ts` | Rewritten — fixes `.phases` crash |
-| `src/features/tasks/mock-actions.ts` | Rewritten — fixes `title`/`name` mismatch |
-| `src/app/(dashboard)/loading.tsx` | New |
-| `src/app/(dashboard)/error.tsx` | New |
-| `src/app/(dashboard)/not-found.tsx` | New |
-| `src/app/(internal)/loading.tsx` | New |
-| `src/app/(internal)/error.tsx` | New |
-| `src/app/(internal)/not-found.tsx` | New |
-| `src/app/(auth)/loading.tsx` | New |
-| `src/app/(auth)/error.tsx` | New |
-| `src/app/not-found.tsx` | New — root 404 |
-| `src/proxy.ts` | Health allowlist, portal-domain health passthrough, 401 for APIs |
-| `src/app/api/health/route.ts` | Framework string corrected |
+| File                                                | Change                                                           |
+| --------------------------------------------------- | ---------------------------------------------------------------- |
+| `src/components/layout/app-shell.tsx`               | New — shared authenticated shell                                 |
+| `src/app/(dashboard)/layout.tsx`                    | New — missing group layout                                       |
+| `src/app/(internal)/layout.tsx`                     | Refactored to shared shell                                       |
+| `src/app/(dashboard)/projects/[projectId]/page.tsx` | Await `params` Promise                                           |
+| `src/lib/demo/store.ts`                             | New — deterministic in-memory demo DB                            |
+| `src/features/clients/mock-actions.ts`              | Rewritten — store-backed CRUD                                    |
+| `src/features/projects/mock-actions.ts`             | Rewritten — store-backed CRUD + computed summary                 |
+| `src/features/timelines/mock-actions.ts`            | Rewritten — fixes `.phases` crash                                |
+| `src/features/tasks/mock-actions.ts`                | Rewritten — fixes `title`/`name` mismatch                        |
+| `src/app/(dashboard)/loading.tsx`                   | New                                                              |
+| `src/app/(dashboard)/error.tsx`                     | New                                                              |
+| `src/app/(dashboard)/not-found.tsx`                 | New                                                              |
+| `src/app/(internal)/loading.tsx`                    | New                                                              |
+| `src/app/(internal)/error.tsx`                      | New                                                              |
+| `src/app/(internal)/not-found.tsx`                  | New                                                              |
+| `src/app/(auth)/loading.tsx`                        | New                                                              |
+| `src/app/(auth)/error.tsx`                          | New                                                              |
+| `src/app/not-found.tsx`                             | New — root 404                                                   |
+| `src/proxy.ts`                                      | Health allowlist, portal-domain health passthrough, 401 for APIs |
+| `src/app/api/health/route.ts`                       | Framework string corrected                                       |
 
 19 files changed: 2 modified layouts, 1 modified page, 4 rewritten mock-action modules, 1 new store module, 9 new boundary files, 2 modified infra files.
 
@@ -90,36 +92,36 @@ Added to every implemented route group:
 
 ### 4.1 Static checks
 
-| Check | Result |
-|---|---|
-| `npm run lint` | 0 errors, 163 warnings (down from 199 pre-existing — the rewritten mocks eliminated 36 stale `eslint-disable` warnings) |
-| `npm run typecheck` | 0 errors |
-| `npm run build` | Compiles clean; all 23 routes + new `/_not-found` generated |
+| Check               | Result                                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`      | 0 errors, 163 warnings (down from 199 pre-existing — the rewritten mocks eliminated 36 stale `eslint-disable` warnings) |
+| `npm run typecheck` | 0 errors                                                                                                                |
+| `npm run build`     | Compiles clean; all 23 routes + new `/_not-found` generated                                                             |
 
 ### 4.2 Runtime smoke test (dev server + curl)
 
-| Test | Result |
-|---|---|
-| `GET /api/health` unauthenticated | `200`, correct JSON, `framework: "Next.js"` |
-| `GET /clients` without session | `307` → `/login?next=/clients` |
-| `GET /api/v1/portal/dashboard` unauthenticated | `401` JSON |
-| `GET /clients` with demo session | `200`, seeded clients render inside sidebar shell |
-| `GET /projects` with demo session | `200`, seeded projects render |
-| `GET /projects/[id]` with demo session | `200`, correct project data (confirms async params fix) |
-| `GET /projects/[id]/timeline` with demo session | `200` |
-| `GET /projects/[unknown-id]` with demo session | `200`, renders not-found boundary |
-| `GET /tasks` (unimplemented route) | `404`, renders root not-found page |
+| Test                                            | Result                                                  |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| `GET /api/health` unauthenticated               | `200`, correct JSON, `framework: "Next.js"`             |
+| `GET /clients` without session                  | `307` → `/login?next=/clients`                          |
+| `GET /api/v1/portal/dashboard` unauthenticated  | `401` JSON                                              |
+| `GET /clients` with demo session                | `200`, seeded clients render inside sidebar shell       |
+| `GET /projects` with demo session               | `200`, seeded projects render                           |
+| `GET /projects/[id]` with demo session          | `200`, correct project data (confirms async params fix) |
+| `GET /projects/[id]/timeline` with demo session | `200`                                                   |
+| `GET /projects/[unknown-id]` with demo session  | `200`, renders not-found boundary                       |
+| `GET /tasks` (unimplemented route)              | `404`, renders root not-found page                      |
 
 ### 4.3 Persistence test (scripted against the mock-action modules directly)
 
-| Operation | Result |
-|---|---|
-| `getClients()` seed read | Returns 2 seeded clients |
-| `createClient(...)` | New client appended, appears in subsequent `getClients()` |
-| `updateClient(...)` | Field change persists on re-read via `getClientById` |
-| `archiveClient(...)` | Client disappears from `getClients()` (soft delete) |
-| `getClients("north")` | Search filter returns only matching client |
-| `createProject(...)` | Sequential project code generated (`AIC-2026-XXXX`) |
+| Operation                         | Result                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `getClients()` seed read          | Returns 2 seeded clients                                                    |
+| `createClient(...)`               | New client appended, appears in subsequent `getClients()`                   |
+| `updateClient(...)`               | Field change persists on re-read via `getClientById`                        |
+| `archiveClient(...)`              | Client disappears from `getClients()` (soft delete)                         |
+| `getClients("north")`             | Search filter returns only matching client                                  |
+| `createProject(...)`              | Sequential project code generated (`AIC-2026-XXXX`)                         |
 | `getProjectDashboardSummary(...)` | Computes open/completed task counts from seeded tasks (2 open, 1 completed) |
 
 ---

@@ -83,5 +83,4 @@ export type AssignManagerInput = z.input<typeof assignManagerSchema>;
 
 /** Form-facing action result — validation failures surface as messages. */
 export type EmployeeAdminResult =
-  | { ok: true; userId: string }
-  | { ok: false; error: string };
+  { ok: true; userId: string } | { ok: false; error: string };

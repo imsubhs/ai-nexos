@@ -8,13 +8,13 @@ export class AICostGovernance {
    * Checks the budget for a specific layer before execution.
    */
   static async checkBudget(
-    organizationId: string, 
-    layer: AIMemoryLayer, 
-    entityId?: string
+    organizationId: string,
+    layer: AIMemoryLayer,
+    entityId?: string,
   ): Promise<BudgetStatus> {
     const conditions = [
       eq(aiBudgets.organizationId, organizationId),
-      eq(aiBudgets.layer, layer)
+      eq(aiBudgets.layer, layer),
     ];
 
     if (layer === "project" && entityId) {
@@ -23,7 +23,8 @@ export class AICostGovernance {
       conditions.push(eq(aiBudgets.conversationId, entityId));
     }
 
-    const [budget] = await db.select()
+    const [budget] = await db
+      .select()
       .from(aiBudgets)
       .where(and(...conditions));
 
@@ -33,7 +34,7 @@ export class AICostGovernance {
         entityId: entityId || organizationId,
         limitInUsd: Infinity,
         currentSpendInUsd: 0,
-        isExceeded: false
+        isExceeded: false,
       };
     }
 
@@ -42,7 +43,7 @@ export class AICostGovernance {
       entityId: entityId || organizationId,
       limitInUsd: Number(budget.limitInUsd),
       currentSpendInUsd: Number(budget.currentSpendInUsd),
-      isExceeded: Number(budget.currentSpendInUsd) >= Number(budget.limitInUsd)
+      isExceeded: Number(budget.currentSpendInUsd) >= Number(budget.limitInUsd),
     };
   }
 
@@ -51,47 +52,56 @@ export class AICostGovernance {
    * Uses raw SQL increments to avoid race conditions during concurrent requests.
    */
   static async recordSpend(
-    organizationId: string, 
+    organizationId: string,
     costUsd: number,
     projectId?: string,
-    conversationId?: string
+    conversationId?: string,
   ) {
     if (costUsd <= 0) return;
 
     await db.transaction(async (tx) => {
       // 1. Update Organization Budget
-      await tx.update(aiBudgets)
-        .set({ currentSpendInUsd: sql`${aiBudgets.currentSpendInUsd} + ${costUsd}` })
+      await tx
+        .update(aiBudgets)
+        .set({
+          currentSpendInUsd: sql`${aiBudgets.currentSpendInUsd} + ${costUsd}`,
+        })
         .where(
           and(
             eq(aiBudgets.organizationId, organizationId),
-            eq(aiBudgets.layer, "organization")
-          )
+            eq(aiBudgets.layer, "organization"),
+          ),
         );
 
       // 2. Update Project Budget if applicable
       if (projectId) {
-        await tx.update(aiBudgets)
-          .set({ currentSpendInUsd: sql`${aiBudgets.currentSpendInUsd} + ${costUsd}` })
+        await tx
+          .update(aiBudgets)
+          .set({
+            currentSpendInUsd: sql`${aiBudgets.currentSpendInUsd} + ${costUsd}`,
+          })
           .where(
             and(
               eq(aiBudgets.organizationId, organizationId),
               eq(aiBudgets.layer, "project"),
-              eq(aiBudgets.projectId, projectId)
-            )
+              eq(aiBudgets.projectId, projectId),
+            ),
           );
       }
 
       // 3. Update Conversation Budget if applicable
       if (conversationId) {
-        await tx.update(aiBudgets)
-          .set({ currentSpendInUsd: sql`${aiBudgets.currentSpendInUsd} + ${costUsd}` })
+        await tx
+          .update(aiBudgets)
+          .set({
+            currentSpendInUsd: sql`${aiBudgets.currentSpendInUsd} + ${costUsd}`,
+          })
           .where(
             and(
               eq(aiBudgets.organizationId, organizationId),
               eq(aiBudgets.layer, "conversation"),
-              eq(aiBudgets.conversationId, conversationId)
-            )
+              eq(aiBudgets.conversationId, conversationId),
+            ),
           );
       }
     });

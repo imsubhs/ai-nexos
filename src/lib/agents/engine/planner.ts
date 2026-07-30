@@ -16,7 +16,7 @@ export type PlanStepInput = {
 export async function createPlan(
   organizationId: string,
   runId: string,
-  steps: PlanStepInput[]
+  steps: PlanStepInput[],
 ) {
   return await db.transaction(async (tx) => {
     // 1. Mark existing active plans for this run as superseded
@@ -24,7 +24,7 @@ export async function createPlan(
       .update(aiAgentPlans)
       .set({ status: "superseded" })
       .where(
-        and(eq(aiAgentPlans.runId, runId), eq(aiAgentPlans.status, "active"))
+        and(eq(aiAgentPlans.runId, runId), eq(aiAgentPlans.status, "active")),
       );
 
     // 2. Determine the next plan version
@@ -33,9 +33,10 @@ export async function createPlan(
       .from(aiAgentPlans)
       .where(eq(aiAgentPlans.runId, runId));
 
-    const nextVersion = existingPlans.length > 0 
-      ? Math.max(...existingPlans.map(p => p.version)) + 1 
-      : 1;
+    const nextVersion =
+      existingPlans.length > 0
+        ? Math.max(...existingPlans.map((p) => p.version)) + 1
+        : 1;
 
     // 3. Insert the new immutable plan
     const [newPlan] = await tx
@@ -75,7 +76,7 @@ export async function getActivePlan(runId: string) {
     .select()
     .from(aiAgentPlans)
     .where(
-      and(eq(aiAgentPlans.runId, runId), eq(aiAgentPlans.status, "active"))
+      and(eq(aiAgentPlans.runId, runId), eq(aiAgentPlans.status, "active")),
     );
 
   if (!plan) return null;

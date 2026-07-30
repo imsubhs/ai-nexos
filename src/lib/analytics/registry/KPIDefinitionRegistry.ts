@@ -1,4 +1,4 @@
-import { KPIDefinition } from '../types';
+import { KPIDefinition } from "../types";
 
 export class KPIDefinitionRegistry {
   private kpis: Map<string, KPIDefinition> = new Map();
@@ -8,8 +8,14 @@ export class KPIDefinitionRegistry {
    */
   registerKPI(definition: KPIDefinition): void {
     // Basic validation
-    if (!definition.id || !definition.formulaVersion || !definition.effectiveDate) {
-      throw new Error('Invalid KPI Definition. ID, formulaVersion, and effectiveDate are required.');
+    if (
+      !definition.id ||
+      !definition.formulaVersion ||
+      !definition.effectiveDate
+    ) {
+      throw new Error(
+        "Invalid KPI Definition. ID, formulaVersion, and effectiveDate are required.",
+      );
     }
     this.kpis.set(`${definition.id}_v${definition.formulaVersion}`, definition);
   }

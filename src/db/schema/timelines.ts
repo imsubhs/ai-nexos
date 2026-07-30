@@ -1,9 +1,23 @@
-import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { auditFields } from "./_shared";
 import { organizations } from "./organizations";
 import { projects } from "./projects";
 import { users } from "./users";
-import { dependencyTypeEnum, milestoneStatusEnum, projectPhaseNameEnum, timelineStatusEnum } from "./enums";
+import {
+  dependencyTypeEnum,
+  milestoneStatusEnum,
+  projectPhaseNameEnum,
+  timelineStatusEnum,
+} from "./enums";
 
 export const timelines = pgTable(
   "timelines",
@@ -25,7 +39,7 @@ export const timelines = pgTable(
   (table) => [
     index("idx_timelines_org").on(table.organizationId),
     uniqueIndex("uq_timelines_project").on(table.projectId),
-  ]
+  ],
 );
 
 export const timelineVersions = pgTable(
@@ -39,16 +53,23 @@ export const timelineVersions = pgTable(
       .notNull()
       .references(() => organizations.organizationId, { onDelete: "cascade" }),
     versionNumber: integer("version_number").notNull(),
-    userId: uuid("user_id").references(() => users.userId, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.userId, {
+      onDelete: "set null",
+    }),
     changeSummary: text("change_summary").notNull(),
     reason: text("reason"),
     snapshotData: jsonb("snapshot_data").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     index("idx_timeline_versions_timeline").on(table.timelineId),
-    uniqueIndex("uq_timeline_versions_num").on(table.timelineId, table.versionNumber),
-  ]
+    uniqueIndex("uq_timeline_versions_num").on(
+      table.timelineId,
+      table.versionNumber,
+    ),
+  ],
 );
 
 export const projectPhases = pgTable(
@@ -72,7 +93,7 @@ export const projectPhases = pgTable(
   (table) => [
     index("idx_project_phases_timeline").on(table.timelineId),
     uniqueIndex("uq_project_phases_order").on(table.timelineId, table.name),
-  ]
+  ],
 );
 
 export const milestones = pgTable(
@@ -99,7 +120,7 @@ export const milestones = pgTable(
   (table) => [
     index("idx_milestones_phase").on(table.phaseId),
     index("idx_milestones_timeline").on(table.timelineId),
-  ]
+  ],
 );
 
 export const timelineDependencies = pgTable(
@@ -118,12 +139,21 @@ export const timelineDependencies = pgTable(
     successorId: uuid("successor_id")
       .notNull()
       .references(() => milestones.milestoneId, { onDelete: "cascade" }),
-    dependencyType: dependencyTypeEnum("dependency_type").notNull().default("FS"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    createdBy: uuid("created_by").references(() => users.userId, { onDelete: "set null" }),
+    dependencyType: dependencyTypeEnum("dependency_type")
+      .notNull()
+      .default("FS"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: uuid("created_by").references(() => users.userId, {
+      onDelete: "set null",
+    }),
   },
   (table) => [
-    uniqueIndex("uq_timeline_deps_nodes").on(table.predecessorId, table.successorId),
+    uniqueIndex("uq_timeline_deps_nodes").on(
+      table.predecessorId,
+      table.successorId,
+    ),
     index("idx_timeline_deps_timeline").on(table.timelineId),
-  ]
+  ],
 );

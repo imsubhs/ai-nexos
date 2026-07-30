@@ -1,14 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { 
-  shareSessions, 
-  shareSessionItems, 
+import {
+  shareSessions,
+  shareSessionItems,
   externalIdentities,
   shareComments,
   shareAnnotations,
   shareEvents,
-  shareRecipients
+  shareRecipients,
 } from "@/db/schema/shares";
 import { eq, and } from "drizzle-orm";
 import { ShareSecurityMiddleware } from "../utils/security";
@@ -23,7 +23,11 @@ export async function createShareSessionAction(payload: {
   policyId?: string;
   title: string;
   description?: string;
-  shareType: "deliverable_review" | "approval_request" | "revision_review" | "creative_feedback";
+  shareType:
+    | "deliverable_review"
+    | "approval_request"
+    | "revision_review"
+    | "creative_feedback";
   deliverableIds: string[];
 }) {
   // Use a transaction to ensure all items are created atomically
@@ -31,17 +35,20 @@ export async function createShareSessionAction(payload: {
     // Generate unique token
     const secureToken = crypto.randomUUID();
 
-    const [session] = await tx.insert(shareSessions).values({
-      organizationId: payload.organizationId,
-      projectId: payload.projectId,
-      policyId: payload.policyId,
-      title: payload.title,
-      description: payload.description,
-      shareType: payload.shareType,
-      secureToken,
-      status: "published",
-      publishedAt: new Date(),
-    }).returning();
+    const [session] = await tx
+      .insert(shareSessions)
+      .values({
+        organizationId: payload.organizationId,
+        projectId: payload.projectId,
+        policyId: payload.policyId,
+        title: payload.title,
+        description: payload.description,
+        shareType: payload.shareType,
+        secureToken,
+        status: "published",
+        publishedAt: new Date(),
+      })
+      .returning();
 
     // Map items (snapshots)
     const itemsData = payload.deliverableIds.map((deliverableId, index) => ({
@@ -75,28 +82,35 @@ export async function createShareSessionAction(payload: {
  * Hardening Sprint 13.1: Support Magic Link or OTP.
  */
 export async function resolveExternalIdentityAction(
-  organizationId: string, 
-  email: string, 
+  organizationId: string,
+  email: string,
   displayName?: string,
-  authMethod: "magic_link" | "otp" = "magic_link"
+  authMethod: "magic_link" | "otp" = "magic_link",
 ) {
   // Check if identity exists
   let identity = await db.query.externalIdentities.findFirst({
     where: and(
       eq(externalIdentities.organizationId, organizationId),
-      eq(externalIdentities.email, email)
-    )
+      eq(externalIdentities.email, email),
+    ),
   });
 
   if (!identity) {
-    [identity] = await db.insert(externalIdentities).values({
-      organizationId,
-      email,
-      displayName,
-    }).returning();
+    [identity] = await db
+      .insert(externalIdentities)
+      .values({
+        organizationId,
+        email,
+        displayName,
+      })
+      .returning();
   } else if (displayName && identity.displayName !== displayName) {
     // Update display name if changed
-    [identity] = await db.update(externalIdentities).set({ displayName }).where(eq(externalIdentities.id, identity.id)).returning();
+    [identity] = await db
+      .update(externalIdentities)
+      .set({ displayName })
+      .where(eq(externalIdentities.id, identity.id))
+      .returning();
   }
 
   // Placeholder: Trigger Magic Link or OTP logic here
@@ -118,20 +132,23 @@ export async function submitExternalCommentAction(payload: {
 }) {
   return await db.transaction(async (tx) => {
     const sessionItem = await tx.query.shareSessionItems.findFirst({
-      where: eq(shareSessionItems.id, payload.itemId)
+      where: eq(shareSessionItems.id, payload.itemId),
     });
 
     if (!sessionItem) throw new Error("Item not found");
 
-    const [comment] = await tx.insert(shareComments).values({
-      organizationId: sessionItem.organizationId,
-      projectId: sessionItem.projectId,
-      sessionId: payload.sessionId,
-      itemId: payload.itemId,
-      authorIdentityId: payload.identityId,
-      content: payload.content,
-      parentId: payload.parentId,
-    }).returning();
+    const [comment] = await tx
+      .insert(shareComments)
+      .values({
+        organizationId: sessionItem.organizationId,
+        projectId: sessionItem.projectId,
+        sessionId: payload.sessionId,
+        itemId: payload.itemId,
+        authorIdentityId: payload.identityId,
+        content: payload.content,
+        parentId: payload.parentId,
+      })
+      .returning();
 
     // Emit Event
     await tx.insert(shareEvents).values({
@@ -162,24 +179,27 @@ export async function submitExternalAnnotationAction(payload: {
   timeMs?: number;
 }) {
   const sessionItem = await db.query.shareSessionItems.findFirst({
-    where: eq(shareSessionItems.id, payload.itemId)
+    where: eq(shareSessionItems.id, payload.itemId),
   });
-  
+
   if (!sessionItem) throw new Error("Item not found");
 
-  const [annotation] = await db.insert(shareAnnotations).values({
-    organizationId: sessionItem.organizationId,
-    projectId: sessionItem.projectId,
-    sessionId: payload.sessionId,
-    itemId: payload.itemId,
-    commentId: payload.commentId,
-    type: payload.type,
-    normX: payload.normX,
-    normY: payload.normY,
-    normWidth: payload.normWidth,
-    normHeight: payload.normHeight,
-    timeMs: payload.timeMs,
-  }).returning();
+  const [annotation] = await db
+    .insert(shareAnnotations)
+    .values({
+      organizationId: sessionItem.organizationId,
+      projectId: sessionItem.projectId,
+      sessionId: payload.sessionId,
+      itemId: payload.itemId,
+      commentId: payload.commentId,
+      type: payload.type,
+      normX: payload.normX,
+      normY: payload.normY,
+      normWidth: payload.normWidth,
+      normHeight: payload.normHeight,
+      timeMs: payload.timeMs,
+    })
+    .returning();
 
   // Emit Event
   await db.insert(shareEvents).values({
@@ -207,31 +227,36 @@ export async function submitExternalApprovalAction(payload: {
   explicitConfirmationToken: string; // Used as the Nonce
 }) {
   // Consume Nonce Atomically
-  const nonceConsumed = await ShareSecurityMiddleware.consumeNonce(payload.explicitConfirmationToken);
+  const nonceConsumed = await ShareSecurityMiddleware.consumeNonce(
+    payload.explicitConfirmationToken,
+  );
   if (!nonceConsumed) {
     throw new Error("Invalid or Expired Token (Replay Protection)");
   }
 
   return await db.transaction(async (tx) => {
     const sessionItem = await tx.query.shareSessionItems.findFirst({
-      where: eq(shareSessionItems.id, payload.itemId)
+      where: eq(shareSessionItems.id, payload.itemId),
     });
-    
+
     if (!sessionItem) throw new Error("Item not found");
 
     // Emit Event explicitly mapping to Approval Engine semantics
-    const [event] = await tx.insert(shareEvents).values({
-      organizationId: sessionItem.organizationId,
-      projectId: sessionItem.projectId,
-      sessionId: payload.sessionId,
-      eventType: "Share.ApprovalSubmitted",
-      payload: { 
-        itemId: payload.itemId, 
-        identityId: payload.identityId,
-        decision: payload.decision,
-        reason: payload.reason
-      },
-    }).returning();
+    const [event] = await tx
+      .insert(shareEvents)
+      .values({
+        organizationId: sessionItem.organizationId,
+        projectId: sessionItem.projectId,
+        sessionId: payload.sessionId,
+        eventType: "Share.ApprovalSubmitted",
+        payload: {
+          itemId: payload.itemId,
+          identityId: payload.identityId,
+          decision: payload.decision,
+          reason: payload.reason,
+        },
+      })
+      .returning();
 
     return event;
   });
@@ -248,23 +273,25 @@ export async function requestShareMeetingAction(payload: {
   identityId: string;
 }) {
   const sessionItem = await db.query.shareSessionItems.findFirst({
-    where: eq(shareSessionItems.id, payload.itemId)
+    where: eq(shareSessionItems.id, payload.itemId),
   });
-  
+
   if (!sessionItem) throw new Error("Item not found");
 
-  const [event] = await db.insert(shareEvents).values({
-    organizationId: sessionItem.organizationId,
-    projectId: sessionItem.projectId,
-    sessionId: payload.sessionId,
-    eventType: "Share.MeetingRequested",
-    payload: { 
-      itemId: payload.itemId, 
-      commentId: payload.commentId,
-      identityId: payload.identityId 
-    },
-  }).returning();
+  const [event] = await db
+    .insert(shareEvents)
+    .values({
+      organizationId: sessionItem.organizationId,
+      projectId: sessionItem.projectId,
+      sessionId: payload.sessionId,
+      eventType: "Share.MeetingRequested",
+      payload: {
+        itemId: payload.itemId,
+        commentId: payload.commentId,
+        identityId: payload.identityId,
+      },
+    })
+    .returning();
 
   return event;
 }
-

@@ -17,21 +17,21 @@ observation.
 
 **Headline results**
 
-| Gate | Baseline (pre-sprint) | Final | Verdict |
-|---|---|---|---|
-| `npm run typecheck` | 0 errors | 0 errors | PASS |
-| `npm run lint` | 0 errors, 117 warnings | 0 errors, **117 warnings** | PASS — zero new warnings |
-| `npm test` | 139/139 | 139/139 | PASS |
-| `npm run build` | green, 36 routes | green, 36 routes | PASS — no route regressions |
-| Responsive (14 routes × 4 viewports) | 9 route/viewport combos with horizontal overflow | **56/56 clean** | PASS |
-| Accessibility (14 routes, programmatic audit) | 14/14 routes with violations | **14/14 clean** | PASS |
-| Console/hydration errors across all routes | 1 crash, 0 hydration | **0 errors, 0 hydration warnings** | PASS |
+| Gate                                          | Baseline (pre-sprint)                            | Final                              | Verdict                     |
+| --------------------------------------------- | ------------------------------------------------ | ---------------------------------- | --------------------------- |
+| `npm run typecheck`                           | 0 errors                                         | 0 errors                           | PASS                        |
+| `npm run lint`                                | 0 errors, 117 warnings                           | 0 errors, **117 warnings**         | PASS — zero new warnings    |
+| `npm test`                                    | 139/139                                          | 139/139                            | PASS                        |
+| `npm run build`                               | green, 36 routes                                 | green, 36 routes                   | PASS — no route regressions |
+| Responsive (14 routes × 4 viewports)          | 9 route/viewport combos with horizontal overflow | **56/56 clean**                    | PASS                        |
+| Accessibility (14 routes, programmatic audit) | 14/14 routes with violations                     | **14/14 clean**                    | PASS                        |
+| Console/hydration errors across all routes    | 1 crash, 0 hydration                             | **0 errors, 0 hydration warnings** | PASS                        |
 
 **The two most serious findings were both genuine runtime defects:**
 
 1. **The Tasks workspace showed "No tasks found" despite three seeded tasks** —
    both hardcoded demo UUIDs in the page were malformed (wrong UUID variant,
-   and one pointed at a *client* id rather than a project id).
+   and one pointed at a _client_ id rather than a project id).
 2. **Opening any task from Board View threw an uncaught `TypeError`** and the
    detail modal never rendered.
 
@@ -53,17 +53,17 @@ from the presentation layer, which Baseline Rule 6 explicitly permits.
 
 Verified by driving a real browser, not by inspection:
 
-| Check | Result |
-|---|---|
-| `.env.local` present | Yes |
-| `DEMO_MODE=true` | Yes (`.env.local` line 36) |
-| Next.js loads the environment | Yes — build/dev both report `- Environments: .env.local` |
-| Unauthenticated root gated | `GET /` → `307` → `/login` |
-| "Enter Demo Workspace" button renders | Yes (gated on `DEMO_MODE === "true"`) |
-| Clicking it creates a session | Yes → lands on `/dashboard` |
-| Demo cookie | `demo_session=true`, `httpOnly: true`, `sameSite: Lax`, `path: /`, `secure: false` in dev — correct |
-| Dashboard redirect | `enterDemoWorkspace()` → `/` → `RootPage` → `/dashboard`. Correct |
-| Console errors during login | none |
+| Check                                 | Result                                                                                              |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `.env.local` present                  | Yes                                                                                                 |
+| `DEMO_MODE=true`                      | Yes (`.env.local` line 36)                                                                          |
+| Next.js loads the environment         | Yes — build/dev both report `- Environments: .env.local`                                            |
+| Unauthenticated root gated            | `GET /` → `307` → `/login`                                                                          |
+| "Enter Demo Workspace" button renders | Yes (gated on `DEMO_MODE === "true"`)                                                               |
+| Clicking it creates a session         | Yes → lands on `/dashboard`                                                                         |
+| Demo cookie                           | `demo_session=true`, `httpOnly: true`, `sameSite: Lax`, `path: /`, `secure: false` in dev — correct |
+| Dashboard redirect                    | `enterDemoWorkspace()` → `/` → `RootPage` → `/dashboard`. Correct                                   |
+| Console errors during login           | none                                                                                                |
 
 Node v24.15.0, npm 11.12.1, Next.js 16.2.10 (Turbopack).
 
@@ -78,12 +78,12 @@ current source.
 
 `src/config/navigation.ts` was already correct; nothing needed changing.
 
-| Nav item | `status` in config | Rendered in DOM |
-|---|---|---|
-| Timeline | `live` | clickable `<a href="/timeline">`, no "Soon" badge |
-| Deliverables | `live` | clickable `<a href="/deliverables">`, no badge |
-| Files | `live` | clickable `<a href="/files">`, no badge |
-| Meetings | `live` | clickable `<a href="/meetings">`, no badge |
+| Nav item     | `status` in config | Rendered in DOM                                   |
+| ------------ | ------------------ | ------------------------------------------------- |
+| Timeline     | `live`             | clickable `<a href="/timeline">`, no "Soon" badge |
+| Deliverables | `live`             | clickable `<a href="/deliverables">`, no badge    |
+| Files        | `live`             | clickable `<a href="/files">`, no badge           |
+| Meetings     | `live`             | clickable `<a href="/meetings">`, no badge        |
 
 Rendered DOM contains exactly 11 enabled nav links and 9 `Soon` badges, and the
 badges appear only on genuinely unbuilt routes (Calendar, My Attendance,
@@ -113,16 +113,16 @@ All 10 live workspaces reviewed at 4 viewports for loading, empty state,
 drawer, filters, search, pagination, layout, runtime errors, console errors and
 hydration warnings.
 
-| ID | Severity | Workspace | Defect (verified) | Fix |
-|---|---|---|---|---|
-| D-01 | **Critical** | Tasks | Page rendered "No tasks found" though `DemoStore` seeds 3 tasks and the Dashboard KPI correctly read "My Open Tasks 2". Root cause: both hardcoded ids were wrong — `00000000-0000-0000-0000-000000000322` is not the seeded milestone id (`sequentialUuid` emits `…-4000-8000-…`, a v4/variant-8 UUID), and the project id used `…000000000101`, which is `clientAcme`, not `projectWebsite` (`…000000000201`). `getTasks(milestoneId)` filtered to zero rows. | Corrected both literals to the actual seeded ids and documented the format constraint in a comment. All 3 tasks now render. |
-| D-02 | **Critical** | Tasks | Clicking any task card in Board View threw `TypeError: Cannot read properties of undefined (reading 'replace')` in `TaskDetailModal`; the modal never opened. Root cause: the component read `task.taskType.replace(...)`, but seeded task rows carry no `taskType` field. | Modal rewritten on the existing `Dialog` primitive; all variable fields (`taskType`, `progress`, `status`, durations) now read defensively and render an em dash when absent. |
-| D-03 | High | Tasks | The whole Tasks module was hardcoded to a dark palette (`text-white`, `bg-black/40`, `border-white/10`, `text-gray-400`). In light mode the "Tasks" sub-heading, the inactive view-toggle button, and every task's status/priority line were white-on-light and effectively invisible; the list container rendered as a dark grey slab clashing with the light card. See screenshot 01. | Replaced hardcoded colors with the design tokens already used across the app (`text-foreground`, `text-muted-foreground`, `bg-card`, `bg-muted`, `border`). Layout and structure unchanged. Verified legible in both light and dark. |
-| D-04 | Medium | Tasks | Task rows rendered a bare `%` with no number, because seeded rows have no `progress` field. | The progress element renders only when `progress` is actually a number. |
-| D-05 | High | Timeline | Every row was labelled `Timeline 00000000` — `timelineId.slice(0, 8)` on sequential UUIDs, which all share the same first 8 characters, so the label was identical for every row and carried no information. The search box ("Search by timeline ID…") filtered on that same useless id. | The `timelines` table has no name column, so the row's only human label is its project. The page now resolves project names via the **existing frozen** `getProjects()` action (parallelised with `getTimelines()`) and passes a lookup down. Rows show "Website Redesign / AIC-2026-0001 · dates"; search matches project name and code. The timelines dispatcher was **not** modified. The id fallback now uses the id's distinguishing *tail*, not its leading bytes. |
-| D-06 | Medium | Files | Empty state read "No files match the current search. Clear the search to see everything." when no search was active — it described a control the user had not used. | Copy is now conditional on an active search term. |
-| D-07 | Low | 12 pages | Page titles were double-branded and used a stale product name: pages set `"Projects \| AIC Nex OS"` while the root layout template appends `· AI NEX OS`, producing `Projects \| AIC Nex OS · AI NEX OS`. | Removed the redundant ` \| AIC Nex OS` suffix from all 12 pages, letting the root template brand once. Nested hierarchy preserved (e.g. `Acme Global \| Clients`). |
-| D-08 | Low | Tasks | "Start Timer" was a live-looking button with no handler — it did nothing when clicked. | Marked `disabled` so it no longer implies working functionality. Wiring it to the existing `startTaskTimer` action is a feature, not a bug fix — left for Sprint 12 (§8). |
+| ID   | Severity     | Workspace | Defect (verified)                                                                                                                                                                                                                                                                                                                                                                                                                                               | Fix                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---- | ------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D-01 | **Critical** | Tasks     | Page rendered "No tasks found" though `DemoStore` seeds 3 tasks and the Dashboard KPI correctly read "My Open Tasks 2". Root cause: both hardcoded ids were wrong — `00000000-0000-0000-0000-000000000322` is not the seeded milestone id (`sequentialUuid` emits `…-4000-8000-…`, a v4/variant-8 UUID), and the project id used `…000000000101`, which is `clientAcme`, not `projectWebsite` (`…000000000201`). `getTasks(milestoneId)` filtered to zero rows. | Corrected both literals to the actual seeded ids and documented the format constraint in a comment. All 3 tasks now render.                                                                                                                                                                                                                                                                                                                                              |
+| D-02 | **Critical** | Tasks     | Clicking any task card in Board View threw `TypeError: Cannot read properties of undefined (reading 'replace')` in `TaskDetailModal`; the modal never opened. Root cause: the component read `task.taskType.replace(...)`, but seeded task rows carry no `taskType` field.                                                                                                                                                                                      | Modal rewritten on the existing `Dialog` primitive; all variable fields (`taskType`, `progress`, `status`, durations) now read defensively and render an em dash when absent.                                                                                                                                                                                                                                                                                            |
+| D-03 | High         | Tasks     | The whole Tasks module was hardcoded to a dark palette (`text-white`, `bg-black/40`, `border-white/10`, `text-gray-400`). In light mode the "Tasks" sub-heading, the inactive view-toggle button, and every task's status/priority line were white-on-light and effectively invisible; the list container rendered as a dark grey slab clashing with the light card. See screenshot 01.                                                                         | Replaced hardcoded colors with the design tokens already used across the app (`text-foreground`, `text-muted-foreground`, `bg-card`, `bg-muted`, `border`). Layout and structure unchanged. Verified legible in both light and dark.                                                                                                                                                                                                                                     |
+| D-04 | Medium       | Tasks     | Task rows rendered a bare `%` with no number, because seeded rows have no `progress` field.                                                                                                                                                                                                                                                                                                                                                                     | The progress element renders only when `progress` is actually a number.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| D-05 | High         | Timeline  | Every row was labelled `Timeline 00000000` — `timelineId.slice(0, 8)` on sequential UUIDs, which all share the same first 8 characters, so the label was identical for every row and carried no information. The search box ("Search by timeline ID…") filtered on that same useless id.                                                                                                                                                                        | The `timelines` table has no name column, so the row's only human label is its project. The page now resolves project names via the **existing frozen** `getProjects()` action (parallelised with `getTimelines()`) and passes a lookup down. Rows show "Website Redesign / AIC-2026-0001 · dates"; search matches project name and code. The timelines dispatcher was **not** modified. The id fallback now uses the id's distinguishing _tail_, not its leading bytes. |
+| D-06 | Medium       | Files     | Empty state read "No files match the current search. Clear the search to see everything." when no search was active — it described a control the user had not used.                                                                                                                                                                                                                                                                                             | Copy is now conditional on an active search term.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| D-07 | Low          | 12 pages  | Page titles were double-branded and used a stale product name: pages set `"Projects \| AIC Nex OS"` while the root layout template appends `· AI NEX OS`, producing `Projects \| AIC Nex OS · AI NEX OS`.                                                                                                                                                                                                                                                       | Removed the redundant ` \| AIC Nex OS` suffix from all 12 pages, letting the root template brand once. Nested hierarchy preserved (e.g. `Acme Global \| Clients`).                                                                                                                                                                                                                                                                                                       |
+| D-08 | Low          | Tasks     | "Start Timer" was a live-looking button with no handler — it did nothing when clicked.                                                                                                                                                                                                                                                                                                                                                                          | Marked `disabled` so it no longer implies working functionality. Wiring it to the existing `startTaskTimer` action is a feature, not a bug fix — left for Sprint 12 (§8).                                                                                                                                                                                                                                                                                                |
 
 **Verified working, no changes needed:** Dashboard KPI cards; Projects cards;
 Clients list; Deliverables table + search + status filter + pagination + detail
@@ -139,17 +139,17 @@ Server-side search was verified directly over HTTP, not just through the UI:
 
 `DemoStore` seed coverage audited per live workspace:
 
-| Workspace | Seed data before | After |
-|---|---|---|
-| Dashboard | 2 projects, 2 clients, 2 open tasks, 0 approvals | unchanged |
-| Projects | 2 projects | unchanged |
-| Clients | 2 clients | unchanged |
-| Tasks | 3 tasks (present, but unreachable — D-01) | 3 tasks, now rendering |
-| Timeline | 1 timeline, 5 phases, 4 milestones | unchanged |
-| Deliverables | 2 deliverables | unchanged |
-| Meetings | 1 meeting | unchanged |
-| Employees | 8 users, 3 departments | unchanged |
-| **Files** | **empty — 0 files, 0 folders** | **6 files, 3 folders across 2 levels** |
+| Workspace    | Seed data before                                 | After                                  |
+| ------------ | ------------------------------------------------ | -------------------------------------- |
+| Dashboard    | 2 projects, 2 clients, 2 open tasks, 0 approvals | unchanged                              |
+| Projects     | 2 projects                                       | unchanged                              |
+| Clients      | 2 clients                                        | unchanged                              |
+| Tasks        | 3 tasks (present, but unreachable — D-01)        | 3 tasks, now rendering                 |
+| Timeline     | 1 timeline, 5 phases, 4 milestones               | unchanged                              |
+| Deliverables | 2 deliverables                                   | unchanged                              |
+| Meetings     | 1 meeting                                        | unchanged                              |
+| Employees    | 8 users, 3 departments                           | unchanged                              |
+| **Files**    | **empty — 0 files, 0 folders**                   | **6 files, 3 folders across 2 levels** |
 
 The Files gap was pre-existing and documented as a known limitation in both
 `SPRINT-11A.md` and `SPRINT-11B.md`: `DemoStore.files`/`fileFolders` started
@@ -183,13 +183,13 @@ offending elements.
 
 **Before:**
 
-| Viewport | Route | Horizontal overflow |
-|---|---|---|
-| tablet | `/workforce/employees` | 256 px |
-| tablet | `/settings/members` | 256 px |
-| tablet | `/settings/roles` | 109 px |
-| tablet | `/settings/profile` | 73 px |
-| mobile | all 5 `/settings/*` routes (`/settings`, `/organization`, `/members`, `/roles`, `/profile`) | 133 px each |
+| Viewport | Route                                                                                       | Horizontal overflow |
+| -------- | ------------------------------------------------------------------------------------------- | ------------------- |
+| tablet   | `/workforce/employees`                                                                      | 256 px              |
+| tablet   | `/settings/members`                                                                         | 256 px              |
+| tablet   | `/settings/roles`                                                                           | 109 px              |
+| tablet   | `/settings/profile`                                                                         | 73 px               |
+| mobile   | all 5 `/settings/*` routes (`/settings`, `/organization`, `/members`, `/roles`, `/profile`) | 133 px each         |
 
 That is 9 overflowing route × viewport combinations, traced to 2 root causes.
 
@@ -200,7 +200,7 @@ shell — header included — past the viewport instead of scrolling inside the
 `Table` primitive's own `overflow-x-auto` container. (The table container was
 already correct; it simply was never constrained.)
 
-*Fix:* `min-w-0` on `SidebarInset` (`src/components/ui/sidebar.tsx`) and on the
+_Fix:_ `min-w-0` on `SidebarInset` (`src/components/ui/sidebar.tsx`) and on the
 `<main>` in `app-shell.tsx`. Two class additions; no component redesign. Wide
 tables now scroll within their own container, as designed.
 
@@ -208,7 +208,7 @@ tables now scroll within their own container, as designed.
 and no scroll, so its four items (including "Roles & Permissions") formed a
 single row wider than a 390 px viewport.
 
-*Fix:* `flex flex-wrap gap-2 md:flex-col md:flex-nowrap md:gap-1` — wraps on
+_Fix:_ `flex flex-wrap gap-2 md:flex-col md:flex-nowrap md:gap-1` — wraps on
 narrow viewports, unchanged vertical layout from `md` up.
 
 **After: 56/56 route × viewport combinations clean** — zero horizontal
@@ -223,17 +223,17 @@ structure, accessible names, form label association, `aria-current`, keyboard
 tab order, focus visibility, `lang`, table names), plus keyboard interaction
 tests.
 
-| ID | Defect (verified) | Scope | Fix |
-|---|---|---|---|
-| A-01 | **2 nested `<main>` landmarks** on every dashboard route (3 on `/settings/*`) — `SidebarInset` rendered `<main>`, `AppShell` nested another inside it, and the settings layout added a third. | all routes | `SidebarInset` → `<div>` (it wraps the app header and sidebar trigger, so it is not the main content region); settings layout inner `<main>` → `<div>`. `AppShell`'s `<main>` is now the single landmark, containing page content only. Its only consumer is `AppShell`. |
-| A-02 | **No `<h1>` at all** on 8 workspace routes — page titles were `<h2>`. | 8 routes | Promoted the page heading to `<h1>` on 9 pages. Classes unchanged, so rendering is pixel-identical. |
-| A-03 | **No `aria-current`** on the active nav item on any route — the current page was conveyed by styling only (`isActive` sets `data-active` for CSS and nothing else). | all routes | `aria-current="page"` on the active sidebar item and the active settings-nav item. |
-| A-04 | **The primary navigation was not a navigation landmark** — `SidebarContent` renders a plain `<div>`, so the app exposed no `nav` landmark. | all routes | `role="navigation"` + `aria-label="Main navigation"` passed through from `AppSidebar` (no primitive change). |
-| A-05 | **19 form inputs with no programmatic label** — 11 on `/settings/organization`, 8 on `/settings/profile`. `FieldLabel` renders a bare `<label>` with no `htmlFor`, and the `Input` sits inside a sibling `FieldContent`, so the visible label was never associated. Screen readers announced these fields unlabelled. | 2 forms | Added matching `htmlFor`/`id` pairs to all 19 fields, including the 4 read-only ones. |
-| A-06 | **4 data tables with no accessible name** (Deliverables, Meetings, Employees, Organization Members) — the `/settings/roles` tables already had `aria-label`, so this was an inconsistency, not a missing pattern. | 4 tables + 1 more | Added an `ariaLabel` prop to the shared `DataTable` (required, so future call sites cannot omit it) and set it at all 4 call sites; added `aria-label` to the two raw-`<Table>` usages. |
-| A-07 | **Clickable table rows were mouse-only** — `DataTable` put `onClick` on `<tr>` with no `tabIndex`, `role`, or key handler, so keyboard users could not open the detail drawers on Deliverables, Files, Meetings or Employees. | shared primitive | Rows that are clickable now get `tabIndex={0}`, `role="button"`, Enter/Space activation, and a visible focus ring. Verified: tabbing to a Deliverables row and pressing Enter opens the drawer. |
-| A-08 | **Task board cards were click-handling `<div>`s**, not keyboard reachable, yet they open a dialog. | Tasks | Converted to real `<button>` elements with a focus ring. |
-| A-09 | Heading-order jumps: `h2 → h4` on `/tasks`, `h1 → h3` on `/files` (shared `EmptyState`); and the settings layout's `<h2>Settings</h2>` preceded each page's `<h1>`, inverting the outline. | 3 places | Task row title `h4` → `h3`; `EmptyState` title `h3` → `h2`; settings sidebar label demoted from `<h2>` to a styled `<p>` (each settings page already supplies the page `<h1>`), with the nav given an explicit `aria-label` so screen-reader navigability is preserved. Visuals unchanged. |
+| ID   | Defect (verified)                                                                                                                                                                                                                                                                                                     | Scope             | Fix                                                                                                                                                                                                                                                                                        |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A-01 | **2 nested `<main>` landmarks** on every dashboard route (3 on `/settings/*`) — `SidebarInset` rendered `<main>`, `AppShell` nested another inside it, and the settings layout added a third.                                                                                                                         | all routes        | `SidebarInset` → `<div>` (it wraps the app header and sidebar trigger, so it is not the main content region); settings layout inner `<main>` → `<div>`. `AppShell`'s `<main>` is now the single landmark, containing page content only. Its only consumer is `AppShell`.                   |
+| A-02 | **No `<h1>` at all** on 8 workspace routes — page titles were `<h2>`.                                                                                                                                                                                                                                                 | 8 routes          | Promoted the page heading to `<h1>` on 9 pages. Classes unchanged, so rendering is pixel-identical.                                                                                                                                                                                        |
+| A-03 | **No `aria-current`** on the active nav item on any route — the current page was conveyed by styling only (`isActive` sets `data-active` for CSS and nothing else).                                                                                                                                                   | all routes        | `aria-current="page"` on the active sidebar item and the active settings-nav item.                                                                                                                                                                                                         |
+| A-04 | **The primary navigation was not a navigation landmark** — `SidebarContent` renders a plain `<div>`, so the app exposed no `nav` landmark.                                                                                                                                                                            | all routes        | `role="navigation"` + `aria-label="Main navigation"` passed through from `AppSidebar` (no primitive change).                                                                                                                                                                               |
+| A-05 | **19 form inputs with no programmatic label** — 11 on `/settings/organization`, 8 on `/settings/profile`. `FieldLabel` renders a bare `<label>` with no `htmlFor`, and the `Input` sits inside a sibling `FieldContent`, so the visible label was never associated. Screen readers announced these fields unlabelled. | 2 forms           | Added matching `htmlFor`/`id` pairs to all 19 fields, including the 4 read-only ones.                                                                                                                                                                                                      |
+| A-06 | **4 data tables with no accessible name** (Deliverables, Meetings, Employees, Organization Members) — the `/settings/roles` tables already had `aria-label`, so this was an inconsistency, not a missing pattern.                                                                                                     | 4 tables + 1 more | Added an `ariaLabel` prop to the shared `DataTable` (required, so future call sites cannot omit it) and set it at all 4 call sites; added `aria-label` to the two raw-`<Table>` usages.                                                                                                    |
+| A-07 | **Clickable table rows were mouse-only** — `DataTable` put `onClick` on `<tr>` with no `tabIndex`, `role`, or key handler, so keyboard users could not open the detail drawers on Deliverables, Files, Meetings or Employees.                                                                                         | shared primitive  | Rows that are clickable now get `tabIndex={0}`, `role="button"`, Enter/Space activation, and a visible focus ring. Verified: tabbing to a Deliverables row and pressing Enter opens the drawer.                                                                                            |
+| A-08 | **Task board cards were click-handling `<div>`s**, not keyboard reachable, yet they open a dialog.                                                                                                                                                                                                                    | Tasks             | Converted to real `<button>` elements with a focus ring.                                                                                                                                                                                                                                   |
+| A-09 | Heading-order jumps: `h2 → h4` on `/tasks`, `h1 → h3` on `/files` (shared `EmptyState`); and the settings layout's `<h2>Settings</h2>` preceded each page's `<h1>`, inverting the outline.                                                                                                                            | 3 places          | Task row title `h4` → `h3`; `EmptyState` title `h3` → `h2`; settings sidebar label demoted from `<h2>` to a styled `<p>` (each settings page already supplies the page `<h1>`), with the nav given an explicit `aria-label` so screen-reader navigability is preserved. Visuals unchanged. |
 
 Also fixed: the icon-only "more" button on each project card had no accessible
 name — given an `sr-only` label naming its project.
@@ -251,10 +251,10 @@ the `/settings/roles` permission-matrix table names.
 
 ### Phase 8 — Performance Review — 2 safe optimizations
 
-| Finding | Action |
-|---|---|
-| **TD-11 (real, confirmed):** Next.js inferred the workspace root from `/Users/subhamsaha/package-lock.json` — a lockfile *outside the repository* — and warned on every dev start and build. | Set `turbopack.root` to this package in `next.config.ts`. Warning gone from both dev and build; 36 routes still compile identically. |
-| `/workforce/employees` awaited three **independent** reads sequentially (directory page, department options, manager options), so the page waited for the sum of their latencies. | Parallelised with `Promise.all`. Behaviour preserved exactly, including the permission-gated fallbacks (`canReadDepartments` / `canCreate`) and the empty-array cases. Typecheck clean. |
+| Finding                                                                                                                                                                                      | Action                                                                                                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TD-11 (real, confirmed):** Next.js inferred the workspace root from `/Users/subhamsaha/package-lock.json` — a lockfile _outside the repository_ — and warned on every dev start and build. | Set `turbopack.root` to this package in `next.config.ts`. Warning gone from both dev and build; 36 routes still compile identically.                                                    |
+| `/workforce/employees` awaited three **independent** reads sequentially (directory page, department options, manager options), so the page waited for the sum of their latencies.            | Parallelised with `Promise.all`. Behaviour preserved exactly, including the permission-gated fallbacks (`canReadDepartments` / `canCreate`) and the empty-array cases. Typecheck clean. |
 
 **Reviewed, no change needed:** the Dashboard already parallelises its four
 count queries with `Promise.all`; no duplicate fetches were found on any live
@@ -280,12 +280,12 @@ in §8.
 Gates were captured **before** any change so introduced problems could be
 distinguished from pre-existing ones.
 
-| Gate | Baseline | Final |
-|---|---|---|
-| `npm run typecheck` | 0 errors | **0 errors** |
-| `npm run lint` | 0 errors, 117 warnings | **0 errors, 117 warnings** |
-| `npm test` | 19 files, 139 tests passing | **19 files, 139 tests passing** |
-| `npm run build` | green, 36 routes | **green, 36 routes** |
+| Gate                | Baseline                    | Final                           |
+| ------------------- | --------------------------- | ------------------------------- |
+| `npm run typecheck` | 0 errors                    | **0 errors**                    |
+| `npm run lint`      | 0 errors, 117 warnings      | **0 errors, 117 warnings**      |
+| `npm test`          | 19 files, 139 tests passing | **19 files, 139 tests passing** |
+| `npm run build`     | green, 36 routes            | **green, 36 routes**            |
 
 Lint warnings are exactly at baseline. During the sprint the count rose to 120;
 all 3 were traced to `eslint-disable` directives I had added that the linter
@@ -315,21 +315,21 @@ Real Chromium, real demo session, no mocking of the app.
 
 Screenshots in [`docs/stabilization-screenshots/`](./stabilization-screenshots/):
 
-| File | Shows |
-|---|---|
-| `01-BEFORE-tasks-light-illegible.png` | Tasks in light mode: heading and toggle invisible, dark slab, no data (D-01/D-03) |
-| `02-BEFORE-tablet-employees-overflow.png` | Employees at 834 px, shell 256 px past the viewport |
-| `03-BEFORE-mobile-settings-overflow.png` | Settings nav overflowing a 390 px viewport |
-| `04-AFTER-tasks-light.png` / `05-AFTER-tasks-dark.png` | Tasks legible in both themes with all 3 seeded tasks |
-| `06-AFTER-tablet-employees.png` | Employees at 834 px, table scrolling in its own container |
-| `07-AFTER-mobile-settings.png` | Settings nav wrapped, page fits 390 px |
-| `08-AFTER-timeline-project-names.png` | Timeline rows labelled by project, not `Timeline 00000000` |
-| `09-AFTER-files-seeded.png` | Files workspace with 6 seeded files, sizes and statuses |
-| `10-AFTER-files-folder-breadcrumbs.png` | Folder browser: `Project root › Brand Assets › Logos` |
-| `11-AFTER-tasks-detail-dialog.png` | Task dialog rendering where it previously threw |
-| `12-AFTER-mobile-sidebar-drawer.png` | Mobile sidebar drawer, 11 nav links |
-| `13-AFTER-dashboard-desktop.png` | Dashboard, full-page desktop |
-| `14-AFTER-settings-profile-dark.png` | Settings ▸ Profile in dark mode |
+| File                                                   | Shows                                                                             |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `01-BEFORE-tasks-light-illegible.png`                  | Tasks in light mode: heading and toggle invisible, dark slab, no data (D-01/D-03) |
+| `02-BEFORE-tablet-employees-overflow.png`              | Employees at 834 px, shell 256 px past the viewport                               |
+| `03-BEFORE-mobile-settings-overflow.png`               | Settings nav overflowing a 390 px viewport                                        |
+| `04-AFTER-tasks-light.png` / `05-AFTER-tasks-dark.png` | Tasks legible in both themes with all 3 seeded tasks                              |
+| `06-AFTER-tablet-employees.png`                        | Employees at 834 px, table scrolling in its own container                         |
+| `07-AFTER-mobile-settings.png`                         | Settings nav wrapped, page fits 390 px                                            |
+| `08-AFTER-timeline-project-names.png`                  | Timeline rows labelled by project, not `Timeline 00000000`                        |
+| `09-AFTER-files-seeded.png`                            | Files workspace with 6 seeded files, sizes and statuses                           |
+| `10-AFTER-files-folder-breadcrumbs.png`                | Folder browser: `Project root › Brand Assets › Logos`                             |
+| `11-AFTER-tasks-detail-dialog.png`                     | Task dialog rendering where it previously threw                                   |
+| `12-AFTER-mobile-sidebar-drawer.png`                   | Mobile sidebar drawer, 11 nav links                                               |
+| `13-AFTER-dashboard-desktop.png`                       | Dashboard, full-page desktop                                                      |
+| `14-AFTER-settings-profile-dark.png`                   | Settings ▸ Profile in dark mode                                                   |
 
 **One verification caveat, stated rather than glossed over.** Immediately after
 the `next.config.ts` change, two routes returned HTTP 500 with
@@ -338,8 +338,8 @@ I did not assume this was transient. I reverted the config and re-tested cold
 (clean), restored it and re-tested after clearing `.next` (clean), then ran the
 full 56-load suite on a fully clean server (clean). Conclusion: a **stale
 Turbopack dev cache** interacting with a changed `next.config.ts`, not a code
-defect. *Operational note for the team: clear `.next` after editing
-`next.config.ts`.* All final numbers above come from the clean run.
+defect. _Operational note for the team: clear `.next` after editing
+`next.config.ts`._ All final numbers above come from the clean run.
 
 ### Phase 11 — Git Review — no commits made
 
@@ -358,7 +358,7 @@ defect. *Operational note for the team: clear `.next` after editing
   files are **unchanged by this sprint**.
 
 ⚠️ Note for the architect: Baseline Rule 8 ("no uncommitted changes at sprint
-boundary") is currently violated by the *pre-existing* Sprint 11A/11B/M3.1 work,
+boundary") is currently violated by the _pre-existing_ Sprint 11A/11B/M3.1 work,
 not by this sprint. That tree was dirty on arrival and the brief forbade
 committing, so it is left as-is for your review.
 
@@ -408,18 +408,18 @@ migration, state machine, workflow, event, RBAC, or `src/proxy.ts` file.
 
 ## 4. Architecture Compliance
 
-| Constraint | Status |
-|---|---|
-| Frozen bounded contexts unmodified | Yes — no dispatcher, repository, or mock/real action file changed |
-| No schema / migration changes | Yes |
-| No state machine changes | Yes |
-| No workflow / API redesign | Yes |
-| Public Gateway (`src/proxy.ts`) untouched | Yes |
-| RBAC / permission vocabulary untouched | Yes |
-| No new business modules or workflows | Yes |
-| Dispatcher parity maintained | Yes — no action signatures touched |
-| Additive-only (Rule 6) | Yes — the one new read (`/timeline` → `getProjects()`) consumes a frozen public action from the presentation layer |
-| Reuse over reinvention | Yes — the hand-rolled task modal was replaced with the existing `Dialog` primitive rather than a new one |
+| Constraint                                | Status                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Frozen bounded contexts unmodified        | Yes — no dispatcher, repository, or mock/real action file changed                                                  |
+| No schema / migration changes             | Yes                                                                                                                |
+| No state machine changes                  | Yes                                                                                                                |
+| No workflow / API redesign                | Yes                                                                                                                |
+| Public Gateway (`src/proxy.ts`) untouched | Yes                                                                                                                |
+| RBAC / permission vocabulary untouched    | Yes                                                                                                                |
+| No new business modules or workflows      | Yes                                                                                                                |
+| Dispatcher parity maintained              | Yes — no action signatures touched                                                                                 |
+| Additive-only (Rule 6)                    | Yes — the one new read (`/timeline` → `getProjects()`) consumes a frozen public action from the presentation layer |
+| Reuse over reinvention                    | Yes — the hand-rolled task modal was replaced with the existing `Dialog` primitive rather than a new one           |
 
 The single change to a shared shadcn primitive (`SidebarInset`: `<main>` →
 `<div>` plus `min-w-0`) is called out explicitly for review. It is the correct
@@ -431,12 +431,12 @@ place for the fix — both defects originate there — its only consumer is
 
 ## 5. Responsive Results
 
-| Viewport | Routes | Result |
-|---|---|---|
-| Desktop 1600×1000 | 14 | 14/14 clean |
-| Laptop 1280×800 | 14 | 14/14 clean |
-| Tablet 834×1112 | 14 | 14/14 clean (4 were overflowing before) |
-| Mobile 390×844 | 14 | 14/14 clean (5 were overflowing before) |
+| Viewport          | Routes | Result                                  |
+| ----------------- | ------ | --------------------------------------- |
+| Desktop 1600×1000 | 14     | 14/14 clean                             |
+| Laptop 1280×800   | 14     | 14/14 clean                             |
+| Tablet 834×1112   | 14     | 14/14 clean (4 were overflowing before) |
+| Mobile 390×844    | 14     | 14/14 clean (5 were overflowing before) |
 
 No page-level horizontal scrolling at any viewport; wide tables scroll inside
 their own containers; mobile sidebar drawer functional; no drawer clipping or
@@ -495,7 +495,7 @@ the v1.0 baseline):
    hardcoded seeded milestone id because `getTasks(milestoneId, …)` is the only
    read available; `TaskDashboard` also still renders its own "Tasks / Manage
    tasks for this milestone" header inside the page, so the heading appears
-   twice. Fixing the ids made the workspace *correct*; making it a genuine
+   twice. Fixing the ids made the workspace _correct_; making it a genuine
    cross-project workspace needs a global task read layer (new dispatcher
    work). **This is the most significant remaining gap in the live surface.**
 2. **"Start Timer" is disabled.** A `startTaskTimer` action exists but was
@@ -517,16 +517,16 @@ the v1.0 baseline):
 
 ## 9. Stop-Condition Checklist
 
-| Condition | Status |
-|---|---|
-| All verified issues fixed | Yes — 22 distinct defects across Phases 4/6/7/8 (8 workspace + 2 responsive root causes affecting 9 route/viewport combos + 10 accessibility + 2 performance); every one reproduced before and re-verified after |
-| All quality gates pass | Yes — typecheck 0, lint 0 errors / 117 warnings (baseline), 139/139 tests, build green, 36 routes |
-| All live workspaces reviewable | Yes — all 10, at 4 viewports, in both themes, with meaningful seed data everywhere including Files |
-| Playwright verification passes | Yes — 56 loads + 7 interaction flows, zero errors |
-| Stabilization report complete | This document |
-| Sprint 12 not started | Correct — no new features, modules, or workflows |
-| No architecture modified | Correct |
-| Not committed | Correct |
-| Not pushed | Correct |
+| Condition                      | Status                                                                                                                                                                                                           |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All verified issues fixed      | Yes — 22 distinct defects across Phases 4/6/7/8 (8 workspace + 2 responsive root causes affecting 9 route/viewport combos + 10 accessibility + 2 performance); every one reproduced before and re-verified after |
+| All quality gates pass         | Yes — typecheck 0, lint 0 errors / 117 warnings (baseline), 139/139 tests, build green, 36 routes                                                                                                                |
+| All live workspaces reviewable | Yes — all 10, at 4 viewports, in both themes, with meaningful seed data everywhere including Files                                                                                                               |
+| Playwright verification passes | Yes — 56 loads + 7 interaction flows, zero errors                                                                                                                                                                |
+| Stabilization report complete  | This document                                                                                                                                                                                                    |
+| Sprint 12 not started          | Correct — no new features, modules, or workflows                                                                                                                                                                 |
+| No architecture modified       | Correct                                                                                                                                                                                                          |
+| Not committed                  | Correct                                                                                                                                                                                                          |
+| Not pushed                     | Correct                                                                                                                                                                                                          |
 
 **Awaiting architecture review.**

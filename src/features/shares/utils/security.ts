@@ -1,9 +1,17 @@
 import { SignJWT, jwtVerify } from "jose";
-import { shareSessions, sharePolicies, shareAccessLogs, externalIdentities, shareTokenNonces } from "@/db/schema/shares";
+import {
+  shareSessions,
+  sharePolicies,
+  shareAccessLogs,
+  externalIdentities,
+  shareTokenNonces,
+} from "@/db/schema/shares";
 import { db } from "@/db";
 import { eq, and, isNull } from "drizzle-orm";
 
-const JWT_SECRET = new TextEncoder().encode(process.env.SHARE_JWT_SECRET || "default_secret_for_dev_only");
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.SHARE_JWT_SECRET || "default_secret_for_dev_only",
+);
 
 export interface ShareTokenPayload {
   sessionId: string;
@@ -13,14 +21,18 @@ export interface ShareTokenPayload {
 }
 
 export class ShareSecurityMiddleware {
-  
   /**
    * Generates a signed URL token for external clients.
    * Enforces immutability: New sessions get new tokens.
    */
-  static async generateShareToken(sessionId: string, identityId?: string, expiresInDays: number = 7): Promise<string> {
+  static async generateShareToken(
+    sessionId: string,
+    identityId?: string,
+    expiresInDays: number = 7,
+  ): Promise<string> {
     const alg = "HS256";
-    const expirationTime = Math.floor(Date.now() / 1000) + (expiresInDays * 24 * 60 * 60);
+    const expirationTime =
+      Math.floor(Date.now() / 1000) + expiresInDays * 24 * 60 * 60;
     const nonce = crypto.randomUUID();
 
     // Register nonce for single-use validation (Hardening Sprint 13.1)
@@ -47,11 +59,14 @@ export class ShareSecurityMiddleware {
    * Ref: Hardening Sprint 13.1 Rule #1 "Nonce consumption must be atomic."
    */
   static async consumeNonce(nonce: string): Promise<boolean> {
-    const result = await db.update(shareTokenNonces)
+    const result = await db
+      .update(shareTokenNonces)
       .set({ usedAt: new Date() })
-      .where(and(eq(shareTokenNonces.nonce, nonce), isNull(shareTokenNonces.usedAt)))
+      .where(
+        and(eq(shareTokenNonces.nonce, nonce), isNull(shareTokenNonces.usedAt)),
+      )
       .returning();
-    
+
     return result.length > 0;
   }
 
@@ -62,23 +77,25 @@ export class ShareSecurityMiddleware {
   static async validateToken(token: string, passwordProvided?: string) {
     try {
       const { payload } = await jwtVerify(token, JWT_SECRET);
-      const { sessionId, identityId, nonce } = payload as unknown as ShareTokenPayload;
+      const { sessionId, identityId, nonce } =
+        payload as unknown as ShareTokenPayload;
 
       // Ensure session is PUBLISHED and not EXPIRED/CLOSED
       const session = await db.query.shareSessions.findFirst({
         where: eq(shareSessions.id, sessionId),
         with: {
-          policy: true
-        }
+          policy: true,
+        },
       });
 
       if (!session) throw new Error("Session not found");
-      if (session.status !== "published") throw new Error(`Session is ${session.status}`);
+      if (session.status !== "published")
+        throw new Error(`Session is ${session.status}`);
 
       // Password Enforcement (Hardening Sprint 13.1)
       if (session.policyId) {
         const policy = await db.query.sharePolicies.findFirst({
-          where: eq(sharePolicies.id, session.policyId)
+          where: eq(sharePolicies.id, session.policyId),
         });
         if (policy?.requirePassword) {
           if (!passwordProvided) {
@@ -101,7 +118,14 @@ export class ShareSecurityMiddleware {
    * Evaluates if the current request satisfies the Share Policy.
    * Handles IP Allow/Deny and Country Restrictions.
    */
-  static async evaluatePolicyConstraints(policy: { allowedIps?: string[] | null; allowedCountries?: string[] | null } | null, reqIp: string, reqCountry: string): Promise<boolean> {
+  static async evaluatePolicyConstraints(
+    policy: {
+      allowedIps?: string[] | null;
+      allowedCountries?: string[] | null;
+    } | null,
+    reqIp: string,
+    reqCountry: string,
+  ): Promise<boolean> {
     if (!policy) return true;
 
     // IP Restrictions
@@ -121,9 +145,12 @@ export class ShareSecurityMiddleware {
    * Checks device fingerprint. If it changes, we force re-authentication (never permanent block).
    * Architecture Decision #11: "Device fingerprint changes -> Re-authentication. Never permanent blocking."
    */
-  static async checkDeviceFingerprint(identityId: string, currentFingerprint: string): Promise<{ allowed: boolean; requireReauth: boolean }> {
+  static async checkDeviceFingerprint(
+    identityId: string,
+    currentFingerprint: string,
+  ): Promise<{ allowed: boolean; requireReauth: boolean }> {
     const identity = await db.query.externalIdentities.findFirst({
-      where: eq(externalIdentities.id, identityId)
+      where: eq(externalIdentities.id, identityId),
     });
 
     if (!identity) return { allowed: false, requireReauth: true };
@@ -132,12 +159,16 @@ export class ShareSecurityMiddleware {
     const lastLog = await db.query.shareAccessLogs.findFirst({
       where: and(
         eq(shareAccessLogs.identityId, identityId),
-        eq(shareAccessLogs.isSuccess, true)
+        eq(shareAccessLogs.isSuccess, true),
       ),
-      orderBy: (logs, { desc }) => [desc(logs.createdAt)]
+      orderBy: (logs, { desc }) => [desc(logs.createdAt)],
     });
 
-    if (lastLog && lastLog.deviceFingerprint && lastLog.deviceFingerprint !== currentFingerprint) {
+    if (
+      lastLog &&
+      lastLog.deviceFingerprint &&
+      lastLog.deviceFingerprint !== currentFingerprint
+    ) {
       // Fingerprint changed -> Re-authenticate
       return { allowed: false, requireReauth: true };
     }

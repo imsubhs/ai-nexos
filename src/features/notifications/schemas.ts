@@ -9,4 +9,6 @@ export const updateNotificationPreferencesSchema = z.object({
   digestFrequency: z.enum(["instant", "hourly", "daily", "weekly"]),
 });
 
-export type UpdateNotificationPreferencesInput = z.infer<typeof updateNotificationPreferencesSchema>;
+export type UpdateNotificationPreferencesInput = z.infer<
+  typeof updateNotificationPreferencesSchema
+>;

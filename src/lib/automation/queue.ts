@@ -15,7 +15,11 @@ export interface QueueProvider {
   /**
    * Enqueues a message for execution.
    */
-  enqueue(queueName: string, message: QueueMessage, delayMs?: number): Promise<void>;
+  enqueue(
+    queueName: string,
+    message: QueueMessage,
+    delayMs?: number,
+  ): Promise<void>;
 
   /**
    * Dequeues a message. Returns null if empty.
@@ -40,12 +44,21 @@ export class InMemoryQueueProvider implements QueueProvider {
   private queues: Map<string, QueueMessage[]> = new Map();
 
   constructor() {
-    if (process.env.NODE_ENV === "production" && process.env.DEMO_MODE !== "true") {
-      throw new Error("InMemoryQueueProvider is unsafe and not allowed in production environments. Please configure a Redis or Kafka provider.");
+    if (
+      process.env.NODE_ENV === "production" &&
+      process.env.DEMO_MODE !== "true"
+    ) {
+      throw new Error(
+        "InMemoryQueueProvider is unsafe and not allowed in production environments. Please configure a Redis or Kafka provider.",
+      );
     }
   }
 
-  async enqueue(queueName: string, message: QueueMessage, delayMs?: number): Promise<void> {
+  async enqueue(
+    queueName: string,
+    message: QueueMessage,
+    delayMs?: number,
+  ): Promise<void> {
     // delayMs is ignored in this simple mock
     if (!this.queues.has(queueName)) {
       this.queues.set(queueName, []);
@@ -63,7 +76,11 @@ export class InMemoryQueueProvider implements QueueProvider {
     // Mock ack
   }
 
-  async nack(queueName: string, messageId: string, requeue: boolean): Promise<void> {
+  async nack(
+    queueName: string,
+    messageId: string,
+    requeue: boolean,
+  ): Promise<void> {
     // Mock nack
   }
 }

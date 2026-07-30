@@ -22,7 +22,7 @@ export class DistributedScheduler {
     this.isPolling = true;
 
     this.intervalId = setInterval(() => {
-      this.poll().catch(err => {
+      this.poll().catch((err) => {
         console.error("Scheduler polling error:", err);
       });
     }, pollingIntervalMs);
@@ -40,13 +40,14 @@ export class DistributedScheduler {
     await db.transaction(async (tx) => {
       // Find all active schedules that are due
       // In raw SQL this should use FOR UPDATE SKIP LOCKED to allow concurrent pollers.
-      const dueSchedules = await tx.select()
+      const dueSchedules = await tx
+        .select()
         .from(automationSchedules)
         .where(
           and(
             eq(automationSchedules.isActive, true),
-            lte(automationSchedules.nextRunAt, new Date())
-          )
+            lte(automationSchedules.nextRunAt, new Date()),
+          ),
         )
         // Drizzle ORM Postgres specific locking
         .for("update", { skipLocked: true });
@@ -59,19 +60,20 @@ export class DistributedScheduler {
           payload: {
             workflowId: schedule.workflowId,
             triggerSource: "schedule",
-            idempotencyKey: `${schedule.idempotencyKeyPrefix || 'cron'}_${schedule.id}_${Date.now()}`
+            idempotencyKey: `${schedule.idempotencyKeyPrefix || "cron"}_${schedule.id}_${Date.now()}`,
           },
-          retryCount: 0
+          retryCount: 0,
         });
 
         // Calculate next run date (Mocked for this implementation, typically use cron-parser)
         const nextDate = new Date(Date.now() + 60000); // Mock: next minute
 
         // Update the schedule
-        await tx.update(automationSchedules)
+        await tx
+          .update(automationSchedules)
           .set({
             lastRunAt: new Date(),
-            nextRunAt: nextDate
+            nextRunAt: nextDate,
           })
           .where(eq(automationSchedules.id, schedule.id));
       }

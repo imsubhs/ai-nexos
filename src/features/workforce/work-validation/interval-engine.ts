@@ -26,7 +26,10 @@ import type { Interval } from "./value-objects";
  */
 function normalize(intervals: readonly Interval[]): Interval[] {
   return intervals
-    .map((iv): Interval => ({ start: iv.start, end: Math.max(iv.start, iv.end) }))
+    .map((iv): Interval => ({
+      start: iv.start,
+      end: Math.max(iv.start, iv.end),
+    }))
     .filter((iv) => iv.end > iv.start)
     .sort((a, b) => a.start - b.start || a.end - b.end);
 }
@@ -42,7 +45,8 @@ function merge(intervals: readonly Interval[], gapMs = 0): Interval[] {
   for (const iv of sorted) {
     const last = merged[merged.length - 1];
     if (last && iv.start <= last.end + gapMs) {
-      if (iv.end > last.end) merged[merged.length - 1] = { start: last.start, end: iv.end };
+      if (iv.end > last.end)
+        merged[merged.length - 1] = { start: last.start, end: iv.end };
     } else {
       merged.push(iv);
     }
@@ -88,7 +92,10 @@ function intersect(a: readonly Interval[], b: readonly Interval[]): Interval[] {
  * by any hole. Both inputs are merged first, so the result is always disjoint
  * and sorted. Two-pointer sweep — O(n + m).
  */
-function subtract(base: readonly Interval[], holes: readonly Interval[]): Interval[] {
+function subtract(
+  base: readonly Interval[],
+  holes: readonly Interval[],
+): Interval[] {
   const mergedBase = merge(base);
   const mergedHoles = merge(holes);
   const result: Interval[] = [];
@@ -114,7 +121,10 @@ function subtract(base: readonly Interval[], holes: readonly Interval[]): Interv
  * it into adjacent pieces). Cuts outside an interval are ignored. Result stays
  * sorted; total covered duration is unchanged. O((n + k) log …) via normalize.
  */
-function split(intervals: readonly Interval[], cuts: readonly number[]): Interval[] {
+function split(
+  intervals: readonly Interval[],
+  cuts: readonly number[],
+): Interval[] {
   const sortedCuts = [...new Set(cuts)].sort((a, b) => a - b);
   const pieces: Interval[] = [];
   for (const iv of normalize(intervals)) {
@@ -140,11 +150,14 @@ function totalDuration(intervals: readonly Interval[]): number {
  * adjacent-in-sort-order intervals that overlap — enough to flag "overlapping
  * breaks" without enumerating every transitive pair.
  */
-function findOverlaps(intervals: readonly Interval[]): Array<[Interval, Interval]> {
+function findOverlaps(
+  intervals: readonly Interval[],
+): Array<[Interval, Interval]> {
   const sorted = normalize(intervals);
   const overlaps: Array<[Interval, Interval]> = [];
   for (let i = 1; i < sorted.length; i += 1) {
-    if (sorted[i].start < sorted[i - 1].end) overlaps.push([sorted[i - 1], sorted[i]]);
+    if (sorted[i].start < sorted[i - 1].end)
+      overlaps.push([sorted[i - 1], sorted[i]]);
   }
   return overlaps;
 }

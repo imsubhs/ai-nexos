@@ -5,14 +5,20 @@
  * against the seeded DemoStore rows (see src/lib/demo/store.ts).
  */
 import { describe, expect, it } from "vitest";
-import { getDeliverables, getDeliverableById, searchDeliverables } from "./mock-actions";
+import {
+  getDeliverables,
+  getDeliverableById,
+  searchDeliverables,
+} from "./mock-actions";
 
 describe("getDeliverables (mock)", () => {
   it("returns seeded deliverables ordered newest-first", async () => {
     const result = await getDeliverables();
     expect(result.length).toBeGreaterThanOrEqual(2);
     for (let i = 1; i < result.length; i++) {
-      expect(result[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(result[i].createdAt.getTime());
+      expect(result[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(
+        result[i].createdAt.getTime(),
+      );
     }
   });
 
@@ -36,7 +42,9 @@ describe("getDeliverables (mock)", () => {
 
 describe("getDeliverableById (mock)", () => {
   it("returns undefined for an unknown id", async () => {
-    const result = await getDeliverableById("00000000-0000-4000-8000-000000009999");
+    const result = await getDeliverableById(
+      "00000000-0000-4000-8000-000000009999",
+    );
     expect(result).toBeUndefined();
   });
 
@@ -53,7 +61,9 @@ describe("searchDeliverables (mock)", () => {
   it("matches by case-insensitive title substring", async () => {
     const result = await searchDeliverables("brand");
     expect(result.length).toBeGreaterThan(0);
-    expect(result.every((d: any) => d.title.toLowerCase().includes("brand"))).toBe(true);
+    expect(
+      result.every((d: any) => d.title.toLowerCase().includes("brand")),
+    ).toBe(true);
   });
 
   it("returns an empty array when nothing matches", async () => {

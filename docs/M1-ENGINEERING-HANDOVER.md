@@ -75,14 +75,14 @@ Zustand/TanStack Query/RHF are installed per TRD but first consumed in M2.
 
 ## 4. Database tables (6) + enums (4)
 
-| Table | PK | Purpose |
-| --- | --- | --- |
-| `organizations` | `organization_id` | Tenant root; unique `slug`; branding, timezone, currency |
-| `departments` | `department_id` | Org departments; `department_head → users` |
-| `roles` | `role_id` | Permission profiles (JSONB module→actions map); `is_system` |
-| `users` | `user_id` (= `auth.users.id`) | Internal team profiles; role, dept, working hours |
-| `activity_logs` | `activity_id` | Append-only audit/activity stream (partition candidate) |
-| `background_jobs` | `job_id` | Durable async queue; retries, chaining, scheduling |
+| Table             | PK                            | Purpose                                                     |
+| ----------------- | ----------------------------- | ----------------------------------------------------------- |
+| `organizations`   | `organization_id`             | Tenant root; unique `slug`; branding, timezone, currency    |
+| `departments`     | `department_id`               | Org departments; `department_head → users`                  |
+| `roles`           | `role_id`                     | Permission profiles (JSONB module→actions map); `is_system` |
+| `users`           | `user_id` (= `auth.users.id`) | Internal team profiles; role, dept, working hours           |
+| `activity_logs`   | `activity_id`                 | Append-only audit/activity stream (partition candidate)     |
+| `background_jobs` | `job_id`                      | Durable async queue; retries, chaining, scheduling          |
 
 Every table: `organization_id` + audit fields (`created_at/by`,
 `updated_at/by`, `deleted_at/by`, `is_archived`, `version`).
@@ -200,18 +200,18 @@ with repo provisioning.
 Canonical template: `.env.example` (committed; `.gitignore` has
 `!.env.example`).
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | public | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | RLS-enforced anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | server | RLS bypass (workers/portal/seed only) |
-| `DATABASE_URL` | server | Transaction pooler (app runtime, `prepare:false`) |
-| `DIRECT_DATABASE_URL` | server | Direct connection (migrations) |
-| `NEXT_PUBLIC_APP_DOMAIN` / `NEXT_PUBLIC_PORTAL_DOMAIN` | public | Host routing |
-| `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_PORTAL_URL` | public | Canonical origins (auth redirects) |
-| `RESEND_API_KEY` | server | Email (M2+ notifications) |
-| `SENTRY_DSN` | server | Monitoring (Phase 7 wiring) |
-| `SEED_ORG_*`, `SEED_OWNER_*` | seed | Tenant bootstrap — org identity is config, not code |
+| Variable                                               | Scope  | Purpose                                             |
+| ------------------------------------------------------ | ------ | --------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`                             | public | Supabase project URL                                |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                        | public | RLS-enforced anon key                               |
+| `SUPABASE_SERVICE_ROLE_KEY`                            | server | RLS bypass (workers/portal/seed only)               |
+| `DATABASE_URL`                                         | server | Transaction pooler (app runtime, `prepare:false`)   |
+| `DIRECT_DATABASE_URL`                                  | server | Direct connection (migrations)                      |
+| `NEXT_PUBLIC_APP_DOMAIN` / `NEXT_PUBLIC_PORTAL_DOMAIN` | public | Host routing                                        |
+| `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_PORTAL_URL`       | public | Canonical origins (auth redirects)                  |
+| `RESEND_API_KEY`                                       | server | Email (M2+ notifications)                           |
+| `SENTRY_DSN`                                           | server | Monitoring (Phase 7 wiring)                         |
+| `SEED_ORG_*`, `SEED_OWNER_*`                           | seed   | Tenant bootstrap — org identity is config, not code |
 
 drizzle-kit and the seed script load `.env.local` then `.env` (Next.js
 loads `.env.local` natively).
@@ -296,30 +296,30 @@ loads `.env.local` natively).
 
 ## 18. Production readiness score: 62 / 100
 
-| Dimension | Score | Note |
-| --- | --- | --- |
-| Architecture & schema | 9/10 | Spec-compliant, multi-tenant-ready |
-| Security model | 8/10 | RLS + guards adversarially reviewed; unverified on live infra |
-| Code quality | 9/10 | Lint/type/format clean; conventions enforced |
-| Auth robustness | 8/10 | All flows + edge cases handled; needs live verification |
-| Testing | 1/10 | No automated tests yet |
-| Observability | 3/10 | Structured logging/Sentry pending |
-| CI/CD & versioning | 3/10 | Pipeline written but cannot run (repo not provisioned) |
-| Runtime verification | 4/10 | Build-verified; not yet run against Supabase |
+| Dimension             | Score | Note                                                          |
+| --------------------- | ----- | ------------------------------------------------------------- |
+| Architecture & schema | 9/10  | Spec-compliant, multi-tenant-ready                            |
+| Security model        | 8/10  | RLS + guards adversarially reviewed; unverified on live infra |
+| Code quality          | 9/10  | Lint/type/format clean; conventions enforced                  |
+| Auth robustness       | 8/10  | All flows + edge cases handled; needs live verification       |
+| Testing               | 1/10  | No automated tests yet                                        |
+| Observability         | 3/10  | Structured logging/Sentry pending                             |
+| CI/CD & versioning    | 3/10  | Pipeline written but cannot run (repo not provisioned)        |
+| Runtime verification  | 4/10  | Build-verified; not yet run against Supabase                  |
 
 Appropriate for a foundation milestone: the score is gated by testing,
 observability, and live verification — all scheduled — not by design flaws.
 
 ## 19–24. Metrics & status
 
-| Metric | Value |
-| --- | --- |
-| **19. Lines of code** | 4,728 (TS/TSX/SQL/CSS in `src` + `database` + `scripts`); 2,566 hand-written excluding generated `components/ui` |
-| **20. File count** | 84 project files (excl. `node_modules`, `.next`); 57 source files |
-| **21. Test coverage** | 0% — no test runner installed yet (M2 priority; TRD §68 requires tests per feature going forward) |
-| **22. Build status** | ✅ passing (`next build`, Turbopack, 8/8 routes) |
-| **23. Lint status** | ✅ passing (ESLint 9 + eslint-config-next, zero warnings) |
-| **24. TypeScript status** | ✅ passing (`tsc --noEmit`, strict mode, zero errors) |
+| Metric                    | Value                                                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **19. Lines of code**     | 4,728 (TS/TSX/SQL/CSS in `src` + `database` + `scripts`); 2,566 hand-written excluding generated `components/ui` |
+| **20. File count**        | 84 project files (excl. `node_modules`, `.next`); 57 source files                                                |
+| **21. Test coverage**     | 0% — no test runner installed yet (M2 priority; TRD §68 requires tests per feature going forward)                |
+| **22. Build status**      | ✅ passing (`next build`, Turbopack, 8/8 routes)                                                                 |
+| **23. Lint status**       | ✅ passing (ESLint 9 + eslint-config-next, zero warnings)                                                        |
+| **24. TypeScript status** | ✅ passing (`tsc --noEmit`, strict mode, zero errors)                                                            |
 
 ## 25. Final architecture diagram
 

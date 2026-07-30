@@ -25,7 +25,7 @@ export type TimelineData = {
   phases: PhaseData[];
 };
 
-type RowItem = 
+type RowItem =
   | { type: "phase"; phase: PhaseData }
   | { type: "milestone"; milestone: MilestoneData };
 
@@ -52,10 +52,15 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
   });
 
   if (!timeline.startDate || !timeline.endDate) {
-    return <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-lg">Timeline dates not fully defined. Cannot render Gantt Chart.</div>;
+    return (
+      <div className="rounded-lg bg-gray-50 p-8 text-center text-gray-500">
+        Timeline dates not fully defined. Cannot render Gantt Chart.
+      </div>
+    );
   }
 
-  const differenceInDays = (end: Date, start: Date) => Math.floor((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+  const differenceInDays = (end: Date, start: Date) =>
+    Math.floor((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
   const totalDays = differenceInDays(timeline.endDate, timeline.startDate) || 1;
 
   const formatDate = (date: Date) => {
@@ -77,20 +82,29 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
   };
 
   return (
-    <div className="w-full border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden flex flex-col h-[600px]">
+    <div className="flex h-[600px] w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       {/* Header (Fixed) */}
-      <div className="min-w-[800px] overflow-hidden bg-gray-50/50 flex-none z-10 border-b border-gray-200">
+      <div className="z-10 min-w-[800px] flex-none overflow-hidden border-b border-gray-200 bg-gray-50/50">
         <div className="grid grid-cols-[250px_1fr]">
-          <div className="p-4 font-semibold text-sm text-gray-700">Phases & Milestones</div>
-          <div className="p-4 font-semibold text-sm text-gray-700 relative">
-            <span className="absolute left-0">{formatDate(timeline.startDate)}</span>
-            <span className="absolute right-4">{formatDate(timeline.endDate)}</span>
+          <div className="p-4 text-sm font-semibold text-gray-700">
+            Phases & Milestones
+          </div>
+          <div className="relative p-4 text-sm font-semibold text-gray-700">
+            <span className="absolute left-0">
+              {formatDate(timeline.startDate)}
+            </span>
+            <span className="absolute right-4">
+              {formatDate(timeline.endDate)}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Scrollable Virtualized Area */}
-      <div ref={parentRef} className="flex-1 overflow-auto min-w-[800px] relative">
+      <div
+        ref={parentRef}
+        className="relative min-w-[800px] flex-1 overflow-auto"
+      >
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
@@ -100,20 +114,20 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const row = rows[virtualRow.index];
-            
+
             if (row.type === "phase") {
               return (
                 <div
                   key={virtualRow.index}
-                  className="absolute top-0 left-0 w-full grid grid-cols-[250px_1fr] border-b border-gray-100 bg-gray-50 h-12"
+                  className="absolute top-0 left-0 grid h-12 w-full grid-cols-[250px_1fr] border-b border-gray-100 bg-gray-50"
                   style={{
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
-                  <div className="p-3 pl-4 text-sm font-medium text-gray-900 capitalize flex items-center">
+                  <div className="flex items-center p-3 pl-4 text-sm font-medium text-gray-900 capitalize">
                     {row.phase.name.replace("_", " ")}
                   </div>
-                  <div className="relative p-3 flex items-center">
+                  <div className="relative flex items-center p-3">
                     {/* Phase Summary Bar (Placeholder) */}
                   </div>
                 </div>
@@ -122,28 +136,31 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
 
             // Milestone row
             const { left } = calculatePosition(row.milestone.startDate);
-            const { width } = calculateWidth(row.milestone.startDate, row.milestone.endDate);
+            const { width } = calculateWidth(
+              row.milestone.startDate,
+              row.milestone.endDate,
+            );
 
             return (
               <div
                 key={virtualRow.index}
-                className="absolute top-0 left-0 w-full grid grid-cols-[250px_1fr] border-b border-gray-50 hover:bg-gray-50/50 transition-colors h-12"
+                className="absolute top-0 left-0 grid h-12 w-full grid-cols-[250px_1fr] border-b border-gray-50 transition-colors hover:bg-gray-50/50"
                 style={{
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                <div className="p-3 pl-8 text-sm text-gray-600 truncate flex items-center">
+                <div className="flex items-center truncate p-3 pl-8 text-sm text-gray-600">
                   {row.milestone.name}
                 </div>
-                <div className="relative p-3 flex items-center">
+                <div className="relative flex items-center p-3">
                   {row.milestone.startDate && row.milestone.endDate && (
-                    <div 
-                      className="absolute h-6 bg-blue-500 rounded-md shadow-sm overflow-hidden"
+                    <div
+                      className="absolute h-6 overflow-hidden rounded-md bg-blue-500 shadow-sm"
                       style={{ left, width }}
                     >
-                      <div 
-                        className="h-full bg-blue-600" 
-                        style={{ width: `${row.milestone.progress}%` }} 
+                      <div
+                        className="h-full bg-blue-600"
+                        style={{ width: `${row.milestone.progress}%` }}
                       />
                     </div>
                   )}

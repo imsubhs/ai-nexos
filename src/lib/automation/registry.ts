@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { 
-  automationTriggerTypeEnum, 
-  automationActionTypeEnum 
+import {
+  automationTriggerTypeEnum,
+  automationActionTypeEnum,
 } from "@/db/schema/enums";
 
-export type TriggerType = typeof automationTriggerTypeEnum.enumValues[number];
-export type ActionType = typeof automationActionTypeEnum.enumValues[number];
+export type TriggerType = (typeof automationTriggerTypeEnum.enumValues)[number];
+export type ActionType = (typeof automationActionTypeEnum.enumValues)[number];
 
 export interface AutomationCapability {
   id: string; // Unique string identifier, e.g., 'cap_client_onboarding'
@@ -20,7 +20,7 @@ export interface AutomationCapability {
 
 /**
  * Automation Capability Registry
- * 
+ *
  * Defines what triggers and actions are allowed for specific types of automation scenarios.
  * E.g., a capability for 'Client Onboarding' might allow platform events, but not arbitrary webhook triggers.
  */
@@ -29,7 +29,9 @@ class CapabilityRegistry {
 
   register(capability: AutomationCapability) {
     if (this.capabilities.has(capability.id)) {
-      throw new Error(`Capability with id ${capability.id} is already registered.`);
+      throw new Error(
+        `Capability with id ${capability.id} is already registered.`,
+      );
     }
     this.capabilities.set(capability.id, capability);
   }
@@ -52,9 +54,17 @@ export const automationRegistry = new CapabilityRegistry();
 automationRegistry.register({
   id: "cap_core_platform_events",
   name: "Core Platform Events",
-  description: "Standard workflow capability reacting to internal platform events.",
+  description:
+    "Standard workflow capability reacting to internal platform events.",
   allowedTriggers: ["platform_event", "manual"],
-  allowedActions: ["create", "update", "delete", "notify", "assign", "request_review"],
+  allowedActions: [
+    "create",
+    "update",
+    "delete",
+    "notify",
+    "assign",
+    "request_review",
+  ],
   requiredPermissions: ["automation:execute:core"],
   requiresApproval: false,
   aiAvailable: false,

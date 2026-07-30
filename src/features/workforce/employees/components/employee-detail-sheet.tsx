@@ -18,12 +18,19 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { EmployeeDirectoryEntry } from "../types";
-import { EmployeeStatusBadge, employeeInitials, formatEmploymentType } from "./employee-badges";
+import {
+  EmployeeStatusBadge,
+  employeeInitials,
+  formatEmploymentType,
+} from "./employee-badges";
 
-function DetailRow({ label, value }: Readonly<{ label: string; value: React.ReactNode }>) {
+function DetailRow({
+  label,
+  value,
+}: Readonly<{ label: string; value: React.ReactNode }>) {
   return (
     <div className="flex items-start justify-between gap-4 py-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground text-sm">{label}</span>
       <span className="text-right text-sm font-medium">{value ?? "—"}</span>
     </div>
   );
@@ -43,12 +50,12 @@ export function EmployeeDetailSheet({
           <>
             <SheetHeader>
               <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12 border border-border">
+                <Avatar className="border-border h-12 w-12 border">
                   <AvatarImage
                     src={employee.avatarUrl ?? undefined}
                     alt={`${employee.firstName} ${employee.lastName}`}
                   />
-                  <AvatarFallback className="bg-primary/5 font-semibold text-primary">
+                  <AvatarFallback className="bg-primary/5 text-primary font-semibold">
                     {employeeInitials(employee)}
                   </AvatarFallback>
                 </Avatar>
@@ -56,7 +63,9 @@ export function EmployeeDetailSheet({
                   <SheetTitle>
                     {employee.firstName} {employee.lastName}
                   </SheetTitle>
-                  <SheetDescription>{employee.designation ?? employee.email}</SheetDescription>
+                  <SheetDescription>
+                    {employee.designation ?? employee.email}
+                  </SheetDescription>
                 </div>
               </div>
             </SheetHeader>

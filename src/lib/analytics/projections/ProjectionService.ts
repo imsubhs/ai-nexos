@@ -1,4 +1,4 @@
-import { AnalyticsScope, AnalyticsProjection } from '../types';
+import { AnalyticsScope, AnalyticsProjection } from "../types";
 
 export class ProjectionService {
   /**
@@ -7,11 +7,11 @@ export class ProjectionService {
   async getProjection(
     projectionId: string,
     scope: AnalyticsScope,
-    _filters?: Record<string, unknown>
+    _filters?: Record<string, unknown>,
   ): Promise<AnalyticsProjection> {
     // 1. Validate Scope
     if (!scope.organizationId) {
-      throw new Error('Organization ID is required to fetch projections.');
+      throw new Error("Organization ID is required to fetch projections.");
     }
 
     // 2. Fetch Projection Data (mocked for now)
@@ -19,7 +19,7 @@ export class ProjectionService {
     const projection: AnalyticsProjection = {
       id: projectionId,
       scope,
-      modelType: 'AGGREGATED_METRICS',
+      modelType: "AGGREGATED_METRICS",
       data: {
         // Mock data
         value: 0,
@@ -40,10 +40,10 @@ export class ProjectionService {
   async getProjectionsBatch(
     projectionIds: string[],
     scope: AnalyticsScope,
-    filters?: Record<string, unknown>
+    filters?: Record<string, unknown>,
   ): Promise<Record<string, AnalyticsProjection>> {
     const results: Record<string, AnalyticsProjection> = {};
-    
+
     // Simulate parallel independent execution
     await Promise.allSettled(
       projectionIds.map(async (id) => {
@@ -53,7 +53,7 @@ export class ProjectionService {
           // If one fails, it doesn't fail the batch. Handled independently by widgets.
           console.error(`Failed to fetch projection ${id}:`, error);
         }
-      })
+      }),
     );
 
     return results;

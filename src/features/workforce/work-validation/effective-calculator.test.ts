@@ -25,16 +25,22 @@ describe("calculateEffective", () => {
 
 describe("verifyInvariant", () => {
   it("accepts a valid partition", () => {
-    expect(() => verifyInvariant(at(540), at(450), at(30), at(60))).not.toThrow();
+    expect(() =>
+      verifyInvariant(at(540), at(450), at(30), at(60)),
+    ).not.toThrow();
   });
 
   it("throws when the parts do not sum to the session", () => {
-    expect(() => verifyInvariant(at(540), at(450), at(30), at(59))).toThrow(InvariantViolationError);
+    expect(() => verifyInvariant(at(540), at(450), at(30), at(59))).toThrow(
+      InvariantViolationError,
+    );
   });
 });
 
 describe("verifyMinuteInvariant", () => {
   it("throws on a broken minute partition", () => {
-    expect(() => verifyMinuteInvariant(540, 450, 30, 61)).toThrow(InvariantViolationError);
+    expect(() => verifyMinuteInvariant(540, 450, 30, 61)).toThrow(
+      InvariantViolationError,
+    );
   });
 });

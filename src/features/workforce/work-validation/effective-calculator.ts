@@ -32,7 +32,10 @@ export function calculateEffective(
 ): EffectiveResult {
   const carved = IntervalEngine.merge([...breaks, ...idle]);
   const effective = IntervalEngine.subtract(session, carved);
-  return { intervals: effective, effectiveMs: IntervalEngine.totalDuration(effective) };
+  return {
+    intervals: effective,
+    effectiveMs: IntervalEngine.totalDuration(effective),
+  };
 }
 
 /**

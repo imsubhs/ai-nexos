@@ -117,7 +117,11 @@ export const realEmployeeAdminRepository: EmployeeAdminRepository = {
     }
     await db
       .update(users)
-      .set({ status: data.status, updatedAt: new Date(), updatedBy: actorUserId })
+      .set({
+        status: data.status,
+        updatedAt: new Date(),
+        updatedBy: actorUserId,
+      })
       .where(eq(users.userId, user.userId));
     return { userId: user.userId };
   },

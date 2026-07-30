@@ -80,7 +80,8 @@ export function processBreaks(
       findings.push({
         code: "clock-out-before-break-end",
         severity: "violation",
-        message: "Break extends beyond the session bounds; clamped to the session.",
+        message:
+          "Break extends beyond the session bounds; clamped to the session.",
         interval: { start: brk.start, end: brk.end },
       });
     }

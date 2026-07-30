@@ -150,9 +150,14 @@ function requireRecord(
   attendanceId: string,
 ): DemoAttendance {
   const r = records().find(
-    (x) => x.attendanceId === attendanceId && x.organizationId === organizationId,
+    (x) =>
+      x.attendanceId === attendanceId && x.organizationId === organizationId,
   );
-  if (!r) throw new AttendanceError("attendance/not-found", "Attendance record not found.");
+  if (!r)
+    throw new AttendanceError(
+      "attendance/not-found",
+      "Attendance record not found.",
+    );
   return r;
 }
 
@@ -211,7 +216,12 @@ export const mockAttendanceRepository: AttendanceRepository = {
     return toTodayView(record);
   },
 
-  async finalizeDay(organizationId, actorUserId, attendanceId, data: FinalizeDayData) {
+  async finalizeDay(
+    organizationId,
+    actorUserId,
+    attendanceId,
+    data: FinalizeDayData,
+  ) {
     const record = requireRecord(organizationId, attendanceId);
     const open = openBreakOf(attendanceId);
     if (open) open.endAt = data.clockOutAt;
@@ -238,7 +248,12 @@ export const mockAttendanceRepository: AttendanceRepository = {
     return toTodayView(record);
   },
 
-  async amendDay(organizationId, actorUserId, attendanceId, data: AmendDayData) {
+  async amendDay(
+    organizationId,
+    actorUserId,
+    attendanceId,
+    data: AmendDayData,
+  ) {
     const record = requireRecord(organizationId, attendanceId);
     record.clockInAt = data.clockInAt;
     record.clockOutAt = data.clockOutAt;
@@ -352,9 +367,10 @@ export const mockAttendanceRepository: AttendanceRepository = {
           isArchived: user?.isArchived === true || user?.status === "archived",
         };
       })
-      .sort((a, b) =>
-        b.date.localeCompare(a.date) ||
-        a.employeeName.localeCompare(b.employeeName),
+      .sort(
+        (a, b) =>
+          b.date.localeCompare(a.date) ||
+          a.employeeName.localeCompare(b.employeeName),
       );
 
     const total = mapped.length;
@@ -362,7 +378,10 @@ export const mockAttendanceRepository: AttendanceRepository = {
     return { rows: mapped.slice(start, start + filters.pageSize), total };
   },
 
-  async findById(organizationId, attendanceId): Promise<AttendanceDetail | null> {
+  async findById(
+    organizationId,
+    attendanceId,
+  ): Promise<AttendanceDetail | null> {
     const r = records().find(
       (x) =>
         x.attendanceId === attendanceId && x.organizationId === organizationId,
@@ -377,7 +396,9 @@ export const mockAttendanceRepository: AttendanceRepository = {
       : undefined;
     const dayBreaks = breaks()
       .filter((b) => b.attendanceId === attendanceId)
-      .sort((a, b) => (toIso(a.startAt) ?? "").localeCompare(toIso(b.startAt) ?? ""))
+      .sort((a, b) =>
+        (toIso(a.startAt) ?? "").localeCompare(toIso(b.startAt) ?? ""),
+      )
       .map(breakView);
     return {
       attendanceId: r.attendanceId,

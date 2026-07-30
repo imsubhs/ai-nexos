@@ -4,12 +4,7 @@ import { ArrowLeft, Building2, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { hasPermission } from "@/features/permissions/engine";
@@ -37,7 +32,7 @@ function DetailRow({
 }: Readonly<{ label: string; value: React.ReactNode }>) {
   return (
     <div className="flex items-start justify-between gap-4 py-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground text-sm">{label}</span>
       <span className="text-right text-sm font-medium">{value ?? "—"}</span>
     </div>
   );
@@ -103,12 +98,12 @@ export default async function EmployeeDetailPage({
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 border border-border">
+          <Avatar className="border-border h-16 w-16 border">
             <AvatarImage
               src={employee.avatarUrl ?? undefined}
               alt={fullName(employee)}
             />
-            <AvatarFallback className="bg-primary/5 text-lg font-semibold text-primary">
+            <AvatarFallback className="bg-primary/5 text-primary text-lg font-semibold">
               {employeeInitials(employee)}
             </AvatarFallback>
           </Avatar>
@@ -119,7 +114,7 @@ export default async function EmployeeDetailPage({
               </h2>
               <EmployeeStatusBadge status={employee.entityStatus} />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {employee.designation ?? "—"}
               {employee.employeeCode ? ` · ${employee.employeeCode}` : ""}
             </p>
@@ -183,7 +178,7 @@ export default async function EmployeeDetailPage({
                 employee.departmentId && employee.departmentName ? (
                   <Link
                     href={`/workforce/employees?departmentId=${employee.departmentId}`}
-                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                    className="text-primary inline-flex items-center gap-1 hover:underline"
                   >
                     <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
                     {employee.departmentName}
@@ -210,12 +205,12 @@ export default async function EmployeeDetailPage({
             />
             <Separator className="my-2" />
             <div className="py-2">
-              <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
                 <Users className="h-4 w-4" aria-hidden="true" />
                 Direct reports ({reports.length})
               </div>
               {reports.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No direct reports.
                 </p>
               ) : (
@@ -224,7 +219,7 @@ export default async function EmployeeDetailPage({
                     <li key={report.userId}>
                       <Link
                         href={`/workforce/employees/${report.userId}`}
-                        className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+                        className="hover:bg-muted flex items-center justify-between rounded-md px-2 py-1.5 text-sm"
                       >
                         <span className="font-medium">{fullName(report)}</span>
                         <span className="text-muted-foreground">

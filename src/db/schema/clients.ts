@@ -32,7 +32,9 @@ export const clients = pgTable(
     brandAssetsUrl: text("brand_assets_url"),
     googleDriveFolderUrl: text("google_drive_folder_url"),
     referenceAssets: jsonb("reference_assets"),
-    preferredCommunication: communicationPreferenceEnum("preferred_communication"),
+    preferredCommunication: communicationPreferenceEnum(
+      "preferred_communication",
+    ),
     aiSummary: text("ai_summary"),
     aiHealthScore: text("ai_health_score"),
     ...auditFields,
@@ -40,7 +42,7 @@ export const clients = pgTable(
   (table) => [
     index("idx_clients_organization_id").on(table.organizationId),
     index("idx_clients_status").on(table.status),
-  ]
+  ],
 );
 
 export const clientContacts = pgTable(
@@ -60,9 +62,7 @@ export const clientContacts = pgTable(
     status: entityStatusEnum("status").notNull().default("active"),
     ...auditFields,
   },
-  (table) => [
-    index("idx_client_contacts_client_id").on(table.clientId),
-  ]
+  (table) => [index("idx_client_contacts_client_id").on(table.clientId)],
 );
 
 export const clientsRelations = relations(clients, ({ one, many }) => ({

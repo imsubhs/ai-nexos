@@ -1,7 +1,15 @@
 "use server";
 
 import { db } from "@/db";
-import { activityLogs, milestones, projectPhases, projects, timelineDependencies, timelineVersions, timelines } from "@/db/schema";
+import {
+  activityLogs,
+  milestones,
+  projectPhases,
+  projects,
+  timelineDependencies,
+  timelineVersions,
+  timelines,
+} from "@/db/schema";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
 import { and, eq, asc, desc } from "drizzle-orm";
@@ -10,7 +18,7 @@ import { z } from "zod";
 import {
   insertMilestoneSchema,
   insertTimelineDependencySchema,
-  insertTimelineSchema
+  insertTimelineSchema,
 } from "./schemas";
 import { DEFAULT_PROJECT_PHASES } from "./constants";
 
@@ -25,7 +33,7 @@ async function logActivity(
   userId: string,
   organizationId: string,
   metadata?: Record<string, unknown>,
-  tx: typeof db | DbTransaction = db
+  tx: typeof db | DbTransaction = db,
 ) {
   await tx.insert(activityLogs).values({
     organizationId,
@@ -46,11 +54,14 @@ export async function createTimelineSnapshot(
   timelineId: string,
   changeSummary: string,
   reason: string | null = null,
-  tx: DbTransaction
+  tx: DbTransaction,
 ) {
   const user = await requireCurrentUser();
 
-  const [currentTimeline] = await tx.select().from(timelines).where(eq(timelines.timelineId, timelineId));
+  const [currentTimeline] = await tx
+    .select()
+    .from(timelines)
+    .where(eq(timelines.timelineId, timelineId));
   if (!currentTimeline) throw new Error("Timeline not found for versioning");
 
   const timelineData = await tx.query.timelines.findFirst({
@@ -61,11 +72,11 @@ export async function createTimelineSnapshot(
           milestones: {
             with: {
               successors: true,
-            }
-          }
-        }
-      }
-    }
+            },
+          },
+        },
+      },
+    },
   });
 
   const nextVersion = currentTimeline.currentVersion + 1;
@@ -82,7 +93,11 @@ export async function createTimelineSnapshot(
 
   await tx
     .update(timelines)
-    .set({ currentVersion: nextVersion, updatedAt: new Date(), updatedBy: user.userId })
+    .set({
+      currentVersion: nextVersion,
+      updatedAt: new Date(),
+      updatedBy: user.userId,
+    })
     .where(eq(timelines.timelineId, timelineId));
 }
 
@@ -93,7 +108,15 @@ async function authorizeTimelineEdit(projectId: string) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "update");
 
-  const [project] = await db.select().from(projects).where(and(eq(projects.projectId, projectId), eq(projects.organizationId, user.organizationId)));
+  const [project] = await db
+    .select()
+    .from(projects)
+    .where(
+      and(
+        eq(projects.projectId, projectId),
+        eq(projects.organizationId, user.organizationId),
+      ),
+    );
   if (!project) throw new Error("Project not found or unauthorized");
   return { user, project };
 }
@@ -101,7 +124,9 @@ async function authorizeTimelineEdit(projectId: string) {
 /**
  * Creates a timeline. Exactly 1:1 per project.
  */
-export async function createTimeline(data: z.infer<typeof insertTimelineSchema>) {
+export async function createTimeline(
+  data: z.infer<typeof insertTimelineSchema>,
+) {
   const { user } = await authorizeTimelineEdit(data.projectId);
 
   const timeline = await db.transaction(async (tx) => {
@@ -119,17 +144,31 @@ export async function createTimeline(data: z.infer<typeof insertTimelineSchema>)
     const defaultPhases = DEFAULT_PROJECT_PHASES.map((p) => ({
       timelineId: newTimeline.timelineId,
       organizationId: user.organizationId,
-      name: p.name as "planning" | "pre_production" | "production" | "post_production" | "delivery",
+      name: p.name as
+        | "planning"
+        | "pre_production"
+        | "production"
+        | "post_production"
+        | "delivery",
       orderIndex: p.orderIndex,
     }));
 
-    await tx.insert(projectPhases).values(defaultPhases.map(p => ({
-      ...p,
-      createdBy: user.userId,
-      updatedBy: user.userId,
-    })));
+    await tx.insert(projectPhases).values(
+      defaultPhases.map((p) => ({
+        ...p,
+        createdBy: user.userId,
+        updatedBy: user.userId,
+      })),
+    );
 
-    await logActivity("created", newTimeline.timelineId, user.userId, user.organizationId, {}, tx);
+    await logActivity(
+      "created",
+      newTimeline.timelineId,
+      user.userId,
+      user.organizationId,
+      {},
+      tx,
+    );
     return newTimeline;
   });
 
@@ -142,7 +181,10 @@ export async function getProjectTimeline(projectId: string) {
   requirePermission(user.permissions, "projects", "read");
 
   return db.query.timelines.findFirst({
-    where: and(eq(timelines.projectId, projectId), eq(timelines.organizationId, user.organizationId)),
+    where: and(
+      eq(timelines.projectId, projectId),
+      eq(timelines.organizationId, user.organizationId),
+    ),
     with: {
       phases: {
         orderBy: [asc(projectPhases.orderIndex)],
@@ -150,7 +192,7 @@ export async function getProjectTimeline(projectId: string) {
       versions: {
         orderBy: [desc(timelineVersions.versionNumber)],
         limit: 5,
-      }
+      },
     },
   });
 }
@@ -161,7 +203,10 @@ export async function getProjectTimeline(projectId: string) {
  * it is a flat list of one row per project's timeline with its current
  * progress, which is all the workspace view needs.
  */
-export async function getTimelines(cursorOffset: number = 0, limit: number = 50) {
+export async function getTimelines(
+  cursorOffset: number = 0,
+  limit: number = 50,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "timeline", "read");
 
@@ -178,11 +223,18 @@ export async function getTimelines(cursorOffset: number = 0, limit: number = 50)
   });
 }
 
-export async function getTimelineMilestones(timelineId: string, limit: number = 50, cursorOffset: number = 0) {
+export async function getTimelineMilestones(
+  timelineId: string,
+  limit: number = 50,
+  cursorOffset: number = 0,
+) {
   const user = await requireCurrentUser();
   // Ensure access
   const timeline = await db.query.timelines.findFirst({
-    where: and(eq(timelines.timelineId, timelineId), eq(timelines.organizationId, user.organizationId)),
+    where: and(
+      eq(timelines.timelineId, timelineId),
+      eq(timelines.organizationId, user.organizationId),
+    ),
   });
   if (!timeline) throw new Error("Not found");
 
@@ -199,7 +251,10 @@ export async function getTimelineMilestones(timelineId: string, limit: number = 
 export async function getTimelineDependencies(timelineId: string) {
   const user = await requireCurrentUser();
   const timeline = await db.query.timelines.findFirst({
-    where: and(eq(timelines.timelineId, timelineId), eq(timelines.organizationId, user.organizationId)),
+    where: and(
+      eq(timelines.timelineId, timelineId),
+      eq(timelines.organizationId, user.organizationId),
+    ),
   });
   if (!timeline) throw new Error("Not found");
 
@@ -208,7 +263,9 @@ export async function getTimelineDependencies(timelineId: string) {
   });
 }
 
-function checkTimelineCycle(edges: { predecessorId: string, successorId: string }[]): boolean {
+function checkTimelineCycle(
+  edges: { predecessorId: string; successorId: string }[],
+): boolean {
   const adj: Record<string, string[]> = {};
   for (const { predecessorId, successorId } of edges) {
     if (!adj[predecessorId]) adj[predecessorId] = [];
@@ -244,11 +301,16 @@ function checkTimelineCycle(edges: { predecessorId: string, successorId: string 
 /**
  * Adds a milestone. Since this is a structural change, we create a snapshot.
  */
-export async function createMilestone(data: z.infer<typeof insertMilestoneSchema>) {
+export async function createMilestone(
+  data: z.infer<typeof insertMilestoneSchema>,
+) {
   // First lookup timeline to authorize against its project
-  const [timeline] = await db.select().from(timelines).where(eq(timelines.timelineId, data.timelineId));
+  const [timeline] = await db
+    .select()
+    .from(timelines)
+    .where(eq(timelines.timelineId, data.timelineId));
   if (!timeline) throw new Error("Timeline not found");
-  
+
   const { user } = await authorizeTimelineEdit(timeline.projectId);
 
   const milestone = await db.transaction(async (tx) => {
@@ -262,9 +324,21 @@ export async function createMilestone(data: z.infer<typeof insertMilestoneSchema
       })
       .returning();
 
-    await createTimelineSnapshot(data.timelineId, `Added milestone: ${data.name}`, null, tx);
-    await logActivity("milestone_created", data.timelineId, user.userId, user.organizationId, { milestoneId: newMilestone.milestoneId }, tx);
-    
+    await createTimelineSnapshot(
+      data.timelineId,
+      `Added milestone: ${data.name}`,
+      null,
+      tx,
+    );
+    await logActivity(
+      "milestone_created",
+      data.timelineId,
+      user.userId,
+      user.organizationId,
+      { milestoneId: newMilestone.milestoneId },
+      tx,
+    );
+
     return newMilestone;
   });
 
@@ -272,10 +346,15 @@ export async function createMilestone(data: z.infer<typeof insertMilestoneSchema
   return milestone;
 }
 
-export async function addTimelineDependency(data: z.infer<typeof insertTimelineDependencySchema>) {
-  const [timeline] = await db.select().from(timelines).where(eq(timelines.timelineId, data.timelineId));
+export async function addTimelineDependency(
+  data: z.infer<typeof insertTimelineDependencySchema>,
+) {
+  const [timeline] = await db
+    .select()
+    .from(timelines)
+    .where(eq(timelines.timelineId, data.timelineId));
   if (!timeline) throw new Error("Timeline not found");
-  
+
   const { user } = await authorizeTimelineEdit(timeline.projectId);
 
   // Check for circular dependency
@@ -284,14 +363,19 @@ export async function addTimelineDependency(data: z.infer<typeof insertTimelineD
     columns: {
       predecessorId: true,
       successorId: true,
-    }
+    },
   });
 
-  const testEdges = [...existingDeps, { predecessorId: data.predecessorId, successorId: data.successorId }];
+  const testEdges = [
+    ...existingDeps,
+    { predecessorId: data.predecessorId, successorId: data.successorId },
+  ];
   if (checkTimelineCycle(testEdges)) {
-    throw new Error("Cannot add dependency: this would create a circular reference.");
+    throw new Error(
+      "Cannot add dependency: this would create a circular reference.",
+    );
   }
-  
+
   const dependency = await db.transaction(async (tx) => {
     const [newDep] = await tx
       .insert(timelineDependencies)
@@ -302,9 +386,21 @@ export async function addTimelineDependency(data: z.infer<typeof insertTimelineD
       })
       .returning();
 
-    await createTimelineSnapshot(data.timelineId, `Added dependency from ${data.predecessorId} to ${data.successorId}`, null, tx);
-    await logActivity("dependency_added", data.timelineId, user.userId, user.organizationId, { dependencyId: newDep.dependencyId }, tx);
-    
+    await createTimelineSnapshot(
+      data.timelineId,
+      `Added dependency from ${data.predecessorId} to ${data.successorId}`,
+      null,
+      tx,
+    );
+    await logActivity(
+      "dependency_added",
+      data.timelineId,
+      user.userId,
+      user.organizationId,
+      { dependencyId: newDep.dependencyId },
+      tx,
+    );
+
     return newDep;
   });
 
@@ -316,23 +412,34 @@ export async function addTimelineDependency(data: z.infer<typeof insertTimelineD
  * Recalculate progress for a timeline based on its milestones.
  * Updates project.completionPercentage as well.
  */
-export async function recalculateTimelineProgress(timelineId: string, tx: DbTransaction) {
-  const [timeline] = await tx.select().from(timelines).where(eq(timelines.timelineId, timelineId));
+export async function recalculateTimelineProgress(
+  timelineId: string,
+  tx: DbTransaction,
+) {
+  const [timeline] = await tx
+    .select()
+    .from(timelines)
+    .where(eq(timelines.timelineId, timelineId));
   if (!timeline) return;
 
-  const allMilestones = await tx.select().from(milestones).where(eq(milestones.timelineId, timelineId));
-  
+  const allMilestones = await tx
+    .select()
+    .from(milestones)
+    .where(eq(milestones.timelineId, timelineId));
+
   let overallProgress = 0;
   if (allMilestones.length > 0) {
     const totalProgress = allMilestones.reduce((acc, m) => acc + m.progress, 0);
     overallProgress = Math.round(totalProgress / allMilestones.length);
   }
 
-  await tx.update(timelines)
+  await tx
+    .update(timelines)
     .set({ overallProgress })
     .where(eq(timelines.timelineId, timelineId));
 
-  await tx.update(projects)
+  await tx
+    .update(projects)
     .set({ completionPercentage: overallProgress })
     .where(eq(projects.projectId, timeline.projectId));
 }

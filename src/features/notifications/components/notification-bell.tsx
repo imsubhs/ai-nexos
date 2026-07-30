@@ -35,7 +35,10 @@ import {
 import type { NotificationFeedItem } from "../templates";
 
 /** Today / Yesterday / Earlier — enough grouping to scan, no more. */
-function groupOf(value: Date | string, now: number): "Today" | "Yesterday" | "Earlier" {
+function groupOf(
+  value: Date | string,
+  now: number,
+): "Today" | "Yesterday" | "Earlier" {
   const created = new Date(value).getTime();
   const dayMs = 24 * 60 * 60 * 1000;
   const startOfToday = new Date(now).setHours(0, 0, 0, 0);
@@ -100,23 +103,35 @@ export function NotificationBell({
   const grouped = GROUP_ORDER.map((group) => ({
     group,
     items:
-      now === null ? [] : visible.filter((row) => groupOf(row.createdAt, now) === group),
+      now === null
+        ? []
+        : visible.filter((row) => groupOf(row.createdAt, now) === group),
   })).filter((bucket) => bucket.items.length > 0);
 
   const toggleRead = async (row: NotificationFeedItem) => {
     setPendingId(row.notificationId);
     try {
       if (row.readAt) {
-        await markNotificationUnreadAction(row.notificationId, userId, organizationId);
+        await markNotificationUnreadAction(
+          row.notificationId,
+          userId,
+          organizationId,
+        );
         toast.success("Marked as unread");
       } else {
-        await markNotificationReadAction(row.notificationId, userId, organizationId);
+        await markNotificationReadAction(
+          row.notificationId,
+          userId,
+          organizationId,
+        );
         toast.success("Marked as read");
       }
       await load();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Could not update the notification",
+        error instanceof Error
+          ? error.message
+          : "Could not update the notification",
       );
     } finally {
       setPendingId(null);
@@ -130,7 +145,9 @@ export function NotificationBell({
       await load();
       toast.success("All notifications marked as read");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not mark all as read");
+      toast.error(
+        error instanceof Error ? error.message : "Could not mark all as read",
+      );
     } finally {
       setPendingId(null);
     }
@@ -144,7 +161,9 @@ export function NotificationBell({
             variant="ghost"
             size="icon"
             className="relative"
-            aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+            aria-label={
+              unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
+            }
           >
             <Bell className="size-4" />
             {unread > 0 && (
@@ -203,10 +222,14 @@ export function NotificationBell({
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-medium">{row.title}</p>
+                        <p className="truncate text-sm font-medium">
+                          {row.title}
+                        </p>
                         {row.priority !== "normal" && (
                           <Badge
-                            variant={PRIORITY_VARIANT[row.priority] ?? "outline"}
+                            variant={
+                              PRIORITY_VARIANT[row.priority] ?? "outline"
+                            }
                             className="text-[10px] capitalize"
                           >
                             {row.priority}
@@ -242,7 +265,11 @@ export function NotificationBell({
                       disabled={pendingId === row.notificationId}
                       onClick={() => toggleRead(row)}
                     >
-                      {row.readAt ? <Undo2 className="size-4" /> : <Check className="size-4" />}
+                      {row.readAt ? (
+                        <Undo2 className="size-4" />
+                      ) : (
+                        <Check className="size-4" />
+                      )}
                     </Button>
                   </div>
                 ))}

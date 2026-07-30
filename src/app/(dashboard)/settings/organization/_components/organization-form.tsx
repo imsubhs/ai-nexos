@@ -64,7 +64,10 @@ interface OrganizationFormProps {
   canUpdate: boolean;
 }
 
-export function OrganizationForm({ organization, canUpdate }: OrganizationFormProps) {
+export function OrganizationForm({
+  organization,
+  canUpdate,
+}: OrganizationFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
@@ -96,7 +99,9 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
 
   const onSubmit = (data: OrganizationFormValues) => {
     if (!canUpdate) {
-      toast.error("You do not have permission to update organization settings.");
+      toast.error(
+        "You do not have permission to update organization settings.",
+      );
       return;
     }
 
@@ -124,7 +129,10 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
   // silent-save failure half of P1-02. Anything unrendered surfaces here.
   const unrenderedErrors = Object.entries(errors)
     .filter(([field]) => !RENDERED_FIELDS.has(field))
-    .map(([field, error]) => `${field}: ${(error as { message?: string })?.message ?? "Invalid"}`);
+    .map(
+      ([field, error]) =>
+        `${field}: ${(error as { message?: string })?.message ?? "Invalid"}`,
+    );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -152,7 +160,9 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
         <CardContent>
           <FieldGroup>
             <Field orientation="vertical">
-              <FieldLabel htmlFor="org-organizationName">Organization Name</FieldLabel>
+              <FieldLabel htmlFor="org-organizationName">
+                Organization Name
+              </FieldLabel>
               <FieldContent>
                 <Input
                   {...register("organizationName")}
@@ -205,9 +215,11 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
         </CardHeader>
         <CardContent>
           <FieldGroup>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <Field orientation="vertical">
-                <FieldLabel htmlFor="org-contactEmail">Contact Email</FieldLabel>
+                <FieldLabel htmlFor="org-contactEmail">
+                  Contact Email
+                </FieldLabel>
                 <FieldContent>
                   <Input
                     {...register("contactEmail")}
@@ -221,7 +233,9 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
               </Field>
 
               <Field orientation="vertical">
-                <FieldLabel htmlFor="org-contactPhone">Contact Phone</FieldLabel>
+                <FieldLabel htmlFor="org-contactPhone">
+                  Contact Phone
+                </FieldLabel>
                 <FieldContent>
                   <Input
                     {...register("contactPhone")}
@@ -259,7 +273,7 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
                 <FieldError errors={[errors.country]} />
               </Field>
             </div>
-            
+
             <Field orientation="vertical">
               <FieldLabel htmlFor="org-address">Address</FieldLabel>
               <FieldContent>
@@ -298,9 +312,11 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
               <FieldError errors={[errors.logoUrl]} />
             </Field>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <Field orientation="vertical">
-                <FieldLabel htmlFor="org-brandPrimaryColor">Primary Color (Hex)</FieldLabel>
+                <FieldLabel htmlFor="org-brandPrimaryColor">
+                  Primary Color (Hex)
+                </FieldLabel>
                 <FieldContent>
                   <Input
                     {...register("brandPrimaryColor")}
@@ -313,7 +329,9 @@ export function OrganizationForm({ organization, canUpdate }: OrganizationFormPr
               </Field>
 
               <Field orientation="vertical">
-                <FieldLabel htmlFor="org-brandSecondaryColor">Secondary Color (Hex)</FieldLabel>
+                <FieldLabel htmlFor="org-brandSecondaryColor">
+                  Secondary Color (Hex)
+                </FieldLabel>
                 <FieldContent>
                   <Input
                     {...register("brandSecondaryColor")}

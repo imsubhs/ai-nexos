@@ -20,10 +20,13 @@ export default async function RolesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Roles &amp; Permissions</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Roles &amp; Permissions
+        </h1>
         <p className="text-muted-foreground text-sm">
-          Reference of the roles available in your organization and what each can access.
-          System roles are managed by the platform and cannot be edited.
+          Reference of the roles available in your organization and what each
+          can access. System roles are managed by the platform and cannot be
+          edited.
         </p>
       </div>
 

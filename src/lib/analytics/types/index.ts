@@ -7,12 +7,7 @@ export type AnalyticsScope = {
 };
 
 export type ReportExecutionState =
-  | 'QUEUED'
-  | 'RUNNING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'CANCELLED'
-  | 'EXPIRED';
+  "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED" | "EXPIRED";
 
 export interface KPIDefinition {
   id: string;
@@ -32,7 +27,7 @@ export interface AnalyticsSnapshot {
   value: number;
   dimensions: Record<string, string | number | boolean>;
   timestamp: string; // ISO 8601 Date
-  period: 'HOURLY' | 'DAILY' | 'MONTHLY';
+  period: "HOURLY" | "DAILY" | "MONTHLY";
   // Immutable marker - enforced in logic
   _immutable: true;
 }
@@ -45,7 +40,7 @@ export interface AnalyticsProjection {
   lastUpdated: string;
 }
 
-export type ExportFormat = 'CSV' | 'EXCEL' | 'PDF' | 'JSON';
+export type ExportFormat = "CSV" | "EXCEL" | "PDF" | "JSON";
 
 export interface ExportPolicy {
   maxRows: number;
@@ -67,7 +62,7 @@ export interface ExportJob {
 }
 
 export interface ChartAbstraction {
-  type: 'BAR' | 'LINE' | 'PIE' | 'HEATMAP' | 'TIMELINE' | 'TABLE' | 'CARD';
+  type: "BAR" | "LINE" | "PIE" | "HEATMAP" | "TIMELINE" | "TABLE" | "CARD";
   data: unknown[];
   xAxisKey?: string;
   seriesKeys: string[];
@@ -87,7 +82,7 @@ export interface WidgetContext {
 
 export interface WidgetResult {
   widgetId: string;
-  status: 'SUCCESS' | 'ERROR';
+  status: "SUCCESS" | "ERROR";
   data?: ChartAbstraction;
   error?: string;
   executedAt: string;

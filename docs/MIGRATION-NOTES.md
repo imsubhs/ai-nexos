@@ -1,23 +1,28 @@
 # Migration Notes - Sprint 11A
 
 ## Database Migrations
+
 No database schema changes were required in this sprint. The enterprise baseline (v1.0) architecture and schema remain frozen.
 
 ## Code Migrations
+
 - `src/config/navigation.ts`: Removed the `"coming-soon"` badge from the `/tasks` route, setting it to `"live"`.
 - No new tables, enums, or external dependencies were added.
 - The `Tasks` page relies entirely on the pre-existing `TaskDashboard` component, matching the architectural rule to reuse components.
 
 ## Deployment Notes
+
 - No new environment variables required.
 - Standard Next.js deployment procedure applies.
 
 # Migration Notes - Sprint 11B
 
 ## Database Migrations
+
 None. No new tables, columns, or enums — this sprint added read-only query functions against existing schema (`deliverables`, `deliverableRevisions`, `files`, `fileFolders`, `meetings`, `timelines`, `projectPhases`). Baseline v1.0 schema remains frozen.
 
 ## Code Migrations
+
 - `src/features/deliverables/{actions,real-actions,mock-actions}.ts`: added `getDeliverables`, `getDeliverableById`, `searchDeliverables`.
 - `src/features/files/{actions,real-actions,mock-actions}.ts`: added `getFiles`, `getFolder`, `searchFiles`.
 - `src/features/meetings/{queries,real-queries,mock-queries}.ts`: added `getMeetings` (global). No other function in this domain was changed.
@@ -25,15 +30,18 @@ None. No new tables, columns, or enums — this sprint added read-only query fun
 - No new dependencies, API routes, or environment variables.
 
 ## Deployment Notes
+
 - No new environment variables required.
 - No workspace pages or navigation changes shipped in this sprint — nothing user-facing changes on deploy.
 
 # Migration Notes - Sprint 11A (Resumed)
 
 ## Database Migrations
+
 None. Presentation-only sprint; no schema, table, enum, or migration changes.
 
 ## Code Migrations
+
 - Added four workspace pages + loading skeletons: `src/app/(dashboard)/{deliverables,files,meetings,timeline}/{page.tsx,loading.tsx}`.
 - Added supporting feature components under `src/features/{deliverables,files,meetings,timelines}/components/`.
 - Added one new shared component: `src/components/shared/status-badge.tsx` (presentational only).
@@ -41,15 +49,17 @@ None. Presentation-only sprint; no schema, table, enum, or migration changes.
 - No new dependencies were added; all UI is built from existing shadcn/ui primitives (`table`, `sheet`, `breadcrumb`, `dropdown-menu`, `input`, `skeleton`) already in `src/components/ui/`.
 
 ## Deployment Notes
+
 - No new environment variables required.
 - User-facing change on deploy: the Deliverables, Files, Meetings, and Timeline sidebar items become clickable (no longer show "Soon") for any user with the corresponding `read` permission.
 
 # Migration Notes - Sprint 12A
 
 ## Database Migrations
+
 **None.** No tables, columns, enums, or migrations were added or changed. The
 v1.0 schema remains frozen. Every change to `src/lib/demo/store.ts` moved the
-demo fixtures *toward* the existing schema, never the reverse — enforced by
+demo fixtures _toward_ the existing schema, never the reverse — enforced by
 `tests/unit/demo-store-schema-parity.test.ts`.
 
 ## Behavioural changes on deploy
@@ -71,6 +81,7 @@ These change what an existing user sees, so they are worth calling out:
   and did nothing.
 
 ## Code migrations
+
 - One new UI primitive: `src/components/ui/popover.tsx` (Base UI Popover,
   styled to match `dropdown-menu.tsx`).
 - One new shared component: `src/components/shared/confirm-dialog.tsx` — the
@@ -88,6 +99,7 @@ These change what an existing user sees, so they are worth calling out:
   persists an emptied field as `NULL`.
 
 ## Deployment notes
+
 - No new environment variables.
 - No new runtime dependencies (`@base-ui/react` popover ships in the existing
   package).
@@ -96,6 +108,7 @@ These change what an existing user sees, so they are worth calling out:
 # Migration Notes - Sprint 12B
 
 ## Database Migrations
+
 **None.** No tables, columns, enums, or migrations were added or changed. The
 v1.0 schema remains frozen. Every capability in this sprint was built on schema
 that already existed — `meeting_attendees`, `meeting_agenda`, `meeting_outcomes`,
@@ -138,6 +151,7 @@ of them had never been written to or read from.
 - **Global search now returns tasks.** The header placeholder changed to match.
 
 ## Code migrations
+
 - One new shared module: `src/features/notifications/templates.ts` — the template
   substitution and feed-composition layer. **Both adapters import it**, which is
   deliberate: rendering logic duplicated per adapter is how demo and production
@@ -157,6 +171,7 @@ of them had never been written to or read from.
   began; all are now declared, seeded and covered by the parity test.
 
 ## Deployment notes
+
 - No new environment variables.
 - No new runtime dependencies.
 - Standard Next.js deployment procedure applies.

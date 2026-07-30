@@ -21,7 +21,11 @@
 // ============================================================
 
 import { type EngineConfig, resolveConfig } from "./config";
-import { calculateEffective, verifyInvariant, verifyMinuteInvariant } from "./effective-calculator";
+import {
+  calculateEffective,
+  verifyInvariant,
+  verifyMinuteInvariant,
+} from "./effective-calculator";
 import { calculateFocus } from "./focus-calculator";
 import { detectIdle } from "./idle-detector";
 import { buildSession } from "./session-builder";
@@ -33,7 +37,12 @@ import type {
   WorkValidationInput,
   WorkValidationMetrics,
 } from "./types";
-import { buildTimeline, computeDerived, partitionMinutes, toTimelineEntries } from "./validation-result";
+import {
+  buildTimeline,
+  computeDerived,
+  partitionMinutes,
+  toTimelineEntries,
+} from "./validation-result";
 import { msToMinutes } from "./value-objects";
 
 /**
@@ -50,13 +59,26 @@ import { msToMinutes } from "./value-objects";
  *  - `sessionMs === effectiveMs + idleMs + breakMs` (verified);
  *  - the minute-rounded parts preserve the same invariant and are all ≥ 0.
  */
-export function validateWorkDay(input: WorkValidationInput, now: number): ValidationResult {
+export function validateWorkDay(
+  input: WorkValidationInput,
+  now: number,
+): ValidationResult {
   const config: EngineConfig = resolveConfig(input.config);
 
   const session = buildSession(input.segments, now, config);
   const breaks = processBreaks(input.breaks, session, now, config);
-  const idle = detectIdle(input.idlePeriods, session, breaks.intervals, now, config);
-  const effective = calculateEffective(session.intervals, breaks.intervals, idle.intervals);
+  const idle = detectIdle(
+    input.idlePeriods,
+    session,
+    breaks.intervals,
+    now,
+    config,
+  );
+  const effective = calculateEffective(
+    session.intervals,
+    breaks.intervals,
+    idle.intervals,
+  );
   const focus = calculateFocus(
     input.focusPeriods,
     session,
@@ -67,16 +89,25 @@ export function validateWorkDay(input: WorkValidationInput, now: number): Valida
   );
 
   // ---- Invariant (ms) — a self-check on the engine's own arithmetic. --------
-  verifyInvariant(session.sessionMs, effective.effectiveMs, idle.idleMs, breaks.breakMs);
+  verifyInvariant(
+    session.sessionMs,
+    effective.effectiveMs,
+    idle.idleMs,
+    breaks.breakMs,
+  );
 
   // ---- Partition-safe minute rounding (preserves the minute invariant). -----
-  const [breakMinutes, idleMinutes, effectiveMinutes] = partitionMinutes(session.sessionMs, [
-    breaks.breakMs,
-    idle.idleMs,
-    effective.effectiveMs,
-  ]);
+  const [breakMinutes, idleMinutes, effectiveMinutes] = partitionMinutes(
+    session.sessionMs,
+    [breaks.breakMs, idle.idleMs, effective.effectiveMs],
+  );
   const sessionMinutes = msToMinutes(session.sessionMs);
-  verifyMinuteInvariant(sessionMinutes, effectiveMinutes, idleMinutes, breakMinutes);
+  verifyMinuteInvariant(
+    sessionMinutes,
+    effectiveMinutes,
+    idleMinutes,
+    breakMinutes,
+  );
 
   // ---- Findings, split by severity. -----------------------------------------
   const allFindings: Finding[] = [
@@ -100,7 +131,11 @@ export function validateWorkDay(input: WorkValidationInput, now: number): Valida
     idleMinutes,
     focusMinutes: msToMinutes(focus.focusMs),
 
-    timeline: buildTimeline(effective.intervals, breaks.intervals, idle.intervals),
+    timeline: buildTimeline(
+      effective.intervals,
+      breaks.intervals,
+      idle.intervals,
+    ),
     focusBlocks: toTimelineEntries(focus.intervals, "WORK"),
 
     violations,
@@ -126,7 +161,10 @@ export function validateWorkDay(input: WorkValidationInput, now: number): Valida
  * {@link WorkValidationMetrics} shape so existing callers and the interim
  * finalizer are unaffected. `logoutAt === null` marks an in-progress session.
  */
-export function computeWorkValidation(input: WorkSessionInput, now: number): WorkValidationMetrics {
+export function computeWorkValidation(
+  input: WorkSessionInput,
+  now: number,
+): WorkValidationMetrics {
   const result = validateWorkDay(
     {
       segments: [{ clockIn: input.loginAt, clockOut: input.logoutAt }],

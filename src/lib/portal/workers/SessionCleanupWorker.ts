@@ -10,14 +10,20 @@ export class SessionCleanupWorker {
   static async cleanupExpiredSessions() {
     const now = new Date();
     try {
-      const result = await db.delete(clientPortalSessions)
+      const result = await db
+        .delete(clientPortalSessions)
         .where(lte(clientPortalSessions.expiresAt, now))
         .returning({ deletedId: clientPortalSessions.sessionId });
-        
-      console.log(`[SessionCleanupWorker] Cleaned up ${result.length} expired sessions at ${now.toISOString()}`);
+
+      console.log(
+        `[SessionCleanupWorker] Cleaned up ${result.length} expired sessions at ${now.toISOString()}`,
+      );
       return result.length;
     } catch (error) {
-      console.error("[SessionCleanupWorker] Failed to clean up sessions", error);
+      console.error(
+        "[SessionCleanupWorker] Failed to clean up sessions",
+        error,
+      );
       throw error;
     }
   }

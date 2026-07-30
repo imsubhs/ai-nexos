@@ -8,18 +8,41 @@ export const insertTaskSchema = z.object({
   parentTaskId: z.string().uuid().optional().nullable(),
   name: z.string().min(1, "Task name is required"),
   description: z.any().optional().nullable(),
-  status: z.enum([
-    "backlog", "todo", "ready", "in_progress", "blocked", 
-    "waiting", "review", "client_review", "approved", 
-    "completed", "cancelled", "archived"
-  ]).default("backlog"),
+  status: z
+    .enum([
+      "backlog",
+      "todo",
+      "ready",
+      "in_progress",
+      "blocked",
+      "waiting",
+      "review",
+      "client_review",
+      "approved",
+      "completed",
+      "cancelled",
+      "archived",
+    ])
+    .default("backlog"),
   priority: z.enum(["critical", "high", "medium", "low"]).default("medium"),
-  taskType: z.enum([
-    "creative", "design", "video_editing", "motion_graphics", 
-    "prompt_engineering", "ai_generation", "qa", "review", 
-    "documentation", "meeting", "development", "research", 
-    "marketing", "other"
-  ]).default("other"),
+  taskType: z
+    .enum([
+      "creative",
+      "design",
+      "video_editing",
+      "motion_graphics",
+      "prompt_engineering",
+      "ai_generation",
+      "qa",
+      "review",
+      "documentation",
+      "meeting",
+      "development",
+      "research",
+      "marketing",
+      "other",
+    ])
+    .default("other"),
   startDate: z.coerce.date().optional().nullable(),
   dueDate: z.coerce.date().optional().nullable(),
   estimatedDurationMins: z.number().int().min(0).default(0),

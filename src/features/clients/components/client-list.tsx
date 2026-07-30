@@ -14,32 +14,46 @@ function getInitials(name: string) {
 export function ClientList({ clients }: { clients: Client[] }) {
   if (clients.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center border rounded-xl bg-card border-dashed">
-        <Building2 className="w-12 h-12 mb-4 text-muted-foreground/50" />
-        <h3 className="text-lg font-semibold tracking-tight">No clients found</h3>
-        <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-          Get started by adding your first client to manage their projects, contacts, and assets.
+      <div className="bg-card flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+        <Building2 className="text-muted-foreground/50 mb-4 h-12 w-12" />
+        <h3 className="text-lg font-semibold tracking-tight">
+          No clients found
+        </h3>
+        <p className="text-muted-foreground mt-2 max-w-sm text-sm">
+          Get started by adding your first client to manage their projects,
+          contacts, and assets.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {clients.map((client) => (
-        <Link href={`/clients/${client.clientId}`} key={client.clientId} className="block group">
-          <Card className="h-full transition-all duration-300 hover:shadow-md hover:border-primary/20 dark:hover:border-primary/30 group-hover:-translate-y-1">
+        <Link
+          href={`/clients/${client.clientId}`}
+          key={client.clientId}
+          className="group block"
+        >
+          <Card className="hover:border-primary/20 dark:hover:border-primary/30 h-full transition-all duration-300 group-hover:-translate-y-1 hover:shadow-md">
             <CardHeader className="flex flex-row items-start justify-between pb-4">
               <div className="flex items-center space-x-4">
-                <Avatar className="w-12 h-12 border border-border">
-                  <AvatarImage src={client.logoUrl || undefined} alt={client.companyName} />
-                  <AvatarFallback className="bg-primary/5 font-semibold text-primary">
+                <Avatar className="border-border h-12 w-12 border">
+                  <AvatarImage
+                    src={client.logoUrl || undefined}
+                    alt={client.companyName}
+                  />
+                  <AvatarFallback className="bg-primary/5 text-primary font-semibold">
                     {getInitials(client.companyName)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-lg line-clamp-1">{client.companyName}</CardTitle>
-                  <p className="text-sm text-muted-foreground line-clamp-1">{client.industry}</p>
+                  <CardTitle className="line-clamp-1 text-lg">
+                    {client.companyName}
+                  </CardTitle>
+                  <p className="text-muted-foreground line-clamp-1 text-sm">
+                    {client.industry}
+                  </p>
                 </div>
               </div>
               <ClientStatusBadge status={client.status} />
@@ -47,25 +61,27 @@ export function ClientList({ clients }: { clients: Client[] }) {
             <CardContent>
               <div className="space-y-3">
                 {client.website && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Globe className="w-4 h-4 mr-2 opacity-70" />
-                    <span className="line-clamp-1 hover:text-foreground transition-colors">
+                  <div className="text-muted-foreground flex items-center text-sm">
+                    <Globe className="mr-2 h-4 w-4 opacity-70" />
+                    <span className="hover:text-foreground line-clamp-1 transition-colors">
                       {client.website.replace(/^https?:\/\//, "")}
                     </span>
                   </div>
                 )}
                 {(client.country || client.address) && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 mr-2 opacity-70" />
+                  <div className="text-muted-foreground flex items-center text-sm">
+                    <MapPin className="mr-2 h-4 w-4 opacity-70" />
                     <span className="line-clamp-1">
-                      {[client.address, client.country].filter(Boolean).join(", ")}
+                      {[client.address, client.country]
+                        .filter(Boolean)
+                        .join(", ")}
                     </span>
                   </div>
                 )}
-                
+
                 {client.clientHealth && (
-                  <div className="pt-3 flex justify-end border-t mt-3 border-border/50">
-                     <ClientHealthBadge health={client.clientHealth} />
+                  <div className="border-border/50 mt-3 flex justify-end border-t pt-3">
+                    <ClientHealthBadge health={client.clientHealth} />
                   </div>
                 )}
               </div>

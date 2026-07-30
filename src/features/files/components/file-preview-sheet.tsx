@@ -69,7 +69,10 @@ type ActivityRow = {
   createdAt: Date | string;
 };
 
-function DetailRow({ label, value }: Readonly<{ label: string; value: React.ReactNode }>) {
+function DetailRow({
+  label,
+  value,
+}: Readonly<{ label: string; value: React.ReactNode }>) {
   return (
     <div className="flex items-start justify-between gap-4 py-2">
       <span className="text-muted-foreground text-sm">{label}</span>
@@ -85,7 +88,12 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 }
 
-const FILE_SHARE_ACCESS_LEVELS = ["preview", "download", "metadata", "comment"] as const;
+const FILE_SHARE_ACCESS_LEVELS = [
+  "preview",
+  "download",
+  "metadata",
+  "comment",
+] as const;
 
 const SELECT_CLASS =
   "border-input bg-background flex h-8 w-full rounded-lg border px-2.5 py-1 text-sm outline-none";
@@ -110,14 +118,20 @@ export function FilePreviewSheet({
   // prop-to-state sync effect, which the React Compiler rightly rejects.
   const [written, setWritten] = useState<FileRow | null>(null);
   const file =
-    written && fileProp && written.fileId === fileProp.fileId ? written : fileProp;
+    written && fileProp && written.fileId === fileProp.fileId
+      ? written
+      : fileProp;
 
-  const [dialog, setDialog] = useState<"share" | "rename" | "move" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<
+    "share" | "rename" | "move" | "delete" | null
+  >(null);
   const [accessLevel, setAccessLevel] = useState<string>("preview");
   // Keyed by file id for the same reason: a link minted for one file must not
   // appear under the next one, and clearing it in an effect would be a
   // cascading render.
-  const [share, setShare] = useState<{ fileId: string; url: string } | null>(null);
+  const [share, setShare] = useState<{ fileId: string; url: string } | null>(
+    null,
+  );
   const [title, setTitle] = useState("");
   const [targetFolderId, setTargetFolderId] = useState<string>("");
   const [versions, setVersions] = useState<VersionRow[]>([]);
@@ -172,7 +186,8 @@ export function FilePreviewSheet({
   };
 
   const currentFolderName =
-    folders.find((folder) => folder.folderId === file?.folderId)?.name ?? "Project root";
+    folders.find((folder) => folder.folderId === file?.folderId)?.name ??
+    "Project root";
 
   return (
     <Sheet open={file !== null} onOpenChange={(open) => !open && onClose()}>
@@ -231,9 +246,15 @@ export function FilePreviewSheet({
               </div>
 
               <div className="space-y-1">
-                <DetailRow label="Status" value={<StatusBadge status={file.status} />} />
+                <DetailRow
+                  label="Status"
+                  value={<StatusBadge status={file.status} />}
+                />
                 <DetailRow label="Folder" value={currentFolderName} />
-                <DetailRow label="Size" value={formatBytes(file.totalSizeBytes)} />
+                <DetailRow
+                  label="Size"
+                  value={formatBytes(file.totalSizeBytes)}
+                />
                 <DetailRow
                   label="Uploaded"
                   value={new Date(file.createdAt).toLocaleDateString()}
@@ -257,26 +278,34 @@ export function FilePreviewSheet({
 
               {!file.currentVersionId && (
                 <p className="text-muted-foreground text-xs">
-                  This file has no current version, so there is nothing to share.
+                  This file has no current version, so there is nothing to
+                  share.
                 </p>
               )}
 
               {share?.fileId === file.fileId && (
                 <div className="rounded-md border p-3">
                   <p className="text-xs font-medium">Share link</p>
-                  <p className="text-muted-foreground mt-1 text-xs break-all">{share.url}</p>
+                  <p className="text-muted-foreground mt-1 text-xs break-all">
+                    {share.url}
+                  </p>
                 </div>
               )}
 
               <Separator />
               <div className="space-y-2">
-                <p className="text-sm font-medium">Versions ({versions.length})</p>
+                <p className="text-sm font-medium">
+                  Versions ({versions.length})
+                </p>
                 {versions.length === 0 ? (
-                  <p className="text-muted-foreground text-xs">No versions recorded.</p>
+                  <p className="text-muted-foreground text-xs">
+                    No versions recorded.
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {versions.map((version) => {
-                      const isCurrent = version.versionId === file.currentVersionId;
+                      const isCurrent =
+                        version.versionId === file.currentVersionId;
                       return (
                         <li
                           key={version.versionId}
@@ -286,7 +315,10 @@ export function FilePreviewSheet({
                             <p className="text-sm font-medium">
                               v{version.versionNumber}
                               {isCurrent ? (
-                                <Badge variant="outline" className="ml-2 text-[10px]">
+                                <Badge
+                                  variant="outline"
+                                  className="ml-2 text-[10px]"
+                                >
                                   Current
                                 </Badge>
                               ) : null}
@@ -314,15 +346,25 @@ export function FilePreviewSheet({
 
               <Separator />
               <div className="space-y-2">
-                <p className="text-sm font-medium">Share links ({shares.length})</p>
+                <p className="text-sm font-medium">
+                  Share links ({shares.length})
+                </p>
                 {shares.length === 0 ? (
-                  <p className="text-muted-foreground text-xs">No share links issued.</p>
+                  <p className="text-muted-foreground text-xs">
+                    No share links issued.
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {shares.map((share) => (
-                      <li key={share.shareId} className="rounded-md border px-3 py-2">
+                      <li
+                        key={share.shareId}
+                        className="rounded-md border px-3 py-2"
+                      >
                         <div className="flex items-center justify-between gap-2">
-                          <Badge variant="outline" className="text-[10px] capitalize">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] capitalize"
+                          >
                             {share.accessLevel}
                           </Badge>
                           <span className="text-muted-foreground text-xs">
@@ -341,9 +383,13 @@ export function FilePreviewSheet({
 
               <Separator />
               <div className="space-y-2">
-                <p className="text-sm font-medium">Activity ({activity.length})</p>
+                <p className="text-sm font-medium">
+                  Activity ({activity.length})
+                </p>
                 {activity.length === 0 ? (
-                  <p className="text-muted-foreground text-xs">No activity recorded.</p>
+                  <p className="text-muted-foreground text-xs">
+                    No activity recorded.
+                  </p>
                 ) : (
                   <ul className="space-y-1">
                     {activity.map((entry) => (
@@ -352,7 +398,9 @@ export function FilePreviewSheet({
                         className="text-muted-foreground flex items-center justify-between gap-2 text-xs"
                       >
                         <span>{entry.action}</span>
-                        <span>{new Date(entry.createdAt).toLocaleString()}</span>
+                        <span>
+                          {new Date(entry.createdAt).toLocaleString()}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -374,7 +422,12 @@ export function FilePreviewSheet({
               pendingLabel="Renaming…"
               onConfirm={async () => {
                 if (!title.trim()) throw new Error("A title is required.");
-                setWritten((await updateFile({ fileId: file.fileId, title: title.trim() })) as FileRow);
+                setWritten(
+                  (await updateFile({
+                    fileId: file.fileId,
+                    title: title.trim(),
+                  })) as FileRow,
+                );
                 setDialog(null);
                 await afterWrite();
                 toast.success("File renamed");
@@ -456,7 +509,10 @@ export function FilePreviewSheet({
               confirmLabel="Restore"
               pendingLabel="Restoring…"
               onConfirm={async () => {
-                const result = await promoteFileVersion(file.fileId, restoring!.versionId);
+                const result = await promoteFileVersion(
+                  file.fileId,
+                  restoring!.versionId,
+                );
                 setWritten({ ...file, currentVersionId: result.newVersionId });
                 setRestoring(null);
                 await afterWrite();
@@ -480,7 +536,10 @@ export function FilePreviewSheet({
                 const token = (link as { token?: string })?.token;
                 setShare(
                   token
-                    ? { fileId: file.fileId, url: `${window.location.origin}/portal/s/${token}` }
+                    ? {
+                        fileId: file.fileId,
+                        url: `${window.location.origin}/portal/s/${token}`,
+                      }
                     : null,
                 );
                 setDialog(null);

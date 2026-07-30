@@ -59,7 +59,7 @@ export function DataTable<Row>({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border bg-card">
+      <div className="bg-card rounded-xl border">
         <Table aria-label={ariaLabel}>
           <TableHeader>
             <TableRow>
@@ -106,7 +106,7 @@ export function DataTable<Row>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex items-center justify-between text-sm">
         <span>
           Showing {from}–{to} of {total}
         </span>

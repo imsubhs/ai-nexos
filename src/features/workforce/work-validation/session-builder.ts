@@ -82,7 +82,8 @@ export function buildSession(
   const intervals = IntervalEngine.merge(raw);
   const sessionMs = IntervalEngine.totalDuration(intervals);
   const startedAt = intervals.length > 0 ? intervals[0].start : null;
-  const endedAt = intervals.length > 0 ? intervals[intervals.length - 1].end : null;
+  const endedAt =
+    intervals.length > 0 ? intervals[intervals.length - 1].end : null;
 
   return { intervals, sessionMs, startedAt, endedAt, isOngoing, findings };
 }

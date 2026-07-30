@@ -36,8 +36,7 @@ function toEntry(
     name: department.name,
     description: department.description ?? null,
     departmentHeadId: department.departmentHead ?? null,
-    status:
-      status === "inactive" || status === "archived" ? status : "active",
+    status: status === "inactive" || status === "archived" ? status : "active",
     memberCount: memberCountByDepartment.get(department.departmentId) ?? 0,
   };
 }
@@ -93,9 +92,7 @@ export const mockDepartmentReadRepository: DepartmentReadRepository = {
   async findById(organizationId: string, departmentId: string) {
     const { departments, memberCountByDepartment } =
       loadOrgDepartments(organizationId);
-    const department = departments.find(
-      (d) => d.departmentId === departmentId,
-    );
+    const department = departments.find((d) => d.departmentId === departmentId);
     if (!department) return null;
     return toEntry(department, memberCountByDepartment);
   },

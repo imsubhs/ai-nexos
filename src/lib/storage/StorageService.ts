@@ -26,12 +26,17 @@ export interface StorageService {
   /**
    * Generates a pre-signed URL for client-side direct upload
    */
-  createPreSignedUploadUrl(params: PreSignedUploadParams): Promise<PreSignedUrlResponse>;
+  createPreSignedUploadUrl(
+    params: PreSignedUploadParams,
+  ): Promise<PreSignedUrlResponse>;
 
   /**
    * Generates a short-lived download URL for an authenticated user
    */
-  createPreSignedDownloadUrl(path: string, expiresInSeconds: number): Promise<string>;
+  createPreSignedDownloadUrl(
+    path: string,
+    expiresInSeconds: number,
+  ): Promise<string>;
 
   /**
    * Physically deletes a file blob from the storage bucket
@@ -41,5 +46,11 @@ export interface StorageService {
   /**
    * Generates the canonical storage path format
    */
-  getStoragePath(organizationId: string, projectId: string, fileId: string, versionId: string, extension: string): string;
+  getStoragePath(
+    organizationId: string,
+    projectId: string,
+    fileId: string,
+    versionId: string,
+    extension: string,
+  ): string;
 }

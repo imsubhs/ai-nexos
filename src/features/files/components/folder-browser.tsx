@@ -10,7 +10,12 @@
  */
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Folder, Files as FilesIcon, MoreHorizontal } from "lucide-react";
+import {
+  ArrowLeft,
+  Folder,
+  Files as FilesIcon,
+  MoreHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +37,17 @@ import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { deleteFolder, getFolder, getProjectFolders, updateFolder } from "../actions";
-import { FilePreviewSheet, type FileRow, type FolderOption } from "./file-preview-sheet";
+import {
+  deleteFolder,
+  getFolder,
+  getProjectFolders,
+  updateFolder,
+} from "../actions";
+import {
+  FilePreviewSheet,
+  type FileRow,
+  type FolderOption,
+} from "./file-preview-sheet";
 import { FileWriteActions } from "./file-write-actions";
 
 type FolderResult = Awaited<ReturnType<typeof getFolder>>;
@@ -57,8 +71,12 @@ export function FolderBrowser({
   initial: FolderResult;
 }>) {
   const router = useRouter();
-  const [trail, setTrail] = useState<{ folderId: string | null; name: string }[]>(
-    initial.folder ? [{ folderId: initial.folder.folderId, name: initial.folder.name }] : [],
+  const [trail, setTrail] = useState<
+    { folderId: string | null; name: string }[]
+  >(
+    initial.folder
+      ? [{ folderId: initial.folder.folderId, name: initial.folder.name }]
+      : [],
   );
   const [current, setCurrent] = useState<FolderResult>(initial);
   const [selectedFile, setSelectedFile] = useState<FileRow | null>(null);
@@ -75,7 +93,9 @@ export function FolderBrowser({
   const loadFolders = useCallback(async () => {
     try {
       const rows = await getProjectFolders(projectId);
-      setAllFolders(rows.map((row) => ({ folderId: row.folderId, name: row.name })));
+      setAllFolders(
+        rows.map((row) => ({ folderId: row.folderId, name: row.name })),
+      );
     } catch {
       setAllFolders([]);
     }
@@ -94,7 +114,10 @@ export function FolderBrowser({
     };
   }, [loadFolders]);
 
-  const navigateTo = async (folderId: string | null, newTrail: typeof trail) => {
+  const navigateTo = async (
+    folderId: string | null,
+    newTrail: typeof trail,
+  ) => {
     setLoading(true);
     try {
       const result = await getFolder(folderId, projectId);
@@ -109,7 +132,8 @@ export function FolderBrowser({
     }
   };
 
-  const currentFolderId = trail.length > 0 ? trail[trail.length - 1].folderId : null;
+  const currentFolderId =
+    trail.length > 0 ? trail[trail.length - 1].folderId : null;
 
   /** Re-read the folder in place after any write inside it. */
   const refresh = async () => {
@@ -119,7 +143,8 @@ export function FolderBrowser({
   };
 
   const goToRoot = () => navigateTo(null, []);
-  const goToIndex = (index: number) => navigateTo(trail[index].folderId, trail.slice(0, index + 1));
+  const goToIndex = (index: number) =>
+    navigateTo(trail[index].folderId, trail.slice(0, index + 1));
   const openFolder = (folderId: string, name: string) =>
     navigateTo(folderId, [...trail, { folderId, name }]);
 
@@ -140,7 +165,10 @@ export function FolderBrowser({
                   {index === trail.length - 1 ? (
                     <BreadcrumbPage>{crumb.name}</BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink onClick={() => goToIndex(index)} className="cursor-pointer">
+                    <BreadcrumbLink
+                      onClick={() => goToIndex(index)}
+                      className="cursor-pointer"
+                    >
                       {crumb.name}
                     </BreadcrumbLink>
                   )}
@@ -164,8 +192,9 @@ export function FolderBrowser({
         </div>
       </div>
 
-      <div className={loading ? "opacity-50 pointer-events-none" : undefined}>
-        {current.childFolders.length === 0 && current.childFiles.length === 0 ? (
+      <div className={loading ? "pointer-events-none opacity-50" : undefined}>
+        {current.childFolders.length === 0 &&
+        current.childFiles.length === 0 ? (
           <EmptyState
             icon={Folder}
             title="This folder is empty"
@@ -174,7 +203,7 @@ export function FolderBrowser({
         ) : (
           <div className="space-y-4">
             {current.childFolders.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {current.childFolders.map((folder: any) => (
                   <div
                     key={folder.folderId}
@@ -188,7 +217,9 @@ export function FolderBrowser({
                         className="text-muted-foreground h-5 w-5 shrink-0"
                         style={{ color: folder.color }}
                       />
-                      <span className="truncate font-medium">{folder.name}</span>
+                      <span className="truncate font-medium">
+                        {folder.name}
+                      </span>
                     </button>
 
                     <DropdownMenu>
@@ -220,7 +251,9 @@ export function FolderBrowser({
                         >
                           Move
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setDeletingFolder(folder)}>
+                        <DropdownMenuItem
+                          onClick={() => setDeletingFolder(folder)}
+                        >
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -231,19 +264,21 @@ export function FolderBrowser({
             ) : null}
 
             {current.childFiles.length > 0 ? (
-              <div className="rounded-xl border bg-card divide-y">
+              <div className="bg-card divide-y rounded-xl border">
                 {current.childFiles.map((file: any) => (
                   <button
                     key={file.fileId}
                     onClick={() => setSelectedFile(file)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-muted/40"
+                    className="hover:bg-muted/40 flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <FilesIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <span className="font-medium truncate">{file.title}</span>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <FilesIcon className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <span className="truncate font-medium">{file.title}</span>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-sm text-muted-foreground">{formatBytes(file.totalSizeBytes)}</span>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <span className="text-muted-foreground text-sm">
+                        {formatBytes(file.totalSizeBytes)}
+                      </span>
                       <StatusBadge status={file.status} />
                     </div>
                   </button>
@@ -270,7 +305,10 @@ export function FolderBrowser({
         pendingLabel="Renaming…"
         onConfirm={async () => {
           if (!folderName.trim()) throw new Error("A name is required.");
-          await updateFolder({ folderId: renaming!.folderId, name: folderName.trim() });
+          await updateFolder({
+            folderId: renaming!.folderId,
+            name: folderName.trim(),
+          });
           setRenaming(null);
           await refresh();
           toast.success("Folder renamed");

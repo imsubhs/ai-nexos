@@ -26,9 +26,12 @@ export async function getWorkforcePolicyAction(): Promise<WorkforcePolicy> {
 
   let override: WorkforcePolicyOverride | null = null;
   if (process.env.DEMO_MODE === "true") {
-    const org = (getDemoStore().organizations as { organizationId: string; workforceSettings?: WorkforcePolicyOverride }[]).find(
-      (o) => o.organizationId === user.organizationId,
-    );
+    const org = (
+      getDemoStore().organizations as {
+        organizationId: string;
+        workforceSettings?: WorkforcePolicyOverride;
+      }[]
+    ).find((o) => o.organizationId === user.organizationId);
     override = org?.workforceSettings ?? null;
   }
   // Real path (Phase 4.9): read organization_settings.workforce here.

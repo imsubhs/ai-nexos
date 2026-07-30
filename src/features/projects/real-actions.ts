@@ -21,7 +21,7 @@ async function logActivity(
   userId: string,
   organizationId: string,
   metadata?: Record<string, unknown>,
-  tx: typeof db | DbTransaction = db
+  tx: typeof db | DbTransaction = db,
 ) {
   await tx.insert(activityLogs).values({
     organizationId,
@@ -38,9 +38,12 @@ async function logActivity(
 /**
  * Generate a sequential project code format: AIC-YYYY-XXXX
  */
-async function generateProjectCode(organizationId: string, tx: typeof db | DbTransaction = db): Promise<string> {
+async function generateProjectCode(
+  organizationId: string,
+  tx: typeof db | DbTransaction = db,
+): Promise<string> {
   const currentYear = new Date().getFullYear().toString();
-  
+
   const [sequence] = await tx
     .insert(organizationSequences)
     .values({
@@ -49,7 +52,10 @@ async function generateProjectCode(organizationId: string, tx: typeof db | DbTra
       nextValue: 1,
     })
     .onConflictDoUpdate({
-      target: [organizationSequences.organizationId, organizationSequences.entityType],
+      target: [
+        organizationSequences.organizationId,
+        organizationSequences.entityType,
+      ],
       set: { nextValue: sql`${organizationSequences.nextValue} + 1` },
     })
     .returning();
@@ -79,10 +85,17 @@ export async function createProject(data: z.infer<typeof insertProjectSchema>) {
       })
       .returning();
 
-    await logActivity("created", newProject.projectId, user.userId, user.organizationId, {
-      projectCode,
-      projectName: newProject.projectName,
-    }, tx);
+    await logActivity(
+      "created",
+      newProject.projectId,
+      user.userId,
+      user.organizationId,
+      {
+        projectCode,
+        projectName: newProject.projectName,
+      },
+      tx,
+    );
 
     return newProject;
   });
@@ -94,7 +107,10 @@ export async function createProject(data: z.infer<typeof insertProjectSchema>) {
 /**
  * Update an existing project.
  */
-export async function updateProject(projectId: string, data: z.infer<typeof updateProjectSchema>) {
+export async function updateProject(
+  projectId: string,
+  data: z.infer<typeof updateProjectSchema>,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "update");
 
@@ -105,7 +121,12 @@ export async function updateProject(projectId: string, data: z.infer<typeof upda
       updatedAt: new Date(),
       updatedBy: user.userId,
     })
-    .where(and(eq(projects.projectId, projectId), eq(projects.organizationId, user.organizationId)))
+    .where(
+      and(
+        eq(projects.projectId, projectId),
+        eq(projects.organizationId, user.organizationId),
+      ),
+    )
     .returning();
 
   await logActivity("updated", projectId, user.userId, user.organizationId, {
@@ -123,12 +144,15 @@ export async function updateProject(projectId: string, data: z.infer<typeof upda
 export async function getProjects(
   query?: string,
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
 ) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "read");
 
-  const filters = [isNull(projects.deletedAt), eq(projects.organizationId, user.organizationId)];
+  const filters = [
+    isNull(projects.deletedAt),
+    eq(projects.organizationId, user.organizationId),
+  ];
   if (query) {
     filters.push(ilike(projects.projectName, `%${query}%`));
   }
@@ -156,7 +180,7 @@ export async function getProjectById(projectId: string) {
     where: and(
       eq(projects.projectId, projectId),
       eq(projects.organizationId, user.organizationId),
-      isNull(projects.deletedAt)
+      isNull(projects.deletedAt),
     ),
     with: {
       client: true,
@@ -187,7 +211,12 @@ export async function archiveProject(projectId: string) {
         deletedBy: user.userId,
         status: "archived",
       })
-      .where(and(eq(projects.projectId, projectId), eq(projects.organizationId, user.organizationId)));
+      .where(
+        and(
+          eq(projects.projectId, projectId),
+          eq(projects.organizationId, user.organizationId),
+        ),
+      );
 
     // Cascade to project members
     await tx
@@ -197,7 +226,14 @@ export async function archiveProject(projectId: string) {
       })
       .where(eq(projectMembers.projectId, projectId));
 
-    await logActivity("archived", projectId, user.userId, user.organizationId, undefined, tx);
+    await logActivity(
+      "archived",
+      projectId,
+      user.userId,
+      user.organizationId,
+      undefined,
+      tx,
+    );
   });
 
   revalidatePath("/projects");
@@ -227,16 +263,18 @@ export interface ProjectDashboardSummary {
 /**
  * Get the dashboard summary model for a project. (Stubbed for future implementation)
  */
-export async function getProjectDashboardSummary(projectId: string): Promise<ProjectDashboardSummary> {
+export async function getProjectDashboardSummary(
+  projectId: string,
+): Promise<ProjectDashboardSummary> {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "read");
 
   const project = await db.query.projects.findFirst({
     where: and(
       eq(projects.projectId, projectId),
-      eq(projects.organizationId, user.organizationId)
+      eq(projects.organizationId, user.organizationId),
     ),
-    with: { client: true }
+    with: { client: true },
   });
 
   if (!project) throw new Error("Project not found");
@@ -264,13 +302,20 @@ export async function getProjectDashboardSummary(projectId: string): Promise<Pro
 /**
  * Add a member to a project.
  */
-export async function addProjectMember(projectId: string, userId: string, role: string) {
+export async function addProjectMember(
+  projectId: string,
+  userId: string,
+  role: string,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "update");
 
   // Basic check to ensure the project exists in this org
   const project = await db.query.projects.findFirst({
-    where: and(eq(projects.projectId, projectId), eq(projects.organizationId, user.organizationId)),
+    where: and(
+      eq(projects.projectId, projectId),
+      eq(projects.organizationId, user.organizationId),
+    ),
   });
 
   if (!project) throw new Error("Project not found");
@@ -284,10 +329,16 @@ export async function addProjectMember(projectId: string, userId: string, role: 
     })
     .returning();
 
-  await logActivity("member_added", projectId, user.userId, user.organizationId, {
-    memberUserId: userId,
-    role,
-  });
+  await logActivity(
+    "member_added",
+    projectId,
+    user.userId,
+    user.organizationId,
+    {
+      memberUserId: userId,
+      role,
+    },
+  );
 
   revalidatePath(`/projects/${projectId}`);
   return member;
@@ -307,10 +358,16 @@ export async function updateProjectMemberRole(memberId: string, role: string) {
     .returning();
 
   if (member) {
-    await logActivity("member_role_updated", member.projectId, user.userId, user.organizationId, {
-      memberId,
-      newRole: role,
-    });
+    await logActivity(
+      "member_role_updated",
+      member.projectId,
+      user.userId,
+      user.organizationId,
+      {
+        memberId,
+        newRole: role,
+      },
+    );
     revalidatePath(`/projects/${member.projectId}`);
   }
 
@@ -330,9 +387,15 @@ export async function removeProjectMember(memberId: string) {
     .returning();
 
   if (member) {
-    await logActivity("member_removed", member.projectId, user.userId, user.organizationId, {
-      memberUserId: member.userId,
-    });
+    await logActivity(
+      "member_removed",
+      member.projectId,
+      user.userId,
+      user.organizationId,
+      {
+        memberUserId: member.userId,
+      },
+    );
     revalidatePath(`/projects/${member.projectId}`);
   }
 
@@ -350,8 +413,8 @@ export async function getActiveProjectsCount() {
       and(
         eq(projects.organizationId, user.organizationId),
         isNull(projects.deletedAt),
-        not(inArray(projects.status, ["completed", "cancelled", "archived"]))
-      )
+        not(inArray(projects.status, ["completed", "cancelled", "archived"])),
+      ),
     );
 
   return result?.value ?? 0;

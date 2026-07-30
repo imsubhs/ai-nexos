@@ -49,7 +49,9 @@ export function TaskBoard({
       await onChanged();
       toast.success(`Moved to ${labelFor(status)}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not move the task");
+      toast.error(
+        error instanceof Error ? error.message : "Could not move the task",
+      );
     } finally {
       setMovingId(null);
     }
@@ -86,7 +88,8 @@ export function TaskBoard({
       {offBoard.length > 0 && (
         <p className="text-muted-foreground text-xs">
           {offBoard.length} task{offBoard.length === 1 ? "" : "s"} in a status
-          without a board column ({[...new Set(offBoard.map((t) => labelFor(t.status)))].join(", ")}).
+          without a board column (
+          {[...new Set(offBoard.map((t) => labelFor(t.status)))].join(", ")}).
           Switch to List View to see them.
         </p>
       )}

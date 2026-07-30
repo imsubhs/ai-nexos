@@ -81,7 +81,10 @@ export function GlobalSearch() {
   const isEmpty = !loading && hasQuery && groups.length === 0;
 
   return (
-    <div ref={containerRef} className="relative hidden max-w-md flex-1 md:block">
+    <div
+      ref={containerRef}
+      className="relative hidden max-w-md flex-1 md:block"
+    >
       <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
       <Input
         type="search"
@@ -130,7 +133,7 @@ export function GlobalSearch() {
           {!loading &&
             groups.map((group) => (
               <div key={group.key} className="border-b last:border-b-0">
-                <p className="text-muted-foreground px-3 pt-2 pb-1 text-xs font-medium uppercase tracking-wide">
+                <p className="text-muted-foreground px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
                   {group.label}
                 </p>
                 {group.hits.map((hit) => (

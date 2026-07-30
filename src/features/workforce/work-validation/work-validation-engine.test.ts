@@ -1,13 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { computeWorkValidation, validateWorkDay } from "./work-validation-engine";
+import {
+  computeWorkValidation,
+  validateWorkDay,
+} from "./work-validation-engine";
 import type { TimePeriod } from "./value-objects";
 import type { ValidationResult, WorkValidationInput } from "./types";
 
 const MIN = 60_000;
 const at = (m: number) => m * MIN;
-const period = (s: number, e: number | null): TimePeriod => ({ startAt: at(s), endAt: e === null ? null : at(e) });
+const period = (s: number, e: number | null): TimePeriod => ({
+  startAt: at(s),
+  endAt: e === null ? null : at(e),
+});
 
-function day(overrides: Partial<WorkValidationInput> = {}): WorkValidationInput {
+function day(
+  overrides: Partial<WorkValidationInput> = {},
+): WorkValidationInput {
   return {
     segments: [{ clockIn: at(0), clockOut: at(540) }],
     breaks: [],
@@ -20,11 +28,24 @@ function day(overrides: Partial<WorkValidationInput> = {}): WorkValidationInput 
 /** Assert every invariant the engine guarantees, on any result. */
 function assertInvariants(r: ValidationResult): void {
   expect(r.effectiveMs + r.idleMs + r.breakMs).toBe(r.sessionMs);
-  expect(r.effectiveMinutes + r.idleMinutes + r.breakMinutes).toBe(r.sessionMinutes);
-  for (const value of [r.sessionMs, r.effectiveMs, r.idleMs, r.breakMs, r.focusMs]) {
+  expect(r.effectiveMinutes + r.idleMinutes + r.breakMinutes).toBe(
+    r.sessionMinutes,
+  );
+  for (const value of [
+    r.sessionMs,
+    r.effectiveMs,
+    r.idleMs,
+    r.breakMs,
+    r.focusMs,
+  ]) {
     expect(value).toBeGreaterThanOrEqual(0);
   }
-  for (const value of [r.effectiveMinutes, r.idleMinutes, r.breakMinutes, r.focusMinutes]) {
+  for (const value of [
+    r.effectiveMinutes,
+    r.idleMinutes,
+    r.breakMinutes,
+    r.focusMinutes,
+  ]) {
     expect(value).toBeGreaterThanOrEqual(0);
   }
   expect(r.focusMs).toBeLessThanOrEqual(r.sessionMs);
@@ -75,17 +96,25 @@ describe("validateWorkDay — canonical scenarios", () => {
 
   it("clock out before break ends: break is clamped to the session", () => {
     const r = validateWorkDay(
-      { ...day({ segments: [{ clockIn: at(0), clockOut: at(300) }] }), breaks: [period(280, 360)] },
+      {
+        ...day({ segments: [{ clockIn: at(0), clockOut: at(300) }] }),
+        breaks: [period(280, 360)],
+      },
       at(400),
     );
     expect(r.breakMinutes).toBe(20); // 280–300 only
-    expect(r.violations.some((f) => f.code === "clock-out-before-break-end")).toBe(true);
+    expect(
+      r.violations.some((f) => f.code === "clock-out-before-break-end"),
+    ).toBe(true);
     assertInvariants(r);
   });
 
   it("missing clock out: bounded at now and reported ongoing", () => {
     const r = validateWorkDay(
-      day({ segments: [{ clockIn: at(0), clockOut: null }], idlePeriods: [period(60, null)] }),
+      day({
+        segments: [{ clockIn: at(0), clockOut: null }],
+        idlePeriods: [period(60, null)],
+      }),
       at(120),
     );
     expect(r.sessionMinutes).toBe(120);
@@ -99,7 +128,12 @@ describe("validateWorkDay — canonical scenarios", () => {
   it("cross-midnight session", () => {
     const dayMs = 24 * 60 * MIN;
     const r = validateWorkDay(
-      { segments: [{ clockIn: dayMs - at(60), clockOut: dayMs + at(120) }], breaks: [], idlePeriods: [], focusPeriods: [] },
+      {
+        segments: [{ clockIn: dayMs - at(60), clockOut: dayMs + at(120) }],
+        breaks: [],
+        idlePeriods: [],
+        focusPeriods: [],
+      },
       dayMs + at(200),
     );
     expect(r.sessionMinutes).toBe(180);
@@ -117,7 +151,10 @@ describe("validateWorkDay — canonical scenarios", () => {
 
   it("idle threshold reclassifies short idle to effective", () => {
     const r = validateWorkDay(
-      day({ idlePeriods: [period(100, 103), period(200, 230)], config: { minIdleBlockMs: at(5) } }),
+      day({
+        idlePeriods: [period(100, 103), period(200, 230)],
+        config: { minIdleBlockMs: at(5) },
+      }),
       at(540),
     );
     expect(r.idleMinutes).toBe(30);
@@ -150,7 +187,10 @@ describe("validateWorkDay — canonical scenarios", () => {
 
   it("derived metrics expose ratios and focus stats", () => {
     const r = validateWorkDay(
-      day({ breaks: [period(180, 240)], focusPeriods: [period(0, 120), period(300, 420)] }),
+      day({
+        breaks: [period(180, 240)],
+        focusPeriods: [period(0, 120), period(300, 420)],
+      }),
       at(540),
     );
     expect(r.derived.breakRatio).toBeCloseTo(60 / 540, 5);
@@ -163,7 +203,13 @@ describe("validateWorkDay — canonical scenarios", () => {
 describe("computeWorkValidation — legacy contract (ported W1)", () => {
   it("treats a full session with no breaks/idle as fully effective", () => {
     const m = computeWorkValidation(
-      { loginAt: at(0), logoutAt: at(540), breaks: [], idlePeriods: [], focusPeriods: [] },
+      {
+        loginAt: at(0),
+        logoutAt: at(540),
+        breaks: [],
+        idlePeriods: [],
+        focusPeriods: [],
+      },
       at(540),
     );
     expect(m.sessionMinutes).toBe(540);
@@ -189,7 +235,13 @@ describe("computeWorkValidation — legacy contract (ported W1)", () => {
 
   it("never produces negative durations when logout precedes login", () => {
     const m = computeWorkValidation(
-      { loginAt: at(100), logoutAt: at(40), breaks: [], idlePeriods: [], focusPeriods: [] },
+      {
+        loginAt: at(100),
+        logoutAt: at(40),
+        breaks: [],
+        idlePeriods: [],
+        focusPeriods: [],
+      },
       at(100),
     );
     expect(m.sessionMinutes).toBe(0);
@@ -248,7 +300,10 @@ describe("validateWorkDay — randomized interval fuzz", () => {
         breaks: randomPeriods(Math.floor(rand() * 4), bound),
         idlePeriods: randomPeriods(Math.floor(rand() * 4), bound),
         focusPeriods: randomPeriods(Math.floor(rand() * 4), bound),
-        config: rand() < 0.5 ? { minIdleBlockMs: at(Math.floor(rand() * 5)) } : undefined,
+        config:
+          rand() < 0.5
+            ? { minIdleBlockMs: at(Math.floor(rand() * 5)) }
+            : undefined,
       };
 
       const r = validateWorkDay(input, now);
@@ -259,16 +314,29 @@ describe("validateWorkDay — randomized interval fuzz", () => {
   it("preserves the invariant with multiple random clock segments", () => {
     const rand = mulberry32(0x99f3);
     for (let i = 0; i < 200; i += 1) {
-      const segments = Array.from({ length: 1 + Math.floor(rand() * 3) }, () => {
-        const clockIn = Math.floor(rand() * at(400));
-        const clockOut = clockIn + Math.floor(rand() * at(200));
-        return { clockIn, clockOut };
-      });
+      const segments = Array.from(
+        { length: 1 + Math.floor(rand() * 3) },
+        () => {
+          const clockIn = Math.floor(rand() * at(400));
+          const clockOut = clockIn + Math.floor(rand() * at(200));
+          return { clockIn, clockOut };
+        },
+      );
       const r = validateWorkDay(
         {
           segments,
-          breaks: [{ startAt: Math.floor(rand() * at(400)), endAt: Math.floor(rand() * at(400)) }],
-          idlePeriods: [{ startAt: Math.floor(rand() * at(400)), endAt: Math.floor(rand() * at(400)) }],
+          breaks: [
+            {
+              startAt: Math.floor(rand() * at(400)),
+              endAt: Math.floor(rand() * at(400)),
+            },
+          ],
+          idlePeriods: [
+            {
+              startAt: Math.floor(rand() * at(400)),
+              endAt: Math.floor(rand() * at(400)),
+            },
+          ],
           focusPeriods: [],
         },
         at(700),

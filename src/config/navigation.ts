@@ -42,20 +42,72 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Workspace",
     items: [
-      { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, status: "live" },
-      { title: "Projects", href: "/projects", icon: FolderKanban, status: "live", permission: ["projects", "read"] },
-      { title: "Clients", href: "/clients", icon: Building2, status: "live", permission: ["clients", "read"] },
-      { title: "Tasks", href: "/tasks", icon: CheckSquare, status: "live", permission: ["tasks", "read"] },
-      { title: "Timeline", href: "/timeline", icon: GanttChartSquare, status: "live", permission: ["timeline", "read"] },
-      { title: "Calendar", href: "/calendar", icon: CalendarDays, status: "coming-soon" },
+      {
+        title: "Dashboard",
+        href: "/dashboard",
+        icon: LayoutDashboard,
+        status: "live",
+      },
+      {
+        title: "Projects",
+        href: "/projects",
+        icon: FolderKanban,
+        status: "live",
+        permission: ["projects", "read"],
+      },
+      {
+        title: "Clients",
+        href: "/clients",
+        icon: Building2,
+        status: "live",
+        permission: ["clients", "read"],
+      },
+      {
+        title: "Tasks",
+        href: "/tasks",
+        icon: CheckSquare,
+        status: "live",
+        permission: ["tasks", "read"],
+      },
+      {
+        title: "Timeline",
+        href: "/timeline",
+        icon: GanttChartSquare,
+        status: "live",
+        permission: ["timeline", "read"],
+      },
+      {
+        title: "Calendar",
+        href: "/calendar",
+        icon: CalendarDays,
+        status: "coming-soon",
+      },
     ],
   },
   {
     label: "Production",
     items: [
-      { title: "Deliverables", href: "/deliverables", icon: FileText, status: "live", permission: ["deliverables", "read"] },
-      { title: "Files", href: "/files", icon: Files, status: "live", permission: ["files", "read"] },
-      { title: "Meetings", href: "/meetings", icon: Video, status: "live", permission: ["meetings", "read"] },
+      {
+        title: "Deliverables",
+        href: "/deliverables",
+        icon: FileText,
+        status: "live",
+        permission: ["deliverables", "read"],
+      },
+      {
+        title: "Files",
+        href: "/files",
+        icon: Files,
+        status: "live",
+        permission: ["files", "read"],
+      },
+      {
+        title: "Meetings",
+        href: "/meetings",
+        icon: Video,
+        status: "live",
+        permission: ["meetings", "read"],
+      },
     ],
   },
   {
@@ -63,20 +115,74 @@ export const NAV_SECTIONS: NavSection[] = [
     // remaining items flip live as their WPs land (doc 17 Slices B–D).
     label: "Workforce",
     items: [
-      { title: "My Attendance", href: "/workforce/attendance", icon: Clock, status: "coming-soon", permission: ["attendance", "clock"] },
-      { title: "History", href: "/workforce/history", icon: CalendarDays, status: "coming-soon", permission: ["attendance", "read"] },
-      { title: "Corrections", href: "/workforce/corrections", icon: FilePenLine, status: "coming-soon", permission: ["corrections", "create"] },
-      { title: "Review Queue", href: "/workforce/corrections/review", icon: ClipboardCheck, status: "coming-soon", permission: ["corrections", "review"] },
-      { title: "Team Attendance", href: "/workforce/team", icon: Users, status: "coming-soon", permission: ["attendance", "view_team"] },
-      { title: "Employees", href: "/workforce/employees", icon: ContactRound, status: "live", permission: ["users", "read"] },
-      { title: "Reports", href: "/workforce/reports", icon: BarChart3, status: "coming-soon", permission: ["reports", "read"] },
+      {
+        title: "My Attendance",
+        href: "/workforce/attendance",
+        icon: Clock,
+        status: "coming-soon",
+        permission: ["attendance", "clock"],
+      },
+      {
+        title: "History",
+        href: "/workforce/history",
+        icon: CalendarDays,
+        status: "coming-soon",
+        permission: ["attendance", "read"],
+      },
+      {
+        title: "Corrections",
+        href: "/workforce/corrections",
+        icon: FilePenLine,
+        status: "coming-soon",
+        permission: ["corrections", "create"],
+      },
+      {
+        title: "Review Queue",
+        href: "/workforce/corrections/review",
+        icon: ClipboardCheck,
+        status: "coming-soon",
+        permission: ["corrections", "review"],
+      },
+      {
+        title: "Team Attendance",
+        href: "/workforce/team",
+        icon: Users,
+        status: "coming-soon",
+        permission: ["attendance", "view_team"],
+      },
+      {
+        title: "Employees",
+        href: "/workforce/employees",
+        icon: ContactRound,
+        status: "live",
+        permission: ["users", "read"],
+      },
+      {
+        title: "Reports",
+        href: "/workforce/reports",
+        icon: BarChart3,
+        status: "coming-soon",
+        permission: ["reports", "read"],
+      },
     ],
   },
   {
     label: "Intelligence",
     items: [
-      { title: "AI Workspace", href: "/ai", icon: Bot, status: "coming-soon", permission: ["ai", "read"] },
-      { title: "Analytics", href: "/analytics", icon: BarChart3, status: "coming-soon", permission: ["analytics", "read"] },
+      {
+        title: "AI Workspace",
+        href: "/ai",
+        icon: Bot,
+        status: "coming-soon",
+        permission: ["ai", "read"],
+      },
+      {
+        title: "Analytics",
+        href: "/analytics",
+        icon: BarChart3,
+        status: "coming-soon",
+        permission: ["analytics", "read"],
+      },
     ],
   },
   {
@@ -84,7 +190,13 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       // "Team → /team" removed (doc 13 §2 note 3): superseded by
       // Workforce ▸ Employees (directory) + Settings ▸ Members (administration).
-      { title: "Settings", href: "/settings", icon: Settings, status: "live", permission: ["settings", "read"] },
+      {
+        title: "Settings",
+        href: "/settings",
+        icon: Settings,
+        status: "live",
+        permission: ["settings", "read"],
+      },
     ],
   },
 ];

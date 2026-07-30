@@ -529,7 +529,8 @@ function createSeedData(): DemoStore {
       organizationId: DEMO_ORG_ID,
       projectCode: "AIC-2026-0001",
       projectName: "Website Redesign",
-      description: "Full redesign of the Acme marketing site with a new design system.",
+      description:
+        "Full redesign of the Acme marketing site with a new design system.",
       clientId: id.clientAcme,
       projectManager: DEMO_USER_ID,
       creativeDirector: null,
@@ -553,7 +554,8 @@ function createSeedData(): DemoStore {
       organizationId: DEMO_ORG_ID,
       projectCode: "AIC-2026-0002",
       projectName: "Brand Campaign Q3",
-      description: "Multi-channel launch campaign for Northwind's autumn slate.",
+      description:
+        "Multi-channel launch campaign for Northwind's autumn slate.",
       clientId: id.clientNorthwind,
       projectManager: DEMO_USER_ID,
       creativeDirector: null,
@@ -615,30 +617,63 @@ function createSeedData(): DemoStore {
     orderIndex,
     startDate: null,
     endDate: null,
-    status: orderIndex === 0 ? "completed" : orderIndex === 1 ? "in_progress" : "not_started",
+    status:
+      orderIndex === 0
+        ? "completed"
+        : orderIndex === 1
+          ? "in_progress"
+          : "not_started",
     ...auditFields(-21),
   }));
 
-  const milestoneSeed: Array<[string, string, string, number, number, number, string]> = [
-    [id.milestoneDiscovery, id.phasePlanning, "Discovery & Audit", -21, -14, 100, "completed"],
-    [id.milestoneWireframes, id.phasePreProd, "Wireframes", -13, -2, 80, "in_progress"],
-    [id.milestoneBuild, id.phaseProduction, "Build & Integration", 0, 21, 10, "in_progress"],
+  const milestoneSeed: Array<
+    [string, string, string, number, number, number, string]
+  > = [
+    [
+      id.milestoneDiscovery,
+      id.phasePlanning,
+      "Discovery & Audit",
+      -21,
+      -14,
+      100,
+      "completed",
+    ],
+    [
+      id.milestoneWireframes,
+      id.phasePreProd,
+      "Wireframes",
+      -13,
+      -2,
+      80,
+      "in_progress",
+    ],
+    [
+      id.milestoneBuild,
+      id.phaseProduction,
+      "Build & Integration",
+      0,
+      21,
+      10,
+      "in_progress",
+    ],
     [id.milestoneLaunch, id.phaseDelivery, "Launch", 28, 35, 0, "not_started"],
   ];
 
-  const milestones = milestoneSeed.map(([milestoneId, phaseId, name, start, end, progress, status]) => ({
-    milestoneId,
-    timelineId: id.timelineWebsite,
-    phaseId,
-    organizationId: DEMO_ORG_ID,
-    name,
-    description: null,
-    startDate: seedDate(start as number),
-    endDate: seedDate(end as number),
-    progress,
-    status,
-    ...auditFields(-21),
-  }));
+  const milestones = milestoneSeed.map(
+    ([milestoneId, phaseId, name, start, end, progress, status]) => ({
+      milestoneId,
+      timelineId: id.timelineWebsite,
+      phaseId,
+      organizationId: DEMO_ORG_ID,
+      name,
+      description: null,
+      startDate: seedDate(start as number),
+      endDate: seedDate(end as number),
+      progress,
+      status,
+      ...auditFields(-21),
+    }),
+  );
 
   const timelineDependencies = [
     {
@@ -653,17 +688,46 @@ function createSeedData(): DemoStore {
   ];
 
   // [taskId, taskCode, name, status, priority, taskType, progress]
-  const taskSeed: Array<[string, string, string, string, string, string, number]> = [
-    [id.taskAudit, "AIC-T-2026-0001", "Content audit", "completed", "medium", "research", 100],
-    [id.taskWireframes, "AIC-T-2026-0002", "Design wireframes", "in_progress", "high", "design", 60],
-    [id.taskCopy, "AIC-T-2026-0003", "Draft homepage copy", "todo", "medium", "creative", 0],
+  const taskSeed: Array<
+    [string, string, string, string, string, string, number]
+  > = [
+    [
+      id.taskAudit,
+      "AIC-T-2026-0001",
+      "Content audit",
+      "completed",
+      "medium",
+      "research",
+      100,
+    ],
+    [
+      id.taskWireframes,
+      "AIC-T-2026-0002",
+      "Design wireframes",
+      "in_progress",
+      "high",
+      "design",
+      60,
+    ],
+    [
+      id.taskCopy,
+      "AIC-T-2026-0003",
+      "Draft homepage copy",
+      "todo",
+      "medium",
+      "creative",
+      0,
+    ],
   ];
 
   // Column names mirror src/db/schema/tasks.ts. Sprint 12A added the columns
   // the task detail dialog reads but the seed never carried (timelineId,
   // phaseId, taskType, progress, scheduling) — previously rendered as "—".
   const tasks = taskSeed.map(
-    ([taskId, taskCode, name, status, priority, taskType, progress], index) => ({
+    (
+      [taskId, taskCode, name, status, priority, taskType, progress],
+      index,
+    ) => ({
       taskId,
       taskCode,
       organizationId: DEMO_ORG_ID,
@@ -787,7 +851,7 @@ function createSeedData(): DemoStore {
       isLocked: true,
       aiMetadata: null,
       ...auditFields(-5),
-    }
+    },
   ];
 
   const deliverableRevisions = [
@@ -843,7 +907,7 @@ function createSeedData(): DemoStore {
       aiSummaryId: null,
       aiSummaryProcessingStatus: null,
       ...auditFields(-10),
-    }
+    },
   ];
 
   // Sprint 12B: the meeting sub-collections the aggregate always had columns
@@ -929,7 +993,8 @@ function createSeedData(): DemoStore {
       meetingId: id.meetingQuarterly,
       outcomeType: "decision",
       title: "Ship the homepage before the interior pages",
-      description: "Acme wants the marketing hero live for the autumn campaign.",
+      description:
+        "Acme wants the marketing hero live for the autumn campaign.",
       raisedById: DEMO_USER_ID,
       ownerId: DEMO_USER_ID,
       ...auditFields(-9),
@@ -1033,16 +1098,72 @@ function createSeedData(): DemoStore {
     // status values come from fileLifecycleStatusEnum (src/db/schema/enums.ts);
     // the spread covers a terminal-positive, a ready, an uploaded, and one
     // still mid-pipeline so every StatusBadge branch is exercised.
-    [id.fileBrandBook, id.folderBrandAssets, "Brand Book 2026.pdf", "document", "published", 4_718_592, -18],
-    [id.fileLogoPrimary, id.folderLogos, "Logo — Primary.svg", "image", "published", 24_576, -17],
-    [id.fileLogoMono, id.folderLogos, "Logo — Monochrome.svg", "image", "ready", 21_504, -17],
-    [id.fileHomepageWireframe, id.folderDesign, "Homepage Wireframe v3.png", "image", "uploaded", 1_887_437, -12],
-    [id.fileLaunchTeaser, id.folderDesign, "Launch Teaser Cut.mp4", "video", "thumbnail_generation", 68_157_440, -6],
-    [id.fileContentAudit, null, "Content Audit.xlsx", "document", "archived", 512_000, -20],
+    [
+      id.fileBrandBook,
+      id.folderBrandAssets,
+      "Brand Book 2026.pdf",
+      "document",
+      "published",
+      4_718_592,
+      -18,
+    ],
+    [
+      id.fileLogoPrimary,
+      id.folderLogos,
+      "Logo — Primary.svg",
+      "image",
+      "published",
+      24_576,
+      -17,
+    ],
+    [
+      id.fileLogoMono,
+      id.folderLogos,
+      "Logo — Monochrome.svg",
+      "image",
+      "ready",
+      21_504,
+      -17,
+    ],
+    [
+      id.fileHomepageWireframe,
+      id.folderDesign,
+      "Homepage Wireframe v3.png",
+      "image",
+      "uploaded",
+      1_887_437,
+      -12,
+    ],
+    [
+      id.fileLaunchTeaser,
+      id.folderDesign,
+      "Launch Teaser Cut.mp4",
+      "video",
+      "thumbnail_generation",
+      68_157_440,
+      -6,
+    ],
+    [
+      id.fileContentAudit,
+      null,
+      "Content Audit.xlsx",
+      "document",
+      "archived",
+      512_000,
+      -20,
+    ],
   ];
 
   const files = fileSeed.map(
-    ([fileId, folderId, title, fileType, status, totalSizeBytes, daysOffset]) => ({
+    ([
+      fileId,
+      folderId,
+      title,
+      fileType,
+      status,
+      totalSizeBytes,
+      daysOffset,
+    ]) => ({
       fileId,
       organizationId: DEMO_ORG_ID,
       projectId: id.projectWebsite,
@@ -1094,7 +1215,7 @@ function createSeedData(): DemoStore {
       entityId: id.deliverableBrand,
       status: "pending",
       ...auditFields(-2),
-    }
+    },
   ];
 
   // Sprint 12A: notifications now mirror src/db/schema/notifications.ts. The
@@ -1263,7 +1384,8 @@ function createSeedData(): DemoStore {
           : halfDay
             ? "HALF_DAY"
             : "PRESENT";
-      const overtimeMin = effectiveMin - 8 * 60 > 30 ? effectiveMin - 8 * 60 : 0;
+      const overtimeMin =
+        effectiveMin - 8 * 60 > 30 ? effectiveMin - 8 * 60 : 0;
       const attendanceId = sequentialUuid(9000 + attnSeq);
       const breakId = sequentialUuid(9500 + attnSeq);
       attnSeq++;
@@ -1299,7 +1421,12 @@ function createSeedData(): DemoStore {
       });
     };
 
-    const seedOpen = (userId: string, day: string, inH: number, inM: number) => {
+    const seedOpen = (
+      userId: string,
+      day: string,
+      inH: number,
+      inM: number,
+    ) => {
       const clockInAt = new Date(`${day}T${pad(inH)}:${pad(inM)}:00.000Z`);
       const attendanceId = sequentialUuid(9000 + attnSeq);
       attnSeq++;
@@ -1333,9 +1460,12 @@ function createSeedData(): DemoStore {
       if (weekday === 0 || weekday === 6) continue; // working days only
       // Deterministic variety keyed off the day number (no Math.random).
       const dom = d.getUTCDate();
-      if (dom % 10 === 3) seedCompleted(DEMO_USER_ID, dayOf(d), 9, 40, 18, 45); // LATE
-      else if (dom % 7 === 0) seedCompleted(DEMO_USER_ID, dayOf(d), 9, 0, 13, 15); // HALF_DAY
-      else if (dom % 5 === 0) seedCompleted(DEMO_USER_ID, dayOf(d), 9, 5, 18, 60, true); // WFH
+      if (dom % 10 === 3)
+        seedCompleted(DEMO_USER_ID, dayOf(d), 9, 40, 18, 45); // LATE
+      else if (dom % 7 === 0)
+        seedCompleted(DEMO_USER_ID, dayOf(d), 9, 0, 13, 15); // HALF_DAY
+      else if (dom % 5 === 0)
+        seedCompleted(DEMO_USER_ID, dayOf(d), 9, 5, 18, 60, true); // WFH
       else seedCompleted(DEMO_USER_ID, dayOf(d), 9, 5, 18, 60); // PRESENT
     }
 

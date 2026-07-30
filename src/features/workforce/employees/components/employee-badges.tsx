@@ -5,7 +5,9 @@ export function employeeInitials(employee: EmployeeDirectoryEntry): string {
   return `${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}`.toUpperCase();
 }
 
-export function formatEmploymentType(employmentType: string | null): string | null {
+export function formatEmploymentType(
+  employmentType: string | null,
+): string | null {
   if (!employmentType) return null;
   return employmentType
     .split("_")

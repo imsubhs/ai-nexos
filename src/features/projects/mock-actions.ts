@@ -30,10 +30,14 @@ import type { ProjectDashboardSummary } from "./real-actions";
 function findClientSummary(clientId: string | null | undefined) {
   if (!clientId) return null;
   const client = getDemoStore().clients.find((c) => c.clientId === clientId);
-  return client ? { companyName: client.companyName, status: client.status } : null;
+  return client
+    ? { companyName: client.companyName, status: client.status }
+    : null;
 }
 
-export async function createProject(...args: Parameters<typeof real_createProject>): Promise<Awaited<ReturnType<typeof real_createProject>>> {
+export async function createProject(
+  ...args: Parameters<typeof real_createProject>
+): Promise<Awaited<ReturnType<typeof real_createProject>>> {
   const [data] = args;
   const store = getDemoStore();
 
@@ -64,65 +68,102 @@ export async function createProject(...args: Parameters<typeof real_createProjec
   };
   store.projects.push(project);
 
-  logDemoActivity(store, "projects", "created", "project", project.projectId, `Created project ${project.projectName}`, {
-    projectCode: project.projectCode,
-    projectName: project.projectName,
-  });
+  logDemoActivity(
+    store,
+    "projects",
+    "created",
+    "project",
+    project.projectId,
+    `Created project ${project.projectName}`,
+    {
+      projectCode: project.projectCode,
+      projectName: project.projectName,
+    },
+  );
 
   revalidatePath("/projects");
   return project as any;
 }
 
-export async function updateProject(...args: Parameters<typeof real_updateProject>): Promise<Awaited<ReturnType<typeof real_updateProject>>> {
+export async function updateProject(
+  ...args: Parameters<typeof real_updateProject>
+): Promise<Awaited<ReturnType<typeof real_updateProject>>> {
   const [projectId, data] = args;
   const store = getDemoStore();
 
-  const project = store.projects.find((p) => p.projectId === projectId && p.deletedAt === null);
+  const project = store.projects.find(
+    (p) => p.projectId === projectId && p.deletedAt === null,
+  );
   if (!project) throw new Error("Project not found");
 
-  Object.assign(project, data, { updatedAt: new Date(), updatedBy: DEMO_USER_ID });
+  Object.assign(project, data, {
+    updatedAt: new Date(),
+    updatedBy: DEMO_USER_ID,
+  });
   if ("clientId" in data) {
     project.client = findClientSummary(project.clientId);
   }
 
-  logDemoActivity(store, "projects", "updated", "project", projectId, `Updated project ${project.projectName}`, {
-    updatedFields: Object.keys(data),
-  });
+  logDemoActivity(
+    store,
+    "projects",
+    "updated",
+    "project",
+    projectId,
+    `Updated project ${project.projectName}`,
+    {
+      updatedFields: Object.keys(data),
+    },
+  );
 
   revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}`);
   return project as any;
 }
 
-export async function getProjects(...args: Parameters<typeof real_getProjects>): Promise<Awaited<ReturnType<typeof real_getProjects>>> {
+export async function getProjects(
+  ...args: Parameters<typeof real_getProjects>
+): Promise<Awaited<ReturnType<typeof real_getProjects>>> {
   const [query, limit = 50, offset = 0] = args;
   const store = getDemoStore();
 
   return store.projects
     .filter((p) => p.deletedAt === null)
-    .filter((p) => (query ? p.projectName.toLowerCase().includes(query.toLowerCase()) : true))
+    .filter((p) =>
+      query ? p.projectName.toLowerCase().includes(query.toLowerCase()) : true,
+    )
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(offset, offset + limit) as any;
 }
 
-export async function getProjectById(...args: Parameters<typeof real_getProjectById>): Promise<Awaited<ReturnType<typeof real_getProjectById>>> {
+export async function getProjectById(
+  ...args: Parameters<typeof real_getProjectById>
+): Promise<Awaited<ReturnType<typeof real_getProjectById>>> {
   const [projectId] = args;
   const store = getDemoStore();
 
-  const project = store.projects.find((p) => p.projectId === projectId && p.deletedAt === null);
+  const project = store.projects.find(
+    (p) => p.projectId === projectId && p.deletedAt === null,
+  );
   if (!project) return undefined as any;
 
   return {
     ...project,
-    members: store.projectMembers.filter((m) => m.projectId === projectId && m.deletedAt === null),
+    members: store.projectMembers.filter(
+      (m) => m.projectId === projectId && m.deletedAt === null,
+    ),
   } as any;
 }
 
-export async function archiveProject(...args: Parameters<typeof real_archiveProject>): Promise<Awaited<ReturnType<typeof real_archiveProject>>> {
+export async function archiveProject(
+  ...args: Parameters<typeof real_archiveProject>
+): Promise<Awaited<ReturnType<typeof real_archiveProject>>> {
   const [projectId] = args;
   const store = getDemoStore();
 
-  const project = store.projects.find((p) => p.projectId === projectId && p.deletedAt === null);
+  const project = store.projects.find(
+    (p) => p.projectId === projectId && p.deletedAt === null,
+  );
   if (!project) throw new Error("Project not found");
 
   const now = new Date();
@@ -137,22 +178,39 @@ export async function archiveProject(...args: Parameters<typeof real_archiveProj
 
   store.projectMembers
     .filter((m) => m.projectId === projectId && m.deletedAt === null)
-    .forEach((m) => Object.assign(m, { deletedAt: now, deletedBy: DEMO_USER_ID, status: "inactive" }));
+    .forEach((m) =>
+      Object.assign(m, {
+        deletedAt: now,
+        deletedBy: DEMO_USER_ID,
+        status: "inactive",
+      }),
+    );
 
-  logDemoActivity(store, "projects", "archived", "project", projectId, `Archived project ${project.projectName}`);
+  logDemoActivity(
+    store,
+    "projects",
+    "archived",
+    "project",
+    projectId,
+    `Archived project ${project.projectName}`,
+  );
 
   revalidatePath("/projects");
   return project as any;
 }
 
-export async function getProjectDashboardSummary(...args: Parameters<typeof real_getProjectDashboardSummary>): Promise<Awaited<ReturnType<typeof real_getProjectDashboardSummary>>> {
+export async function getProjectDashboardSummary(
+  ...args: Parameters<typeof real_getProjectDashboardSummary>
+): Promise<Awaited<ReturnType<typeof real_getProjectDashboardSummary>>> {
   const [projectId] = args;
   const store = getDemoStore();
 
   const project = store.projects.find((p) => p.projectId === projectId);
   if (!project) throw new Error("Project not found");
 
-  const projectTasks = store.tasks.filter((t) => t.projectId === projectId && t.deletedAt === null);
+  const projectTasks = store.tasks.filter(
+    (t) => t.projectId === projectId && t.deletedAt === null,
+  );
   const openTasks = projectTasks.filter((t) => t.status !== "completed").length;
   const completedTasks = projectTasks.length - openTasks;
 
@@ -167,7 +225,9 @@ export async function getProjectDashboardSummary(...args: Parameters<typeof real
     openRevisions: 0,
     openTasks,
     completedTasks,
-    recentActivity: store.activityLogs.filter((log) => log.entityId === projectId).slice(-5),
+    recentActivity: store.activityLogs
+      .filter((log) => log.entityId === projectId)
+      .slice(-5),
     latestDeliverable: null,
     latestComment: null,
     latestMeeting: null,
@@ -176,7 +236,9 @@ export async function getProjectDashboardSummary(...args: Parameters<typeof real
   return summary;
 }
 
-export async function addProjectMember(...args: Parameters<typeof real_addProjectMember>): Promise<Awaited<ReturnType<typeof real_addProjectMember>>> {
+export async function addProjectMember(
+  ...args: Parameters<typeof real_addProjectMember>
+): Promise<Awaited<ReturnType<typeof real_addProjectMember>>> {
   const [projectId, userId, role] = args;
   const store = getDemoStore();
 
@@ -195,43 +257,79 @@ export async function addProjectMember(...args: Parameters<typeof real_addProjec
     user:
       userId === DEMO_USER_ID
         ? { ...DEMO_USER_SUMMARY }
-        : { userId, firstName: "Guest", lastName: "Member", email: "guest@demo.local", avatarUrl: null },
+        : {
+            userId,
+            firstName: "Guest",
+            lastName: "Member",
+            email: "guest@demo.local",
+            avatarUrl: null,
+          },
   };
   store.projectMembers.push(member);
 
-  logDemoActivity(store, "projects", "member_added", "project", projectId, `Added member to project`, { userId, role });
+  logDemoActivity(
+    store,
+    "projects",
+    "member_added",
+    "project",
+    projectId,
+    `Added member to project`,
+    { userId, role },
+  );
 
   revalidatePath(`/projects/${projectId}`);
   return member as any;
 }
 
-export async function updateProjectMemberRole(...args: Parameters<typeof real_updateProjectMemberRole>): Promise<Awaited<ReturnType<typeof real_updateProjectMemberRole>>> {
+export async function updateProjectMemberRole(
+  ...args: Parameters<typeof real_updateProjectMemberRole>
+): Promise<Awaited<ReturnType<typeof real_updateProjectMemberRole>>> {
   const [memberId, role] = args;
   const store = getDemoStore();
 
-  const member = store.projectMembers.find((m) => m.memberId === memberId && m.deletedAt === null);
+  const member = store.projectMembers.find(
+    (m) => m.memberId === memberId && m.deletedAt === null,
+  );
   if (!member) throw new Error("Member not found");
 
-  Object.assign(member, { role, updatedAt: new Date(), updatedBy: DEMO_USER_ID });
+  Object.assign(member, {
+    role,
+    updatedAt: new Date(),
+    updatedBy: DEMO_USER_ID,
+  });
 
   revalidatePath(`/projects/${member.projectId}`);
   return member as any;
 }
 
-export async function removeProjectMember(...args: Parameters<typeof real_removeProjectMember>): Promise<Awaited<ReturnType<typeof real_removeProjectMember>>> {
+export async function removeProjectMember(
+  ...args: Parameters<typeof real_removeProjectMember>
+): Promise<Awaited<ReturnType<typeof real_removeProjectMember>>> {
   const [memberId] = args;
   const store = getDemoStore();
 
-  const member = store.projectMembers.find((m) => m.memberId === memberId && m.deletedAt === null);
+  const member = store.projectMembers.find(
+    (m) => m.memberId === memberId && m.deletedAt === null,
+  );
   if (!member) throw new Error("Member not found");
 
-  Object.assign(member, { deletedAt: new Date(), deletedBy: DEMO_USER_ID, status: "inactive" });
+  Object.assign(member, {
+    deletedAt: new Date(),
+    deletedBy: DEMO_USER_ID,
+    status: "inactive",
+  });
 
   revalidatePath(`/projects/${member.projectId}`);
   return member as any;
 }
 
-export async function getActiveProjectsCount(...args: Parameters<typeof real_getActiveProjectsCount>): Promise<Awaited<ReturnType<typeof real_getActiveProjectsCount>>> {
+export async function getActiveProjectsCount(
+  ...args: Parameters<typeof real_getActiveProjectsCount>
+): Promise<Awaited<ReturnType<typeof real_getActiveProjectsCount>>> {
   const store = getDemoStore();
-  return store.projects.filter((p) => p.deletedAt === null && !["completed", "cancelled", "archived"].includes(p.status)).length as any;
+  return store.projects.filter(
+    (p) =>
+      p.deletedAt === null &&
+      !["completed", "cancelled", "archived"].includes(p.status),
+  ).length as any;
 }

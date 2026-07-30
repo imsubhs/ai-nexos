@@ -15,7 +15,7 @@ export function FileGridView() {
     id: `file-${i}`,
     title: `Asset_File_${i}.png`,
     size: "2.4 MB",
-    type: "image"
+    type: "image",
   }));
 
   // Setup grid virtualization (e.g., 4 columns)
@@ -31,36 +31,39 @@ export function FileGridView() {
   });
 
   return (
-    <div 
-      ref={parentRef}
-      className="h-full w-full overflow-auto"
-    >
+    <div ref={parentRef} className="h-full w-full overflow-auto">
       <div
-        className="w-full relative"
+        className="relative w-full"
         style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const startIndex = virtualRow.index * columns;
           const rowFiles = mockFiles.slice(startIndex, startIndex + columns);
-          
+
           return (
             <div
               key={virtualRow.key}
-              className="absolute top-0 left-0 w-full flex gap-4 px-2"
+              className="absolute top-0 left-0 flex w-full gap-4 px-2"
               style={{
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,
               }}
             >
-              {rowFiles.map(file => (
-                <div key={file.id} className="flex-1 bg-white border shadow-sm rounded-lg p-3 flex flex-col hover:border-blue-400 cursor-pointer transition-colors max-w-[calc(25%-0.75rem)] h-[180px]">
-                  <div className="flex-1 bg-slate-100 rounded mb-3 flex items-center justify-center text-slate-400">
+              {rowFiles.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex h-[180px] max-w-[calc(25%-0.75rem)] flex-1 cursor-pointer flex-col rounded-lg border bg-white p-3 shadow-sm transition-colors hover:border-blue-400"
+                >
+                  <div className="mb-3 flex flex-1 items-center justify-center rounded bg-slate-100 text-slate-400">
                     [Preview]
                   </div>
-                  <div className="text-sm font-medium text-slate-800 truncate" title={file.title}>
+                  <div
+                    className="truncate text-sm font-medium text-slate-800"
+                    title={file.title}
+                  >
                     {file.title}
                   </div>
-                  <div className="text-xs text-slate-500 mt-1 flex justify-between">
+                  <div className="mt-1 flex justify-between text-xs text-slate-500">
                     <span>{file.type}</span>
                     <span>{file.size}</span>
                   </div>

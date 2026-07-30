@@ -14,9 +14,18 @@ interface FeedbackSidebarProps {
  * 1. Feedback Sidebar
  * Architecture Decision #5: Approval requires explicit confirmation. Never submit immediately.
  */
-export function FeedbackSidebar({ sessionId, itemId, identityId, canApprove }: FeedbackSidebarProps) {
-  const [approvalState, setApprovalState] = useState<"idle" | "confirming" | "submitting" | "success">("idle");
-  const [decision, setDecision] = useState<"approved" | "rejected" | null>(null);
+export function FeedbackSidebar({
+  sessionId,
+  itemId,
+  identityId,
+  canApprove,
+}: FeedbackSidebarProps) {
+  const [approvalState, setApprovalState] = useState<
+    "idle" | "confirming" | "submitting" | "success"
+  >("idle");
+  const [decision, setDecision] = useState<"approved" | "rejected" | null>(
+    null,
+  );
 
   const handleInitiateApproval = (type: "approved" | "rejected") => {
     setDecision(type);
@@ -25,9 +34,9 @@ export function FeedbackSidebar({ sessionId, itemId, identityId, canApprove }: F
 
   const handleConfirmApproval = async () => {
     if (!decision) return;
-    
+
     setApprovalState("submitting");
-    
+
     try {
       await submitExternalApprovalAction({
         sessionId,
@@ -36,7 +45,7 @@ export function FeedbackSidebar({ sessionId, itemId, identityId, canApprove }: F
         decision,
         explicitConfirmationToken: "simulated_secure_nonce_" + Date.now(), // E.g., generated during confirmation challenge
       });
-      
+
       setApprovalState("success");
     } catch (error) {
       console.error(error);
@@ -45,29 +54,29 @@ export function FeedbackSidebar({ sessionId, itemId, identityId, canApprove }: F
   };
 
   return (
-    <div className="w-80 h-full bg-white border-l border-slate-200 flex flex-col p-4">
-      <h3 className="font-semibold text-lg mb-4">Feedback & Comments</h3>
-      
+    <div className="flex h-full w-80 flex-col border-l border-slate-200 bg-white p-4">
+      <h3 className="mb-4 text-lg font-semibold">Feedback & Comments</h3>
+
       {/* Comments List Placeholder */}
-      <div className="flex-1 overflow-y-auto space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto">
         {/* Placeholder for threaded comments component */}
         <div className="text-sm text-slate-500 italic">No comments yet.</div>
       </div>
 
       {/* Approval Section */}
       {canApprove && (
-        <div className="mt-auto pt-4 border-t border-slate-200">
+        <div className="mt-auto border-t border-slate-200 pt-4">
           {approvalState === "idle" && (
             <div className="flex space-x-2">
-              <button 
+              <button
                 onClick={() => handleInitiateApproval("rejected")}
-                className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
+                className="flex-1 rounded-md bg-red-50 px-4 py-2 text-red-600 transition-colors hover:bg-red-100"
               >
                 Reject
               </button>
-              <button 
+              <button
                 onClick={() => handleInitiateApproval("approved")}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                className="flex-1 rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
               >
                 Approve
               </button>
@@ -75,21 +84,23 @@ export function FeedbackSidebar({ sessionId, itemId, identityId, canApprove }: F
           )}
 
           {approvalState === "confirming" && (
-            <div className="bg-slate-50 p-3 rounded-md border border-slate-200">
-              <p className="text-sm font-medium mb-3">
-                Are you sure you want to {decision === "approved" ? "Approve" : "Reject"} this deliverable? 
-                This action is final and will notify the internal team.
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+              <p className="mb-3 text-sm font-medium">
+                Are you sure you want to{" "}
+                {decision === "approved" ? "Approve" : "Reject"} this
+                deliverable? This action is final and will notify the internal
+                team.
               </p>
               <div className="flex space-x-2">
-                <button 
+                <button
                   onClick={() => setApprovalState("idle")}
-                  className="flex-1 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 rounded-md text-sm hover:bg-slate-50"
+                  className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmApproval}
-                  className={`flex-1 px-3 py-1.5 text-white rounded-md text-sm ${decision === "approved" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm text-white ${decision === "approved" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
                 >
                   Confirm {decision === "approved" ? "Approval" : "Rejection"}
                 </button>
@@ -98,14 +109,18 @@ export function FeedbackSidebar({ sessionId, itemId, identityId, canApprove }: F
           )}
 
           {approvalState === "submitting" && (
-            <div className="text-center py-4 text-slate-500 text-sm">
+            <div className="py-4 text-center text-sm text-slate-500">
               Submitting decision...
             </div>
           )}
 
           {approvalState === "success" && (
-            <div className={`text-center py-3 rounded-md text-sm font-medium ${decision === "approved" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-              {decision === "approved" ? "Successfully Approved" : "Successfully Rejected"}
+            <div
+              className={`rounded-md py-3 text-center text-sm font-medium ${decision === "approved" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+            >
+              {decision === "approved"
+                ? "Successfully Approved"
+                : "Successfully Rejected"}
             </div>
           )}
         </div>

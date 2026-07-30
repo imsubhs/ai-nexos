@@ -27,7 +27,7 @@ export async function startAgentRunAction(
   organizationId: string,
   agentId: string,
   goalId: string,
-  userId: string
+  userId: string,
 ) {
   // 1. Create Session
   const [session] = await db
@@ -51,10 +51,9 @@ export async function startAgentRunAction(
     })
     .returning();
 
-
   // 3. Transition to PLANNING and enqueue
   await transitionRunState(run.id, "PLANNING");
-  
+
   // enqueueAgentJob({ runId: run.id, type: "plan" });
 
   return run;

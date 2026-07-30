@@ -1,4 +1,9 @@
-import { getDemoStore, logDemoActivity, nextDemoId, DEMO_USER_ID } from "@/lib/demo/store";
+import {
+  getDemoStore,
+  logDemoActivity,
+  nextDemoId,
+  DEMO_USER_ID,
+} from "@/lib/demo/store";
 import type {
   getNotificationsAction as real_getNotificationsAction,
   markNotificationReadAction as real_markNotificationReadAction,
@@ -31,21 +36,27 @@ export async function getNotificationFeedAction(
     (store.notificationTemplates ?? [])
       .filter(
         (template: any) =>
-          template.organizationId === organizationId && template.channel === "in_app",
+          template.organizationId === organizationId &&
+          template.channel === "in_app",
       )
-      .map((template: any) => [template.eventType, template as NotificationTemplate]),
+      .map((template: any) => [
+        template.eventType,
+        template as NotificationTemplate,
+      ]),
   );
 
   return rows
     .map((row: any) => {
       const event = (eventById.get(row.eventId) as any) ?? null;
       const template = event
-        ? ((templateByEventType.get(event.eventType) as NotificationTemplate) ?? null)
+        ? ((templateByEventType.get(event.eventType) as NotificationTemplate) ??
+          null)
         : null;
       return composeNotification(row, event, template);
     })
     .sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 }
 
@@ -111,44 +122,60 @@ export async function markAllNotificationsReadAction(
   revalidatePath("/");
 }
 
-export async function getNotificationsAction(userId: string, organizationId: string): Promise<Awaited<ReturnType<typeof real_getNotificationsAction>>> {
+export async function getNotificationsAction(
+  userId: string,
+  organizationId: string,
+): Promise<Awaited<ReturnType<typeof real_getNotificationsAction>>> {
   const store = getDemoStore();
   const orgNotifications = store.notifications.filter(
-    (n) => n.userId === userId && n.organizationId === organizationId
+    (n) => n.userId === userId && n.organizationId === organizationId,
   );
-  
+
   return orgNotifications.sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 }
 
-export async function markNotificationReadAction(notificationId: string, userId: string, organizationId: string): Promise<Awaited<ReturnType<typeof real_markNotificationReadAction>>> {
+export async function markNotificationReadAction(
+  notificationId: string,
+  userId: string,
+  organizationId: string,
+): Promise<Awaited<ReturnType<typeof real_markNotificationReadAction>>> {
   const store = getDemoStore();
   const notification = store.notifications.find(
-    (n) => n.notificationId === notificationId && n.userId === userId && n.organizationId === organizationId
+    (n) =>
+      n.notificationId === notificationId &&
+      n.userId === userId &&
+      n.organizationId === organizationId,
   );
 
   if (notification) {
     notification.status = "read";
     notification.readAt = new Date();
-    
+
     logDemoActivity(
       store,
       "notifications",
       "update",
       "notification",
       notificationId,
-      "Marked notification as read"
+      "Marked notification as read",
     );
   }
 
   revalidatePath("/");
 }
 
-export async function updateNotificationPreferencesAction(userId: string, organizationId: string, input: any): Promise<Awaited<ReturnType<typeof real_updateNotificationPreferencesAction>>> {
+export async function updateNotificationPreferencesAction(
+  userId: string,
+  organizationId: string,
+  input: any,
+): Promise<
+  Awaited<ReturnType<typeof real_updateNotificationPreferencesAction>>
+> {
   const store = getDemoStore();
   const existing = store.notificationPreferences.find(
-    (p) => p.userId === userId && p.organizationId === organizationId
+    (p) => p.userId === userId && p.organizationId === organizationId,
   );
 
   if (existing) {
@@ -156,14 +183,14 @@ export async function updateNotificationPreferencesAction(userId: string, organi
       ...input,
       updatedAt: new Date(),
     });
-    
+
     logDemoActivity(
       store,
       "notifications",
       "update",
       "notification_preference",
       existing.preferenceId,
-      "Updated notification preferences"
+      "Updated notification preferences",
     );
   } else {
     const newId = nextDemoId(store);
@@ -180,14 +207,14 @@ export async function updateNotificationPreferencesAction(userId: string, organi
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    
+
     logDemoActivity(
       store,
       "notifications",
       "create",
       "notification_preference",
       newId,
-      "Created notification preferences"
+      "Created notification preferences",
     );
   }
 

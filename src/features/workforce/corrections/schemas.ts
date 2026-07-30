@@ -29,21 +29,24 @@ export const submitCorrectionSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["requestedClockInAt"],
-        message: "A requested clock-in time is required for this correction type.",
+        message:
+          "A requested clock-in time is required for this correction type.",
       });
     }
     if (needOut && !v.requestedClockOutAt) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["requestedClockOutAt"],
-        message: "A requested clock-out time is required for this correction type.",
+        message:
+          "A requested clock-out time is required for this correction type.",
       });
     }
     if (v.correctionType === "STATUS_CHANGE" && !v.requestedStatus) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["requestedStatus"],
-        message: "A requested status is required for a status-change correction.",
+        message:
+          "A requested status is required for a status-change correction.",
       });
     }
     if (
@@ -102,7 +105,10 @@ export const reviewCorrectionSchema = z
     reviewNote: z.string().max(1000).optional(),
   })
   .superRefine((v, ctx) => {
-    if (v.decision === "REJECTED" && (!v.reviewNote || v.reviewNote.trim().length < 5)) {
+    if (
+      v.decision === "REJECTED" &&
+      (!v.reviewNote || v.reviewNote.trim().length < 5)
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["reviewNote"],

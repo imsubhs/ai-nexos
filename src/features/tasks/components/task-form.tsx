@@ -16,7 +16,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createTask, updateTask } from "../actions";
 import { insertTaskSchema } from "../schemas";
-import { TASK_PRIORITIES, TASK_STATUSES, TASK_TYPES, humanizeToken } from "../constants";
+import {
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  TASK_TYPES,
+  humanizeToken,
+} from "../constants";
 
 /** The subset of insertTaskSchema this form edits. */
 const taskFormSchema = insertTaskSchema.pick({
@@ -85,7 +90,9 @@ export function TaskForm({
       }
       await onSuccess();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setIsPending(false);
     }
@@ -104,7 +111,11 @@ export function TaskForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="task-status">Status</Label>
-          <select id="task-status" {...register("status")} className={SELECT_CLASS}>
+          <select
+            id="task-status"
+            {...register("status")}
+            className={SELECT_CLASS}
+          >
             {TASK_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {humanizeToken(status)}
@@ -115,7 +126,11 @@ export function TaskForm({
 
         <div className="space-y-2">
           <Label htmlFor="task-priority">Priority</Label>
-          <select id="task-priority" {...register("priority")} className={SELECT_CLASS}>
+          <select
+            id="task-priority"
+            {...register("priority")}
+            className={SELECT_CLASS}
+          >
             {TASK_PRIORITIES.map((priority) => (
               <option key={priority} value={priority}>
                 {humanizeToken(priority)}
@@ -126,7 +141,11 @@ export function TaskForm({
 
         <div className="space-y-2">
           <Label htmlFor="task-type">Type</Label>
-          <select id="task-type" {...register("taskType")} className={SELECT_CLASS}>
+          <select
+            id="task-type"
+            {...register("taskType")}
+            className={SELECT_CLASS}
+          >
             {TASK_TYPES.map((type) => (
               <option key={type} value={type}>
                 {humanizeToken(type)}

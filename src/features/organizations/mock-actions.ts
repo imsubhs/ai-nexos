@@ -18,19 +18,27 @@ export async function getOrganization() {
   requirePermission(user.permissions, "organization", "read");
 
   const store = getDemoStore();
-  const org = store.organizations.find((o) => o.organizationId === user.organizationId);
+  const org = store.organizations.find(
+    (o) => o.organizationId === user.organizationId,
+  );
 
   return org ?? null;
 }
 
-export async function updateOrganization(data: z.infer<typeof updateOrganizationSchema>) {
+export async function updateOrganization(
+  data: z.infer<typeof updateOrganizationSchema>,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "organization", "update");
 
-  const parsed = normalizeOrganizationInput(updateOrganizationSchema.parse(data));
+  const parsed = normalizeOrganizationInput(
+    updateOrganizationSchema.parse(data),
+  );
   const store = getDemoStore();
-  
-  const orgIndex = store.organizations.findIndex((o) => o.organizationId === user.organizationId);
+
+  const orgIndex = store.organizations.findIndex(
+    (o) => o.organizationId === user.organizationId,
+  );
   if (orgIndex === -1) throw new Error("Organization not found");
 
   const org = store.organizations[orgIndex];
@@ -48,7 +56,7 @@ export async function updateOrganization(data: z.infer<typeof updateOrganization
     "organization",
     org.organizationId,
     "Updated organization profile",
-    parsed
+    parsed,
   );
 
   revalidatePath("/settings/organization");
@@ -77,30 +85,50 @@ export async function getOrganizationMembers() {
   requirePermission(user.permissions, "users", "read");
 
   const store = getDemoStore();
-  const members = store.users.filter((u) => u.organizationId === user.organizationId);
-  
-  return members.map(m => {
+  const members = store.users.filter(
+    (u) => u.organizationId === user.organizationId,
+  );
+
+  return members.map((m) => {
     const roleKey = m.roleId.replace("demo-role-", "");
-    const systemRole = SYSTEM_ROLES.find(r => r.roleKey === roleKey);
+    const systemRole = SYSTEM_ROLES.find((r) => r.roleKey === roleKey);
     return {
       ...m,
-      role: systemRole ? { roleId: m.roleId, roleName: systemRole.roleName, roleKey: systemRole.roleKey } : null,
+      role: systemRole
+        ? {
+            roleId: m.roleId,
+            roleName: systemRole.roleName,
+            roleKey: systemRole.roleKey,
+          }
+        : null,
       department: null,
     };
   });
 }
 
-export async function checkOwnerProtectionMock(store: any, organizationId: string, userId: string, isRemovingOwnerRole: boolean) {
-  const targetUser = store.users.find((u: any) => u.userId === userId && u.organizationId === organizationId);
+export async function checkOwnerProtectionMock(
+  store: any,
+  organizationId: string,
+  userId: string,
+  isRemovingOwnerRole: boolean,
+) {
+  const targetUser = store.users.find(
+    (u: any) => u.userId === userId && u.organizationId === organizationId,
+  );
   if (!targetUser) throw new Error("User not found");
 
   const roleKey = targetUser.roleId.replace("demo-role-", "");
-  
-  if (roleKey === "owner" && targetUser.status === "active" && isRemovingOwnerRole) {
-    const activeOwners = store.users.filter((u: any) => 
-      u.organizationId === organizationId && 
-      u.roleId === "demo-role-owner" && 
-      u.status === "active"
+
+  if (
+    roleKey === "owner" &&
+    targetUser.status === "active" &&
+    isRemovingOwnerRole
+  ) {
+    const activeOwners = store.users.filter(
+      (u: any) =>
+        u.organizationId === organizationId &&
+        u.roleId === "demo-role-owner" &&
+        u.status === "active",
     );
 
     if (activeOwners.length <= 1) {
@@ -109,7 +137,9 @@ export async function checkOwnerProtectionMock(store: any, organizationId: strin
   }
 }
 
-export async function updateUserRole(data: z.infer<typeof updateUserRoleSchema>) {
+export async function updateUserRole(
+  data: z.infer<typeof updateUserRoleSchema>,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "roles", "update");
 
@@ -117,9 +147,17 @@ export async function updateUserRole(data: z.infer<typeof updateUserRoleSchema>)
   const store = getDemoStore();
 
   const isRemovingOwner = parsed.roleId !== "demo-role-owner";
-  checkOwnerProtectionMock(store, user.organizationId, parsed.userId, isRemovingOwner);
+  checkOwnerProtectionMock(
+    store,
+    user.organizationId,
+    parsed.userId,
+    isRemovingOwner,
+  );
 
-  const targetIndex = store.users.findIndex((u) => u.userId === parsed.userId && u.organizationId === user.organizationId);
+  const targetIndex = store.users.findIndex(
+    (u) =>
+      u.userId === parsed.userId && u.organizationId === user.organizationId,
+  );
   if (targetIndex === -1) throw new Error("User not found");
 
   store.users[targetIndex] = {
@@ -136,7 +174,7 @@ export async function updateUserRole(data: z.infer<typeof updateUserRoleSchema>)
     "user",
     parsed.userId,
     `Updated user role`,
-    { roleId: parsed.roleId }
+    { roleId: parsed.roleId },
   );
 
   revalidatePath("/settings/organization");
@@ -156,7 +194,10 @@ export async function deactivateUser(data: z.infer<typeof userActionSchema>) {
   const store = getDemoStore();
   checkOwnerProtectionMock(store, user.organizationId, parsed.userId, true);
 
-  const targetIndex = store.users.findIndex((u) => u.userId === parsed.userId && u.organizationId === user.organizationId);
+  const targetIndex = store.users.findIndex(
+    (u) =>
+      u.userId === parsed.userId && u.organizationId === user.organizationId,
+  );
   if (targetIndex === -1) throw new Error("User not found");
 
   store.users[targetIndex] = {
@@ -172,7 +213,7 @@ export async function deactivateUser(data: z.infer<typeof userActionSchema>) {
     "update",
     "user",
     parsed.userId,
-    "Deactivated user"
+    "Deactivated user",
   );
 
   revalidatePath("/settings/organization");
@@ -186,7 +227,10 @@ export async function reactivateUser(data: z.infer<typeof userActionSchema>) {
   const parsed = userActionSchema.parse(data);
   const store = getDemoStore();
 
-  const targetIndex = store.users.findIndex((u) => u.userId === parsed.userId && u.organizationId === user.organizationId);
+  const targetIndex = store.users.findIndex(
+    (u) =>
+      u.userId === parsed.userId && u.organizationId === user.organizationId,
+  );
   if (targetIndex === -1) throw new Error("User not found");
 
   store.users[targetIndex] = {
@@ -202,7 +246,7 @@ export async function reactivateUser(data: z.infer<typeof userActionSchema>) {
     "update",
     "user",
     parsed.userId,
-    "Reactivated user"
+    "Reactivated user",
   );
 
   revalidatePath("/settings/organization");

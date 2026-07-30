@@ -15,7 +15,11 @@
 import type { EngineConfig } from "./config";
 import { IntervalEngine } from "./interval-engine";
 import type { BuiltSession } from "./session-builder";
-import { type Interval, periodToInterval, type TimePeriod } from "./value-objects";
+import {
+  type Interval,
+  periodToInterval,
+  type TimePeriod,
+} from "./value-objects";
 
 export interface CalculatedFocus {
   /** Ordered, disjoint focus blocks (excludes break, idle & non-working). */
@@ -42,7 +46,9 @@ export function calculateFocus(
   const merged = IntervalEngine.merge(focused, config.mergeGapMs);
   const kept =
     config.minFocusBlockMs > 0
-      ? merged.filter((block) => block.end - block.start >= config.minFocusBlockMs)
+      ? merged.filter(
+          (block) => block.end - block.start >= config.minFocusBlockMs,
+        )
       : merged;
 
   return { intervals: kept, focusMs: IntervalEngine.totalDuration(kept) };

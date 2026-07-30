@@ -9,7 +9,7 @@ export interface VirusScanner {
    * Scans a file buffer or stream for viruses.
    */
   scanBuffer(buffer: Buffer): Promise<ScanResult>;
-  
+
   /**
    * Scans an object directly from cloud storage by its path.
    */
@@ -21,7 +21,7 @@ export class MockVirusScanner implements VirusScanner {
     // Placeholder implementation
     return {
       isClean: true,
-      scannedAt: new Date()
+      scannedAt: new Date(),
     };
   }
 
@@ -29,7 +29,7 @@ export class MockVirusScanner implements VirusScanner {
     // Placeholder implementation
     return {
       isClean: true,
-      scannedAt: new Date()
+      scannedAt: new Date(),
     };
   }
 }

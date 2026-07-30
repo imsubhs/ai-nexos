@@ -1,4 +1,4 @@
-import { ReportExecutionState } from '../types';
+import { ReportExecutionState } from "../types";
 
 export interface ReportJob {
   id: string;
@@ -23,12 +23,11 @@ export class ReportEngine {
    * Enqueues a report generation job with idempotency.
    */
   async enqueueReport(
-    templateId: string, 
-    parameters: Record<string, unknown>, 
+    templateId: string,
+    parameters: Record<string, unknown>,
     isHistorical: boolean = false,
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ): Promise<string> {
-    
     // Hardening: Idempotency check
     const key = idempotencyKey || `${templateId}_${JSON.stringify(parameters)}`;
     if (this.idempotencyCache.has(key)) {
@@ -40,15 +39,15 @@ export class ReportEngine {
       id: jobId,
       templateId,
       parameters,
-      state: 'QUEUED',
+      state: "QUEUED",
       createdAt: new Date().toISOString(),
       isHistorical,
-      idempotencyKey: key
+      idempotencyKey: key,
     };
 
     this.activeJobs.set(jobId, job);
     this.idempotencyCache.set(key, jobId);
-    
+
     // In reality, this pushes to a queue (e.g., BullMQ)
     this.processJobAsync(jobId);
 
@@ -58,26 +57,37 @@ export class ReportEngine {
   /**
    * Gets the status of a report job and generates a signed URL if completed.
    */
-  async getJobStatus(jobId: string, requestedByUserId: string): Promise<ReportJob | undefined> {
+  async getJobStatus(
+    jobId: string,
+    requestedByUserId: string,
+  ): Promise<ReportJob | undefined> {
     const job = this.activeJobs.get(jobId);
     if (!job) return undefined;
 
-    if (job.state === 'COMPLETED' && job.resultUrl && !job.signedDownloadUrl) {
+    if (job.state === "COMPLETED" && job.resultUrl && !job.signedDownloadUrl) {
       // Hardening: Generate Signed URL just-in-time
-      job.signedDownloadUrl = await this.generateSignedUrl(job.resultUrl, requestedByUserId);
+      job.signedDownloadUrl = await this.generateSignedUrl(
+        job.resultUrl,
+        requestedByUserId,
+      );
     }
 
     return job;
   }
 
-  private async generateSignedUrl(storageKey: string, userId: string): Promise<string> {
+  private async generateSignedUrl(
+    storageKey: string,
+    userId: string,
+  ): Promise<string> {
     // 1. Generate short-lived signed URL to Private Storage
     const signedToken = `token_${Date.now()}_expires_15m`;
     const url = `https://private-storage.ainexos.com/reports/${storageKey}?signature=${signedToken}`;
-    
+
     // 2. Hardening: Log download activity for audit
-    console.log(`[AUDIT] Report download URL generated for user ${userId}. StorageKey: ${storageKey}`);
-    
+    console.log(
+      `[AUDIT] Report download URL generated for user ${userId}. StorageKey: ${storageKey}`,
+    );
+
     return url;
   }
 
@@ -88,7 +98,7 @@ export class ReportEngine {
     const job = this.activeJobs.get(jobId);
     if (!job) return;
 
-    job.state = 'RUNNING';
+    job.state = "RUNNING";
     job.startedAt = new Date().toISOString();
 
     try {
@@ -98,23 +108,24 @@ export class ReportEngine {
         await this.generateFromProjections(job);
       }
 
-      job.state = 'COMPLETED';
+      job.state = "COMPLETED";
       job.completedAt = new Date().toISOString();
-      
+
       // Hardening: Store in private bucket without public access
-      job.resultUrl = `private_s3_key_${jobId}.pdf`; 
+      job.resultUrl = `private_s3_key_${jobId}.pdf`;
     } catch (error: unknown) {
-      job.state = 'FAILED';
-      job.error = error instanceof Error ? error.message : 'Report generation failed';
+      job.state = "FAILED";
+      job.error =
+        error instanceof Error ? error.message : "Report generation failed";
     }
   }
 
   private async generateFromHistoricalSnapshots(_job: ReportJob) {
-    return new Promise(resolve => setTimeout(resolve, 1000));
+    return new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   private async generateFromProjections(_job: ReportJob) {
-    return new Promise(resolve => setTimeout(resolve, 1000));
+    return new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 

@@ -13,7 +13,7 @@ export type NodeType = "trigger" | "condition" | "action";
 export interface WorkflowNode {
   id: string;
   type: NodeType;
-  subType?: TriggerType | ActionType; 
+  subType?: TriggerType | ActionType;
   config: Record<string, any>;
 }
 
@@ -28,10 +28,13 @@ export interface CompiledExecutablePlan {
   workflowId: string;
   version: number;
   entryNodes: string[];
-  executionGraph: Record<string, {
-    node: WorkflowNode;
-    nextNodes: string[];
-  }>;
+  executionGraph: Record<
+    string,
+    {
+      node: WorkflowNode;
+      nextNodes: string[];
+    }
+  >;
   compiledAt: Date;
 }
 
@@ -44,7 +47,7 @@ export class WorkflowCompilationError extends Error {
 
 /**
  * Workflow Compiler
- * 
+ *
  * Transforms a raw nodes/edges graph into a strict Executable Plan.
  * Validates the graph for:
  * - Reachability (invalid branches)
@@ -52,12 +55,16 @@ export class WorkflowCompilationError extends Error {
  * - Support matrix (unsupported actions)
  */
 export class WorkflowCompiler {
-  
-  compile(definition: RawWorkflowDefinition, versionNumber: number): CompiledExecutablePlan {
+  compile(
+    definition: RawWorkflowDefinition,
+    versionNumber: number,
+  ): CompiledExecutablePlan {
     const { nodes, edges } = definition;
 
     if (!nodes || nodes.length === 0) {
-      throw new WorkflowCompilationError("Workflow must contain at least one node.");
+      throw new WorkflowCompilationError(
+        "Workflow must contain at least one node.",
+      );
     }
 
     const nodeMap = new Map<string, WorkflowNode>();
@@ -71,8 +78,14 @@ export class WorkflowCompiler {
     }
 
     for (const edge of edges) {
-      if (!nodeMap.has(edge.source)) throw new WorkflowCompilationError(`Invalid edge source: ${edge.source}`);
-      if (!nodeMap.has(edge.target)) throw new WorkflowCompilationError(`Invalid edge target: ${edge.target}`);
+      if (!nodeMap.has(edge.source))
+        throw new WorkflowCompilationError(
+          `Invalid edge source: ${edge.source}`,
+        );
+      if (!nodeMap.has(edge.target))
+        throw new WorkflowCompilationError(
+          `Invalid edge target: ${edge.target}`,
+        );
       adjacencyList.get(edge.source)!.push(edge.target);
     }
 
@@ -80,20 +93,31 @@ export class WorkflowCompiler {
     this.detectCycles(adjacencyList);
 
     // 2. Identify Entry Nodes (Triggers)
-    const entryNodes = nodes.filter(n => n.type === "trigger").map(n => n.id);
+    const entryNodes = nodes
+      .filter((n) => n.type === "trigger")
+      .map((n) => n.id);
     if (entryNodes.length === 0) {
-      throw new WorkflowCompilationError("Workflow must have at least one trigger node.");
+      throw new WorkflowCompilationError(
+        "Workflow must have at least one trigger node.",
+      );
     }
 
     // 3. Detect Reachability (Invalid branches)
-    this.detectUnreachableNodes(nodes.map(n => n.id), entryNodes, adjacencyList);
+    this.detectUnreachableNodes(
+      nodes.map((n) => n.id),
+      entryNodes,
+      adjacencyList,
+    );
 
     // Build the execution graph
-    const executionGraph: Record<string, { node: WorkflowNode; nextNodes: string[] }> = {};
+    const executionGraph: Record<
+      string,
+      { node: WorkflowNode; nextNodes: string[] }
+    > = {};
     for (const node of nodes) {
       executionGraph[node.id] = {
         node,
-        nextNodes: adjacencyList.get(node.id) || []
+        nextNodes: adjacencyList.get(node.id) || [],
       };
     }
 
@@ -119,7 +143,9 @@ export class WorkflowCompiler {
         if (!visited.has(neighbor)) {
           dfs(neighbor);
         } else if (recursionStack.has(neighbor)) {
-          throw new WorkflowCompilationError(`Infinite loop detected involving node ${neighbor}`);
+          throw new WorkflowCompilationError(
+            `Infinite loop detected involving node ${neighbor}`,
+          );
         }
       }
 
@@ -133,9 +159,13 @@ export class WorkflowCompiler {
     }
   }
 
-  private detectUnreachableNodes(allNodeIds: string[], entryNodes: string[], adjacencyList: Map<string, string[]>) {
+  private detectUnreachableNodes(
+    allNodeIds: string[],
+    entryNodes: string[],
+    adjacencyList: Map<string, string[]>,
+  ) {
     const visited = new Set<string>();
-    
+
     const queue = [...entryNodes];
     while (queue.length > 0) {
       const current = queue.shift()!;
@@ -148,7 +178,9 @@ export class WorkflowCompiler {
 
     for (const nodeId of allNodeIds) {
       if (!visited.has(nodeId)) {
-        throw new WorkflowCompilationError(`Invalid branch: Node ${nodeId} is unreachable from any trigger.`);
+        throw new WorkflowCompilationError(
+          `Invalid branch: Node ${nodeId} is unreachable from any trigger.`,
+        );
       }
     }
   }

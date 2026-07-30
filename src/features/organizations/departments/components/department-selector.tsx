@@ -66,7 +66,7 @@ export function DepartmentSelector({
       >
         <div className="relative p-1" onKeyDown={(e) => e.stopPropagation()}>
           <Search
-            className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+            className="text-muted-foreground absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2"
             aria-hidden="true"
           />
           <Input
@@ -84,7 +84,7 @@ export function DepartmentSelector({
           </DropdownMenuItem>
         ) : null}
         {filtered.length === 0 ? (
-          <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground px-2 py-3 text-center text-sm">
             No departments match
           </div>
         ) : (
@@ -94,7 +94,7 @@ export function DepartmentSelector({
               onClick={() => onChange(d.departmentId)}
             >
               <span>{d.name}</span>
-              <span className="ml-2 text-xs text-muted-foreground">
+              <span className="text-muted-foreground ml-2 text-xs">
                 {d.memberCount} member{d.memberCount === 1 ? "" : "s"}
               </span>
               {value === d.departmentId ? (

@@ -58,7 +58,7 @@ npm run dev
 **Two things that will confuse you if nobody says them** (both detailed in `ENVIRONMENT_SETUP.md` §1):
 
 1. **`DEMO_MODE` is not in `.env.example`.** Copy the template verbatim and you get an app routing every call into never-executed Postgres adapters. Set it manually.
-2. **`DATABASE_URL` is required even in demo mode.** `src/db/index.ts` throws at *module evaluation*, so `next build` fails during page-data collection regardless of `DEMO_MODE`. A placeholder is enough — nothing connects.
+2. **`DATABASE_URL` is required even in demo mode.** `src/db/index.ts` throws at _module evaluation_, so `next build` fails during page-data collection regardless of `DEMO_MODE`. A placeholder is enough — nothing connects.
 
 ### Verify
 
@@ -124,14 +124,14 @@ ai-nexos/
 
 Every business module follows the same shape. Learn it once:
 
-| File | Role |
-|---|---|
-| `actions.ts` | **Dispatcher.** Branches on `DEMO_MODE`. ⛔ Signatures frozen (Rule 3). |
-| `real-actions.ts` / `real-queries.ts` | Drizzle implementation. **Largely never executed.** |
-| `mock-actions.ts` / `mock-queries.ts` | DemoStore implementation. The only code that has actually run. |
-| `schemas.ts` | Zod. Validation boundary for every write. |
-| `constants.ts` | Enums, status transition maps, labels. |
-| `components/` | Client components for this module only. |
+| File                                  | Role                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------- |
+| `actions.ts`                          | **Dispatcher.** Branches on `DEMO_MODE`. ⛔ Signatures frozen (Rule 3). |
+| `real-actions.ts` / `real-queries.ts` | Drizzle implementation. **Largely never executed.**                     |
+| `mock-actions.ts` / `mock-queries.ts` | DemoStore implementation. The only code that has actually run.          |
+| `schemas.ts`                          | Zod. Validation boundary for every write.                               |
+| `constants.ts`                        | Enums, status transition maps, labels.                                  |
+| `components/`                         | Client components for this module only.                                 |
 
 ---
 
@@ -139,16 +139,16 @@ Every business module follows the same shape. Learn it once:
 
 `NEXOS_v1.0_BASELINE.md` §14. These are not style guidance — they are the reason the architecture survived three sprints of feature work without a contract break.
 
-| Rule | Meaning for your change |
-|---|---|
-| **1 — No module redesign** | Work within the bounded context. No module reads another's tables. Cross-module writes go through server actions. |
-| **2 — No workflow redesign** | Approval, Automation and Agent engines are not yours to restructure. |
-| **3 — Repository contracts frozen** | Dispatcher signatures do not change. Every new action ships as a `real`/`mock`/dispatcher **triple** with identical types. |
-| **4 — Public gateway frozen** | `src/proxy.ts` requires **Principal Architect sign-off**. It has not changed since the baseline. |
-| **5 — State machines frozen** | All 8 transition maps. You may add a *guard over* an existing vocabulary; you may not add a state. |
-| **6 — Additive only** | No destructive migrations. Removing genuinely dead code with no importers is permitted. |
-| **7 — Repository overrides documentation** | When a doc and the code disagree, **the code is right and the doc is a defect to file.** This has caught real errors — including one in the Phase C documents themselves (§8). |
-| **8 — No uncommitted changes at a sprint boundary** | ⚠️ **Currently violated at scale.** 552 files, 2 commits, no tag, no remote. See §6. |
+| Rule                                                | Meaning for your change                                                                                                                                                        |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **1 — No module redesign**                          | Work within the bounded context. No module reads another's tables. Cross-module writes go through server actions.                                                              |
+| **2 — No workflow redesign**                        | Approval, Automation and Agent engines are not yours to restructure.                                                                                                           |
+| **3 — Repository contracts frozen**                 | Dispatcher signatures do not change. Every new action ships as a `real`/`mock`/dispatcher **triple** with identical types.                                                     |
+| **4 — Public gateway frozen**                       | `src/proxy.ts` requires **Principal Architect sign-off**. It has not changed since the baseline.                                                                               |
+| **5 — State machines frozen**                       | All 8 transition maps. You may add a _guard over_ an existing vocabulary; you may not add a state.                                                                             |
+| **6 — Additive only**                               | No destructive migrations. Removing genuinely dead code with no importers is permitted.                                                                                        |
+| **7 — Repository overrides documentation**          | When a doc and the code disagree, **the code is right and the doc is a defect to file.** This has caught real errors — including one in the Phase C documents themselves (§8). |
+| **8 — No uncommitted changes at a sprint boundary** | ⚠️ **Currently violated at scale.** 552 files, 2 commits, no tag, no remote. See §6.                                                                                           |
 
 ### The mock-parity rule in practice
 
@@ -156,18 +156,22 @@ If you add `doThing`, you add **three** implementations:
 
 ```ts
 // real-actions.ts
-export async function doThing(input: DoThingInput) { /* Drizzle */ }
+export async function doThing(input: DoThingInput) {
+  /* Drizzle */
+}
 
 // mock-actions.ts — signature derived, cannot drift
-export async function doThing(...args: Parameters<typeof real.doThing>) { /* DemoStore */ }
+export async function doThing(...args: Parameters<typeof real.doThing>) {
+  /* DemoStore */
+}
 
 // actions.ts
 export async function doThing(...args: Parameters<typeof real.doThing>) {
-  return isDemoMode() ? mock.doThing(...args) : real.doThing(...args)
+  return isDemoMode() ? mock.doThing(...args) : real.doThing(...args);
 }
 ```
 
-**And know the limit of that guarantee.** Parity is enforced at the *signature* level, not the *behavioural* level. Sprint 12B found the mock timer emitting **no** activity events while the real adapter emitted two — invisible for two sprints, because nothing read task activity until `getTaskActivity` existed. It was found by a browser workflow check, not by any test. TD-17. **Assume more of these exist.**
+**And know the limit of that guarantee.** Parity is enforced at the _signature_ level, not the _behavioural_ level. Sprint 12B found the mock timer emitting **no** activity events while the real adapter emitted two — invisible for two sprints, because nothing read task activity until `getTaskActivity` existed. It was found by a browser workflow check, not by any test. TD-17. **Assume more of these exist.**
 
 ---
 
@@ -191,23 +195,23 @@ This has **never been audited exhaustively** (checklist 3.7 ⚠️), and no RLS 
 
 ### Known security debt you will encounter
 
-| Item | Detail |
-|---|---|
-| **P2-06** | Demo login accepts any credentials, grants `*:*`. No build-time guard stops `DEMO_MODE=true` reaching production. |
-| **TD-22** | `mock-actions.ts` sets `demo_session` with **no `httpOnly`, `secure` or `sameSite`**. `actions/demo-login.ts` sets the same cookie correctly. Both patterns exist in the repo. |
+| Item      | Detail                                                                                                                                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **P2-06** | Demo login accepts any credentials, grants `*:*`. No build-time guard stops `DEMO_MODE=true` reaching production.                                                                                                        |
+| **TD-22** | `mock-actions.ts` sets `demo_session` with **no `httpOnly`, `secure` or `sameSite`**. `actions/demo-login.ts` sets the same cookie correctly. Both patterns exist in the repo.                                           |
 | **TD-21** | `finalizeFileUpload` matches `sha256Hash` with **no org filter** → cross-tenant blob sharing the moment real storage lands. Its sibling `initializeFileUpload` is correctly scoped. **Must be closed before Sprint 14.** |
-| **TD-09** | `MockVirusScanner` always returns `isClean: true`, and it is the exported singleton. |
+| **TD-09** | `MockVirusScanner` always returns `isClean: true`, and it is the exported singleton.                                                                                                                                     |
 
 ---
 
 ## 6. Repository State — the part that should worry you
 
-| Fact | Consequence |
-|---|---|
-| **2 commits, 552-file working tree** | Every sprint since M0 — M3.1, 11A, 11B, Stabilization, Phase A, 12A, 12B — is uncommitted. |
-| **No git remote** | The only copy is on one disk. |
-| **No tags** | Nothing to diff against, nothing to roll back to. |
-| **`main` is 2 commits behind** | Clone and check out the default branch and you get a skeleton. |
+| Fact                                                                                   | Consequence                                                                                                                                                    |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **2 commits, 552-file working tree**                                                   | Every sprint since M0 — M3.1, 11A, 11B, Stabilization, Phase A, 12A, 12B — is uncommitted.                                                                     |
+| **No git remote**                                                                      | The only copy is on one disk.                                                                                                                                  |
+| **No tags**                                                                            | Nothing to diff against, nothing to roll back to.                                                                                                              |
+| **`main` is 2 commits behind**                                                         | Clone and check out the default branch and you get a skeleton.                                                                                                 |
 | **Migrations `0008`/`0009` untracked** while `_journal.json` (tracked) references them | ⛔ **`git add -u` or `git commit -a` commits the journal without the SQL files, producing a repository whose journal points at migrations that do not exist.** |
 
 ### Rules until this is resolved
@@ -222,15 +226,15 @@ The good news, verified in Phase C.1: a clone of the full working tree **install
 
 ## 7. Testing
 
-| Suite | Command | State |
-|---|---|---|
-| Unit (Vitest) | `npm test` | ✅ 240/240, 22 files, 2.7 s |
-| Typecheck | `npm run typecheck` | ✅ 0 errors, strict |
-| Lint | `npm run lint` | ✅ 0 errors / **109 warnings = baseline** |
-| Build | `npm run build` | ✅ 35 routes (needs the 4 env vars) |
-| Format | `npm run format:check` | ❌ **341 files. Known. Not yours.** |
-| Integration vs Postgres | — | ❌ Does not exist. Sprint 13. |
-| **E2E / browser** | — | ⚠️ **See below.** |
+| Suite                   | Command                | State                                     |
+| ----------------------- | ---------------------- | ----------------------------------------- |
+| Unit (Vitest)           | `npm test`             | ✅ 240/240, 22 files, 2.7 s               |
+| Typecheck               | `npm run typecheck`    | ✅ 0 errors, strict                       |
+| Lint                    | `npm run lint`         | ✅ 0 errors / **109 warnings = baseline** |
+| Build                   | `npm run build`        | ✅ 35 routes (needs the 4 env vars)       |
+| Format                  | `npm run format:check` | ❌ **341 files. Known. Not yours.**       |
+| Integration vs Postgres | —                      | ❌ Does not exist. Sprint 13.             |
+| **E2E / browser**       | —                      | ⚠️ **See below.**                         |
 
 ### There is no committed E2E suite
 
@@ -242,12 +246,12 @@ This is finding F-5. If you need browser verification of your change, you are wr
 
 ### Tests worth reading first
 
-| File | Why |
-|---|---|
+| File                                          | Why                                                                                                      |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `tests/unit/demo-store-schema-parity.test.ts` | 20 collections, 80 assertions. Shows the parity contract — and, by omission, its behavioural blind spot. |
-| `tests/unit/notification-templates.test.ts` | 21 tests. Rendering shared by both adapters so demo and production cannot show different copy. |
-| `tests/unit/meeting-transitions.test.ts` | A guard over an existing enum vocabulary — the correct way to add a constraint under Rule 5. |
-| `tests/unit/organizations.test.ts` | Typical module-level coverage shape. |
+| `tests/unit/notification-templates.test.ts`   | 21 tests. Rendering shared by both adapters so demo and production cannot show different copy.           |
+| `tests/unit/meeting-transitions.test.ts`      | A guard over an existing enum vocabulary — the correct way to add a constraint under Rule 5.             |
+| `tests/unit/organizations.test.ts`            | Typical module-level coverage shape.                                                                     |
 
 ---
 
@@ -255,16 +259,16 @@ This is finding F-5. If you need browser verification of your change, you are wr
 
 Read in this order:
 
-| # | Document | Why |
-|---|---|---|
-| 1 | **`NEXOS_v1.0_BASELINE.md`** (1,043 lines) | The permanent architectural reference. §14 has the eight rules. |
-| 2 | **`docs/VERSION_1.0_BETA.md`** | What is certified and — more usefully — what is not. §6 is the caveat list. |
-| 3 | **`docs/BETA_FREEZE.md`** | What you may and may not change during the migration sprints. |
-| 4 | **`docs/PRODUCTION_MIGRATION_PLAN.md`** | Sprints 13–17, with per-sprint risk tables. §2.3 names the three seams carrying the risk. |
-| 5 | **`docs/TECHNICAL-DEBT-NOTES.md`** | 23 items. Check it before "discovering" anything. |
-| 6 | **`docs/REPOSITORY_STABILIZATION_REPORT.md`** | Current repository state, measured. |
-| 7 | `docs/SPRINT-12A.md`, `SPRINT-12B.md` | The most recent product work. §4 of 12B is the unsupported-capability list. |
-| 8 | `docs/QA-NOTES.md` | Verification method **and stated limitations** per sprint. |
+| #   | Document                                      | Why                                                                                       |
+| --- | --------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| 1   | **`NEXOS_v1.0_BASELINE.md`** (1,043 lines)    | The permanent architectural reference. §14 has the eight rules.                           |
+| 2   | **`docs/VERSION_1.0_BETA.md`**                | What is certified and — more usefully — what is not. §6 is the caveat list.               |
+| 3   | **`docs/BETA_FREEZE.md`**                     | What you may and may not change during the migration sprints.                             |
+| 4   | **`docs/PRODUCTION_MIGRATION_PLAN.md`**       | Sprints 13–17, with per-sprint risk tables. §2.3 names the three seams carrying the risk. |
+| 5   | **`docs/TECHNICAL-DEBT-NOTES.md`**            | 23 items. Check it before "discovering" anything.                                         |
+| 6   | **`docs/REPOSITORY_STABILIZATION_REPORT.md`** | Current repository state, measured.                                                       |
+| 7   | `docs/SPRINT-12A.md`, `SPRINT-12B.md`         | The most recent product work. §4 of 12B is the unsupported-capability list.               |
+| 8   | `docs/QA-NOTES.md`                            | Verification method **and stated limitations** per sprint.                                |
 
 ### Rule 7 is a working instruction, not a platitude
 
@@ -321,38 +325,38 @@ Conventional Commits (`VERSION_CONTROL_PLAN.md` §5): `feat(tasks): add checklis
 
 Ranked by how much time they will cost you.
 
-| Trap | Reality |
-|---|---|
-| **`DEMO_MODE` missing from `.env.example`** | Set it manually or nothing works. |
-| **`DATABASE_URL` needed in demo mode** | Module-eval guard. Placeholder is fine. |
-| **`git add -u` corrupts the migration journal** | Explicit paths only, until Commit 1 lands. |
-| **`git checkout .` destroys three months of work** | No remote. No recovery. |
-| **`real-*.ts` has never run** | It looks as reviewed as everything else. It has no runtime evidence. |
-| **Signature parity ≠ behavioural parity** | TD-17. Mirror side effects, including audit rows. |
-| **RLS does not protect the app** | Service-role connection bypasses it. `requirePermission` is the boundary. |
-| **`format:check` fails on `main`** | 341 files. Pre-existing. Don't fold the sweep into your diff. |
-| **109 lint warnings are the baseline** | Not a regression you introduced. |
-| **Demo data resets on restart** | DemoStore is on `globalThis`. It is a fixture. |
-| **`/tasks` is pinned to one seeded milestone** | `getTasks` is milestone-scoped. Known. |
-| **`src/proxy.ts` is frozen** | Architect sign-off required (Rule 4). |
-| **`src/app/portal/` has never been reviewed** | And it ships to external users first. Tread carefully. |
-| **`docs/` can be wrong** | Rule 7. §8 has a worked example. |
-| **The parent `WebsiteCreation` repo does not track `ai-nexos`** | Backing up the parent backs up nothing here. |
+| Trap                                                            | Reality                                                                   |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **`DEMO_MODE` missing from `.env.example`**                     | Set it manually or nothing works.                                         |
+| **`DATABASE_URL` needed in demo mode**                          | Module-eval guard. Placeholder is fine.                                   |
+| **`git add -u` corrupts the migration journal**                 | Explicit paths only, until Commit 1 lands.                                |
+| **`git checkout .` destroys three months of work**              | No remote. No recovery.                                                   |
+| **`real-*.ts` has never run**                                   | It looks as reviewed as everything else. It has no runtime evidence.      |
+| **Signature parity ≠ behavioural parity**                       | TD-17. Mirror side effects, including audit rows.                         |
+| **RLS does not protect the app**                                | Service-role connection bypasses it. `requirePermission` is the boundary. |
+| **`format:check` fails on `main`**                              | 341 files. Pre-existing. Don't fold the sweep into your diff.             |
+| **109 lint warnings are the baseline**                          | Not a regression you introduced.                                          |
+| **Demo data resets on restart**                                 | DemoStore is on `globalThis`. It is a fixture.                            |
+| **`/tasks` is pinned to one seeded milestone**                  | `getTasks` is milestone-scoped. Known.                                    |
+| **`src/proxy.ts` is frozen**                                    | Architect sign-off required (Rule 4).                                     |
+| **`src/app/portal/` has never been reviewed**                   | And it ships to external users first. Tread carefully.                    |
+| **`docs/` can be wrong**                                        | Rule 7. §8 has a worked example.                                          |
+| **The parent `WebsiteCreation` repo does not track `ai-nexos`** | Backing up the parent backs up nothing here.                              |
 
 ---
 
 ## 11. Where To Ask
 
-| Question | Source |
-|---|---|
-| "Is this known debt?" | `docs/TECHNICAL-DEBT-NOTES.md` — 23 items |
-| "Is this in scope for v1.0?" | `docs/PRODUCTION_MIGRATION_PLAN.md` §5 (out of scope), `docs/BETA_FREEZE.md` §1 (frozen) |
-| "Why is this control missing?" | `docs/SPRINT-12B.md` §4 — deliberate, enumerated |
-| "What has never been verified?" | `docs/QA-NOTES.md` (Phase C section), `docs/VERSION_1.0_BETA.md` §6 |
-| "May I change this?" | `NEXOS_v1.0_BASELINE.md` §14, `docs/BETA_FREEZE.md` §2 |
-| "What is the repository state?" | `docs/REPOSITORY_STABILIZATION_REPORT.md` |
-| "How do I recover this project?" | `docs/RECOVERY_CHECKLIST.md` |
+| Question                         | Source                                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------------------------- |
+| "Is this known debt?"            | `docs/TECHNICAL-DEBT-NOTES.md` — 23 items                                                |
+| "Is this in scope for v1.0?"     | `docs/PRODUCTION_MIGRATION_PLAN.md` §5 (out of scope), `docs/BETA_FREEZE.md` §1 (frozen) |
+| "Why is this control missing?"   | `docs/SPRINT-12B.md` §4 — deliberate, enumerated                                         |
+| "What has never been verified?"  | `docs/QA-NOTES.md` (Phase C section), `docs/VERSION_1.0_BETA.md` §6                      |
+| "May I change this?"             | `NEXOS_v1.0_BASELINE.md` §14, `docs/BETA_FREEZE.md` §2                                   |
+| "What is the repository state?"  | `docs/REPOSITORY_STABILIZATION_REPORT.md`                                                |
+| "How do I recover this project?" | `docs/RECOVERY_CHECKLIST.md`                                                             |
 
 ---
 
-*Setup instructions verified against a clean clone with no local state (`REPOSITORY_STABILIZATION_REPORT.md` §7). Supersedes `README.md` until it is rewritten.*
+_Setup instructions verified against a clean clone with no local state (`REPOSITORY_STABILIZATION_REPORT.md` §7). Supersedes `README.md` until it is rewritten._

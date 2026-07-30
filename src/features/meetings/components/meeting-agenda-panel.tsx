@@ -55,7 +55,9 @@ export function MeetingAgendaPanel({
       await onChanged();
       toast.success(message);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not update the agenda");
+      toast.error(
+        error instanceof Error ? error.message : "Could not update the agenda",
+      );
     } finally {
       setPendingId(null);
     }
@@ -80,7 +82,9 @@ export function MeetingAgendaPanel({
       });
       await onChanged();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not reorder the agenda");
+      toast.error(
+        error instanceof Error ? error.message : "Could not reorder the agenda",
+      );
     } finally {
       setPendingId(null);
     }
@@ -113,8 +117,13 @@ export function MeetingAgendaPanel({
                   onChange={(event) =>
                     mutate(
                       item.agendaItemId,
-                      { agendaItemId: item.agendaItemId, isCompleted: event.target.checked },
-                      event.target.checked ? "Agenda item completed" : "Agenda item reopened",
+                      {
+                        agendaItemId: item.agendaItemId,
+                        isCompleted: event.target.checked,
+                      },
+                      event.target.checked
+                        ? "Agenda item completed"
+                        : "Agenda item reopened",
                     )
                   }
                 />
@@ -178,7 +187,8 @@ export function MeetingAgendaPanel({
           await addAgendaItem({
             meetingId,
             title: title.trim(),
-            timeAllottedMins: Number.isFinite(allotted) && allotted > 0 ? allotted : undefined,
+            timeAllottedMins:
+              Number.isFinite(allotted) && allotted > 0 ? allotted : undefined,
           });
           setTitle("");
           setMinutes("");

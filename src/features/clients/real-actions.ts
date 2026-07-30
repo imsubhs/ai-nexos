@@ -21,7 +21,7 @@ function logActivity(
   entityId: string,
   entityType: string,
   description: string,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ) {
   return db.insert(activityLogs).values({
     organizationId: orgId,
@@ -45,7 +45,10 @@ export async function getClients(query?: string) {
   requirePermission(user.permissions, "clients", "read");
 
   // RLS handles the organization scoping, but passing it explicitly is safe too
-  const filters = [isNull(clients.deletedAt), eq(clients.organizationId, user.organizationId)];
+  const filters = [
+    isNull(clients.deletedAt),
+    eq(clients.organizationId, user.organizationId),
+  ];
   if (query) {
     filters.push(ilike(clients.companyName, `%${query}%`));
   }
@@ -72,7 +75,7 @@ export async function getClientById(clientId: string) {
     where: and(
       eq(clients.clientId, clientId),
       eq(clients.organizationId, user.organizationId),
-      isNull(clients.deletedAt)
+      isNull(clients.deletedAt),
     ),
     with: {
       contacts: {
@@ -101,8 +104,8 @@ export async function getClientActivity(clientId: string) {
       and(
         eq(activityLogs.organizationId, user.organizationId),
         eq(activityLogs.entityId, clientId),
-        inArray(activityLogs.entityType, ["client", "client_contact"])
-      )
+        inArray(activityLogs.entityType, ["client", "client_contact"]),
+      ),
     )
     .orderBy(activityLogs.createdAt);
 
@@ -137,7 +140,7 @@ export async function createClient(data: z.infer<typeof insertClientSchema>) {
     client.clientId,
     "client",
     `Created client ${parsed.companyName}`,
-    parsed
+    parsed,
   );
 
   revalidatePath("/clients");
@@ -149,7 +152,10 @@ export async function createClient(data: z.infer<typeof insertClientSchema>) {
  * Automatically logs the update activity.
  * Requires `clients.update` permission.
  */
-export async function updateClient(clientId: string, data: z.infer<typeof updateClientSchema>) {
+export async function updateClient(
+  clientId: string,
+  data: z.infer<typeof updateClientSchema>,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "clients", "update");
 
@@ -162,8 +168,16 @@ export async function updateClient(clientId: string, data: z.infer<typeof update
       updatedBy: user.userId,
       updatedAt: new Date(),
     })
-    .where(and(eq(clients.clientId, clientId), eq(clients.organizationId, user.organizationId)))
-    .returning({ clientId: clients.clientId, companyName: clients.companyName });
+    .where(
+      and(
+        eq(clients.clientId, clientId),
+        eq(clients.organizationId, user.organizationId),
+      ),
+    )
+    .returning({
+      clientId: clients.clientId,
+      companyName: clients.companyName,
+    });
 
   if (!client) throw new Error("Client not found");
 
@@ -174,7 +188,7 @@ export async function updateClient(clientId: string, data: z.infer<typeof update
     client.clientId,
     "client",
     `Updated client ${client.companyName}`,
-    parsed
+    parsed,
   );
 
   revalidatePath("/clients");
@@ -201,8 +215,16 @@ export async function archiveClient(clientId: string) {
       updatedAt: new Date(),
       updatedBy: user.userId,
     })
-    .where(and(eq(clients.clientId, clientId), eq(clients.organizationId, user.organizationId)))
-    .returning({ clientId: clients.clientId, companyName: clients.companyName });
+    .where(
+      and(
+        eq(clients.clientId, clientId),
+        eq(clients.organizationId, user.organizationId),
+      ),
+    )
+    .returning({
+      clientId: clients.clientId,
+      companyName: clients.companyName,
+    });
 
   if (!client) throw new Error("Client not found");
 
@@ -217,8 +239,12 @@ export async function archiveClient(clientId: string) {
       updatedAt: new Date(),
       updatedBy: user.userId,
     })
-    .where(and(eq(clientContacts.clientId, clientId), isNull(clientContacts.deletedAt)));
-
+    .where(
+      and(
+        eq(clientContacts.clientId, clientId),
+        isNull(clientContacts.deletedAt),
+      ),
+    );
 
   await logActivity(
     user.organizationId,
@@ -226,7 +252,7 @@ export async function archiveClient(clientId: string) {
     "archive",
     client.clientId,
     "client",
-    `Archived client ${client.companyName}`
+    `Archived client ${client.companyName}`,
   );
 
   revalidatePath("/clients");
@@ -260,7 +286,7 @@ export async function createContact(data: z.infer<typeof insertContactSchema>) {
     parsed.clientId, // Log against the client
     "client_contact",
     `Added contact ${parsed.name}`,
-    { ...parsed, contactId: contact.contactId }
+    { ...parsed, contactId: contact.contactId },
   );
 
   revalidatePath(`/clients/${parsed.clientId}`);
@@ -275,7 +301,7 @@ export async function createContact(data: z.infer<typeof insertContactSchema>) {
 export async function updateContact(
   contactId: string,
   clientId: string,
-  data: z.infer<typeof updateContactSchema>
+  data: z.infer<typeof updateContactSchema>,
 ) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "clients", "update");
@@ -290,7 +316,10 @@ export async function updateContact(
       updatedAt: new Date(),
     })
     .where(eq(clientContacts.contactId, contactId))
-    .returning({ contactId: clientContacts.contactId, name: clientContacts.name });
+    .returning({
+      contactId: clientContacts.contactId,
+      name: clientContacts.name,
+    });
 
   if (!contact) throw new Error("Contact not found");
 
@@ -301,7 +330,7 @@ export async function updateContact(
     clientId, // Log against the client
     "client_contact",
     `Updated contact ${contact.name}`,
-    { ...parsed, contactId: contact.contactId }
+    { ...parsed, contactId: contact.contactId },
   );
 
   revalidatePath(`/clients/${clientId}`);
@@ -328,7 +357,10 @@ export async function archiveContact(contactId: string, clientId: string) {
       updatedBy: user.userId,
     })
     .where(eq(clientContacts.contactId, contactId))
-    .returning({ contactId: clientContacts.contactId, name: clientContacts.name });
+    .returning({
+      contactId: clientContacts.contactId,
+      name: clientContacts.name,
+    });
 
   if (!contact) throw new Error("Contact not found");
 
@@ -339,7 +371,7 @@ export async function archiveContact(contactId: string, clientId: string) {
     clientId,
     "client_contact",
     `Archived contact ${contact.name}`,
-    { contactId: contact.contactId }
+    { contactId: contact.contactId },
   );
 
   revalidatePath(`/clients/${clientId}`);
@@ -356,8 +388,8 @@ export async function getClientsCount() {
     .where(
       and(
         eq(clients.organizationId, user.organizationId),
-        isNull(clients.deletedAt)
-      )
+        isNull(clients.deletedAt),
+      ),
     );
 
   return result?.value ?? 0;

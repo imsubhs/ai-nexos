@@ -19,7 +19,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/shared/data-table";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { EmployeeDirectoryEntry } from "../types";
 import { EmployeeDetailSheet } from "./employee-detail-sheet";
@@ -59,7 +62,9 @@ export function EmployeesDirectory({
       else params.set(key, value);
     }
     startTransition(() => {
-      router.replace(`/workforce/employees?${params.toString()}`, { scroll: false });
+      router.replace(`/workforce/employees?${params.toString()}`, {
+        scroll: false,
+      });
     });
   };
 
@@ -89,9 +94,12 @@ export function EmployeesDirectory({
       header: "Employee",
       cell: (row) => (
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8 border border-border">
-            <AvatarImage src={row.avatarUrl ?? undefined} alt={`${row.firstName} ${row.lastName}`} />
-            <AvatarFallback className="bg-primary/5 text-xs font-semibold text-primary">
+          <Avatar className="border-border h-8 w-8 border">
+            <AvatarImage
+              src={row.avatarUrl ?? undefined}
+              alt={`${row.firstName} ${row.lastName}`}
+            />
+            <AvatarFallback className="bg-primary/5 text-primary text-xs font-semibold">
               {employeeInitials(row)}
             </AvatarFallback>
           </Avatar>
@@ -99,7 +107,7 @@ export function EmployeesDirectory({
             <p className="font-medium">
               {row.firstName} {row.lastName}
             </p>
-            <p className="text-xs text-muted-foreground">{row.email}</p>
+            <p className="text-muted-foreground text-xs">{row.email}</p>
           </div>
         </div>
       ),
@@ -133,7 +141,11 @@ export function EmployeesDirectory({
       key: "today",
       header: "Today",
       cell: (row) =>
-        row.todayStatus ? <Badge variant="secondary">{row.todayStatus}</Badge> : "—",
+        row.todayStatus ? (
+          <Badge variant="secondary">{row.todayStatus}</Badge>
+        ) : (
+          "—"
+        ),
     },
   ];
 
@@ -141,7 +153,7 @@ export function EmployeesDirectory({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
@@ -161,14 +173,19 @@ export function EmployeesDirectory({
             }
           />
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setParams({ departmentId: null, page: null })}>
+            <DropdownMenuItem
+              onClick={() => setParams({ departmentId: null, page: null })}
+            >
               All departments
             </DropdownMenuItem>
             {departmentOptions.map((department) => (
               <DropdownMenuItem
                 key={department.departmentId}
                 onClick={() =>
-                  setParams({ departmentId: department.departmentId, page: null })
+                  setParams({
+                    departmentId: department.departmentId,
+                    page: null,
+                  })
                 }
               >
                 {department.name}
@@ -193,16 +210,24 @@ export function EmployeesDirectory({
             }
           />
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setParams({ status: null, page: null })}>
+            <DropdownMenuItem
+              onClick={() => setParams({ status: null, page: null })}
+            >
               All statuses
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setParams({ status: "active", page: null })}>
+            <DropdownMenuItem
+              onClick={() => setParams({ status: "active", page: null })}
+            >
               Active
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setParams({ status: "inactive", page: null })}>
+            <DropdownMenuItem
+              onClick={() => setParams({ status: "inactive", page: null })}
+            >
               Inactive
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setParams({ status: "archived", page: null })}>
+            <DropdownMenuItem
+              onClick={() => setParams({ status: "archived", page: null })}
+            >
               Archived
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -228,7 +253,10 @@ export function EmployeesDirectory({
         }
       />
 
-      <EmployeeDetailSheet employee={selected} onClose={() => setSelected(null)} />
+      <EmployeeDetailSheet
+        employee={selected}
+        onClose={() => setSelected(null)}
+      />
     </div>
   );
 }

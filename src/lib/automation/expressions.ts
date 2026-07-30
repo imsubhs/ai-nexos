@@ -13,7 +13,6 @@ export class ExpressionEvaluationError extends Error {
  * Evaluates custom logical expressions securely via AST.
  */
 export class RestrictedExpressionEngine {
-  
   /**
    * Evaluates a condition expression against a provided context.
    */
@@ -25,9 +24,13 @@ export class RestrictedExpressionEngine {
       return this.evaluateAst(ast, context);
     } catch (err: any) {
       if (err instanceof Error) {
-        throw new ExpressionEvaluationError(`Failed to evaluate expression: ${err.message}`);
+        throw new ExpressionEvaluationError(
+          `Failed to evaluate expression: ${err.message}`,
+        );
       }
-      throw new ExpressionEvaluationError(`Failed to evaluate expression: String Error`);
+      throw new ExpressionEvaluationError(
+        `Failed to evaluate expression: String Error`,
+      );
     }
   }
 
@@ -49,38 +52,68 @@ export class RestrictedExpressionEngine {
         const left = this.evaluateAst(node.left, context);
         const right = this.evaluateAst(node.right, context);
         switch (node.operator) {
-          case "==": return left == right;
-          case "===": return left === right;
-          case "!=": return left != right;
-          case "!==": return left !== right;
-          case "<": return left < right;
-          case ">": return left > right;
-          case "<=": return left <= right;
-          case ">=": return left >= right;
-          case "&&": return left && right;
-          case "||": return left || right;
-          case "AND": return left && right; // Support SQL/Custom syntax
-          case "OR": return left || right;
-          case "+": return left + right;
-          case "-": return left - right;
-          case "*": return left * right;
-          case "/": return left / right;
-          case "%": return left % right;
-          default: throw new ExpressionEvaluationError(`Unsupported operator: ${node.operator}`);
+          case "==":
+            return left == right;
+          case "===":
+            return left === right;
+          case "!=":
+            return left != right;
+          case "!==":
+            return left !== right;
+          case "<":
+            return left < right;
+          case ">":
+            return left > right;
+          case "<=":
+            return left <= right;
+          case ">=":
+            return left >= right;
+          case "&&":
+            return left && right;
+          case "||":
+            return left || right;
+          case "AND":
+            return left && right; // Support SQL/Custom syntax
+          case "OR":
+            return left || right;
+          case "+":
+            return left + right;
+          case "-":
+            return left - right;
+          case "*":
+            return left * right;
+          case "/":
+            return left / right;
+          case "%":
+            return left % right;
+          default:
+            throw new ExpressionEvaluationError(
+              `Unsupported operator: ${node.operator}`,
+            );
         }
       case "UnaryExpression":
         const arg = this.evaluateAst(node.argument, context);
         switch (node.operator) {
-          case "!": return !arg;
-          case "-": return -arg;
-          case "+": return +arg;
-          default: throw new ExpressionEvaluationError(`Unsupported unary operator: ${node.operator}`);
+          case "!":
+            return !arg;
+          case "-":
+            return -arg;
+          case "+":
+            return +arg;
+          default:
+            throw new ExpressionEvaluationError(
+              `Unsupported unary operator: ${node.operator}`,
+            );
         }
       case "CallExpression":
         // Optionally allow very specific safe functions (e.g. array.includes, string.startsWith)
-        throw new ExpressionEvaluationError("Function calls are disabled for security.");
+        throw new ExpressionEvaluationError(
+          "Function calls are disabled for security.",
+        );
       default:
-        throw new ExpressionEvaluationError(`Unsupported syntax type: ${node.type}`);
+        throw new ExpressionEvaluationError(
+          `Unsupported syntax type: ${node.type}`,
+        );
     }
   }
 

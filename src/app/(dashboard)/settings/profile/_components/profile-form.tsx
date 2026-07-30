@@ -79,7 +79,8 @@ export function ProfileForm({ profile }: ProfileFormProps) {
   };
 
   const avatarUrlValue = watch("avatarUrl");
-  const initials = `${profile.firstName.charAt(0)}${profile.lastName ? profile.lastName.charAt(0) : ""}`.toUpperCase();
+  const initials =
+    `${profile.firstName.charAt(0)}${profile.lastName ? profile.lastName.charAt(0) : ""}`.toUpperCase();
 
   return (
     <div className="space-y-6">
@@ -91,11 +92,18 @@ export function ProfileForm({ profile }: ProfileFormProps) {
               <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold">{profile.firstName} {profile.lastName}</h2>
+              <h2 className="text-2xl font-bold">
+                {profile.firstName} {profile.lastName}
+              </h2>
               <p className="text-muted-foreground">{profile.email}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge variant={profile.status === "active" ? "default" : "secondary"}>
-                  {profile.status.charAt(0).toUpperCase() + profile.status.slice(1)}
+              <div className="mt-2 flex items-center gap-2">
+                <Badge
+                  variant={
+                    profile.status === "active" ? "default" : "secondary"
+                  }
+                >
+                  {profile.status.charAt(0).toUpperCase() +
+                    profile.status.slice(1)}
                 </Badge>
                 <Badge variant="outline">{profile.roleName}</Badge>
               </div>
@@ -109,14 +117,17 @@ export function ProfileForm({ profile }: ProfileFormProps) {
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
             <CardDescription>
-              Update your personal details. Some fields are managed by your organization.
+              Update your personal details. Some fields are managed by your
+              organization.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <Field orientation="vertical">
-                  <FieldLabel htmlFor="profile-firstName">First Name</FieldLabel>
+                  <FieldLabel htmlFor="profile-firstName">
+                    First Name
+                  </FieldLabel>
                   <FieldContent>
                     <Input
                       {...register("firstName")}
@@ -140,7 +151,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <Field orientation="vertical">
                   <FieldLabel htmlFor="profile-email">Email</FieldLabel>
                   <FieldContent>
@@ -180,9 +191,11 @@ export function ProfileForm({ profile }: ProfileFormProps) {
                 <FieldError errors={[errors.avatarUrl]} />
               </Field>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t">
+              <div className="grid grid-cols-1 gap-5 border-t pt-4 md:grid-cols-2">
                 <Field orientation="vertical">
-                  <FieldLabel htmlFor="profile-organization">Organization</FieldLabel>
+                  <FieldLabel htmlFor="profile-organization">
+                    Organization
+                  </FieldLabel>
                   <FieldContent>
                     <Input
                       id="profile-organization"
@@ -194,7 +207,9 @@ export function ProfileForm({ profile }: ProfileFormProps) {
                 </Field>
 
                 <Field orientation="vertical">
-                  <FieldLabel htmlFor="profile-department">Department</FieldLabel>
+                  <FieldLabel htmlFor="profile-department">
+                    Department
+                  </FieldLabel>
                   <FieldContent>
                     <Input
                       id="profile-department"
@@ -206,11 +221,17 @@ export function ProfileForm({ profile }: ProfileFormProps) {
                 </Field>
 
                 <Field orientation="vertical">
-                  <FieldLabel htmlFor="profile-joinedDate">Joined Date</FieldLabel>
+                  <FieldLabel htmlFor="profile-joinedDate">
+                    Joined Date
+                  </FieldLabel>
                   <FieldContent>
                     <Input
                       id="profile-joinedDate"
-                      value={profile.joiningDate ? new Date(profile.joiningDate).toLocaleDateString() : "Unknown"}
+                      value={
+                        profile.joiningDate
+                          ? new Date(profile.joiningDate).toLocaleDateString()
+                          : "Unknown"
+                      }
                       disabled
                       readOnly
                     />

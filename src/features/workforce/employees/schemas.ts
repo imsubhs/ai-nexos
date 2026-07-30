@@ -9,12 +9,9 @@ export const listEmployeesSchema = z.object({
   // "archived" opts in to the archived lens; unfiltered lists exclude them.
   status: z.enum(["active", "inactive", "archived"]).optional(),
   page: z.number().int().min(1).default(1),
-  pageSize: z.union([
-    z.literal(10),
-    z.literal(25),
-    z.literal(50),
-    z.literal(100),
-  ]).default(25),
+  pageSize: z
+    .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
+    .default(25),
 });
 
 export type ListEmployeesInput = z.input<typeof listEmployeesSchema>;

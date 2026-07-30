@@ -30,7 +30,6 @@ import type {
   getActiveTaskTimer as real_getActiveTaskTimer,
 } from "./real-actions";
 
-
 function auditFields() {
   return {
     createdAt: new Date(),
@@ -44,7 +43,9 @@ function auditFields() {
 }
 
 function requireTask(store: ReturnType<typeof getDemoStore>, taskId: string) {
-  const task = store.tasks.find((t: any) => t.taskId === taskId && t.deletedAt === null);
+  const task = store.tasks.find(
+    (t: any) => t.taskId === taskId && t.deletedAt === null,
+  );
   if (!task) throw new Error("Task not found or access denied.");
   return task;
 }
@@ -66,7 +67,9 @@ function logTaskActivity(
   });
 }
 
-export async function createTask(...args: Parameters<typeof real_createTask>): Promise<Awaited<ReturnType<typeof real_createTask>>> {
+export async function createTask(
+  ...args: Parameters<typeof real_createTask>
+): Promise<Awaited<ReturnType<typeof real_createTask>>> {
   const [data] = args;
   const store = getDemoStore();
 
@@ -91,11 +94,15 @@ export async function createTask(...args: Parameters<typeof real_createTask>): P
   return task as any;
 }
 
-export async function updateTask(...args: Parameters<typeof real_updateTask>): Promise<Awaited<ReturnType<typeof real_updateTask>>> {
+export async function updateTask(
+  ...args: Parameters<typeof real_updateTask>
+): Promise<Awaited<ReturnType<typeof real_updateTask>>> {
   const [taskId, data] = args;
   const store = getDemoStore();
 
-  const task = store.tasks.find((t) => t.taskId === taskId && t.deletedAt === null);
+  const task = store.tasks.find(
+    (t) => t.taskId === taskId && t.deletedAt === null,
+  );
   if (!task) throw new Error("Task not found or access denied.");
 
   Object.assign(task, data, { updatedAt: new Date(), updatedBy: DEMO_USER_ID });
@@ -104,7 +111,9 @@ export async function updateTask(...args: Parameters<typeof real_updateTask>): P
   return task as any;
 }
 
-export async function getTasks(...args: Parameters<typeof real_getTasks>): Promise<Awaited<ReturnType<typeof real_getTasks>>> {
+export async function getTasks(
+  ...args: Parameters<typeof real_getTasks>
+): Promise<Awaited<ReturnType<typeof real_getTasks>>> {
   const [milestoneId, cursorOffset = 0, limit = 100] = args;
   const store = getDemoStore();
 
@@ -114,15 +123,21 @@ export async function getTasks(...args: Parameters<typeof real_getTasks>): Promi
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
 
-export async function startTaskTimer(...args: Parameters<typeof real_startTaskTimer>): Promise<Awaited<ReturnType<typeof real_startTaskTimer>>> {
+export async function startTaskTimer(
+  ...args: Parameters<typeof real_startTaskTimer>
+): Promise<Awaited<ReturnType<typeof real_startTaskTimer>>> {
   const [taskId] = args;
   const store = getDemoStore();
 
-  const task = store.tasks.find((t) => t.taskId === taskId && t.deletedAt === null);
+  const task = store.tasks.find(
+    (t) => t.taskId === taskId && t.deletedAt === null,
+  );
   if (!task) throw new Error("Task not found or access denied.");
 
   // Stop any running timer first, mirroring the real single-active-timer rule.
-  const active = store.taskTimeEntries.find((e) => e.userId === DEMO_USER_ID && e.endTime === null);
+  const active = store.taskTimeEntries.find(
+    (e) => e.userId === DEMO_USER_ID && e.endTime === null,
+  );
   if (active) {
     await stopTaskTimer(active.timeEntryId);
   }
@@ -146,29 +161,43 @@ export async function startTaskTimer(...args: Parameters<typeof real_startTaskTi
   return entry as any;
 }
 
-export async function stopTaskTimer(...args: Parameters<typeof real_stopTaskTimer>): Promise<Awaited<ReturnType<typeof real_stopTaskTimer>>> {
+export async function stopTaskTimer(
+  ...args: Parameters<typeof real_stopTaskTimer>
+): Promise<Awaited<ReturnType<typeof real_stopTaskTimer>>> {
   const [timeEntryId] = args;
   const store = getDemoStore();
 
-  const entry = store.taskTimeEntries.find((e) => e.timeEntryId === timeEntryId && e.endTime === null);
+  const entry = store.taskTimeEntries.find(
+    (e) => e.timeEntryId === timeEntryId && e.endTime === null,
+  );
   if (!entry) throw new Error("Time entry not found");
 
   entry.endTime = new Date();
 
   const task = store.tasks.find((t) => t.taskId === entry.taskId);
   if (task) {
-    const elapsedMins = Math.max(1, Math.round((entry.endTime.getTime() - entry.startTime.getTime()) / 60000));
+    const elapsedMins = Math.max(
+      1,
+      Math.round((entry.endTime.getTime() - entry.startTime.getTime()) / 60000),
+    );
     task.actualDurationMins = (task.actualDurationMins ?? 0) + elapsedMins;
     task.updatedAt = new Date();
     entry.durationMins = elapsedMins;
-    logTaskActivity(store, task, "time_logged", { action: "stopped", duration: elapsedMins });
+    logTaskActivity(store, task, "time_logged", {
+      action: "stopped",
+      duration: elapsedMins,
+    });
   }
 
   return entry as any;
 }
 
-export async function addTaskDependency(...args: Parameters<typeof real_addTaskDependency>): Promise<Awaited<ReturnType<typeof real_addTaskDependency>>> {
-  const [data] = args as unknown as [{ taskId: string; dependsOnTaskId: string }];
+export async function addTaskDependency(
+  ...args: Parameters<typeof real_addTaskDependency>
+): Promise<Awaited<ReturnType<typeof real_addTaskDependency>>> {
+  const [data] = args as unknown as [
+    { taskId: string; dependsOnTaskId: string },
+  ];
   const store = getDemoStore();
 
   const dependency = {
@@ -183,18 +212,25 @@ export async function addTaskDependency(...args: Parameters<typeof real_addTaskD
   return dependency as any;
 }
 
-export async function getMyOpenTasksCount(...args: Parameters<typeof real_getMyOpenTasksCount>): Promise<Awaited<ReturnType<typeof real_getMyOpenTasksCount>>> {
+export async function getMyOpenTasksCount(
+  ...args: Parameters<typeof real_getMyOpenTasksCount>
+): Promise<Awaited<ReturnType<typeof real_getMyOpenTasksCount>>> {
   const store = getDemoStore();
   // In demo data, assignees is mostly empty, so we just return total open tasks for demo purposes
   // or checking assignees array.
-  return store.tasks.filter(t => t.deletedAt === null && !["completed", "cancelled"].includes(t.status)).length as any;
+  return store.tasks.filter(
+    (t) =>
+      t.deletedAt === null && !["completed", "cancelled"].includes(t.status),
+  ).length as any;
 }
 
 /**
  * SPRINT 12B — delete, assignment, comments, history, search, active timer.
  * Every one of these mirrors a real-actions counterpart added this sprint.
  */
-export async function deleteTask(...args: Parameters<typeof real_deleteTask>): Promise<Awaited<ReturnType<typeof real_deleteTask>>> {
+export async function deleteTask(
+  ...args: Parameters<typeof real_deleteTask>
+): Promise<Awaited<ReturnType<typeof real_deleteTask>>> {
   const [taskId] = args;
   const store = getDemoStore();
   const task = requireTask(store, taskId);
@@ -210,7 +246,9 @@ export async function deleteTask(...args: Parameters<typeof real_deleteTask>): P
   return { success: true } as any;
 }
 
-export async function assignTask(...args: Parameters<typeof real_assignTask>): Promise<Awaited<ReturnType<typeof real_assignTask>>> {
+export async function assignTask(
+  ...args: Parameters<typeof real_assignTask>
+): Promise<Awaited<ReturnType<typeof real_assignTask>>> {
   const [taskId, assigneeUserId] = args;
   const store = getDemoStore();
   const task = requireTask(store, taskId);
@@ -234,7 +272,9 @@ export async function assignTask(...args: Parameters<typeof real_assignTask>): P
   return { success: true, alreadyAssigned: false } as any;
 }
 
-export async function unassignTask(...args: Parameters<typeof real_unassignTask>): Promise<Awaited<ReturnType<typeof real_unassignTask>>> {
+export async function unassignTask(
+  ...args: Parameters<typeof real_unassignTask>
+): Promise<Awaited<ReturnType<typeof real_unassignTask>>> {
   const [taskId, assigneeUserId] = args;
   const store = getDemoStore();
   const task = requireTask(store, taskId);
@@ -249,7 +289,9 @@ export async function unassignTask(...args: Parameters<typeof real_unassignTask>
   return { success: true } as any;
 }
 
-export async function getTaskAssignees(...args: Parameters<typeof real_getTaskAssignees>): Promise<Awaited<ReturnType<typeof real_getTaskAssignees>>> {
+export async function getTaskAssignees(
+  ...args: Parameters<typeof real_getTaskAssignees>
+): Promise<Awaited<ReturnType<typeof real_getTaskAssignees>>> {
   const [taskId] = args;
   const store = getDemoStore();
 
@@ -267,7 +309,9 @@ export async function getTaskAssignees(...args: Parameters<typeof real_getTaskAs
     }) as any;
 }
 
-export async function addTaskComment(...args: Parameters<typeof real_addTaskComment>): Promise<Awaited<ReturnType<typeof real_addTaskComment>>> {
+export async function addTaskComment(
+  ...args: Parameters<typeof real_addTaskComment>
+): Promise<Awaited<ReturnType<typeof real_addTaskComment>>> {
   const [taskId, text] = args;
   const store = getDemoStore();
   const task = requireTask(store, taskId);
@@ -285,12 +329,16 @@ export async function addTaskComment(...args: Parameters<typeof real_addTaskComm
   };
   store.taskComments.push(comment);
 
-  logTaskActivity(store, task, "comment_added", { commentId: comment.commentId });
+  logTaskActivity(store, task, "comment_added", {
+    commentId: comment.commentId,
+  });
 
   return comment as any;
 }
 
-export async function getTaskComments(...args: Parameters<typeof real_getTaskComments>): Promise<Awaited<ReturnType<typeof real_getTaskComments>>> {
+export async function getTaskComments(
+  ...args: Parameters<typeof real_getTaskComments>
+): Promise<Awaited<ReturnType<typeof real_getTaskComments>>> {
   const [taskId, limit = 50] = args;
   const store = getDemoStore();
 
@@ -311,7 +359,9 @@ export async function getTaskComments(...args: Parameters<typeof real_getTaskCom
     }) as any;
 }
 
-export async function getTaskActivity(...args: Parameters<typeof real_getTaskActivity>): Promise<Awaited<ReturnType<typeof real_getTaskActivity>>> {
+export async function getTaskActivity(
+  ...args: Parameters<typeof real_getTaskActivity>
+): Promise<Awaited<ReturnType<typeof real_getTaskActivity>>> {
   const [taskId, limit = 25] = args;
   const store = getDemoStore();
 
@@ -321,18 +371,25 @@ export async function getTaskActivity(...args: Parameters<typeof real_getTaskAct
     .slice(0, limit) as any;
 }
 
-export async function searchTasks(...args: Parameters<typeof real_searchTasks>): Promise<Awaited<ReturnType<typeof real_searchTasks>>> {
+export async function searchTasks(
+  ...args: Parameters<typeof real_searchTasks>
+): Promise<Awaited<ReturnType<typeof real_searchTasks>>> {
   const [searchTerm, cursorOffset = 0, limit = 50] = args;
   const store = getDemoStore();
   const needle = searchTerm.toLowerCase();
 
   return store.tasks
-    .filter((t: any) => t.deletedAt === null && t.name?.toLowerCase().includes(needle))
+    .filter(
+      (t: any) =>
+        t.deletedAt === null && t.name?.toLowerCase().includes(needle),
+    )
     .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
 
-export async function getActiveTaskTimer(...args: Parameters<typeof real_getActiveTaskTimer>): Promise<Awaited<ReturnType<typeof real_getActiveTaskTimer>>> {
+export async function getActiveTaskTimer(
+  ...args: Parameters<typeof real_getActiveTaskTimer>
+): Promise<Awaited<ReturnType<typeof real_getActiveTaskTimer>>> {
   const [taskId] = args;
   const store = getDemoStore();
 

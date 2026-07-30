@@ -21,7 +21,7 @@ export function CreateClientModal() {
       <DialogTrigger
         render={
           <Button>
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Client
           </Button>
         }
@@ -30,7 +30,8 @@ export function CreateClientModal() {
         <DialogHeader>
           <DialogTitle>Add New Client</DialogTitle>
           <DialogDescription>
-            Create a new client profile. You can add contacts and brand assets later.
+            Create a new client profile. You can add contacts and brand assets
+            later.
           </DialogDescription>
         </DialogHeader>
         <ClientForm onSuccess={() => setOpen(false)} />

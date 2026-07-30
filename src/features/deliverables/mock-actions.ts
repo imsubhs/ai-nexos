@@ -1,8 +1,30 @@
-import type { createDeliverable as real_createDeliverable, startReviewSession as real_startReviewSession, approveRevision as real_approveRevision, requestRevision as real_requestRevision, generateShareLink as real_generateShareLink, getDeliverables as real_getDeliverables, getDeliverableById as real_getDeliverableById, searchDeliverables as real_searchDeliverables, DeliverableListFilters, getReviewSessions as real_getReviewSessions, getDeliverableApprovals as real_getDeliverableApprovals, getDeliverableShareLinks as real_getDeliverableShareLinks, getDeliverableActivity as real_getDeliverableActivity } from "./real-actions";
-import { getDemoStore, nextDemoId, DEMO_USER_ID, DEMO_ORG_ID, logDemoActivity } from "@/lib/demo/store";
+import type {
+  createDeliverable as real_createDeliverable,
+  startReviewSession as real_startReviewSession,
+  approveRevision as real_approveRevision,
+  requestRevision as real_requestRevision,
+  generateShareLink as real_generateShareLink,
+  getDeliverables as real_getDeliverables,
+  getDeliverableById as real_getDeliverableById,
+  searchDeliverables as real_searchDeliverables,
+  DeliverableListFilters,
+  getReviewSessions as real_getReviewSessions,
+  getDeliverableApprovals as real_getDeliverableApprovals,
+  getDeliverableShareLinks as real_getDeliverableShareLinks,
+  getDeliverableActivity as real_getDeliverableActivity,
+} from "./real-actions";
+import {
+  getDemoStore,
+  nextDemoId,
+  DEMO_USER_ID,
+  DEMO_ORG_ID,
+  logDemoActivity,
+} from "@/lib/demo/store";
 import { revalidatePath } from "next/cache";
 
-export async function createDeliverable(...args: Parameters<typeof real_createDeliverable>): Promise<Awaited<ReturnType<typeof real_createDeliverable>>> {
+export async function createDeliverable(
+  ...args: Parameters<typeof real_createDeliverable>
+): Promise<Awaited<ReturnType<typeof real_createDeliverable>>> {
   const [data] = args;
   const store = getDemoStore();
   const deliverableId = nextDemoId(store);
@@ -55,21 +77,36 @@ export async function createDeliverable(...args: Parameters<typeof real_createDe
   store.deliverables.push(deliverable);
   store.deliverableRevisions.push(revision);
 
-  logDemoActivity(store, "deliverables", "created", "deliverable", deliverableId, "Created deliverable", { version: 1 });
+  logDemoActivity(
+    store,
+    "deliverables",
+    "created",
+    "deliverable",
+    deliverableId,
+    "Created deliverable",
+    { version: 1 },
+  );
   revalidatePath(`/projects/${data.projectId}/deliverables`);
 
   return deliverable as any;
 }
 
-export async function startReviewSession(...args: Parameters<typeof real_startReviewSession>): Promise<Awaited<ReturnType<typeof real_startReviewSession>>> {
+export async function startReviewSession(
+  ...args: Parameters<typeof real_startReviewSession>
+): Promise<Awaited<ReturnType<typeof real_startReviewSession>>> {
   const [deliverableId, revisionId, reviewType, deadlineAt] = args;
   const store = getDemoStore();
-  const deliverable = store.deliverables.find(d => d.deliverableId === deliverableId);
+  const deliverable = store.deliverables.find(
+    (d) => d.deliverableId === deliverableId,
+  );
 
   const session = {
     sessionId: nextDemoId(store),
     organizationId: deliverable?.organizationId ?? DEMO_ORG_ID,
-    projectId: deliverable?.projectId ?? store.projects[0]?.projectId ?? nextDemoId(store),
+    projectId:
+      deliverable?.projectId ??
+      store.projects[0]?.projectId ??
+      nextDemoId(store),
     deliverableId,
     revisionId,
     reviewType,
@@ -88,25 +125,41 @@ export async function startReviewSession(...args: Parameters<typeof real_startRe
   };
 
   if (deliverable) {
-    deliverable.status = reviewType === "client_review" ? "client_review" : "internal_review";
+    deliverable.status =
+      reviewType === "client_review" ? "client_review" : "internal_review";
   }
 
   store.deliverableReviewSessions.push(session);
 
-  logDemoActivity(store, "deliverables", "review_session_started", "deliverable", deliverableId, "Review session started", { sessionId: session.sessionId, type: reviewType });
+  logDemoActivity(
+    store,
+    "deliverables",
+    "review_session_started",
+    "deliverable",
+    deliverableId,
+    "Review session started",
+    { sessionId: session.sessionId, type: reviewType },
+  );
 
   return session as any;
 }
 
-export async function approveRevision(...args: Parameters<typeof real_approveRevision>): Promise<Awaited<ReturnType<typeof real_approveRevision>>> {
+export async function approveRevision(
+  ...args: Parameters<typeof real_approveRevision>
+): Promise<Awaited<ReturnType<typeof real_approveRevision>>> {
   const [deliverableId, sessionId, notes] = args;
   const store = getDemoStore();
-  const deliverable = store.deliverables.find(d => d.deliverableId === deliverableId);
+  const deliverable = store.deliverables.find(
+    (d) => d.deliverableId === deliverableId,
+  );
 
   const approval = {
     approvalId: nextDemoId(store),
     organizationId: deliverable?.organizationId ?? DEMO_ORG_ID,
-    projectId: deliverable?.projectId ?? store.projects[0]?.projectId ?? nextDemoId(store),
+    projectId:
+      deliverable?.projectId ??
+      store.projects[0]?.projectId ??
+      nextDemoId(store),
     sessionId,
     approverId: DEMO_USER_ID,
     status: "approved" as any,
@@ -130,16 +183,30 @@ export async function approveRevision(...args: Parameters<typeof real_approveRev
 
   store.deliverableApprovals.push(approval);
 
-  logDemoActivity(store, "deliverables", "approved", "deliverable", deliverableId, "Revision approved", { approvalId: approval.approvalId });
+  logDemoActivity(
+    store,
+    "deliverables",
+    "approved",
+    "deliverable",
+    deliverableId,
+    "Revision approved",
+    { approvalId: approval.approvalId },
+  );
 
   return approval as any;
 }
 
-export async function requestRevision(...args: Parameters<typeof real_requestRevision>): Promise<Awaited<ReturnType<typeof real_requestRevision>>> {
+export async function requestRevision(
+  ...args: Parameters<typeof real_requestRevision>
+): Promise<Awaited<ReturnType<typeof real_requestRevision>>> {
   const [deliverableId, reason] = args;
   const store = getDemoStore();
-  const deliverable = store.deliverables.find(d => d.deliverableId === deliverableId);
-  const existingRevs = store.deliverableRevisions.filter((r: any) => r.deliverableId === deliverableId).sort((a: any, b: any) => b.versionNumber - a.versionNumber);
+  const deliverable = store.deliverables.find(
+    (d) => d.deliverableId === deliverableId,
+  );
+  const existingRevs = store.deliverableRevisions
+    .filter((r: any) => r.deliverableId === deliverableId)
+    .sort((a: any, b: any) => b.versionNumber - a.versionNumber);
   let nextVersion = 2;
   if (existingRevs.length > 0) {
     nextVersion = existingRevs[0].versionNumber + 1;
@@ -148,7 +215,10 @@ export async function requestRevision(...args: Parameters<typeof real_requestRev
   const revision = {
     revisionId: nextDemoId(store),
     organizationId: deliverable?.organizationId ?? DEMO_ORG_ID,
-    projectId: deliverable?.projectId ?? store.projects[0]?.projectId ?? nextDemoId(store),
+    projectId:
+      deliverable?.projectId ??
+      store.projects[0]?.projectId ??
+      nextDemoId(store),
     deliverableId,
     versionNumber: nextVersion,
     requestedBy: DEMO_USER_ID,
@@ -174,20 +244,41 @@ export async function requestRevision(...args: Parameters<typeof real_requestRev
     deliverable.isLocked = false;
   }
 
-  logDemoActivity(store, "deliverables", "revision_requested", "deliverable", deliverableId, "Revision requested", { newVersion: nextVersion, reason });
+  logDemoActivity(
+    store,
+    "deliverables",
+    "revision_requested",
+    "deliverable",
+    deliverableId,
+    "Revision requested",
+    { newVersion: nextVersion, reason },
+  );
 
   return revision as any;
 }
 
-export async function generateShareLink(...args: Parameters<typeof real_generateShareLink>): Promise<Awaited<ReturnType<typeof real_generateShareLink>>> {
-  const [deliverableId, revisionId, accessLevel, isWatermarkEnabled, emailRecipient] = args;
+export async function generateShareLink(
+  ...args: Parameters<typeof real_generateShareLink>
+): Promise<Awaited<ReturnType<typeof real_generateShareLink>>> {
+  const [
+    deliverableId,
+    revisionId,
+    accessLevel,
+    isWatermarkEnabled,
+    emailRecipient,
+  ] = args;
   const store = getDemoStore();
-  const deliverable = store.deliverables.find(d => d.deliverableId === deliverableId);
+  const deliverable = store.deliverables.find(
+    (d) => d.deliverableId === deliverableId,
+  );
 
   const shareLink = {
     shareId: nextDemoId(store),
     organizationId: deliverable?.organizationId ?? DEMO_ORG_ID,
-    projectId: deliverable?.projectId ?? store.projects[0]?.projectId ?? nextDemoId(store),
+    projectId:
+      deliverable?.projectId ??
+      store.projects[0]?.projectId ??
+      nextDemoId(store),
     deliverableId,
     revisionId,
     token: `share-demo-${nextDemoId(store).replace(/-/g, "")}`,
@@ -211,7 +302,15 @@ export async function generateShareLink(...args: Parameters<typeof real_generate
 
   store.deliverableShareLinks.push(shareLink);
 
-  logDemoActivity(store, "deliverables", "share_link_generated", "deliverable", deliverableId, "Share link generated", { shareId: shareLink.shareId, accessLevel });
+  logDemoActivity(
+    store,
+    "deliverables",
+    "share_link_generated",
+    "deliverable",
+    deliverableId,
+    "Share link generated",
+    { shareId: shareLink.shareId, accessLevel },
+  );
 
   return shareLink as any;
 }
@@ -220,8 +319,14 @@ export async function generateShareLink(...args: Parameters<typeof real_generate
  * PUBLIC READ LAYER (Sprint 11B)
  */
 
-export async function getDeliverables(...args: Parameters<typeof real_getDeliverables>): Promise<Awaited<ReturnType<typeof real_getDeliverables>>> {
-  const [filters = {}, cursorOffset = 0, limit = 50] = args as [DeliverableListFilters | undefined, number | undefined, number | undefined];
+export async function getDeliverables(
+  ...args: Parameters<typeof real_getDeliverables>
+): Promise<Awaited<ReturnType<typeof real_getDeliverables>>> {
+  const [filters = {}, cursorOffset = 0, limit = 50] = args as [
+    DeliverableListFilters | undefined,
+    number | undefined,
+    number | undefined,
+  ];
   const store = getDemoStore();
 
   return store.deliverables
@@ -233,11 +338,15 @@ export async function getDeliverables(...args: Parameters<typeof real_getDeliver
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
 
-export async function getDeliverableById(...args: Parameters<typeof real_getDeliverableById>): Promise<Awaited<ReturnType<typeof real_getDeliverableById>>> {
+export async function getDeliverableById(
+  ...args: Parameters<typeof real_getDeliverableById>
+): Promise<Awaited<ReturnType<typeof real_getDeliverableById>>> {
   const [deliverableId] = args;
   const store = getDemoStore();
 
-  const deliverable = store.deliverables.find((d: any) => d.deliverableId === deliverableId && d.deletedAt == null);
+  const deliverable = store.deliverables.find(
+    (d: any) => d.deliverableId === deliverableId && d.deletedAt == null,
+  );
   if (!deliverable) return undefined as any;
 
   const revisions = store.deliverableRevisions
@@ -247,13 +356,18 @@ export async function getDeliverableById(...args: Parameters<typeof real_getDeli
   return { ...deliverable, revisions } as any;
 }
 
-export async function searchDeliverables(...args: Parameters<typeof real_searchDeliverables>): Promise<Awaited<ReturnType<typeof real_searchDeliverables>>> {
+export async function searchDeliverables(
+  ...args: Parameters<typeof real_searchDeliverables>
+): Promise<Awaited<ReturnType<typeof real_searchDeliverables>>> {
   const [searchTerm, cursorOffset = 0, limit = 50] = args;
   const store = getDemoStore();
   const needle = searchTerm.toLowerCase();
 
   return store.deliverables
-    .filter((d: any) => d.deletedAt == null && d.title?.toLowerCase().includes(needle))
+    .filter(
+      (d: any) =>
+        d.deletedAt == null && d.title?.toLowerCase().includes(needle),
+    )
     .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
@@ -262,16 +376,22 @@ export async function searchDeliverables(...args: Parameters<typeof real_searchD
  * SPRINT 12B READS — review sessions, approval history, share links, activity.
  * The write side already persisted all four collections; nothing read them.
  */
-export async function getReviewSessions(...args: Parameters<typeof real_getReviewSessions>): Promise<Awaited<ReturnType<typeof real_getReviewSessions>>> {
+export async function getReviewSessions(
+  ...args: Parameters<typeof real_getReviewSessions>
+): Promise<Awaited<ReturnType<typeof real_getReviewSessions>>> {
   const [deliverableId] = args;
   const store = getDemoStore();
 
   return store.deliverableReviewSessions
     .filter((s: any) => s.deliverableId === deliverableId)
-    .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime()) as any;
+    .sort(
+      (a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime(),
+    ) as any;
 }
 
-export async function getDeliverableApprovals(...args: Parameters<typeof real_getDeliverableApprovals>): Promise<Awaited<ReturnType<typeof real_getDeliverableApprovals>>> {
+export async function getDeliverableApprovals(
+  ...args: Parameters<typeof real_getDeliverableApprovals>
+): Promise<Awaited<ReturnType<typeof real_getDeliverableApprovals>>> {
   const [deliverableId] = args;
   const store = getDemoStore();
 
@@ -295,23 +415,32 @@ export async function getDeliverableApprovals(...args: Parameters<typeof real_ge
     })) as any;
 }
 
-export async function getDeliverableShareLinks(...args: Parameters<typeof real_getDeliverableShareLinks>): Promise<Awaited<ReturnType<typeof real_getDeliverableShareLinks>>> {
+export async function getDeliverableShareLinks(
+  ...args: Parameters<typeof real_getDeliverableShareLinks>
+): Promise<Awaited<ReturnType<typeof real_getDeliverableShareLinks>>> {
   const [deliverableId] = args;
   const store = getDemoStore();
 
   return store.deliverableShareLinks
     .filter((s: any) => s.deliverableId === deliverableId)
-    .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime()) as any;
+    .sort(
+      (a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime(),
+    ) as any;
 }
 
-export async function getDeliverableActivity(...args: Parameters<typeof real_getDeliverableActivity>): Promise<Awaited<ReturnType<typeof real_getDeliverableActivity>>> {
+export async function getDeliverableActivity(
+  ...args: Parameters<typeof real_getDeliverableActivity>
+): Promise<Awaited<ReturnType<typeof real_getDeliverableActivity>>> {
   const [deliverableId, limit = 25] = args;
   const store = getDemoStore();
 
   // Mock writes go through logDemoActivity (activityLogs); the real adapter
   // writes deliverableActivity. Both are the same trail from the user's side.
   return store.activityLogs
-    .filter((entry: any) => entry.entityType === "deliverable" && entry.entityId === deliverableId)
+    .filter(
+      (entry: any) =>
+        entry.entityType === "deliverable" && entry.entityId === deliverableId,
+    )
     .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, limit)
     .map((entry: any) => ({

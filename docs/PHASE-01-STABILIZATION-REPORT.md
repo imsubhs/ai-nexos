@@ -20,12 +20,12 @@
 
 ## 3. Build Status
 
-| Step | Command | Result |
-|------|---------|--------|
-| Install | `npm install` | ✅ Pass — up to date, 741 packages audited |
-| Lint | `npm run lint` | ✅ Pass — **0 errors**, 199 warnings |
-| Typecheck | `npm run typecheck` (`tsc --noEmit`) | ✅ Pass — 0 errors |
-| Build | `npm run build` (`next build`, Turbopack) | ✅ Pass — compiled in 3.3s, 19/19 static pages, 23 routes |
+| Step      | Command                                   | Result                                                    |
+| --------- | ----------------------------------------- | --------------------------------------------------------- |
+| Install   | `npm install`                             | ✅ Pass — up to date, 741 packages audited                |
+| Lint      | `npm run lint`                            | ✅ Pass — **0 errors**, 199 warnings                      |
+| Typecheck | `npm run typecheck` (`tsc --noEmit`)      | ✅ Pass — 0 errors                                        |
+| Build     | `npm run build` (`next build`, Turbopack) | ✅ Pass — compiled in 3.3s, 19/19 static pages, 23 routes |
 
 **Overall: GREEN.** The platform compiles, type-checks, and produces a production build cleanly. There are **no blocking (error-level) issues**. All findings below are quality/hygiene warnings and advisories.
 
@@ -58,20 +58,20 @@
 **There are zero blocking (error-level) issues.** The platform is in a shippable-compile state.
 The items below are the top **prioritized cleanup targets** — ranked hygiene work, not blockers.
 
-| # | Severity | Area | Issue |
-|---|----------|------|-------|
-| 1 | Medium | Build config | Multiple-lockfile workspace-root ambiguity; stray `~/package-lock.json` |
-| 2 | Medium | Security (dev) | 6 moderate npm audit vulns (esbuild/postcss via drizzle-kit & next) |
-| 3 | Medium | Repo hygiene | Sibling projects + `.DS_Store` files tracked under repo root; pollutes `git status` |
-| 4 | Low | Lint | 38 stale `eslint-disable` directives (`no-explicit-any`) across `src/lib/automation/*` |
-| 5 | Low | Lint | ~157 `no-unused-vars` warnings (unused params/imports/catch vars) |
-| 6 | Low | Types | 36 `no-explicit-any` usages weakening type safety in automation/knowledge layers |
-| 7 | Low | React | 3 `react-hooks/exhaustive-deps` — potential stale-closure bugs |
-| 8 | Low | React | 3 `react-hooks/incompatible-library` warnings |
-| 9 | Low | Portal | Unused params in `PortalCache.ts`, `PortalServiceLayer.ts`, `DownloadValidationService.ts` |
-| 10 | Low | Security | `VirusScanner.ts` unused `_buffer`/`_path` — signals stub/unimplemented scanner |
-| 11 | Low | Knowledge | Unused imports in `projection/engine.ts`, `query/*`, `registry/registry.ts` |
-| 12 | Low | Next | 1 `@next/next` rule warning |
+| #   | Severity | Area           | Issue                                                                                      |
+| --- | -------- | -------------- | ------------------------------------------------------------------------------------------ |
+| 1   | Medium   | Build config   | Multiple-lockfile workspace-root ambiguity; stray `~/package-lock.json`                    |
+| 2   | Medium   | Security (dev) | 6 moderate npm audit vulns (esbuild/postcss via drizzle-kit & next)                        |
+| 3   | Medium   | Repo hygiene   | Sibling projects + `.DS_Store` files tracked under repo root; pollutes `git status`        |
+| 4   | Low      | Lint           | 38 stale `eslint-disable` directives (`no-explicit-any`) across `src/lib/automation/*`     |
+| 5   | Low      | Lint           | ~157 `no-unused-vars` warnings (unused params/imports/catch vars)                          |
+| 6   | Low      | Types          | 36 `no-explicit-any` usages weakening type safety in automation/knowledge layers           |
+| 7   | Low      | React          | 3 `react-hooks/exhaustive-deps` — potential stale-closure bugs                             |
+| 8   | Low      | React          | 3 `react-hooks/incompatible-library` warnings                                              |
+| 9   | Low      | Portal         | Unused params in `PortalCache.ts`, `PortalServiceLayer.ts`, `DownloadValidationService.ts` |
+| 10  | Low      | Security       | `VirusScanner.ts` unused `_buffer`/`_path` — signals stub/unimplemented scanner            |
+| 11  | Low      | Knowledge      | Unused imports in `projection/engine.ts`, `query/*`, `registry/registry.ts`                |
+| 12  | Low      | Next           | 1 `@next/next` rule warning                                                                |
 
 _(Fewer than 20 items exist; there is no long tail of distinct blocking issues to list.)_
 

@@ -151,7 +151,12 @@ export const realAttendanceRepository: AttendanceRepository = {
     return toTodayView(inserted[0]);
   },
 
-  async finalizeDay(organizationId, actorUserId, attendanceId, data: FinalizeDayData) {
+  async finalizeDay(
+    organizationId,
+    actorUserId,
+    attendanceId,
+    data: FinalizeDayData,
+  ) {
     const open = await openBreakOf(attendanceId);
     if (open) {
       await db
@@ -191,7 +196,12 @@ export const realAttendanceRepository: AttendanceRepository = {
     return toTodayView(updated[0]);
   },
 
-  async amendDay(organizationId, actorUserId, attendanceId, data: AmendDayData) {
+  async amendDay(
+    organizationId,
+    actorUserId,
+    attendanceId,
+    data: AmendDayData,
+  ) {
     const updated = await db
       .update(attendanceRecords)
       .set({
@@ -314,7 +324,10 @@ export const realAttendanceRepository: AttendanceRepository = {
     return { rows: mapped, total: totals[0]?.value ?? 0 };
   },
 
-  async findById(organizationId, attendanceId): Promise<AttendanceDetail | null> {
+  async findById(
+    organizationId,
+    attendanceId,
+  ): Promise<AttendanceDetail | null> {
     const rows = await db
       .select({
         record: attendanceRecords,
@@ -382,7 +395,9 @@ export const realAttendanceRepository: AttendanceRepository = {
     return rows.map((e) => {
       const payload = (e.payload ?? {}) as Record<string, unknown>;
       const eventName =
-        typeof payload.eventName === "string" ? payload.eventName : e.aggregateType;
+        typeof payload.eventName === "string"
+          ? payload.eventName
+          : e.aggregateType;
       return {
         eventId: e.eventId,
         eventName,

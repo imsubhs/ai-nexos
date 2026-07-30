@@ -12,11 +12,17 @@ import {
   UpdateNotificationPreferencesInput,
   updateNotificationPreferencesSchema,
 } from "./schemas";
-import { getNotificationPreferencesQuery, getNotificationsQuery } from "./queries";
+import {
+  getNotificationPreferencesQuery,
+  getNotificationsQuery,
+} from "./queries";
 import { composeNotification, type NotificationFeedItem } from "./templates";
 import { revalidatePath } from "next/cache";
 
-export const getNotificationsAction = async (userId: string, organizationId: string) => {
+export const getNotificationsAction = async (
+  userId: string,
+  organizationId: string,
+) => {
   return await getNotificationsQuery(userId, organizationId);
 };
 
@@ -43,8 +49,8 @@ export const getNotificationFeedAction = async (
     .where(
       and(
         eq(notifications.userId, userId),
-        eq(notifications.organizationId, organizationId)
-      )
+        eq(notifications.organizationId, organizationId),
+      ),
     );
 
   if (rows.length === 0) return [];
@@ -60,8 +66,8 @@ export const getNotificationFeedAction = async (
     .where(
       inArray(
         events.eventId,
-        rows.map((row) => row.eventId)
-      )
+        rows.map((row) => row.eventId),
+      ),
     );
   const eventById = new Map(eventRows.map((event) => [event.eventId, event]));
 
@@ -71,28 +77,31 @@ export const getNotificationFeedAction = async (
     .where(
       and(
         eq(notificationTemplates.organizationId, organizationId),
-        eq(notificationTemplates.channel, "in_app")
-      )
+        eq(notificationTemplates.channel, "in_app"),
+      ),
     );
   const templateByEventType = new Map(
-    templateRows.map((template) => [template.eventType as string, template])
+    templateRows.map((template) => [template.eventType as string, template]),
   );
 
   return rows
     .map((row) => {
       const event = eventById.get(row.eventId) ?? null;
-      const template = event ? (templateByEventType.get(event.eventType) ?? null) : null;
+      const template = event
+        ? (templateByEventType.get(event.eventType) ?? null)
+        : null;
       return composeNotification(row, event, template);
     })
     .sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 };
 
 export const markNotificationReadAction = async (
   notificationId: string,
   userId: string,
-  organizationId: string
+  organizationId: string,
 ) => {
   await db
     .update(notifications)
@@ -104,8 +113,8 @@ export const markNotificationReadAction = async (
       and(
         eq(notifications.notificationId, notificationId),
         eq(notifications.userId, userId),
-        eq(notifications.organizationId, organizationId)
-      )
+        eq(notifications.organizationId, organizationId),
+      ),
     );
 
   revalidatePath("/");
@@ -121,7 +130,7 @@ export const markNotificationReadAction = async (
 export const markNotificationUnreadAction = async (
   notificationId: string,
   userId: string,
-  organizationId: string
+  organizationId: string,
 ) => {
   await db
     .update(notifications)
@@ -133,8 +142,8 @@ export const markNotificationUnreadAction = async (
       and(
         eq(notifications.notificationId, notificationId),
         eq(notifications.userId, userId),
-        eq(notifications.organizationId, organizationId)
-      )
+        eq(notifications.organizationId, organizationId),
+      ),
     );
 
   revalidatePath("/");
@@ -143,7 +152,7 @@ export const markNotificationUnreadAction = async (
 /** Sprint 12B — bulk clear, so a full bell is not a per-row chore. */
 export const markAllNotificationsReadAction = async (
   userId: string,
-  organizationId: string
+  organizationId: string,
 ) => {
   await db
     .update(notifications)
@@ -152,8 +161,8 @@ export const markAllNotificationsReadAction = async (
       and(
         eq(notifications.userId, userId),
         eq(notifications.organizationId, organizationId),
-        inArray(notifications.status, ["queued", "processing", "delivered"])
-      )
+        inArray(notifications.status, ["queued", "processing", "delivered"]),
+      ),
     );
 
   revalidatePath("/");
@@ -162,12 +171,15 @@ export const markAllNotificationsReadAction = async (
 export const updateNotificationPreferencesAction = async (
   userId: string,
   organizationId: string,
-  input: UpdateNotificationPreferencesInput
+  input: UpdateNotificationPreferencesInput,
 ) => {
   const validated = updateNotificationPreferencesSchema.parse(input);
 
-  const existingPrefs = await getNotificationPreferencesQuery(userId, organizationId);
-  
+  const existingPrefs = await getNotificationPreferencesQuery(
+    userId,
+    organizationId,
+  );
+
   if (existingPrefs.length > 0) {
     await db
       .update(notificationPreferences)
@@ -182,8 +194,8 @@ export const updateNotificationPreferencesAction = async (
       .where(
         and(
           eq(notificationPreferences.userId, userId),
-          eq(notificationPreferences.organizationId, organizationId)
-        )
+          eq(notificationPreferences.organizationId, organizationId),
+        ),
       );
   } else {
     await db.insert(notificationPreferences).values({
@@ -197,6 +209,6 @@ export const updateNotificationPreferencesAction = async (
       digestFrequency: validated.digestFrequency,
     });
   }
-  
+
   revalidatePath("/");
 };

@@ -313,7 +313,7 @@ export function EmployeeFormDialog({
           </div>
 
           {error ? (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-destructive text-sm">
               {error}
             </p>
           ) : null}
@@ -328,11 +328,7 @@ export function EmployeeFormDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={pending}>
-              {pending
-                ? "Saving…"
-                : isEdit
-                  ? "Save changes"
-                  : "Add employee"}
+              {pending ? "Saving…" : isEdit ? "Save changes" : "Add employee"}
             </Button>
           </DialogFooter>
         </form>

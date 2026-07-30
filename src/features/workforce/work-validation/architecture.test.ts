@@ -39,15 +39,48 @@ function importSpecifiers(source: string): string[] {
 
 /** Forbidden import — a matcher plus the layer it represents. */
 const FORBIDDEN: Array<{ layer: string; test: (spec: string) => boolean }> = [
-  { layer: "React", test: (s) => s === "react" || s === "react-dom" || s.startsWith("react/") || s.startsWith("react-dom/") },
+  {
+    layer: "React",
+    test: (s) =>
+      s === "react" ||
+      s === "react-dom" ||
+      s.startsWith("react/") ||
+      s.startsWith("react-dom/"),
+  },
   { layer: "Next.js", test: (s) => s === "next" || s.startsWith("next/") },
-  { layer: "DemoStore", test: (s) => s.includes("lib/demo") || /demo[-/]?store/i.test(s) },
+  {
+    layer: "DemoStore",
+    test: (s) => s.includes("lib/demo") || /demo[-/]?store/i.test(s),
+  },
   { layer: "Repository", test: (s) => /repository/i.test(s) },
-  { layer: "Server Actions", test: (s) => /(^|\/)(actions|action-core|real-actions|mock-actions)$/i.test(s) },
-  { layer: "Drizzle", test: (s) => s === "drizzle-orm" || s.startsWith("drizzle-orm/") || s.includes("db/schema") || s.includes("/db/") },
-  { layer: "Supabase", test: (s) => s.includes("supabase") || s.startsWith("@supabase/") },
-  { layer: "Attendance UI", test: (s) => s.includes("/components/") || s.endsWith(".tsx") || s.includes("app/(dashboard)") },
-  { layer: "Zustand store", test: (s) => s === "zustand" || s.includes("/stores/") },
+  {
+    layer: "Server Actions",
+    test: (s) =>
+      /(^|\/)(actions|action-core|real-actions|mock-actions)$/i.test(s),
+  },
+  {
+    layer: "Drizzle",
+    test: (s) =>
+      s === "drizzle-orm" ||
+      s.startsWith("drizzle-orm/") ||
+      s.includes("db/schema") ||
+      s.includes("/db/"),
+  },
+  {
+    layer: "Supabase",
+    test: (s) => s.includes("supabase") || s.startsWith("@supabase/"),
+  },
+  {
+    layer: "Attendance UI",
+    test: (s) =>
+      s.includes("/components/") ||
+      s.endsWith(".tsx") ||
+      s.includes("app/(dashboard)"),
+  },
+  {
+    layer: "Zustand store",
+    test: (s) => s === "zustand" || s.includes("/stores/"),
+  },
 ];
 
 describe("work-validation is a pure domain service", () => {

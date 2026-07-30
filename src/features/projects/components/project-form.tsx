@@ -24,9 +24,15 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
     defaultValues: {
       projectName: initialData?.projectName || "",
       description: initialData?.description || "",
-      priority: (initialData?.priority as "critical" | "high" | "medium" | "low") || "medium",
-      status: (initialData?.status as "planning" | "in_progress" | "completed") || "planning",
-      visibility: (initialData?.visibility as "private" | "internal" | "client_shared") || "internal",
+      priority:
+        (initialData?.priority as "critical" | "high" | "medium" | "low") ||
+        "medium",
+      status:
+        (initialData?.status as "planning" | "in_progress" | "completed") ||
+        "planning",
+      visibility:
+        (initialData?.visibility as "private" | "internal" | "client_shared") ||
+        "internal",
     },
   });
 
@@ -43,7 +49,9 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
       }
       onSuccess?.();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setIsPending(false);
     }
@@ -55,7 +63,9 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
         <Label htmlFor="projectName">Project Name *</Label>
         <Input id="projectName" {...form.register("projectName")} />
         {form.formState.errors.projectName && (
-          <p className="text-sm text-destructive">{form.formState.errors.projectName.message}</p>
+          <p className="text-destructive text-sm">
+            {form.formState.errors.projectName.message}
+          </p>
         )}
       </div>
 
@@ -63,11 +73,15 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
         <Label htmlFor="description">Description</Label>
         <Input id="description" {...form.register("description")} />
       </div>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="priority">Priority</Label>
-          <select id="priority" {...form.register("priority")} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+          <select
+            id="priority"
+            {...form.register("priority")}
+            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+          >
             <option value="critical">Critical</option>
             <option value="high">High</option>
             <option value="medium">Medium</option>
@@ -76,7 +90,11 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="visibility">Visibility</Label>
-          <select id="visibility" {...form.register("visibility")} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+          <select
+            id="visibility"
+            {...form.register("visibility")}
+            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+          >
             <option value="private">Private</option>
             <option value="internal">Internal</option>
             <option value="client_shared">Client Shared</option>
@@ -84,9 +102,13 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
         </div>
       </div>
 
-      <div className="pt-4 flex justify-end space-x-2">
+      <div className="flex justify-end space-x-2 pt-4">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : initialData ? "Save Changes" : "Create Project"}
+          {isPending
+            ? "Saving..."
+            : initialData
+              ? "Save Changes"
+              : "Create Project"}
         </Button>
       </div>
     </form>

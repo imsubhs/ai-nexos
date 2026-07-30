@@ -144,7 +144,8 @@ function paginate(
   const counts = emptyCounts();
   for (const r of rows) counts[r.status] += 1;
   let filtered = rows;
-  if (filters.status) filtered = filtered.filter((r) => r.status === filters.status);
+  if (filters.status)
+    filtered = filtered.filter((r) => r.status === filters.status);
   filtered = [...filtered].sort((a, b) =>
     (toIso(b.createdAt) ?? "").localeCompare(toIso(a.createdAt) ?? ""),
   );
@@ -162,7 +163,8 @@ function requireCorrection(
   correctionId: string,
 ): DemoCorrection {
   const c = corrections().find(
-    (x) => x.correctionId === correctionId && x.organizationId === organizationId,
+    (x) =>
+      x.correctionId === correctionId && x.organizationId === organizationId,
   );
   if (!c) {
     throw new CorrectionError("correction/not-found", "Correction not found.");
@@ -239,7 +241,12 @@ export const mockCorrectionRepository: CorrectionRepository = {
     }
     if (filters.departmentId) {
       const usersInDept = new Set(
-        (getDemoStore().users as { userId: string; departmentId: string | null }[])
+        (
+          getDemoStore().users as {
+            userId: string;
+            departmentId: string | null;
+          }[]
+        )
           .filter((u) => u.departmentId === filters.departmentId)
           .map((u) => u.userId),
       );

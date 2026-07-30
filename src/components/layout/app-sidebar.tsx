@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_NAME } from "@/config/app";
 
-
-
 export function AppSidebar({
   organizationName,
   permittedHrefs,
@@ -61,7 +59,10 @@ export function AppSidebar({
               <SidebarMenu>
                 {section.items.map((item) => {
                   const isComingSoon = item.status === "coming-soon";
-                  const isActive = !isComingSoon && (pathname === item.href || pathname.startsWith(`${item.href}/`));
+                  const isActive =
+                    !isComingSoon &&
+                    (pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`));
 
                   return (
                     <SidebarMenuItem key={item.href}>
@@ -86,7 +87,7 @@ export function AppSidebar({
                           <item.icon />
                           <span className="flex flex-1 items-center justify-between">
                             {item.title}
-                            <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium leading-none">
+                            <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] leading-none font-medium">
                               Soon
                             </span>
                           </span>

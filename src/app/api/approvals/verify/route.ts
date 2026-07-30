@@ -8,7 +8,10 @@ export async function POST(req: NextRequest) {
     const { reviewId, token } = await req.json();
 
     if (!reviewId || !token) {
-      return NextResponse.json({ error: "Missing reviewId or token" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing reviewId or token" },
+        { status: 400 },
+      );
     }
 
     // Architecturally, the token should be verified cryptographically here
@@ -16,23 +19,28 @@ export async function POST(req: NextRequest) {
     const review = await db.query.reviews.findFirst({
       where: and(
         eq(reviews.reviewId, reviewId),
-        eq(reviews.externalToken, token)
-      )
+        eq(reviews.externalToken, token),
+      ),
     });
 
     if (!review) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 403 },
+      );
     }
 
     // Token is valid. Return success so the client portal can proceed.
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       reviewId: review.reviewId,
-      externalEmail: review.externalEmail
+      externalEmail: review.externalEmail,
     });
-
   } catch (error) {
     console.error("Token verification failed:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

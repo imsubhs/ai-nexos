@@ -71,7 +71,11 @@ export function CreateDeliverableDialog({
       reset({ ...values, title: "", description: "" });
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not create the deliverable");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not create the deliverable",
+      );
     } finally {
       setIsPending(false);
     }
@@ -134,7 +138,11 @@ export function CreateDeliverableDialog({
 
             <div className="space-y-2">
               <Label htmlFor="deliverable-type">Type</Label>
-              <select id="deliverable-type" {...register("type")} className={SELECT_CLASS}>
+              <select
+                id="deliverable-type"
+                {...register("type")}
+                className={SELECT_CLASS}
+              >
                 {DELIVERABLE_TYPES.map((type) => (
                   <option key={type} value={type}>
                     {humanizeToken(type)}

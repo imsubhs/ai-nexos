@@ -29,7 +29,10 @@ import {
   getDeliverableShareLinks,
   getReviewSessions,
 } from "../actions";
-import { DeliverableActions, type ReviewSessionOption } from "./deliverable-actions";
+import {
+  DeliverableActions,
+  type ReviewSessionOption,
+} from "./deliverable-actions";
 
 type DeliverableDetail = Awaited<ReturnType<typeof getDeliverableById>>;
 
@@ -48,7 +51,11 @@ type History = {
     accessLevel: string;
     createdAt: Date | string;
   }[];
-  activity: { activityId: string; eventType: string; createdAt: Date | string }[];
+  activity: {
+    activityId: string;
+    eventType: string;
+    createdAt: Date | string;
+  }[];
 };
 
 const EMPTY_HISTORY: History = {
@@ -73,10 +80,13 @@ async function loadHistory(deliverableId: string): Promise<History> {
   };
 }
 
-function DetailRow({ label, value }: Readonly<{ label: string; value: React.ReactNode }>) {
+function DetailRow({
+  label,
+  value,
+}: Readonly<{ label: string; value: React.ReactNode }>) {
   return (
     <div className="flex items-start justify-between gap-4 py-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground text-sm">{label}</span>
       <span className="text-right text-sm font-medium">{value ?? "—"}</span>
     </div>
   );
@@ -123,7 +133,9 @@ export function DeliverableDetailSheet({
       try {
         const result = await getDeliverableById(deliverableId!);
         if (!cancelled) setDetail(result ?? null);
-        const loaded = await loadHistory(deliverableId!).catch(() => EMPTY_HISTORY);
+        const loaded = await loadHistory(deliverableId!).catch(
+          () => EMPTY_HISTORY,
+        );
         if (!cancelled) setHistory(loaded);
       } finally {
         if (!cancelled) setLoading(false);
@@ -137,7 +149,10 @@ export function DeliverableDetailSheet({
   }, [deliverableId]);
 
   return (
-    <Sheet open={deliverableId !== null} onOpenChange={(open) => !open && onClose()}>
+    <Sheet
+      open={deliverableId !== null}
+      onOpenChange={(open) => !open && onClose()}
+    >
       <SheetContent className="sm:max-w-md">
         {loading ? (
           <div className="space-y-3 p-4">
@@ -159,16 +174,24 @@ export function DeliverableDetailSheet({
                 onChanged={refresh}
               />
               <Separator className="my-3" />
-              <DetailRow label="Status" value={<StatusBadge status={detail.status} />} />
+              <DetailRow
+                label="Status"
+                value={<StatusBadge status={detail.status} />}
+              />
               <DetailRow
                 label="Created"
                 value={new Date(detail.createdAt).toLocaleDateString()}
               />
-              <DetailRow label="Locked" value={detail.isLocked ? "Yes" : "No"} />
+              <DetailRow
+                label="Locked"
+                value={detail.isLocked ? "Yes" : "No"}
+              />
               {detail.description ? (
                 <>
                   <Separator className="my-2" />
-                  <p className="text-sm text-muted-foreground">{detail.description}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {detail.description}
+                  </p>
                 </>
               ) : null}
               <Separator className="my-2" />
@@ -199,7 +222,9 @@ export function DeliverableDetailSheet({
                 Review sessions ({history.sessions.length})
               </p>
               {history.sessions.length === 0 ? (
-                <p className="text-muted-foreground text-xs">No review sessions yet.</p>
+                <p className="text-muted-foreground text-xs">
+                  No review sessions yet.
+                </p>
               ) : (
                 <ul className="space-y-2">
                   {history.sessions.map((session) => (
@@ -229,7 +254,10 @@ export function DeliverableDetailSheet({
               ) : (
                 <ul className="space-y-2">
                   {history.approvals.map((approval) => (
-                    <li key={approval.approvalId} className="rounded-md border px-3 py-2">
+                    <li
+                      key={approval.approvalId}
+                      className="rounded-md border px-3 py-2"
+                    >
                       <div className="flex items-center justify-between gap-2">
                         <StatusBadge status={approval.status} />
                         <span className="text-muted-foreground text-xs">
@@ -251,13 +279,21 @@ export function DeliverableDetailSheet({
                 Share links ({history.shareLinks.length})
               </p>
               {history.shareLinks.length === 0 ? (
-                <p className="text-muted-foreground text-xs">No share links issued.</p>
+                <p className="text-muted-foreground text-xs">
+                  No share links issued.
+                </p>
               ) : (
                 <ul className="space-y-2">
                   {history.shareLinks.map((link) => (
-                    <li key={link.shareId} className="rounded-md border px-3 py-2">
+                    <li
+                      key={link.shareId}
+                      className="rounded-md border px-3 py-2"
+                    >
                       <div className="flex items-center justify-between gap-2">
-                        <Badge variant="outline" className="text-[10px] capitalize">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] capitalize"
+                        >
                           {link.accessLevel.replaceAll("_", " ")}
                         </Badge>
                         <span className="text-muted-foreground text-xs">
@@ -273,9 +309,13 @@ export function DeliverableDetailSheet({
               )}
 
               <Separator className="my-2" />
-              <p className="text-sm font-medium">Activity ({history.activity.length})</p>
+              <p className="text-sm font-medium">
+                Activity ({history.activity.length})
+              </p>
               {history.activity.length === 0 ? (
-                <p className="text-muted-foreground text-xs">No activity recorded.</p>
+                <p className="text-muted-foreground text-xs">
+                  No activity recorded.
+                </p>
               ) : (
                 <ul className="space-y-1">
                   {history.activity.map((entry) => (
@@ -299,7 +339,9 @@ export function DeliverableDetailSheet({
             </div>
           </>
         ) : (
-          <div className="p-4 text-sm text-muted-foreground">Deliverable not found.</div>
+          <div className="text-muted-foreground p-4 text-sm">
+            Deliverable not found.
+          </div>
         )}
       </SheetContent>
     </Sheet>

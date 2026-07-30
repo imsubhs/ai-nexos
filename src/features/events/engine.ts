@@ -21,21 +21,24 @@ export class EventEngine {
    * 2. Publishes via the Publisher abstraction.
    */
   async emit(event: Omit<DomainEvent, "eventId" | "createdAt">): Promise<void> {
-    const insertedEvents = await db.insert(events).values({
-      organizationId: event.organizationId,
-      eventType: event.eventType,
-      aggregateType: event.aggregateType,
-      aggregateId: event.aggregateId,
-      payload: event.payload,
-      actorId: event.actorId,
-      eventVersion: event.metadata.eventVersion,
-      correlationId: event.metadata.correlationId,
-      causationId: event.metadata.causationId,
-      aiMetadata: event.metadata.aiMetadata,
-    }).returning();
+    const insertedEvents = await db
+      .insert(events)
+      .values({
+        organizationId: event.organizationId,
+        eventType: event.eventType,
+        aggregateType: event.aggregateType,
+        aggregateId: event.aggregateId,
+        payload: event.payload,
+        actorId: event.actorId,
+        eventVersion: event.metadata.eventVersion,
+        correlationId: event.metadata.correlationId,
+        causationId: event.metadata.causationId,
+        aiMetadata: event.metadata.aiMetadata,
+      })
+      .returning();
 
     const persistedEvent = insertedEvents[0];
-    
+
     // Construct full DomainEvent with db defaults
     const fullEvent: DomainEvent = {
       ...event,

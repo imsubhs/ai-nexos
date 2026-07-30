@@ -107,11 +107,22 @@ export function TimelineFeed({
       }
       if (status && timeline.status !== status) return false;
       if (dateFilter && now !== null) {
-        if (dateFilter === "upcoming" && (!timeline.startDate || new Date(timeline.startDate).getTime() < now)) return false;
-        if (dateFilter === "past" && (!timeline.endDate || new Date(timeline.endDate).getTime() >= now)) return false;
+        if (
+          dateFilter === "upcoming" &&
+          (!timeline.startDate || new Date(timeline.startDate).getTime() < now)
+        )
+          return false;
+        if (
+          dateFilter === "past" &&
+          (!timeline.endDate || new Date(timeline.endDate).getTime() >= now)
+        )
+          return false;
         if (dateFilter === "active") {
-          const startOk = !timeline.startDate || new Date(timeline.startDate).getTime() <= now;
-          const endOk = !timeline.endDate || new Date(timeline.endDate).getTime() >= now;
+          const startOk =
+            !timeline.startDate ||
+            new Date(timeline.startDate).getTime() <= now;
+          const endOk =
+            !timeline.endDate || new Date(timeline.endDate).getTime() >= now;
           if (!(startOk && endOk)) return false;
         }
       }
@@ -134,7 +145,7 @@ export function TimelineFeed({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -154,7 +165,9 @@ export function TimelineFeed({
             }
           />
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setStatus(null)}>All statuses</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatus(null)}>
+              All statuses
+            </DropdownMenuItem>
             {STATUS_OPTIONS.map((option) => (
               <DropdownMenuItem key={option} onClick={() => setStatus(option)}>
                 {option.replaceAll("_", " ")}
@@ -167,15 +180,22 @@ export function TimelineFeed({
           <DropdownMenuTrigger
             render={
               <Button variant="outline" size="sm">
-                {dateFilter ? DATE_OPTIONS.find((o) => o.key === dateFilter)?.label : "All dates"}
+                {dateFilter
+                  ? DATE_OPTIONS.find((o) => o.key === dateFilter)?.label
+                  : "All dates"}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             }
           />
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setDateFilter(null)}>All dates</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setDateFilter(null)}>
+              All dates
+            </DropdownMenuItem>
             {DATE_OPTIONS.map((option) => (
-              <DropdownMenuItem key={option.key} onClick={() => setDateFilter(option.key)}>
+              <DropdownMenuItem
+                key={option.key}
+                onClick={() => setDateFilter(option.key)}
+              >
                 {option.label}
               </DropdownMenuItem>
             ))}
@@ -194,25 +214,31 @@ export function TimelineFeed({
           {filtered.map((timeline) => {
             const { title, subtitle } = labelFor(timeline, projectNames);
             return (
-            <button
-              key={timeline.timelineId}
-              onClick={() => setSelected(timeline)}
-              className="flex w-full items-center justify-between gap-4 rounded-xl border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/40"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">{title}</p>
-                <p className="text-sm text-muted-foreground">
-                  {subtitle ? `${subtitle} · ` : ""}
-                  {timeline.startDate ? new Date(timeline.startDate).toLocaleDateString() : "No start date"}
-                  {" – "}
-                  {timeline.endDate ? new Date(timeline.endDate).toLocaleDateString() : "No end date"}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-3">
-                <span className="text-sm text-muted-foreground">{timeline.overallProgress ?? 0}%</span>
-                <StatusBadge status={timeline.status} />
-              </div>
-            </button>
+              <button
+                key={timeline.timelineId}
+                onClick={() => setSelected(timeline)}
+                className="bg-card hover:border-primary/40 hover:bg-muted/40 flex w-full items-center justify-between gap-4 rounded-xl border p-4 text-left transition-colors"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{title}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {subtitle ? `${subtitle} · ` : ""}
+                    {timeline.startDate
+                      ? new Date(timeline.startDate).toLocaleDateString()
+                      : "No start date"}
+                    {" – "}
+                    {timeline.endDate
+                      ? new Date(timeline.endDate).toLocaleDateString()
+                      : "No end date"}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <span className="text-muted-foreground text-sm">
+                    {timeline.overallProgress ?? 0}%
+                  </span>
+                  <StatusBadge status={timeline.status} />
+                </div>
+              </button>
             );
           })}
         </div>

@@ -12,7 +12,10 @@ export interface ToolCapabilityManifest {
     requiresHumanApproval: boolean;
     autoExecuteThreshold?: number; // e.g. 0.9 confidence
   };
-  inputs: Record<string, { type: string; required: boolean; description: string }>;
+  inputs: Record<
+    string,
+    { type: string; required: boolean; description: string }
+  >;
   outputs: Record<string, { type: string; description: string }>;
   sideEffects: string[];
 }
@@ -23,7 +26,7 @@ export interface ToolCapabilityManifest {
  */
 export async function getToolManifest(
   agentId: string,
-  toolName: string
+  toolName: string,
 ): Promise<ToolCapabilityManifest | null> {
   const [skill] = await db
     .select()
@@ -31,32 +34,38 @@ export async function getToolManifest(
     .where(
       and(
         eq(aiAgentSkills.agentId, agentId),
-        eq(aiAgentSkills.toolName, toolName)
-      )
+        eq(aiAgentSkills.toolName, toolName),
+      ),
     );
 
   if (!skill) return null;
 
   return {
     toolName: skill.toolName,
-    permissions: (skill.permissions as ToolCapabilityManifest["permissions"]) || {},
-    approvalRequirements: (skill.approvalRequirements as ToolCapabilityManifest["approvalRequirements"]) || {
-      requiresHumanApproval: true, // Fail safe
-    },
+    permissions:
+      (skill.permissions as ToolCapabilityManifest["permissions"]) || {},
+    approvalRequirements:
+      (skill.approvalRequirements as ToolCapabilityManifest["approvalRequirements"]) || {
+        requiresHumanApproval: true, // Fail safe
+      },
     inputs: (skill.inputs as ToolCapabilityManifest["inputs"]) || {},
     outputs: (skill.outputs as ToolCapabilityManifest["outputs"]) || {},
-    sideEffects: (skill.sideEffects as ToolCapabilityManifest["sideEffects"]) || [],
+    sideEffects:
+      (skill.sideEffects as ToolCapabilityManifest["sideEffects"]) || [],
   };
 }
 
 export function validateToolExecution(
   manifest: ToolCapabilityManifest,
-  contextData: any
+  contextData: any,
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   if (manifest.inputs) {
     for (const [key, spec] of Object.entries(manifest.inputs)) {
-      if (spec.required && (contextData[key] === undefined || contextData[key] === null)) {
+      if (
+        spec.required &&
+        (contextData[key] === undefined || contextData[key] === null)
+      ) {
         errors.push(`Missing required input: ${key}`);
       }
     }
@@ -66,4 +75,3 @@ export function validateToolExecution(
     errors,
   };
 }
-

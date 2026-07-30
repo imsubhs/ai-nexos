@@ -10,7 +10,7 @@ export async function compactWorkingMemory(
   organizationId: string,
   agentId: string,
   sessionId: string,
-  summarizationFn: (memories: string[]) => Promise<string>
+  summarizationFn: (memories: string[]) => Promise<string>,
 ) {
   // 1. Fetch uncompacted working memories for the session
   const uncompactedMemories = await db
@@ -20,8 +20,8 @@ export async function compactWorkingMemory(
       and(
         eq(aiAgentMemory.sessionId, sessionId),
         eq(aiAgentMemory.memoryType, "working"),
-        eq(aiAgentMemory.isCompacted, false)
-      )
+        eq(aiAgentMemory.isCompacted, false),
+      ),
     )
     .orderBy(asc(aiAgentMemory.createdAt));
 
@@ -30,12 +30,12 @@ export async function compactWorkingMemory(
   }
 
   // 2. Generate summary using the provided LLM function (from Module 16)
-  const memoryTexts = uncompactedMemories.map(m => m.summary);
+  const memoryTexts = uncompactedMemories.map((m) => m.summary);
   const compactedSummaryText = await summarizationFn(memoryTexts);
 
   return await db.transaction(async (tx) => {
     // 3. Mark old memories as compacted
-    const memoryIds = uncompactedMemories.map(m => m.id);
+    const memoryIds = uncompactedMemories.map((m) => m.id);
     for (const id of memoryIds) {
       await tx
         .update(aiAgentMemory)

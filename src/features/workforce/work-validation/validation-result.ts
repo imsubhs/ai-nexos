@@ -29,12 +29,22 @@ export function buildTimeline(
   breaks: readonly Interval[],
   idle: readonly Interval[],
 ): TimelineEntry[] {
-  const label = (intervals: readonly Interval[], kind: TimelineKind): TimelineEntry[] =>
-    intervals.map((iv) => ({ start: iv.start, end: iv.end, durationMs: intervalDuration(iv), kind }));
+  const label = (
+    intervals: readonly Interval[],
+    kind: TimelineKind,
+  ): TimelineEntry[] =>
+    intervals.map((iv) => ({
+      start: iv.start,
+      end: iv.end,
+      durationMs: intervalDuration(iv),
+      kind,
+    }));
 
-  return [...label(effective, "WORK"), ...label(breaks, "BREAK"), ...label(idle, "IDLE")].sort(
-    (a, b) => a.start - b.start || a.end - b.end,
-  );
+  return [
+    ...label(effective, "WORK"),
+    ...label(breaks, "BREAK"),
+    ...label(idle, "IDLE"),
+  ].sort((a, b) => a.start - b.start || a.end - b.end);
 }
 
 /** Present a set of blocks as ordered timeline entries of one kind. */
@@ -56,7 +66,10 @@ export function toTimelineEntries(
  * is what preserves the minute invariant `session = break + idle + effective`
  * without ever producing a negative part.
  */
-export function partitionMinutes(totalMs: number, partsMs: readonly number[]): number[] {
+export function partitionMinutes(
+  totalMs: number,
+  partsMs: readonly number[],
+): number[] {
   const targetMinutes = msToMinutes(totalMs);
   const exact = partsMs.map((ms) => ms / 60_000);
   const floors = exact.map((value) => Math.floor(value));
@@ -98,9 +111,13 @@ export function computeDerived(
   focusBlocks: readonly Interval[],
   idleThresholdMs: number,
 ): DerivedMetrics {
-  const ratio = (part: number): number => (sessionMs > 0 ? part / sessionMs : 0);
+  const ratio = (part: number): number =>
+    sessionMs > 0 ? part / sessionMs : 0;
   const focusDurations = focusBlocks.map((block) => intervalDuration(block));
-  const longestFocusMs = focusDurations.reduce((max, value) => Math.max(max, value), 0);
+  const longestFocusMs = focusDurations.reduce(
+    (max, value) => Math.max(max, value),
+    0,
+  );
   const averageFocusMs =
     focusDurations.length > 0 ? Math.round(focusMs / focusDurations.length) : 0;
 

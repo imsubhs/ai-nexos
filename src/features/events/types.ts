@@ -28,7 +28,9 @@ export interface IEventMetadata {
   aiMetadata?: Record<string, unknown>; // Reserved
 }
 
-export interface DomainEvent<T extends IEventPayload = Record<string, unknown>> {
+export interface DomainEvent<
+  T extends IEventPayload = Record<string, unknown>,
+> {
   eventId: string;
   organizationId: string;
   eventType: EventType;

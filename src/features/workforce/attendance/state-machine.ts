@@ -16,10 +16,7 @@ import { AttendanceError } from "./repository";
 import type { AttendanceState } from "./types";
 
 export type AttendanceCommand =
-  | "clockIn"
-  | "startBreak"
-  | "endBreak"
-  | "clockOut";
+  "clockIn" | "startBreak" | "endBreak" | "clockOut";
 
 const ALLOWED: Record<AttendanceCommand, AttendanceState[]> = {
   clockIn: ["NOT_STARTED"],

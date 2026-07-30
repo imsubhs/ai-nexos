@@ -7,7 +7,10 @@ import { describe, expect, it } from "vitest";
 import type { AttendanceDirectoryRow, AttendanceMetrics } from "./types";
 import { projectDashboardMetrics, projectMonthlyReport } from "./read-models";
 
-function metrics(effective: number, extra: Partial<AttendanceMetrics> = {}): AttendanceMetrics {
+function metrics(
+  effective: number,
+  extra: Partial<AttendanceMetrics> = {},
+): AttendanceMetrics {
   return {
     workingMinutes: effective,
     breakMinutes: 0,
@@ -42,10 +45,18 @@ describe("projectDashboardMetrics", () => {
   it("counts present/late/completed and averages effective over completed rows", () => {
     const rows = [
       row({ attendanceId: "a1", status: "PRESENT", metrics: metrics(400) }),
-      row({ attendanceId: "a2", status: "LATE", isLate: true, metrics: metrics(500) }),
+      row({
+        attendanceId: "a2",
+        status: "LATE",
+        isLate: true,
+        metrics: metrics(500),
+      }),
       row({ attendanceId: "a3", status: "WORKING", clockOutAt: null }), // still working
     ];
-    const dash = projectDashboardMetrics(rows, { date: "2026-07-10", pendingReviewCount: 2 });
+    const dash = projectDashboardMetrics(rows, {
+      date: "2026-07-10",
+      pendingReviewCount: 2,
+    });
     expect(dash.headcount).toBe(3);
     expect(dash.present).toBe(2); // PRESENT + LATE
     expect(dash.late).toBe(1);
@@ -69,23 +80,51 @@ describe("projectDashboardMetrics", () => {
 describe("projectMonthlyReport", () => {
   it("aggregates by day and department with reconciling totals", () => {
     const rows = [
-      row({ date: "2026-07-10", departmentId: "d1", departmentName: "Eng", metrics: metrics(420) }),
-      row({ date: "2026-07-10", departmentId: "d2", departmentName: "Sales", isLate: true, metrics: metrics(300) }),
-      row({ date: "2026-07-11", departmentId: "d1", departmentName: "Eng", metrics: metrics(480) }),
+      row({
+        date: "2026-07-10",
+        departmentId: "d1",
+        departmentName: "Eng",
+        metrics: metrics(420),
+      }),
+      row({
+        date: "2026-07-10",
+        departmentId: "d2",
+        departmentName: "Sales",
+        isLate: true,
+        metrics: metrics(300),
+      }),
+      row({
+        date: "2026-07-11",
+        departmentId: "d1",
+        departmentName: "Eng",
+        metrics: metrics(480),
+      }),
     ];
-    const report = projectMonthlyReport(rows, { from: "2026-07-01", to: "2026-07-31" });
+    const report = projectMonthlyReport(rows, {
+      from: "2026-07-01",
+      to: "2026-07-31",
+    });
 
     expect(report.totals.recordCount).toBe(3);
     expect(report.totals.lateCount).toBe(1);
     expect(report.totals.metrics.effectiveMinutes).toBe(1200);
 
     // Daily rows sum back to the totals.
-    const dailyEffective = report.daily.reduce((s, d) => s + d.metrics.effectiveMinutes, 0);
+    const dailyEffective = report.daily.reduce(
+      (s, d) => s + d.metrics.effectiveMinutes,
+      0,
+    );
     expect(dailyEffective).toBe(report.totals.metrics.effectiveMinutes);
-    expect(report.daily.map((d) => d.date)).toEqual(["2026-07-10", "2026-07-11"]);
+    expect(report.daily.map((d) => d.date)).toEqual([
+      "2026-07-10",
+      "2026-07-11",
+    ]);
 
     // Department rows sum back too.
-    const deptEffective = report.departments.reduce((s, d) => s + d.metrics.effectiveMinutes, 0);
+    const deptEffective = report.departments.reduce(
+      (s, d) => s + d.metrics.effectiveMinutes,
+      0,
+    );
     expect(deptEffective).toBe(report.totals.metrics.effectiveMinutes);
     const eng = report.departments.find((d) => d.departmentId === "d1")!;
     expect(eng.recordCount).toBe(2);

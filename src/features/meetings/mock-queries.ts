@@ -14,8 +14,12 @@ import { getDemoStore } from "@/lib/demo/store";
 
 /** Nullable startTime sorts last, matching the SQL `DESC NULLS LAST` (TD-12). */
 function byStartTimeDesc(a: any, b: any): number {
-  const left = a.startTime ? new Date(a.startTime).getTime() : Number.NEGATIVE_INFINITY;
-  const right = b.startTime ? new Date(b.startTime).getTime() : Number.NEGATIVE_INFINITY;
+  const left = a.startTime
+    ? new Date(a.startTime).getTime()
+    : Number.NEGATIVE_INFINITY;
+  const right = b.startTime
+    ? new Date(b.startTime).getTime()
+    : Number.NEGATIVE_INFINITY;
   return right - left;
 }
 
@@ -28,7 +32,9 @@ function byStartTimeDesc(a: any, b: any): number {
  * surface rendered empty in demo mode no matter what was seeded or created.
  * They now read the store like every other mock query.
  */
-export async function getMeetings(...args: Parameters<typeof real_getMeetings>): Promise<Awaited<ReturnType<typeof real_getMeetings>>> {
+export async function getMeetings(
+  ...args: Parameters<typeof real_getMeetings>
+): Promise<Awaited<ReturnType<typeof real_getMeetings>>> {
   const [cursorOffset = 0, limit = 50] = args;
   const store = getDemoStore();
 
@@ -38,7 +44,9 @@ export async function getMeetings(...args: Parameters<typeof real_getMeetings>):
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
 
-export async function getMeetingsForProject(...args: Parameters<typeof real_getMeetingsForProject>): Promise<Awaited<ReturnType<typeof real_getMeetingsForProject>>> {
+export async function getMeetingsForProject(
+  ...args: Parameters<typeof real_getMeetingsForProject>
+): Promise<Awaited<ReturnType<typeof real_getMeetingsForProject>>> {
   const [projectId] = args;
   const store = getDemoStore();
 
@@ -47,14 +55,18 @@ export async function getMeetingsForProject(...args: Parameters<typeof real_getM
     .sort(byStartTimeDesc) as any;
 }
 
-export async function getMeetingById(...args: Parameters<typeof real_getMeetingById>): Promise<Awaited<ReturnType<typeof real_getMeetingById>>> {
+export async function getMeetingById(
+  ...args: Parameters<typeof real_getMeetingById>
+): Promise<Awaited<ReturnType<typeof real_getMeetingById>>> {
   const [meetingId] = args;
   const store = getDemoStore();
 
   return store.meetings.find((m: any) => m.meetingId === meetingId) as any;
 }
 
-export async function getMeetingDecisions(...args: Parameters<typeof real_getMeetingDecisions>): Promise<Awaited<ReturnType<typeof real_getMeetingDecisions>>> {
+export async function getMeetingDecisions(
+  ...args: Parameters<typeof real_getMeetingDecisions>
+): Promise<Awaited<ReturnType<typeof real_getMeetingDecisions>>> {
   const [projectId] = args;
   const store = getDemoStore();
 
@@ -63,12 +75,18 @@ export async function getMeetingDecisions(...args: Parameters<typeof real_getMee
       const outcome = (store.meetingOutcomes ?? []).find(
         (o: any) => o.outcomeId === decision.outcomeId,
       );
-      return outcome ? { meeting_decisions: decision, meeting_outcomes: outcome } : null;
+      return outcome
+        ? { meeting_decisions: decision, meeting_outcomes: outcome }
+        : null;
     })
-    .filter((row: any) => row && row.meeting_outcomes.projectId === projectId) as any;
+    .filter(
+      (row: any) => row && row.meeting_outcomes.projectId === projectId,
+    ) as any;
 }
 
-export async function getMeetingActionItems(...args: Parameters<typeof real_getMeetingActionItems>): Promise<Awaited<ReturnType<typeof real_getMeetingActionItems>>> {
+export async function getMeetingActionItems(
+  ...args: Parameters<typeof real_getMeetingActionItems>
+): Promise<Awaited<ReturnType<typeof real_getMeetingActionItems>>> {
   const [projectId] = args;
   const store = getDemoStore();
 
@@ -77,15 +95,21 @@ export async function getMeetingActionItems(...args: Parameters<typeof real_getM
       const outcome = (store.meetingOutcomes ?? []).find(
         (o: any) => o.outcomeId === actionItem.outcomeId,
       );
-      return outcome ? { meeting_action_items: actionItem, meeting_outcomes: outcome } : null;
+      return outcome
+        ? { meeting_action_items: actionItem, meeting_outcomes: outcome }
+        : null;
     })
-    .filter((row: any) => row && row.meeting_outcomes.projectId === projectId) as any;
+    .filter(
+      (row: any) => row && row.meeting_outcomes.projectId === projectId,
+    ) as any;
 }
 
 /**
  * MEETING-SCOPED READS (Sprint 12B)
  */
-export async function getMeetingAttendees(...args: Parameters<typeof real_getMeetingAttendees>): Promise<Awaited<ReturnType<typeof real_getMeetingAttendees>>> {
+export async function getMeetingAttendees(
+  ...args: Parameters<typeof real_getMeetingAttendees>
+): Promise<Awaited<ReturnType<typeof real_getMeetingAttendees>>> {
   const [meetingId] = args;
   const store = getDemoStore();
 
@@ -108,7 +132,9 @@ export async function getMeetingAttendees(...args: Parameters<typeof real_getMee
     }) as any;
 }
 
-export async function getMeetingAgenda(...args: Parameters<typeof real_getMeetingAgenda>): Promise<Awaited<ReturnType<typeof real_getMeetingAgenda>>> {
+export async function getMeetingAgenda(
+  ...args: Parameters<typeof real_getMeetingAgenda>
+): Promise<Awaited<ReturnType<typeof real_getMeetingAgenda>>> {
   const [meetingId] = args;
   const store = getDemoStore();
 
@@ -117,11 +143,15 @@ export async function getMeetingAgenda(...args: Parameters<typeof real_getMeetin
     .sort((a: any, b: any) => a.orderIndex - b.orderIndex) as any;
 }
 
-export async function getMeetingOutcomes(...args: Parameters<typeof real_getMeetingOutcomes>): Promise<Awaited<ReturnType<typeof real_getMeetingOutcomes>>> {
+export async function getMeetingOutcomes(
+  ...args: Parameters<typeof real_getMeetingOutcomes>
+): Promise<Awaited<ReturnType<typeof real_getMeetingOutcomes>>> {
   const [meetingId] = args;
   const store = getDemoStore();
 
-  const outcomes = (store.meetingOutcomes ?? []).filter((o: any) => o.meetingId === meetingId);
+  const outcomes = (store.meetingOutcomes ?? []).filter(
+    (o: any) => o.meetingId === meetingId,
+  );
   const outcomeById = new Map(outcomes.map((o: any) => [o.outcomeId, o]));
 
   const decisions = (store.meetingDecisions ?? [])
@@ -160,7 +190,9 @@ export async function getMeetingOutcomes(...args: Parameters<typeof real_getMeet
   return { decisions, actionItems } as any;
 }
 
-export async function getMeetingActivity(...args: Parameters<typeof real_getMeetingActivity>): Promise<Awaited<ReturnType<typeof real_getMeetingActivity>>> {
+export async function getMeetingActivity(
+  ...args: Parameters<typeof real_getMeetingActivity>
+): Promise<Awaited<ReturnType<typeof real_getMeetingActivity>>> {
   const [meetingId, limit = 50] = args;
   const store = getDemoStore();
 

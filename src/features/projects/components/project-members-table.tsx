@@ -43,14 +43,14 @@ export function ProjectMembersTable({ members }: { members: Member[] }) {
 
   if (members.length === 0) {
     return (
-      <div className="text-center py-6 border border-dashed rounded-lg text-muted-foreground text-sm">
+      <div className="text-muted-foreground rounded-lg border border-dashed py-6 text-center text-sm">
         No members added to this project yet.
       </div>
     );
   }
 
   return (
-    <div className="border rounded-md">
+    <div className="rounded-md border">
       <Table aria-label="Project members">
         <TableHeader>
           <TableRow>
@@ -65,11 +65,15 @@ export function ProjectMembersTable({ members }: { members: Member[] }) {
             <TableRow key={member.memberId}>
               <TableCell className="font-medium">
                 {member.user?.firstName} {member.user?.lastName}
-                <div className="text-xs text-muted-foreground font-normal">{member.user?.email}</div>
+                <div className="text-muted-foreground text-xs font-normal">
+                  {member.user?.email}
+                </div>
               </TableCell>
               <TableCell className="capitalize">{member.role}</TableCell>
               <TableCell>
-                <Badge variant={member.status === "active" ? "default" : "secondary"}>
+                <Badge
+                  variant={member.status === "active" ? "default" : "secondary"}
+                >
                   {member.status}
                 </Badge>
               </TableCell>

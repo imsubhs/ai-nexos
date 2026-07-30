@@ -1,16 +1,16 @@
 import { z } from "zod";
-import type { 
-  aiCapabilityEnum, 
+import type {
+  aiCapabilityEnum,
   aiProviderEnum,
   aiMemoryLayerEnum,
-  aiApprovalStatusEnum
+  aiApprovalStatusEnum,
 } from "@/db/schema/enums";
 
 // AI Core Type Exports based on Enums
-export type AICapability = typeof aiCapabilityEnum.enumValues[number];
-export type AIProvider = typeof aiProviderEnum.enumValues[number];
-export type AIMemoryLayer = typeof aiMemoryLayerEnum.enumValues[number];
-export type AIApprovalStatus = typeof aiApprovalStatusEnum.enumValues[number];
+export type AICapability = (typeof aiCapabilityEnum.enumValues)[number];
+export type AIProvider = (typeof aiProviderEnum.enumValues)[number];
+export type AIMemoryLayer = (typeof aiMemoryLayerEnum.enumValues)[number];
+export type AIApprovalStatus = (typeof aiApprovalStatusEnum.enumValues)[number];
 
 // Context Budgeting interfaces
 export interface ContextBudget {
@@ -42,7 +42,7 @@ export const ToolDefinitionSchema = z.object({
   parameters: z.record(z.string(), ToolArgumentSchema),
   permissions: z.array(z.string()).optional(), // Required permission strings
   timeoutMs: z.number().default(5000),
-  costPerRun: z.number().optional()
+  costPerRun: z.number().optional(),
 });
 
 export type ToolDefinition = z.infer<typeof ToolDefinitionSchema>;

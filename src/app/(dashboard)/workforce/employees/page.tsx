@@ -102,7 +102,10 @@ export default async function EmployeesPage({
           .filter((row) => row.departmentId && row.departmentName)
           .map((row) => [
             row.departmentId as string,
-            { departmentId: row.departmentId as string, name: row.departmentName as string },
+            {
+              departmentId: row.departmentId as string,
+              name: row.departmentName as string,
+            },
           ]),
       ).values(),
     ).sort((a, b) => a.name.localeCompare(b.name));
@@ -120,8 +123,9 @@ export default async function EmployeesPage({
       <div className="flex items-center justify-between space-y-2">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Employees</h1>
-          <p className="text-sm text-muted-foreground">
-            Org directory. Role and permission administration lives in Settings ▸ Members.
+          <p className="text-muted-foreground text-sm">
+            Org directory. Role and permission administration lives in Settings
+            ▸ Members.
           </p>
         </div>
         {canCreate ? (

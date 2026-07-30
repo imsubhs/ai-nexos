@@ -31,7 +31,10 @@ import {
   meetingActivity,
 } from "@/db/schema/meetings";
 import { files, fileVersions, fileFolders } from "@/db/schema/files";
-import { notifications, notificationTemplates } from "@/db/schema/notifications";
+import {
+  notifications,
+  notificationTemplates,
+} from "@/db/schema/notifications";
 import { events } from "@/db/schema/events";
 
 /**
@@ -39,11 +42,19 @@ import { events } from "@/db/schema/events";
  * answer `with:`-style queries without a join. They are not table columns and
  * are exempted by name rather than by loosening the check.
  */
-const RELATION_KEYS = new Set(["assignees", "user", "role", "department", "revisions"]);
+const RELATION_KEYS = new Set([
+  "assignees",
+  "user",
+  "role",
+  "department",
+  "revisions",
+]);
 
 type AnyTable = PgTableWithColumns<any>;
 
-const COVERED: Array<[string, AnyTable, keyof ReturnType<typeof getDemoStore>]> = [
+const COVERED: Array<
+  [string, AnyTable, keyof ReturnType<typeof getDemoStore>]
+> = [
   ["organizations", organizations, "organizations"],
   ["tasks", tasks, "tasks"],
   ["deliverables", deliverables, "deliverables"],
@@ -107,7 +118,10 @@ describe("DemoStore is schema-parallel with the tables it mirrors", () => {
 
       it("only holds declared members in enum columns", () => {
         const enumColumns = Object.entries(columns)
-          .map(([name, column]) => [name, column as unknown as PgEnumColumn<any>] as const)
+          .map(
+            ([name, column]) =>
+              [name, column as unknown as PgEnumColumn<any>] as const,
+          )
           .filter(([, column]) => Array.isArray(column.enumValues));
 
         for (const row of rows) {

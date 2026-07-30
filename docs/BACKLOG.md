@@ -1,6 +1,7 @@
 # Product Backlog
 
 ## Data Layer / Dispatcher Debt (Sprint 11B — DONE, see SPRINT-11B.md)
+
 - **Deliverables**: `getDeliverables`, `getDeliverableById`, `searchDeliverables` implemented in `actions.ts`, `real-actions.ts`, `mock-actions.ts`. Done.
 - **Files**: `getFiles`, `getFolder`, `searchFiles` implemented in `actions.ts`, `real-actions.ts`, `mock-actions.ts`. Done.
 - **Meetings**: `getMeetings` (global) implemented in `queries.ts`, `real-queries.ts`, `mock-queries.ts`. Done.
@@ -8,18 +9,21 @@
 - **Follow-up (new)**: Meetings' pre-existing project-scoped mock reads (`getMeetingsForProject`, `getMeetingById`, `getMeetingDecisions`, `getMeetingActionItems` in `mock-queries.ts`) are stubs that don't read `DemoStore.meetings` — back-fill these before the Meetings workspace page ships (see SPRINT-11B.md "Known Limitations").
 
 ## Presentation Layer (Sprint 11A Resumed — DONE, see SPRINT-11A.md)
+
 - **Workspace Completions**: `/deliverables`, `/files`, `/meetings`, and `/timeline` global workspace pages built, navigation flipped to `"live"`. Done.
 - **Client Enhancements**: Still deferred — not part of the resumed 11A scope (limited to the four missing workspaces).
 - **Project Enhancements**: Still deferred.
 - **Organization Enhancements**: Still deferred.
 
 ## New Backlog Items (raised while building the Sprint 11A workspaces)
+
 - **Total-count query**: `getDeliverables`/`searchDeliverables`/`getFiles`/`searchFiles` return a page of rows, not a count; the pager currently over-fetches by one row to detect "has more" instead of a real total. Add a `count()` variant when this needs to be exact.
 - **Server-side filters for `getMeetings()`/`getTimelines()`**: both take only `(cursorOffset, limit)`, so the Meetings and Timeline workspaces filter client-side over a bounded batch. Fine at demo scale; add filter params before real multi-project orgs hit this.
 - **Meetings mock-query stub back-fill**: unchanged from Sprint 11B — `getMeetingsForProject`/`getMeetingById`/`getMeetingDecisions`/`getMeetingActionItems` in `mock-queries.ts` don't read `DemoStore.meetings`. Now additionally blocks the Meetings workspace's drawer from showing Decision Summary/Action Items (see SPRINT-11A.md).
 - **Client/Project/Organization page enhancements**: deferred from the original Sprint 11A scoping, still not started.
 
 ## TanStack Table Implementation (Phase 1.11)
+
 - Refactor the minimalist `DataTable` primitive to the full TanStack port (sorting, visibility, selection, export slots).
 
 ---
@@ -27,10 +31,11 @@
 ## Sprint 12A — Enterprise Interaction Layer (DONE, see SPRINT-12A.md)
 
 Closed this sprint:
+
 - **P1-01 Sign out** — fixed and verified (cookie cleared, redirect honoured).
 - **P1-02 Organisation Profile** — fixed and verified. Three causes, not one: the
   DemoStore field-name mismatch, a timezone regex that rejected `"UTC"` on a
-  field the form does not render (a *silent* save failure), and empty-string
+  field the form does not render (a _silent_ save failure), and empty-string
   brand colours that could never be cleared.
 - **P2-01 Deliverable status vocabulary** — seed status corrected to a real enum
   member; the filter now exposes all 12 statuses, not 8.
@@ -48,7 +53,7 @@ Closed this sprint:
 
 ### New backlog items raised by Sprint 12A
 
-Each blocks a UI interaction that was deliberately *not* built rather than
+Each blocks a UI interaction that was deliberately _not_ built rather than
 shipped as a control that cannot finish the job (SPRINT-12A.md §3).
 
 - **`updateMeeting` action** — `updateMeetingSchema` exists, the action does not.
@@ -74,6 +79,7 @@ shipped as a control that cannot finish the job (SPRINT-12A.md §3).
   in the empty state.
 
 ### Still deferred (unchanged)
+
 - Breadcrumbs across nested routes; dashboard charts / activity feed /
   drill-through; search, filters and pagination on Projects and Clients; a
   global task read layer; TanStack Table port.
@@ -87,6 +93,7 @@ table, column, enum or migration was added — each capability sat on schema the
 aggregate already had.
 
 Closed this sprint:
+
 - **`updateMeeting` action** — added, plus `cancelMeeting` / `completeMeeting`,
   guarded by `MEETING_STATUS_TRANSITIONS` so an illegal lifecycle jump is
   refused rather than written. Attendee and agenda management came with it.
@@ -141,6 +148,7 @@ Closed this sprint:
   reversible at the data layer; nothing exposes the reversal.
 
 ### Still deferred (unchanged)
+
 - Breadcrumbs across nested routes; dashboard charts / activity feed /
   drill-through; search, filters and pagination on Projects and Clients;
   total-count queries; server-side filters for `getMeetings`/`getTimelines`;
@@ -194,7 +202,7 @@ These moved from "backlog" to "cannot ship without":
   documentation (Baseline Rule 7) — the baseline should be amended at its next
   revision.
 - **Review the client portal surface.** Flagged in the Stabilization Report,
-  still true, and it ships to *external* users first.
+  still true, and it ships to _external_ users first.
 - **Exercise all six system roles.** Six are defined; only `owner` has ever been
   used in a browser.
 - **`README.md` predates most of the platform.**
@@ -301,7 +309,7 @@ Ordered by value per unit of effort. The first three are one-line changes.
   `src/lib/portal/workers/SessionCleanupWorker.ts`. Phase C searched only
   `src/workers/`, found one file, and concluded two were missing; the claim then
   propagated into four documents. Baseline Rule 7 cuts both ways.
-  What *is* true of all three — and is the real content of TD-05 — is that **none
+  What _is_ true of all three — and is the real content of TD-05 — is that **none
   has an invoker.** Sprint 16 therefore has three workers to wire, not one to
   wire and two to build, which makes it a smaller sprint than Phase C estimated.
   Worth reflecting in the estimate before it is committed to.

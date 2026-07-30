@@ -11,7 +11,7 @@ import {
   deliverableReviewComments,
   deliverableApprovals,
   deliverableShareLinks,
-  deliverableActivity
+  deliverableActivity,
 } from "@/db/schema/deliverables";
 import { CurrentUser, requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
@@ -29,7 +29,7 @@ async function logDeliverableActivity(
   projectId: string,
   organizationId: string,
   metadata?: Record<string, unknown>,
-  tx: typeof db | DbTransaction = db
+  tx: typeof db | DbTransaction = db,
 ) {
   await tx.insert(deliverableActivity).values({
     organizationId,
@@ -84,12 +84,20 @@ export async function createDeliverable(data: {
       .returning();
 
     // 3. Link Revision to Core Deliverable
-    await tx.update(deliverables)
+    await tx
+      .update(deliverables)
       .set({ currentRevisionId: revision.revisionId })
       .where(eq(deliverables.deliverableId, deliverable.deliverableId));
 
-    await logDeliverableActivity("created", deliverable.deliverableId, data.projectId, user.organizationId, { version: 1 }, tx);
-    
+    await logDeliverableActivity(
+      "created",
+      deliverable.deliverableId,
+      data.projectId,
+      user.organizationId,
+      { version: 1 },
+      tx,
+    );
+
     return deliverable;
   });
 
@@ -104,36 +112,52 @@ export async function startReviewSession(
   deliverableId: string,
   revisionId: string,
   reviewType: any,
-  deadlineAt?: Date
+  deadlineAt?: Date,
 ) {
   const user = await requireCurrentUser();
-  
+
   const result = await db.transaction(async (tx) => {
     const [deliverable] = await tx.query.deliverables.findMany({
       where: and(
         eq(deliverables.deliverableId, deliverableId),
-        eq(deliverables.organizationId, user.organizationId)
+        eq(deliverables.organizationId, user.organizationId),
       ),
-      limit: 1
+      limit: 1,
     });
 
     if (!deliverable || deliverable.isLocked) {
       throw new Error("Deliverable not found or is locked.");
     }
 
-    const [session] = await tx.insert(deliverableReviewSessions).values({
-      organizationId: user.organizationId,
-      projectId: deliverable.projectId,
-      deliverableId,
-      revisionId,
-      reviewType,
-      status: "preparing",
-      deadlineAt,
-    }).returning();
+    const [session] = await tx
+      .insert(deliverableReviewSessions)
+      .values({
+        organizationId: user.organizationId,
+        projectId: deliverable.projectId,
+        deliverableId,
+        revisionId,
+        reviewType,
+        status: "preparing",
+        deadlineAt,
+      })
+      .returning();
 
-    await tx.update(deliverables).set({ status: reviewType === "client_review" ? "client_review" : "internal_review" }).where(eq(deliverables.deliverableId, deliverableId));
-    
-    await logDeliverableActivity("review_session_started", deliverableId, deliverable.projectId, user.organizationId, { sessionId: session.sessionId, type: reviewType }, tx);
+    await tx
+      .update(deliverables)
+      .set({
+        status:
+          reviewType === "client_review" ? "client_review" : "internal_review",
+      })
+      .where(eq(deliverables.deliverableId, deliverableId));
+
+    await logDeliverableActivity(
+      "review_session_started",
+      deliverableId,
+      deliverable.projectId,
+      user.organizationId,
+      { sessionId: session.sessionId, type: reviewType },
+      tx,
+    );
 
     return session;
   });
@@ -147,17 +171,17 @@ export async function startReviewSession(
 export async function approveRevision(
   deliverableId: string,
   sessionId: string,
-  notes?: string
+  notes?: string,
 ) {
   const user = await requireCurrentUser();
-  
+
   const result = await db.transaction(async (tx) => {
     const [deliverable] = await tx.query.deliverables.findMany({
       where: and(
         eq(deliverables.deliverableId, deliverableId),
-        eq(deliverables.organizationId, user.organizationId)
+        eq(deliverables.organizationId, user.organizationId),
       ),
-      limit: 1
+      limit: 1,
     });
 
     if (!deliverable || deliverable.isLocked) {
@@ -165,22 +189,35 @@ export async function approveRevision(
     }
 
     // 1. Record Approval
-    const [approval] = await tx.insert(deliverableApprovals).values({
-      organizationId: user.organizationId,
-      projectId: deliverable.projectId,
-      sessionId,
-      approverId: user.userId,
-      status: "approved",
-      notes
-    }).returning();
+    const [approval] = await tx
+      .insert(deliverableApprovals)
+      .values({
+        organizationId: user.organizationId,
+        projectId: deliverable.projectId,
+        sessionId,
+        approverId: user.userId,
+        status: "approved",
+        notes,
+      })
+      .returning();
 
     // 2. Lock Deliverable and set Approved Status
-    await tx.update(deliverables).set({
-      status: "approved",
-      isLocked: true
-    }).where(eq(deliverables.deliverableId, deliverableId));
+    await tx
+      .update(deliverables)
+      .set({
+        status: "approved",
+        isLocked: true,
+      })
+      .where(eq(deliverables.deliverableId, deliverableId));
 
-    await logDeliverableActivity("approved", deliverableId, deliverable.projectId, user.organizationId, { approvalId: approval.approvalId }, tx);
+    await logDeliverableActivity(
+      "approved",
+      deliverableId,
+      deliverable.projectId,
+      user.organizationId,
+      { approvalId: approval.approvalId },
+      tx,
+    );
     return approval;
   });
 
@@ -190,19 +227,16 @@ export async function approveRevision(
 /**
  * Request a New Revision (Unlocks if necessary)
  */
-export async function requestRevision(
-  deliverableId: string,
-  reason: string,
-) {
+export async function requestRevision(deliverableId: string, reason: string) {
   const user = await requireCurrentUser();
-  
+
   const result = await db.transaction(async (tx) => {
     const [deliverable] = await tx.query.deliverables.findMany({
       where: and(
         eq(deliverables.deliverableId, deliverableId),
-        eq(deliverables.organizationId, user.organizationId)
+        eq(deliverables.organizationId, user.organizationId),
       ),
-      limit: 1
+      limit: 1,
     });
 
     if (!deliverable) throw new Error("Deliverable not found");
@@ -210,7 +244,7 @@ export async function requestRevision(
     // Get latest revision number
     const latestRevision = await tx.query.deliverableRevisions.findFirst({
       where: eq(deliverableRevisions.deliverableId, deliverableId),
-      orderBy: (revs, { desc }) => [desc(revs.versionNumber)]
+      orderBy: (revs, { desc }) => [desc(revs.versionNumber)],
     });
 
     const nextVersion = (latestRevision?.versionNumber || 0) + 1;
@@ -230,16 +264,24 @@ export async function requestRevision(
       .returning();
 
     // 2. Link Revision to Core Deliverable & Unlock
-    await tx.update(deliverables)
-      .set({ 
+    await tx
+      .update(deliverables)
+      .set({
         currentRevisionId: revision.revisionId,
         status: "revision_requested",
-        isLocked: false // Unlock for new changes
+        isLocked: false, // Unlock for new changes
       })
       .where(eq(deliverables.deliverableId, deliverable.deliverableId));
 
-    await logDeliverableActivity("revision_requested", deliverableId, deliverable.projectId, user.organizationId, { newVersion: nextVersion, reason }, tx);
-    
+    await logDeliverableActivity(
+      "revision_requested",
+      deliverableId,
+      deliverable.projectId,
+      user.organizationId,
+      { newVersion: nextVersion, reason },
+      tx,
+    );
+
     return revision;
   });
 
@@ -257,33 +299,43 @@ export async function generateShareLink(
   emailRecipient?: string,
 ) {
   const user = await requireCurrentUser();
-  
+
   const result = await db.transaction(async (tx) => {
     const [deliverable] = await tx.query.deliverables.findMany({
       where: and(
         eq(deliverables.deliverableId, deliverableId),
-        eq(deliverables.organizationId, user.organizationId)
+        eq(deliverables.organizationId, user.organizationId),
       ),
-      limit: 1
+      limit: 1,
     });
 
     if (!deliverable) throw new Error("Deliverable not found");
-    
+
     const token = crypto.randomBytes(32).toString("hex");
 
-    const [shareLink] = await tx.insert(deliverableShareLinks).values({
-      organizationId: user.organizationId,
-      projectId: deliverable.projectId,
-      deliverableId,
-      revisionId,
-      token,
-      accessLevel,
-      isWatermarkEnabled,
-      sentViaEmail: !!emailRecipient,
-      emailRecipient,
-    }).returning();
+    const [shareLink] = await tx
+      .insert(deliverableShareLinks)
+      .values({
+        organizationId: user.organizationId,
+        projectId: deliverable.projectId,
+        deliverableId,
+        revisionId,
+        token,
+        accessLevel,
+        isWatermarkEnabled,
+        sentViaEmail: !!emailRecipient,
+        emailRecipient,
+      })
+      .returning();
 
-    await logDeliverableActivity("share_link_generated", deliverableId, deliverable.projectId, user.organizationId, { shareId: shareLink.shareId, accessLevel }, tx);
+    await logDeliverableActivity(
+      "share_link_generated",
+      deliverableId,
+      deliverable.projectId,
+      user.organizationId,
+      { shareId: shareLink.shareId, accessLevel },
+      tx,
+    );
 
     return shareLink;
   });
@@ -310,7 +362,7 @@ export type DeliverableListFilters = {
 export async function getDeliverables(
   filters: DeliverableListFilters = {},
   cursorOffset: number = 0,
-  limit: number = 50
+  limit: number = 50,
 ) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "deliverables", "read");
@@ -319,9 +371,18 @@ export async function getDeliverables(
     where: and(
       eq(deliverables.organizationId, user.organizationId),
       isNull(deliverables.deletedAt),
-      filters.projectId ? eq(deliverables.projectId, filters.projectId) : undefined,
-      filters.clientId ? eq(deliverables.clientId, filters.clientId) : undefined,
-      filters.status ? eq(deliverables.status, filters.status as (typeof deliverables.status.enumValues)[number]) : undefined
+      filters.projectId
+        ? eq(deliverables.projectId, filters.projectId)
+        : undefined,
+      filters.clientId
+        ? eq(deliverables.clientId, filters.clientId)
+        : undefined,
+      filters.status
+        ? eq(
+            deliverables.status,
+            filters.status as (typeof deliverables.status.enumValues)[number],
+          )
+        : undefined,
     ),
     offset: cursorOffset,
     limit,
@@ -337,7 +398,7 @@ export async function getDeliverableById(deliverableId: string) {
     where: and(
       eq(deliverables.deliverableId, deliverableId),
       eq(deliverables.organizationId, user.organizationId),
-      isNull(deliverables.deletedAt)
+      isNull(deliverables.deletedAt),
     ),
   });
   if (!deliverable) return undefined;
@@ -365,7 +426,7 @@ export async function getReviewSessions(deliverableId: string) {
   return db.query.deliverableReviewSessions.findMany({
     where: and(
       eq(deliverableReviewSessions.deliverableId, deliverableId),
-      eq(deliverableReviewSessions.organizationId, user.organizationId)
+      eq(deliverableReviewSessions.organizationId, user.organizationId),
     ),
     orderBy: [desc(deliverableReviewSessions.createdAt)],
   });
@@ -389,13 +450,13 @@ export async function getDeliverableApprovals(deliverableId: string) {
     .from(deliverableApprovals)
     .innerJoin(
       deliverableReviewSessions,
-      eq(deliverableApprovals.sessionId, deliverableReviewSessions.sessionId)
+      eq(deliverableApprovals.sessionId, deliverableReviewSessions.sessionId),
     )
     .where(
       and(
         eq(deliverableReviewSessions.deliverableId, deliverableId),
-        eq(deliverableApprovals.organizationId, user.organizationId)
-      )
+        eq(deliverableApprovals.organizationId, user.organizationId),
+      ),
     )
     .orderBy(desc(deliverableApprovals.createdAt));
 }
@@ -408,7 +469,7 @@ export async function getDeliverableShareLinks(deliverableId: string) {
   return db.query.deliverableShareLinks.findMany({
     where: and(
       eq(deliverableShareLinks.deliverableId, deliverableId),
-      eq(deliverableShareLinks.organizationId, user.organizationId)
+      eq(deliverableShareLinks.organizationId, user.organizationId),
     ),
     orderBy: [desc(deliverableShareLinks.createdAt)],
   });
@@ -421,14 +482,17 @@ export async function getDeliverableShareLinks(deliverableId: string) {
  * read it back, so create / review / approve / revision / share all happened
  * with no visible history.
  */
-export async function getDeliverableActivity(deliverableId: string, limit: number = 25) {
+export async function getDeliverableActivity(
+  deliverableId: string,
+  limit: number = 25,
+) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "deliverables", "read");
 
   return db.query.deliverableActivity.findMany({
     where: and(
       eq(deliverableActivity.deliverableId, deliverableId),
-      eq(deliverableActivity.organizationId, user.organizationId)
+      eq(deliverableActivity.organizationId, user.organizationId),
     ),
     orderBy: [desc(deliverableActivity.createdAt)],
     limit,
@@ -441,7 +505,7 @@ export async function getDeliverableActivity(deliverableId: string, limit: numbe
 export async function searchDeliverables(
   searchTerm: string,
   cursorOffset: number = 0,
-  limit: number = 50
+  limit: number = 50,
 ) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "deliverables", "read");
@@ -450,7 +514,7 @@ export async function searchDeliverables(
     where: and(
       eq(deliverables.organizationId, user.organizationId),
       isNull(deliverables.deletedAt),
-      ilike(deliverables.title, `%${searchTerm}%`)
+      ilike(deliverables.title, `%${searchTerm}%`),
     ),
     offset: cursorOffset,
     limit,

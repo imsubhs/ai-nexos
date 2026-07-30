@@ -36,14 +36,15 @@ export default async function FilesPage({
   const params = await searchParams;
 
   if (params.projectId) {
-    const folderId = !params.folderId || params.folderId === "root" ? null : params.folderId;
+    const folderId =
+      !params.folderId || params.folderId === "root" ? null : params.folderId;
     const folder = await getFolder(folderId, params.projectId);
 
     return (
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Files</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Browsing project folders. Upload files and create folders here.
           </p>
         </div>
@@ -79,7 +80,9 @@ export default async function FilesPage({
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Files</h1>
-        <p className="text-sm text-muted-foreground">Every file across all projects.</p>
+        <p className="text-muted-foreground text-sm">
+          Every file across all projects.
+        </p>
       </div>
       <FilesDirectory
         rows={rows}

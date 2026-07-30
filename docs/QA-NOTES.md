@@ -1,9 +1,11 @@
 # QA Notes - Sprint 11A
 
 ## Overview
+
 This sprint focused on exposing already-certified business modules through App Router workspace pages.
 
 ## Verification Checklist
+
 - **Tasks Workspace (`/tasks`)**: Verified. Route created successfully. DemoStore seed renders via `TaskDashboard` component.
 - **Deliverables Workspace (`/deliverables`)**: SKIPPED. Pre-requisite check failed: No read actions (`getDeliverables`) exist in the dispatcher.
 - **Files Workspace (`/files`)**: SKIPPED. Pre-requisite check failed: No read actions (`getFiles`, `getFolder`) exist in the dispatcher.
@@ -11,12 +13,14 @@ This sprint focused on exposing already-certified business modules through App R
 - **Timeline Workspace (`/timeline`)**: SKIPPED. Pre-requisite check failed: Existing read actions strictly require a `projectId` context; no global fetcher exists.
 
 ## Automated Gates
+
 - **TypeScript (`npm run typecheck`)**: PASSED (0 errors)
 - **Linting (`npm run lint`)**: PASSED (0 errors, warnings remain at baseline)
 - **Build (`npm run build`)**: PASSED (3.6s, no route regressions)
 - **Tests (`npm test`)**: PASSED (122 tests passing)
 
 ## Runtime Quality
+
 - No hydration errors on the new `/tasks` route.
 - No 404s for the newly wired navigation.
 - Shared components (layouts, DataTable equivalents in `TaskDashboard`) were reused successfully without duplicate business logic.
@@ -24,9 +28,11 @@ This sprint focused on exposing already-certified business modules through App R
 # QA Notes - Sprint 11B
 
 ## Overview
+
 Closed the four read-layer gaps identified above. See `docs/SPRINT-11B.md` for full detail.
 
 ## Verification Checklist
+
 - **Deliverables read layer**: `getDeliverables`, `getDeliverableById`, `searchDeliverables` added and unit-tested (7 tests) against DemoStore.
 - **Files read layer**: `getFiles`, `getFolder`, `searchFiles` added and unit-tested (5 tests) against DemoStore.
 - **Meetings read layer**: `getMeetings` (global) added and unit-tested (3 tests). Pre-existing project-scoped reads untouched (and their mock stubs remain broken — see Technical Debt Notes).
@@ -34,6 +40,7 @@ Closed the four read-layer gaps identified above. See `docs/SPRINT-11B.md` for f
 - **No new UI**: No workspace pages, navigation changes, or badge removals were made — out of scope per the sprint's stop condition.
 
 ## Automated Gates
+
 - **TypeScript (`npm run typecheck`)**: PASSED (0 errors)
 - **Linting (`npm run lint`)**: PASSED (0 errors, 117 warnings — pre-existing baseline, no new warnings)
 - **Build (`npm run build`)**: PASSED, no route regressions or additions
@@ -42,9 +49,11 @@ Closed the four read-layer gaps identified above. See `docs/SPRINT-11B.md` for f
 # QA Notes - Sprint 11A (Resumed)
 
 ## Overview
+
 Built the four workspace pages Sprint 11A originally skipped, now that Sprint 11B's read layer is approved. See `docs/SPRINT-11A.md` for full detail.
 
 ## Verification Checklist
+
 - **Deliverables Workspace (`/deliverables`)**: Built. `DataTable` + search (`searchDeliverables`) + status filter (`getDeliverables`) + detail drawer (`getDeliverableById`). Verified 200 response and seeded rows ("Brand Guidelines v2", "Homepage Wireframes") render, including with `?search=` and `?status=` query params.
 - **Files Workspace (`/files`)**: Built. Flat list (`getFiles`/`searchFiles`) plus per-project folder browser (`getFolder`) with breadcrumbs. Verified 200 response for both modes; flat mode correctly shows its empty state (no seed data in `DemoStore.files`); folder mode verified with `?projectId=` against the seeded website project, correctly showing "This folder is empty."
 - **Meetings Workspace (`/meetings`)**: Built. Client-side search/status/date filters over `getMeetings()`. Verified 200 response and the seeded "Quarterly Review" meeting renders. Decision Summary/Action Items intentionally not fetched (see SPRINT-11A.md) — drawer states why instead of showing empty sections.
@@ -52,12 +61,14 @@ Built the four workspace pages Sprint 11A originally skipped, now that Sprint 11
 - **Navigation**: All four items in `src/config/navigation.ts` flipped from `"coming-soon"` to `"live"`; sidebar no longer shows "Soon" badges or disables these links. No other navigation code required changes (hrefs/permissions were already correct).
 
 ## Automated Gates
+
 - **TypeScript (`npm run typecheck`)**: PASSED (0 errors)
 - **Linting (`npm run lint`)**: PASSED (0 errors, 117 warnings — pre-existing baseline). Three React Compiler errors (synchronous `setState` calls in `useEffect`) were introduced while building the Meetings/Timeline date filters and the Deliverables detail drawer, then fixed by moving the `setState` calls inside named inner functions (matching the existing `TaskBoard` pattern) before this PASSED result.
 - **Build (`npm run build`)**: PASSED. New routes `/deliverables`, `/files`, `/meetings`, `/timeline` present with no regressions to existing routes.
 - **Tests (`npm test`)**: PASSED (139/139, unchanged — this sprint added no new automated tests since it's presentation-only over already-tested Sprint 11B functions).
 
 ## Runtime Quality
+
 - Manually smoke-tested via a `DEMO_MODE` dev server with the `demo_session` cookie: all four routes and their query-param variants (`?search=`, `?status=`, `?projectId=`) returned HTTP 200 with no server errors or hydration warnings in the dev log.
 - **Not verified in this session**: actual desktop/tablet/mobile visual rendering and browser console output — no browser-automation tool was available. Responsive classes follow the same Tailwind patterns already used (and presumably verified) in the Employees/Clients pages, but this is inference from code, not an observed screenshot. Flagged explicitly rather than claimed as done.
 
@@ -66,12 +77,14 @@ Built the four workspace pages Sprint 11A originally skipped, now that Sprint 11
 # QA Notes - Sprint 12A
 
 ## Overview
+
 Interaction-completion sprint. Verification measured **whether a user can finish
 a task**, not whether pages render — the gap Phase A identified in prior sprints'
 QA. Every interaction claimed below was driven in a real Chromium session
 against the running application.
 
 ## Verification method
+
 `scratch/sprint12a/verify.mjs` (gitignored; not application code) drives 32
 workflow checks through Playwright, instrumenting console errors, page errors
 and failed requests throughout. Full results table: `docs/SPRINT-12A.md` §4.
@@ -79,6 +92,7 @@ and failed requests throughout. Full results table: `docs/SPRINT-12A.md` §4.
 **Result: 32/32 checks pass · 0 console errors · 0 page errors.**
 
 ## Blocker regression checks
+
 - **Sign out (P1-01)**: cookie cleared, redirect to `/login`, and `/dashboard`
   afterwards bounces to `/login?next=%2Fdashboard`. Previously fired zero
   network requests.
@@ -88,6 +102,7 @@ and failed requests throughout. Full results table: `docs/SPRINT-12A.md` §4.
   again; the filter offers all 12 schema statuses.
 
 ## Accessibility
+
 - 9 "coming soon" nav items: `aria-disabled="true"`, `tabindex="-1"` on every
   one (was: `tabIndex 0`, announced as available).
 - **0** dimmed-but-focusable controls across the shell.
@@ -95,11 +110,13 @@ and failed requests throughout. Full results table: `docs/SPRINT-12A.md` §4.
   Phase A had not: the icon-only back button on project detail.
 
 ## Responsive / runtime
+
 13 modules × 4 viewports = 52 loads: no horizontal page overflow, no HTTP ≥ 400.
 Wide tables continue to scroll inside their own container rather than widening
 the shell.
 
 ## Automated gates
+
 - **`npm run lint`**: PASSED — 0 errors, 113 warnings (baseline 117; 4 fewer
   after deleting two dead components). No new warning in any file this sprint
   touched.
@@ -110,6 +127,7 @@ the shell.
   routes, no regressions.
 
 ## Measurement notes (recorded rather than dropped)
+
 Three findings from earlier passes turned out to be harness artifacts, and the
 harness was corrected rather than the result being accepted:
 
@@ -117,7 +135,7 @@ harness was corrected rather than the result being accepted:
    settled and measured the `loading.tsx` skeleton, not the page. On re-measure
    after settling: 52/52 clean. It did expose a genuine minor issue, now fixed:
    five loading skeletons used a fixed `w-96`, which overflows a 390 px
-   viewport *during load*.
+   viewport _during load_.
 2. **"One dimmed focusable control"** — an overlay mid-exit-animation is briefly
    below the opacity threshold with its content still focusable. Measured on a
    settled route: 0.
@@ -127,6 +145,7 @@ harness was corrected rather than the result being accepted:
    element.
 
 ## Known limitations at hand-off
+
 `ERR_ABORTED` entries appear in the failed-request log during the rapid
 multi-viewport sweep. These are navigations cancelled by the next `page.goto`,
 not application failures — no console error or page error accompanies any of
@@ -141,6 +160,7 @@ read-layer query.
 # QA Notes - Sprint 12B
 
 ## Overview
+
 Domain-completion sprint. Verification again measured **whether a capability
 completes end to end**, not whether a panel renders — and this time several
 checks were written specifically to reproduce the failure the previous sprint had
@@ -148,6 +168,7 @@ recorded, so a pass means the recorded defect is gone rather than merely absent
 from the happy path.
 
 ## Verification method
+
 `scratch/sprint12b/verify.mjs` (gitignored; not application code) drives 39
 workflow checks through Playwright against the running dev server, instrumenting
 console errors and page errors throughout, and capturing 8 screenshots to
@@ -163,6 +184,7 @@ which the check asserts. W7.1 filters that one signature and requires silence
 otherwise.
 
 ## Regression checks written against recorded defects
+
 - **TD-10 (deliverable approve)**: W3.3 starts a review session, **closes the
   drawer, reloads the page**, reopens it, and approves. That sequence is exactly
   what failed before `getReviewSessions` existed.
@@ -181,6 +203,7 @@ otherwise.
   activity entry.
 
 ## Defects found by verification and fixed
+
 1. **Stale file drawer after a write.** Renaming or moving a file updated the
    table behind the drawer but not the drawer itself — the row came from a list
    the parent owned. Fixed by holding the row `updateFile` returns, keyed by file
@@ -194,6 +217,7 @@ otherwise.
    — see the backlog item on behavioural parity.
 
 ## Accessibility
+
 Every control added this sprint carries an accessible name derived from the
 record it acts on, not a generic verb: `"RSVP for Paul Manager"`, `"Remove Paul
 Manager from this meeting"`, `"Move \"Open risks and blockers\" earlier"`,
@@ -202,6 +226,7 @@ Quarterly Review\" as read"`. The 0-unnamed-controls property established in
 Sprint 12A is preserved by construction.
 
 ## Automated gates
+
 - **`npm run lint`**: PASSED — 0 errors, 109 warnings (baseline 113; four fewer — three dead `eslint-disable` directives removed, since `@typescript-eslint/no-explicit-any` is off globally in `eslint.config.mjs`).
   Six `react-hooks/set-state-in-effect` errors were introduced during the sprint
   and **fixed rather than suppressed**: prop-to-state sync replaced by values
@@ -218,6 +243,7 @@ Sprint 12A is preserved by construction.
   routes, no regressions.
 
 ## Measurement notes (recorded rather than dropped)
+
 The first sweep reported 15 failures; 13 were harness faults of a single kind,
 worth recording because it will recur:
 
@@ -241,6 +267,7 @@ The task was created correctly; it simply landed outside the workspace's scope.
 The check now promotes into that milestone explicitly.
 
 ## Not verified in this session
+
 - **The real (Postgres) adapters.** Every capability has a Drizzle
   implementation written against the real schema, but the sprint ran in
   `DEMO_MODE` and the Supabase migration is explicitly not started. The real
@@ -259,18 +286,19 @@ Capabilities deliberately **not** built, and why, are enumerated in
 # QA Notes - Phase C (v1.0 Beta Freeze)
 
 ## Overview
+
 Phase C ran no new tests and modified no code. It re-verified the standing gates,
 audited the repository for demo-only dependencies, and recorded what has **not**
 been verified — which is the more useful half.
 
 ## Gates re-verified at the freeze point
 
-| Gate | Result |
-|---|---|
-| `npm run lint` | 0 errors, 109 warnings |
-| `npm run typecheck` | 0 errors |
-| `npm test` | 240 / 240, 22 files |
-| `npm run build` | Green, 36 routes |
+| Gate                      | Result                 |
+| ------------------------- | ---------------------- |
+| `npm run lint`            | 0 errors, 109 warnings |
+| `npm run typecheck`       | 0 errors               |
+| `npm test`                | 240 / 240, 22 files    |
+| `npm run build`           | Green, 36 routes       |
 | Sprint 12B workflow sweep | 39 / 39, 0 page errors |
 
 ## What has never been verified
@@ -349,19 +377,19 @@ than re-reading the repository, the full working tree was reconstituted in a
 clean directory outside the project and driven through every script in
 `package.json` from a cold start.
 
-This is the first time the repository has been verified as *recoverable* rather
-than merely *correct*, and it is the first time `npm run format:check` and
+This is the first time the repository has been verified as _recoverable_ rather
+than merely _correct_, and it is the first time `npm run format:check` and
 `.github/workflows/ci.yml` have been evaluated at all.
 
 ## Gates re-verified in the working tree
 
-| Gate | Phase C claim | Phase C.1 measured | Verdict |
-|---|---|---|---|
-| `npm run lint` | 0 errors, 109 warnings | **0 errors, 109 warnings** | ✅ Confirmed exactly |
-| `npm run typecheck` | 0 errors (strict) | **0 errors** | ✅ Confirmed |
-| `npm test` | 240/240, 22 files | **240/240, 22 files**, 2.72 s | ✅ Confirmed exactly |
-| `npm run build` | Green, 36 routes | **Green, 35 routes** | ⚠️ Green confirmed; **route count corrected** |
-| `npm run format:check` | *not reported* | **FAIL — 341 files** | ❌ **New failing gate** |
+| Gate                   | Phase C claim          | Phase C.1 measured            | Verdict                                       |
+| ---------------------- | ---------------------- | ----------------------------- | --------------------------------------------- |
+| `npm run lint`         | 0 errors, 109 warnings | **0 errors, 109 warnings**    | ✅ Confirmed exactly                          |
+| `npm run typecheck`    | 0 errors (strict)      | **0 errors**                  | ✅ Confirmed                                  |
+| `npm test`             | 240/240, 22 files      | **240/240, 22 files**, 2.72 s | ✅ Confirmed exactly                          |
+| `npm run build`        | Green, 36 routes       | **Green, 35 routes**          | ⚠️ Green confirmed; **route count corrected** |
+| `npm run format:check` | _not reported_         | **FAIL — 341 files**          | ❌ **New failing gate**                       |
 
 **No regressions.** No code was touched, so this was expected — but it is worth
 having measured rather than assumed, since three prior sprints' numbers were
@@ -375,7 +403,7 @@ being carried forward on trust.
    repeated across four documents without anyone re-counting it is exactly the
    kind of drift that erodes confidence in the numbers beside it.
 2. **`format:check` is a fifth gate and it fails.** It was never part of the four
-   gates Phase C certified, so this is *not* a regression — but
+   gates Phase C certified, so this is _not_ a regression — but
    `.github/workflows/ci.yml` runs it as a required step, so the pipeline fails
    on a gate no report has ever mentioned.
 
@@ -383,7 +411,7 @@ being carried forward on trust.
 
 ### Method
 
-The exact file set that *would* exist after committing the working tree was
+The exact file set that _would_ exist after committing the working tree was
 enumerated with `git ls-files -c -o --exclude-standard` — tracked files at
 working-tree content, plus untracked-not-ignored, excluding everything
 `.gitignore` covers. The two intentionally deleted paths were removed. The
@@ -396,25 +424,25 @@ on undeclared local state would surface.
 
 ### Results
 
-| Step | Result |
-|---|---|
-| File-set completeness | ✅ 552/552; 10 migrations + 10-entry journal, consistent |
-| Secret containment | ✅ `.env.local` absent; `scratch/` absent; no tracked `.env*` |
-| `npm ci` | ✅ exit 0 from `package-lock.json` (v3) |
-| `npm run lint` | ✅ exit 0 — 0 errors, 109 warnings |
-| `npm run typecheck` | ✅ exit 0, strict |
-| `npm test` | ✅ **240/240, 22 files** |
-| `npm run format:check` | ❌ exit 1 — 341 files |
-| `npm run build` — **no env** | ❌ `DATABASE_URL is not set` |
-| `npm run build` — **CI's exact env** | ❌ same — **CI's build step is broken** |
-| `npm run build` — 4-var minimum | ✅ green, 35 routes, 3.4 s |
-| `npm run dev` | ✅ ready in 176 ms |
-| `GET /api/health` | ✅ `{"status":"healthy","demoMode":true,"version":"1.0.0",...}` |
-| `GET /login` | ✅ HTTP 200, 1657 ms cold |
+| Step                                 | Result                                                          |
+| ------------------------------------ | --------------------------------------------------------------- |
+| File-set completeness                | ✅ 552/552; 10 migrations + 10-entry journal, consistent        |
+| Secret containment                   | ✅ `.env.local` absent; `scratch/` absent; no tracked `.env*`   |
+| `npm ci`                             | ✅ exit 0 from `package-lock.json` (v3)                         |
+| `npm run lint`                       | ✅ exit 0 — 0 errors, 109 warnings                              |
+| `npm run typecheck`                  | ✅ exit 0, strict                                               |
+| `npm test`                           | ✅ **240/240, 22 files**                                        |
+| `npm run format:check`               | ❌ exit 1 — 341 files                                           |
+| `npm run build` — **no env**         | ❌ `DATABASE_URL is not set`                                    |
+| `npm run build` — **CI's exact env** | ❌ same — **CI's build step is broken**                         |
+| `npm run build` — 4-var minimum      | ✅ green, 35 routes, 3.4 s                                      |
+| `npm run dev`                        | ✅ ready in 176 ms                                              |
+| `GET /api/health`                    | ✅ `{"status":"healthy","demoMode":true,"version":"1.0.0",...}` |
+| `GET /login`                         | ✅ HTTP 200, 1657 ms cold                                       |
 
 **Verdict: the repository is recoverable.** Repository → running application in
 ≈3 minutes, with nothing required beyond four environment variables. All 240
-tests and both static gates pass with *zero* configuration.
+tests and both static gates pass with _zero_ configuration.
 
 ## Defects found by the Phase C.1 audit (documentation only; not fixed)
 
@@ -425,7 +453,7 @@ tests and both static gates pass with *zero* configuration.
    and required checks cannot be enabled against it without blocking all merges.
    (TD-24)
 2. **A fresh clone cannot build.** `src/db/index.ts` throws
-   `DATABASE_URL is not set` at *module evaluation*; `next build` imports the
+   `DATABASE_URL is not set` at _module evaluation_; `next build` imports the
    module graph while collecting page data, so the failure occurs regardless of
    `DEMO_MODE`. A never-connected placeholder DSN yields a fully green build.
    (TD-23)
@@ -460,7 +488,7 @@ Two, and the first one matters because it reverses a correction made in Phase C.
    `PRODUCTION_MIGRATION_PLAN.md` (Sprint 16), `PRODUCTION_READINESS_CHECKLIST.md`
    (5.5, 11.10), `QA-NOTES.md` and `TECHNICAL-DEBT-NOTES.md`.
    Baseline Rule 7 cuts both ways: here the repository **exonerates** the
-   baseline. Checklist 11.10 should be *withdrawn*, not completed. What is true of
+   baseline. Checklist 11.10 should be _withdrawn_, not completed. What is true of
    all three is that **none has an invoker** — verified by grep; the only external
    reference is a comment at `src/lib/ai/memory.ts:94`. Sprint 16 has three
    workers to wire, not one to wire and two to write.
@@ -487,7 +515,7 @@ product:
 - `requirePermission` coverage — never audited exhaustively; the service-role
   connection bypasses RLS, so one omission is one unprotected action.
 - Behavioural mock/real parity — signature-level only (TD-17).
-- The client portal surface — never code-reviewed, and it ships to *external*
+- The client portal surface — never code-reviewed, and it ships to _external_
   users first.
 - Load, soak, penetration testing; screen-reader accessibility pass.
 - Any performance figure under real network latency — every measurement to date
@@ -497,13 +525,13 @@ product:
 
 **Execution-first, and deliberately so.** Phase C's method was repository-first
 (claims checked against `src/` rather than prior reports), which is how it found
-the cross-tenant dedup defect. Phase C.1 went one step further and *ran* things:
+the cross-tenant dedup defect. Phase C.1 went one step further and _ran_ things:
 `npm ci` in a clean directory, `next build` with an empty environment, every
 `package.json` script, `npm audit`, and the CI workflow's exact env block.
 
 Every finding in this section came from that difference. Reading `src/` cannot
 tell you that a build fails without `DATABASE_URL`, that `format:check` has been
 failing for 341 files, or that the CI pipeline has never run. Reading the
-*whole* tree rather than one directory is also what caught the worker error —
+_whole_ tree rather than one directory is also what caught the worker error —
 which Phase C introduced while applying Rule 7, and which Phase C.1 removed by
 applying it more carefully.

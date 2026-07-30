@@ -4,7 +4,7 @@ export default function TimelineLoading() {
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div>
-        <Skeleton className="h-8 w-48 mb-2" />
+        <Skeleton className="mb-2 h-8 w-48" />
         <Skeleton className="h-4 w-80" />
       </div>
       <Skeleton className="h-10 w-full max-w-sm" />

@@ -10,7 +10,8 @@ import * as mock from "./mock-actions";
 export async function listEmployeesAction(
   ...args: Parameters<typeof real.listEmployeesAction>
 ): Promise<Awaited<ReturnType<typeof real.listEmployeesAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.listEmployeesAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.listEmployeesAction(...args);
   return real.listEmployeesAction(...args);
 }
 

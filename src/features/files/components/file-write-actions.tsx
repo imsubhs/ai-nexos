@@ -26,17 +26,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { createFolder, finalizeFileUpload, initializeFileUpload } from "../actions";
+import {
+  createFolder,
+  finalizeFileUpload,
+  initializeFileUpload,
+} from "../actions";
 
 /** MIME → the fileType enum in src/features/files/schemas.ts. */
 function fileTypeFor(mimeType: string, filename: string): string {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType.startsWith("audio/")) return "audio";
-  if (/^(application\/(zip|x-tar|gzip|x-7z-compressed)|application\/x-rar)/.test(mimeType))
+  if (
+    /^(application\/(zip|x-tar|gzip|x-7z-compressed)|application\/x-rar)/.test(
+      mimeType,
+    )
+  )
     return "archive";
-  if (/^(font\/|application\/(x-font|vnd\.ms-fontobject))/.test(mimeType)) return "font";
-  if (/\.(ts|tsx|js|jsx|py|rb|go|rs|java|c|cpp|sh)$/i.test(filename)) return "code";
+  if (/^(font\/|application\/(x-font|vnd\.ms-fontobject))/.test(mimeType))
+    return "font";
+  if (/\.(ts|tsx|js|jsx|py|rb|go|rs|java|c|cpp|sh)$/i.test(filename))
+    return "code";
   if (/\.(glb|gltf|fbx|obj|blend)$/i.test(filename)) return "3d_model";
   if (
     mimeType.startsWith("text/") ||
@@ -47,7 +57,10 @@ function fileTypeFor(mimeType: string, filename: string): string {
 }
 
 async function sha256Hex(file: File): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    await file.arrayBuffer(),
+  );
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
@@ -96,7 +109,12 @@ export function FileWriteActions({
         onConfirm={async () => {
           const name = folderName.trim();
           if (!name) throw new Error("A folder name is required.");
-          await createFolder({ organizationId, projectId, parentId: folderId, name });
+          await createFolder({
+            organizationId,
+            projectId,
+            parentId: folderId,
+            name,
+          });
           setFolderName("");
           await onChanged();
           toast.success(`Folder “${name}” created`);
@@ -180,9 +198,9 @@ export function FileWriteActions({
             />
           </div>
           <p className="text-muted-foreground text-xs">
-            The file record, version and checksum are created for real. The binary
-            itself is not transferred — object storage still returns mock signed
-            URLs (TD-02), so there is nowhere to put the bytes yet.
+            The file record, version and checksum are created for real. The
+            binary itself is not transferred — object storage still returns mock
+            signed URLs (TD-02), so there is nowhere to put the bytes yet.
           </p>
         </div>
       </ConfirmDialog>

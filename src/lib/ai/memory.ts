@@ -39,36 +39,43 @@ export class AIMemoryManager {
 
     switch (query.layer) {
       case "conversation":
-        if (!query.conversationId) throw new Error("conversationId required for conversation memory");
+        if (!query.conversationId)
+          throw new Error("conversationId required for conversation memory");
         conditions.push(eq(aiMemory.conversationId, query.conversationId));
         break;
       case "session":
-        if (!query.sessionId) throw new Error("sessionId required for session memory");
+        if (!query.sessionId)
+          throw new Error("sessionId required for session memory");
         conditions.push(eq(aiMemory.sessionId, query.sessionId));
         break;
       case "project":
-        if (!query.projectId) throw new Error("projectId required for project memory");
+        if (!query.projectId)
+          throw new Error("projectId required for project memory");
         conditions.push(eq(aiMemory.projectId, query.projectId));
         break;
       case "organization":
         break;
     }
 
-    const memories = await db.select({ fact: aiMemory.fact, expiresAt: aiMemory.expiresAt })
+    const memories = await db
+      .select({ fact: aiMemory.fact, expiresAt: aiMemory.expiresAt })
       .from(aiMemory)
       .where(and(...conditions))
       .orderBy(aiMemory.createdAt);
 
     // Filter out expired explicitly in case the DB query didn't handle the OR clause perfectly
     return memories
-      .filter(m => !m.expiresAt || m.expiresAt.getTime() > now.getTime())
-      .map(m => m.fact);
+      .filter((m) => !m.expiresAt || m.expiresAt.getTime() > now.getTime())
+      .map((m) => m.fact);
   }
 
   /**
    * Stores a new fact in the appropriate memory layer with an optional TTL.
    */
-  static async storeMemory(organizationId: string, entry: MemoryEntry): Promise<void> {
+  static async storeMemory(
+    organizationId: string,
+    entry: MemoryEntry,
+  ): Promise<void> {
     let expiresAt: Date | null = null;
     if (entry.ttlSeconds) {
       expiresAt = new Date(Date.now() + entry.ttlSeconds * 1000);
@@ -86,7 +93,7 @@ export class AIMemoryManager {
       fact: entry.fact,
       confidence: entry.confidence.toString(),
       sourceMetadata: entry.sourceMetadata,
-      expiresAt
+      expiresAt,
     });
   }
 
@@ -97,10 +104,11 @@ export class AIMemoryManager {
     const now = new Date();
     // DELETE FROM ai_memory WHERE expires_at <= NOW()
     // For safety, we'll fetch and delete or execute a raw delete.
-    const result = await db.delete(aiMemory)
+    const result = await db
+      .delete(aiMemory)
       .where(lte(aiMemory.expiresAt, now))
       .returning({ id: aiMemory.id });
-    
+
     return result.length;
   }
 }

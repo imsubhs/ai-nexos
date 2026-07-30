@@ -30,7 +30,11 @@ export default async function ProjectsPage({
       </div>
 
       <div className="space-y-4">
-        <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-xl" />}>
+        <Suspense
+          fallback={
+            <div className="bg-muted/20 h-[400px] w-full animate-pulse rounded-xl" />
+          }
+        >
           <ProjectList query={query} />
         </Suspense>
       </div>

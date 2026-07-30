@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { hasPermission } from "@/features/permissions/engine";
-import { getDeliverables, searchDeliverables } from "@/features/deliverables/actions";
+import {
+  getDeliverables,
+  searchDeliverables,
+} from "@/features/deliverables/actions";
 import { DeliverablesDirectory } from "@/features/deliverables/components/deliverables-directory";
 import { getProjects } from "@/features/projects/actions";
 
@@ -39,7 +42,11 @@ export default async function DeliverablesPage({
   // "is there more," not an exact total.
   const fetched = params.search
     ? await searchDeliverables(params.search, cursorOffset, PAGE_SIZE + 1)
-    : await getDeliverables({ status: params.status || undefined }, cursorOffset, PAGE_SIZE + 1);
+    : await getDeliverables(
+        { status: params.status || undefined },
+        cursorOffset,
+        PAGE_SIZE + 1,
+      );
   // createDeliverable needs a project; the create dialog offers these.
   const projectRows = await getProjects(undefined, 100, 0);
   const projects = projectRows.map((project) => ({
@@ -56,7 +63,7 @@ export default async function DeliverablesPage({
       <div className="flex items-center justify-between space-y-2">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Deliverables</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Every deliverable across all projects.
           </p>
         </div>

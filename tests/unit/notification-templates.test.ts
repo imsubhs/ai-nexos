@@ -25,7 +25,11 @@ const NOTIFICATION = {
 const EVENT = {
   eventType: "deliverable",
   aggregateType: "deliverable",
-  payload: { title: "Brand Guidelines v2", status: "client_review", actorName: "Ada" },
+  payload: {
+    title: "Brand Guidelines v2",
+    status: "client_review",
+    actorName: "Ada",
+  },
 };
 
 const TEMPLATE: NotificationTemplate = {
@@ -42,7 +46,9 @@ describe("renderTemplate", () => {
   });
 
   it("substitutes a dotted path", () => {
-    expect(renderTemplate("{{a.b.c}}", { a: { b: { c: "deep" } } })).toBe("deep");
+    expect(renderTemplate("{{a.b.c}}", { a: { b: { c: "deep" } } })).toBe(
+      "deep",
+    );
   });
 
   it("tolerates whitespace inside the braces", () => {
@@ -65,9 +71,9 @@ describe("renderTemplate", () => {
 
   it("does not treat a payload value as a template itself", () => {
     // Guards against a second substitution pass rendering user data as tokens.
-    expect(renderTemplate("{{name}}", { name: "{{secret}}", secret: "leaked" })).toBe(
-      "{{secret}}",
-    );
+    expect(
+      renderTemplate("{{name}}", { name: "{{secret}}", secret: "leaked" }),
+    ).toBe("{{secret}}");
   });
 });
 
@@ -75,7 +81,9 @@ describe("composeNotification", () => {
   it("renders subject, body and action URL from the template", () => {
     const item = composeNotification(NOTIFICATION, EVENT, TEMPLATE);
     expect(item.title).toBe("Deliverable updated: Brand Guidelines v2");
-    expect(item.description).toBe("Ada moved “Brand Guidelines v2” to client_review.");
+    expect(item.description).toBe(
+      "Ada moved “Brand Guidelines v2” to client_review.",
+    );
     expect(item.actionUrl).toBe("/deliverables");
     expect(item.isFallbackTitle).toBe(false);
   });

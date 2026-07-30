@@ -119,7 +119,13 @@ export function MeetingForm({
           isConfidential: false,
         });
         toast.success("Meeting scheduled");
-        reset({ ...values, title: "", description: "", startTime: "", endTime: "" });
+        reset({
+          ...values,
+          title: "",
+          description: "",
+          startTime: "",
+          endTime: "",
+        });
       }
       await onSuccess();
     } catch (error) {
@@ -164,7 +170,11 @@ export function MeetingForm({
 
         <div className="space-y-2">
           <Label htmlFor="meeting-type">Type</Label>
-          <select id="meeting-type" {...register("meetingType")} className={SELECT_CLASS}>
+          <select
+            id="meeting-type"
+            {...register("meetingType")}
+            className={SELECT_CLASS}
+          >
             {MEETING_TYPES.map((type) => (
               <option key={type} value={type}>
                 {humanizeToken(type)}
@@ -185,13 +195,19 @@ export function MeetingForm({
             {...register("startTime", { required: "A start time is required" })}
           />
           {errors.startTime && (
-            <p className="text-destructive text-sm">{errors.startTime.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.startTime.message}
+            </p>
           )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="meeting-end">Ends</Label>
-          <Input id="meeting-end" type="datetime-local" {...register("endTime")} />
+          <Input
+            id="meeting-end"
+            type="datetime-local"
+            {...register("endTime")}
+          />
         </div>
 
         <div className="space-y-2">
@@ -201,7 +217,11 @@ export function MeetingForm({
 
         <div className="space-y-2">
           <Label htmlFor="meeting-provider">Provider</Label>
-          <select id="meeting-provider" {...register("provider")} className={SELECT_CLASS}>
+          <select
+            id="meeting-provider"
+            {...register("provider")}
+            className={SELECT_CLASS}
+          >
             <option value="">None</option>
             {MEETING_PROVIDERS.map((provider) => (
               <option key={provider} value={provider}>

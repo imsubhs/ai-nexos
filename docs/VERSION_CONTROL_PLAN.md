@@ -10,15 +10,15 @@
 
 ## 1. Current State
 
-| Property | Value |
-|---|---|
-| Branch | `phase-03-core-product` |
-| Commits | 2 — `1b17234`, `c2a9190` |
-| Tags | **none** |
-| Remotes | **none** |
-| `main` | Local only, 2 commits behind, 552-file tree behind reality |
-| Working tree | 71 modified · 2 deleted · 68 untracked paths (238 files) |
-| `package.json` version | `0.1.0` — disagrees with every document in `docs/` |
+| Property               | Value                                                      |
+| ---------------------- | ---------------------------------------------------------- |
+| Branch                 | `phase-03-core-product`                                    |
+| Commits                | 2 — `1b17234`, `c2a9190`                                   |
+| Tags                   | **none**                                                   |
+| Remotes                | **none**                                                   |
+| `main`                 | Local only, 2 commits behind, 552-file tree behind reality |
+| Working tree           | 71 modified · 2 deleted · 68 untracked paths (238 files)   |
+| `package.json` version | `0.1.0` — disagrees with every document in `docs/`         |
 
 Two commits stand between the current tree and an empty repository. There is no second copy. This document exists to end that condition.
 
@@ -28,34 +28,34 @@ Two commits stand between the current tree and an empty repository. There is no 
 
 `MAJOR.MINOR.PATCH[-prerelease]`
 
-| Version | Meaning at AI NEX OS |
-|---|---|
-| **MAJOR** | Breaking change to a frozen contract — dispatcher signature, public gateway, state machine vocabulary, or a destructive schema migration. Baseline Rules 3–6 mean this should be rare. |
-| **MINOR** | New capability, additively. New module, new workspace, new domain action. |
-| **PATCH** | Defect fix, no contract change, no schema change. |
-| **`-beta`** | Certified for demonstration. **Not certified for customer data.** |
-| **`-rc.N`** | Release candidate. Feature complete *and* production-substrate complete; undergoing staging soak. |
+| Version     | Meaning at AI NEX OS                                                                                                                                                                   |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MAJOR**   | Breaking change to a frozen contract — dispatcher signature, public gateway, state machine vocabulary, or a destructive schema migration. Baseline Rules 3–6 mean this should be rare. |
+| **MINOR**   | New capability, additively. New module, new workspace, new domain action.                                                                                                              |
+| **PATCH**   | Defect fix, no contract change, no schema change.                                                                                                                                      |
+| **`-beta`** | Certified for demonstration. **Not certified for customer data.**                                                                                                                      |
+| **`-rc.N`** | Release candidate. Feature complete _and_ production-substrate complete; undergoing staging soak.                                                                                      |
 
 ### Release identity
 
-| Field | Value |
-|---|---|
-| **Release name** | **AI NEX OS v1.0 Beta — "Demo Platform Complete"** |
-| **Version** | `1.0.0-beta` |
-| **Git tag** | `v1.0.0-beta` |
-| **Certified** | Demonstration, evaluation, design-partner pilots on demo persistence |
+| Field             | Value                                                                     |
+| ----------------- | ------------------------------------------------------------------------- |
+| **Release name**  | **AI NEX OS v1.0 Beta — "Demo Platform Complete"**                        |
+| **Version**       | `1.0.0-beta`                                                              |
+| **Git tag**       | `v1.0.0-beta`                                                             |
+| **Certified**     | Demonstration, evaluation, design-partner pilots on demo persistence      |
 | **Not certified** | Customer production, real customer data, any `DEMO_MODE=false` deployment |
 
 ### Why `1.0.0-beta`
 
 Reaffirming `BETA_FREEZE.md` §5.6, because the reasoning still holds:
 
-| Rejected | Why |
-|---|---|
-| `v1.0.0` | Materially misleading. Nothing has executed against a database. |
-| `v0.9.0` | Understates a certified 19-module architecture with 240 passing tests. |
-| `v1.0-demo` | Implies the product is permanently a demo. It is a stage, not a category. |
-| `v1.0.0-beta.1` | Unnecessary precision. There will be one beta. |
+| Rejected        | Why                                                                       |
+| --------------- | ------------------------------------------------------------------------- |
+| `v1.0.0`        | Materially misleading. Nothing has executed against a database.           |
+| `v0.9.0`        | Understates a certified 19-module architecture with 240 passing tests.    |
+| `v1.0-demo`     | Implies the product is permanently a demo. It is a stage, not a category. |
+| `v1.0.0-beta.1` | Unnecessary precision. There will be one beta.                            |
 
 `1.0.0-beta` sorts correctly under SemVer (`1.0.0-beta` < `1.0.0-rc.1` < `1.0.0`) and is unambiguous about maturity to anyone reading `git tag`.
 
@@ -71,10 +71,10 @@ Set `"version": "1.0.0-beta"` as part of Commit 9, so the tag, the manifest and 
 
 ### Tags to create now
 
-| Tag | Points at | Type | Purpose |
-|---|---|---|---|
-| **`v1.0.0-beta`** | Commit 9 (`docs:`) | **Annotated** | The freeze point. Every migration sprint diffs against this. |
-| **`v1.0.0-baseline`** | `1b17234` | **Annotated** | Retroactive. Gives `NEXOS_v1.0_BASELINE.md` a commit to cite. |
+| Tag                   | Points at          | Type          | Purpose                                                       |
+| --------------------- | ------------------ | ------------- | ------------------------------------------------------------- |
+| **`v1.0.0-beta`**     | Commit 9 (`docs:`) | **Annotated** | The freeze point. Every migration sprint diffs against this.  |
+| **`v1.0.0-baseline`** | `1b17234`          | **Annotated** | Retroactive. Gives `NEXOS_v1.0_BASELINE.md` a commit to cite. |
 
 **Annotated, not lightweight.** A lightweight tag is a bare pointer with no author, date or message. The annotation is what makes the tag survive independently of `docs/` — if the documentation directory were ever lost, `git show v1.0.0-beta` should still state what was certified.
 
@@ -107,12 +107,12 @@ git tag -a v1.0.0-baseline 1b17234 -m "M0 architectural baseline — see NEXOS_v
 
 ### Future tags
 
-| Tag | When | Gate |
-|---|---|---|
-| `v1.0.0-rc.1` | Sprint 16 complete | Background runtime live, observability wired |
-| `v1.0.0-rc.N` | Each staging soak iteration | — |
-| `v1.0.0` | Sprint 17 sign-off | `PRODUCTION_READINESS_CHECKLIST.md` fully green; 7 days staging, no P1 |
-| `v1.0.1`, … | Post-release patches | Hotfix flow, §5 |
+| Tag           | When                        | Gate                                                                   |
+| ------------- | --------------------------- | ---------------------------------------------------------------------- |
+| `v1.0.0-rc.1` | Sprint 16 complete          | Background runtime live, observability wired                           |
+| `v1.0.0-rc.N` | Each staging soak iteration | —                                                                      |
+| `v1.0.0`      | Sprint 17 sign-off          | `PRODUCTION_READINESS_CHECKLIST.md` fully green; 7 days staging, no P1 |
+| `v1.0.1`, …   | Post-release patches        | Hotfix flow, §5                                                        |
 
 ---
 
@@ -154,20 +154,20 @@ git merge --ff-only phase-03-core-product   # fails loudly if not a clean FF —
 
 `main` is always releasable-at-its-tier. Work happens on short-lived branches. No long-lived develop branch — with one to two engineers it adds ceremony and no safety.
 
-| Branch pattern | Cut from | Merges to | Lifetime |
-|---|---|---|---|
-| `main` | — | — | Permanent trunk |
-| `sprint-13-persistence` | `main` | `main` | One sprint |
-| `sprint-14-storage` | `main` | `main` | One sprint |
-| `sprint-15-auth` | `main` | `main` | One sprint |
-| `sprint-16-runtime` | `main` | `main` | One sprint |
-| `sprint-17-deployment` | `main` | `main` | One sprint |
-| `feat/<slug>` | `main` | `main` | Days |
-| `fix/<slug>` | `main` | `main` | Hours to days |
-| `chore/<slug>` | `main` | `main` | Hours |
-| `docs/<slug>` | `main` | `main` | Hours |
-| `release/1.0` | `main` at Sprint 16 | `main` (back-merge) | Until v1.0.0 ships |
-| `hotfix/<slug>` | Release tag | `release/1.0` **and** `main` | Hours |
+| Branch pattern          | Cut from            | Merges to                    | Lifetime           |
+| ----------------------- | ------------------- | ---------------------------- | ------------------ |
+| `main`                  | —                   | —                            | Permanent trunk    |
+| `sprint-13-persistence` | `main`              | `main`                       | One sprint         |
+| `sprint-14-storage`     | `main`              | `main`                       | One sprint         |
+| `sprint-15-auth`        | `main`              | `main`                       | One sprint         |
+| `sprint-16-runtime`     | `main`              | `main`                       | One sprint         |
+| `sprint-17-deployment`  | `main`              | `main`                       | One sprint         |
+| `feat/<slug>`           | `main`              | `main`                       | Days               |
+| `fix/<slug>`            | `main`              | `main`                       | Hours to days      |
+| `chore/<slug>`          | `main`              | `main`                       | Hours              |
+| `docs/<slug>`           | `main`              | `main`                       | Hours              |
+| `release/1.0`           | `main` at Sprint 16 | `main` (back-merge)          | Until v1.0.0 ships |
+| `hotfix/<slug>`         | Release tag         | `release/1.0` **and** `main` | Hours              |
 
 **Sprint branch discipline.** Sprints 14 and 15 may overlap after 13 lands (`PRODUCTION_MIGRATION_PLAN.md` §4). Both cut from `main` after 13 merges — not from each other. If they must share a change, it goes to `main` first.
 
@@ -204,18 +204,18 @@ Cut from the **tag**, not from `release/1.0` HEAD, so the hotfix contains nothin
 <footer: refs, BREAKING CHANGE:>
 ```
 
-| Type | Use |
-|---|---|
-| `feat` | New capability |
-| `fix` | Defect fix |
-| `chore` | Tooling, deps, housekeeping |
-| `docs` | Documentation only |
-| `test` | Tests only |
-| `refactor` | No behaviour change |
-| `perf` | Performance |
-| `style` | Formatting only — **no logic** |
-| `ci` | Pipeline |
-| `db` | Migration or schema (project-specific; keeps migrations findable in `git log`) |
+| Type       | Use                                                                            |
+| ---------- | ------------------------------------------------------------------------------ |
+| `feat`     | New capability                                                                 |
+| `fix`      | Defect fix                                                                     |
+| `chore`    | Tooling, deps, housekeeping                                                    |
+| `docs`     | Documentation only                                                             |
+| `test`     | Tests only                                                                     |
+| `refactor` | No behaviour change                                                            |
+| `perf`     | Performance                                                                    |
+| `style`    | Formatting only — **no logic**                                                 |
+| `ci`       | Pipeline                                                                       |
+| `db`       | Migration or schema (project-specific; keeps migrations findable in `git log`) |
 
 Scopes follow the module vocabulary: `platform`, `workforce`, `tasks`, `files`, `deliverables`, `meetings`, `timelines`, `notifications`, `auth`, `search`, `portal`, `db`, `ui`, `interaction`, `domain`, `deps`.
 
@@ -233,15 +233,15 @@ Scopes follow the module vocabulary: `platform`, `workforce`, `tasks`, `files`, 
 
 To apply once the remote exists. None can be applied today because there is nothing to protect them on.
 
-| Rule | `main` | `release/*` |
-|---|---|---|
-| Force push | **Blocked** | **Blocked** |
-| Branch deletion | **Blocked** | **Blocked** |
-| Direct push | Discouraged; allowed while single-engineer | **Blocked** |
-| PR required | Once a second engineer joins | **Yes** |
-| Required checks | `lint` · `format:check` · `typecheck` · `test` · `build` | Same |
-| Linear history | Preferred (squash or rebase) | Required |
-| Signed commits | Optional at v1.0; recommended before customer data | Recommended |
+| Rule            | `main`                                                   | `release/*` |
+| --------------- | -------------------------------------------------------- | ----------- |
+| Force push      | **Blocked**                                              | **Blocked** |
+| Branch deletion | **Blocked**                                              | **Blocked** |
+| Direct push     | Discouraged; allowed while single-engineer               | **Blocked** |
+| PR required     | Once a second engineer joins                             | **Yes**     |
+| Required checks | `lint` · `format:check` · `typecheck` · `test` · `build` | Same        |
+| Linear history  | Preferred (squash or rebase)                             | Required    |
+| Signed commits  | Optional at v1.0; recommended before customer data       | Recommended |
 
 **Required checks cannot be enabled until CI is fixed.** Two of the five steps currently fail (`REPOSITORY_STABILIZATION_REPORT.md` §7.4). Enabling required checks against a broken pipeline blocks all merges. Order: fix CI (Commits 10–11) → confirm green on the remote → then enable required checks.
 
@@ -253,12 +253,12 @@ To apply once the remote exists. None can be applied today because there is noth
 
 ### Requirements
 
-| Requirement | Rationale |
-|---|---|
-| **Private** | The repository contains no secrets, but it is a commercial product with a full architecture. |
-| Supports annotated tags and branch protection | §3, §6 |
-| GitHub Actions available | `.github/workflows/ci.yml` already targets it |
-| Org-owned, not personal | Survives one person's account. Relevant for a product with a migration plan measured in months. |
+| Requirement                                   | Rationale                                                                                       |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **Private**                                   | The repository contains no secrets, but it is a commercial product with a full architecture.    |
+| Supports annotated tags and branch protection | §3, §6                                                                                          |
+| GitHub Actions available                      | `.github/workflows/ci.yml` already targets it                                                   |
+| Org-owned, not personal                       | Survives one person's account. Relevant for a product with a migration plan measured in months. |
 
 **Recommendation: a private GitHub repository under an organisation account**, named `ai-nexos`.
 
@@ -292,7 +292,7 @@ git bundle create ai-nexos-$(date +%Y%m%d).bundle --all
 
 A bundle is a single file containing the entire history and is restorable with `git clone <file>`. Cheap, and it does not depend on any hosting provider.
 
-**Also note:** the enclosing `WebsiteCreation` directory is a *separate* git repository that does **not** track `ai-nexos`. Backing up the parent does not back up this project. Anyone who assumes otherwise has no backup at all.
+**Also note:** the enclosing `WebsiteCreation` directory is a _separate_ git repository that does **not** track `ai-nexos`. Backing up the parent does not back up this project. Anyone who assumes otherwise has no backup at all.
 
 ---
 
@@ -300,23 +300,23 @@ A bundle is a single file containing the entire history and is restorable with `
 
 The complete sequence, blocking-first.
 
-| # | Action | Blocks |
-|---|---|---|
-| 1 | **Commit 1** — journal + `0008`/`0009` + snapshots, **explicit paths** | Everything |
-| 2 | **Commits 2–8** — sprint history | Tag |
-| 3 | **Commit 9** — docs; set `package.json` to `1.0.0-beta` | Tag |
-| 4 | **Tag** `v1.0.0-beta` (annotated) and `v1.0.0-baseline` | Push |
-| 5 | **Fast-forward `main`** (`--ff-only`) | Push |
-| 6 | **Add remote; push `main`, branch, both tags** | ⛔ **Everything after this point** |
-| 7 | **Verify** — `git ls-remote`, then clone elsewhere and run the gates | Sprint 13 |
-| 8 | **Commits 10–11** — fix CI (`DATABASE_URL`, `DEMO_MODE`; prettier sweep) | Required checks |
-| 9 | Confirm CI green on the remote | Required checks |
-| 10 | Enable branch protection and required checks | — |
-| 11 | **Commits 12–13** — drop unused deps; pin Node; `.gitignore` additions | — |
-| 12 | Cut `sprint-13-persistence` from `main` | Sprint 13 |
+| #   | Action                                                                   | Blocks                             |
+| --- | ------------------------------------------------------------------------ | ---------------------------------- |
+| 1   | **Commit 1** — journal + `0008`/`0009` + snapshots, **explicit paths**   | Everything                         |
+| 2   | **Commits 2–8** — sprint history                                         | Tag                                |
+| 3   | **Commit 9** — docs; set `package.json` to `1.0.0-beta`                  | Tag                                |
+| 4   | **Tag** `v1.0.0-beta` (annotated) and `v1.0.0-baseline`                  | Push                               |
+| 5   | **Fast-forward `main`** (`--ff-only`)                                    | Push                               |
+| 6   | **Add remote; push `main`, branch, both tags**                           | ⛔ **Everything after this point** |
+| 7   | **Verify** — `git ls-remote`, then clone elsewhere and run the gates     | Sprint 13                          |
+| 8   | **Commits 10–11** — fix CI (`DATABASE_URL`, `DEMO_MODE`; prettier sweep) | Required checks                    |
+| 9   | Confirm CI green on the remote                                           | Required checks                    |
+| 10  | Enable branch protection and required checks                             | —                                  |
+| 11  | **Commits 12–13** — drop unused deps; pin Node; `.gitignore` additions   | —                                  |
+| 12  | Cut `sprint-13-persistence` from `main`                                  | Sprint 13                          |
 
-**Steps 1–7 are Gate G1** (`PRODUCTION_READINESS_CHECKLIST.md` items 1.1–1.5). Sprint 13 does not begin until step 7 passes — not as its first task, as its precondition. `PRODUCTION_MIGRATION_PLAN.md` §3 Sprint 13 states this: *"Migrating on 136 uncommitted files means a failed migration has nothing to roll back to."*
+**Steps 1–7 are Gate G1** (`PRODUCTION_READINESS_CHECKLIST.md` items 1.1–1.5). Sprint 13 does not begin until step 7 passes — not as its first task, as its precondition. `PRODUCTION_MIGRATION_PLAN.md` §3 Sprint 13 states this: _"Migrating on 136 uncommitted files means a failed migration has nothing to roll back to."_
 
 ---
 
-*Plan only. Nothing was staged, committed, tagged or pushed in Phase C.1. Awaiting architecture approval.*
+_Plan only. Nothing was staged, committed, tagged or pushed in Phase C.1. Awaiting architecture approval._

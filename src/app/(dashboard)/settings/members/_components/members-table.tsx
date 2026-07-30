@@ -26,7 +26,11 @@ import {
 } from "@/components/ui/table";
 import { MoreHorizontal, Shield, UserX, UserCheck } from "lucide-react";
 import { toast } from "sonner";
-import { updateUserRole, deactivateUser, reactivateUser } from "@/features/organizations/actions";
+import {
+  updateUserRole,
+  deactivateUser,
+  reactivateUser,
+} from "@/features/organizations/actions";
 
 // Manually specify Member type to avoid Drizzle 'never' inferences on relations
 export type Member = {
@@ -70,11 +74,19 @@ export function MembersTable({
   const [isPending, setIsPending] = useState<string | null>(null);
 
   const activeOwnersCount = members.filter(
-    (m) => m.role?.roleKey === "owner" && m.status === "active"
+    (m) => m.role?.roleKey === "owner" && m.status === "active",
   ).length;
 
-  async function handleRoleChange(userId: string, newRoleId: string, isCurrentlyOwner: boolean) {
-    if (isCurrentlyOwner && activeOwnersCount <= 1 && newRoleId !== "demo-role-owner") {
+  async function handleRoleChange(
+    userId: string,
+    newRoleId: string,
+    isCurrentlyOwner: boolean,
+  ) {
+    if (
+      isCurrentlyOwner &&
+      activeOwnersCount <= 1 &&
+      newRoleId !== "demo-role-owner"
+    ) {
       toast.error("Cannot change the role of the last active owner.");
       return;
     }
@@ -84,13 +96,19 @@ export function MembersTable({
       await updateUserRole({ userId, roleId: newRoleId });
       toast.success("User role updated successfully");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update role");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update role",
+      );
     } finally {
       setIsPending(null);
     }
   }
 
-  async function handleStatusChange(userId: string, currentStatus: string, isOwner: boolean) {
+  async function handleStatusChange(
+    userId: string,
+    currentStatus: string,
+    isOwner: boolean,
+  ) {
     if (userId === currentUserId) {
       toast.error("You cannot deactivate yourself.");
       return;
@@ -111,7 +129,9 @@ export function MembersTable({
         toast.success("User reactivated successfully");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update status");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update status",
+      );
     } finally {
       setIsPending(null);
     }
@@ -119,14 +139,14 @@ export function MembersTable({
 
   if (members.length === 0) {
     return (
-      <div className="text-center py-12 border rounded-md text-muted-foreground">
+      <div className="text-muted-foreground rounded-md border py-12 text-center">
         No members found in this organization.
       </div>
     );
   }
 
   return (
-    <div className="border rounded-md">
+    <div className="rounded-md border">
       <Table aria-label="Organization members">
         <TableHeader>
           <TableRow>
@@ -141,28 +161,41 @@ export function MembersTable({
           {members.map((member) => {
             const isSelf = member.userId === currentUserId;
             const isOwner = member.role?.roleKey === "owner";
-            const fullName = `${member.firstName || ""} ${member.lastName || ""}`.trim();
-            const initials = `${member.firstName?.[0] ?? ""}${member.lastName?.[0] ?? ""}`.trim() || member.email[0].toUpperCase();
+            const fullName =
+              `${member.firstName || ""} ${member.lastName || ""}`.trim();
+            const initials =
+              `${member.firstName?.[0] ?? ""}${member.lastName?.[0] ?? ""}`.trim() ||
+              member.email[0].toUpperCase();
 
             return (
               <TableRow key={member.userId}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={member.avatarUrl ?? ""} alt={fullName} />
+                      <AvatarImage
+                        src={member.avatarUrl ?? ""}
+                        alt={fullName}
+                      />
                       <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
                       <span className="font-medium">
-                        {fullName || member.email} {isSelf && <span className="text-muted-foreground font-normal">(You)</span>}
+                        {fullName || member.email}{" "}
+                        {isSelf && (
+                          <span className="text-muted-foreground font-normal">
+                            (You)
+                          </span>
+                        )}
                       </span>
-                      <span className="text-xs text-muted-foreground">{member.email}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {member.email}
+                      </span>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <Shield className="text-muted-foreground h-4 w-4" />
                     <span>{member.role?.roleName ?? "No Role"}</span>
                   </div>
                 </TableCell>
@@ -172,8 +205,8 @@ export function MembersTable({
                       member.status === "active"
                         ? "default"
                         : member.status === "invited"
-                        ? "secondary"
-                        : "outline"
+                          ? "secondary"
+                          : "outline"
                     }
                   >
                     {member.status}
@@ -188,7 +221,7 @@ export function MembersTable({
                   {(canUpdate || canUpdateRoles) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger
-                        className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                        className="hover:bg-accent hover:text-accent-foreground flex h-8 w-8 items-center justify-center rounded-md disabled:opacity-50"
                         disabled={isPending === member.userId}
                       >
                         <MoreHorizontal className="h-4 w-4" />
@@ -200,17 +233,26 @@ export function MembersTable({
 
                         {canUpdateRoles && (
                           <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>Change Role</DropdownMenuSubTrigger>
+                            <DropdownMenuSubTrigger>
+                              Change Role
+                            </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent className="w-[200px]">
-                              <DropdownMenuRadioGroup 
-                                value={member.roleId} 
-                                onValueChange={(val) => handleRoleChange(member.userId, val, isOwner)}
+                              <DropdownMenuRadioGroup
+                                value={member.roleId}
+                                onValueChange={(val) =>
+                                  handleRoleChange(member.userId, val, isOwner)
+                                }
                               >
                                 {systemRoles.map((r) => (
-                                  <DropdownMenuRadioItem key={r.roleKey} value={`demo-role-${r.roleKey}`}>
+                                  <DropdownMenuRadioItem
+                                    key={r.roleKey}
+                                    value={`demo-role-${r.roleKey}`}
+                                  >
                                     <div className="flex flex-col">
                                       <span>{r.roleName}</span>
-                                      <span className="text-xs text-muted-foreground">{r.description}</span>
+                                      <span className="text-muted-foreground text-xs">
+                                        {r.description}
+                                      </span>
                                     </div>
                                   </DropdownMenuRadioItem>
                                 ))}
@@ -225,8 +267,16 @@ export function MembersTable({
                             {member.status === "active" ? (
                               <DropdownMenuItem
                                 className="text-destructive focus:text-destructive cursor-pointer"
-                                onClick={() => handleStatusChange(member.userId, member.status, isOwner)}
-                                disabled={isSelf || (isOwner && activeOwnersCount <= 1)}
+                                onClick={() =>
+                                  handleStatusChange(
+                                    member.userId,
+                                    member.status,
+                                    isOwner,
+                                  )
+                                }
+                                disabled={
+                                  isSelf || (isOwner && activeOwnersCount <= 1)
+                                }
                               >
                                 <UserX className="mr-2 h-4 w-4" />
                                 Deactivate User
@@ -234,7 +284,13 @@ export function MembersTable({
                             ) : (
                               <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => handleStatusChange(member.userId, member.status, isOwner)}
+                                onClick={() =>
+                                  handleStatusChange(
+                                    member.userId,
+                                    member.status,
+                                    isOwner,
+                                  )
+                                }
                               >
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 Reactivate User

@@ -1,5 +1,16 @@
 import { relations } from "drizzle-orm";
-import { index, integer, jsonb, numeric, pgTable, text, timestamp, uuid, varchar, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  jsonb,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { auditFields } from "./_shared";
 import { clients } from "./clients";
 import { departments } from "./departments";
@@ -19,22 +30,41 @@ export const projects = pgTable(
     organizationId: uuid("organization_id")
       .notNull()
       .references(() => organizations.organizationId, { onDelete: "cascade" }),
-    clientId: uuid("client_id").references(() => clients.clientId, { onDelete: "set null" }),
+    clientId: uuid("client_id").references(() => clients.clientId, {
+      onDelete: "set null",
+    }),
     projectName: text("project_name").notNull(),
     projectCode: text("project_code").notNull(),
     description: text("description"),
-    projectManager: uuid("project_manager").references(() => users.userId, { onDelete: "set null" }),
-    creativeDirector: uuid("creative_director").references(() => users.userId, { onDelete: "set null" }),
-    departmentId: uuid("department_id").references(() => departments.departmentId, { onDelete: "set null" }),
+    projectManager: uuid("project_manager").references(() => users.userId, {
+      onDelete: "set null",
+    }),
+    creativeDirector: uuid("creative_director").references(() => users.userId, {
+      onDelete: "set null",
+    }),
+    departmentId: uuid("department_id").references(
+      () => departments.departmentId,
+      { onDelete: "set null" },
+    ),
     priority: projectPriorityEnum("priority").notNull().default("medium"),
     status: projectStatusEnum("status").notNull().default("planning"),
     startDate: timestamp("start_date", { withTimezone: true, mode: "date" }),
-    estimatedEndDate: timestamp("estimated_end_date", { withTimezone: true, mode: "date" }),
-    actualEndDate: timestamp("actual_end_date", { withTimezone: true, mode: "date" }),
+    estimatedEndDate: timestamp("estimated_end_date", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    actualEndDate: timestamp("actual_end_date", {
+      withTimezone: true,
+      mode: "date",
+    }),
     completionPercentage: integer("completion_percentage").notNull().default(0),
     budget: numeric("budget", { precision: 12, scale: 2 }),
-    healthStatus: projectHealthEnum("health_status").notNull().default("on_track"),
-    visibility: projectVisibilityEnum("visibility").notNull().default("internal"),
+    healthStatus: projectHealthEnum("health_status")
+      .notNull()
+      .default("on_track"),
+    visibility: projectVisibilityEnum("visibility")
+      .notNull()
+      .default("internal"),
     tags: jsonb("tags").$type<string[]>().default([]),
     ...auditFields,
   },
@@ -43,7 +73,7 @@ export const projects = pgTable(
     index("idx_projects_client_id").on(table.clientId),
     index("idx_projects_status").on(table.status),
     index("idx_projects_code").on(table.organizationId, table.projectCode),
-  ]
+  ],
 );
 
 export const projectMembers = pgTable(
@@ -57,14 +87,19 @@ export const projectMembers = pgTable(
       .notNull()
       .references(() => users.userId, { onDelete: "cascade" }),
     role: varchar("role", { length: 50 }).notNull().default("member"),
-    joinedAt: timestamp("joined_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
     status: varchar("status", { length: 50 }).notNull().default("active"),
   },
   (table) => [
     index("idx_project_members_project_id").on(table.projectId),
     index("idx_project_members_user_id").on(table.userId),
-    uniqueIndex("uq_project_members_proj_user").on(table.projectId, table.userId),
-  ]
+    uniqueIndex("uq_project_members_proj_user").on(
+      table.projectId,
+      table.userId,
+    ),
+  ],
 );
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({

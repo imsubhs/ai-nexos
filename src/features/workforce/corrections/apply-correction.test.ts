@@ -7,7 +7,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getDemoStore } from "@/lib/demo/store";
 import { ATTENDANCE_EVENTS } from "../attendance/events";
 import type { AmendDayData } from "../attendance/repository";
-import type { AttendanceDetail, TodayAttendanceView } from "../attendance/types";
+import type {
+  AttendanceDetail,
+  TodayAttendanceView,
+} from "../attendance/types";
 import { mockValidationResultRepository } from "../attendance/validation-result-mock-repository";
 import { ensureWorkforceHandlersRegistered } from "../events/handlers";
 import {

@@ -89,7 +89,10 @@ function getEngine(): EventEngine {
 export async function publishDomainEvent(
   input: PublishDomainEventInput,
 ): Promise<void> {
-  const payload: IEventPayload = { ...input.payload, eventName: input.eventName };
+  const payload: IEventPayload = {
+    ...input.payload,
+    eventName: input.eventName,
+  };
   const normalized: PublishedDomainEvent = {
     organizationId: input.organizationId,
     eventType: input.eventType,

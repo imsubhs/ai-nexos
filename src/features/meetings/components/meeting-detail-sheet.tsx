@@ -38,7 +38,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { getProjectTimeline, getTimelineMilestones } from "@/features/timelines/actions";
+import {
+  getProjectTimeline,
+  getTimelineMilestones,
+} from "@/features/timelines/actions";
 import type { meetings } from "@/db/schema/meetings";
 import {
   getMeetingActivity,
@@ -71,12 +74,19 @@ type DrawerData = {
   agenda: AgendaRow[];
   decisions: DecisionRow[];
   actionItems: ActionItemRow[];
-  activity: { activityId: string; eventType: string; createdAt: Date | string }[];
+  activity: {
+    activityId: string;
+    eventType: string;
+    createdAt: Date | string;
+  }[];
   timelineId: string | null;
   milestones: MilestoneOption[];
 };
 
-function DetailRow({ label, value }: Readonly<{ label: string; value: React.ReactNode }>) {
+function DetailRow({
+  label,
+  value,
+}: Readonly<{ label: string; value: React.ReactNode }>) {
   return (
     <div className="flex items-start justify-between gap-4 py-2">
       <span className="text-muted-foreground text-sm">{label}</span>
@@ -199,14 +209,19 @@ export function MeetingDetailSheet({
       await refresh();
       toast.success(`Status set to ${humanizeToken(status)}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not change the status");
+      toast.error(
+        error instanceof Error ? error.message : "Could not change the status",
+      );
     } finally {
       setStatusPending(false);
     }
   };
 
   return (
-    <Sheet open={meetingId !== null} onOpenChange={(open) => !open && onClose()}>
+    <Sheet
+      open={meetingId !== null}
+      onOpenChange={(open) => !open && onClose()}
+    >
       <SheetContent className="overflow-y-auto sm:max-w-lg">
         {loading ? (
           <div className="space-y-3 p-4">
@@ -218,7 +233,9 @@ export function MeetingDetailSheet({
           <>
             <SheetHeader>
               <SheetTitle>{meeting.title}</SheetTitle>
-              <SheetDescription>{humanizeToken(meeting.meetingType)}</SheetDescription>
+              <SheetDescription>
+                {humanizeToken(meeting.meetingType)}
+              </SheetDescription>
             </SheetHeader>
 
             <div className="space-y-4 px-4 pb-8">
@@ -234,7 +251,11 @@ export function MeetingDetailSheet({
               ) : (
                 <>
                   <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditing(true)}
+                    >
                       Edit
                     </Button>
                     <Button
@@ -275,8 +296,8 @@ export function MeetingDetailSheet({
                     </select>
                     {allowedStatuses.length === 0 && (
                       <p className="text-muted-foreground text-xs">
-                        {humanizeToken(meeting.status)} is a terminal state — no further
-                        transitions are available.
+                        {humanizeToken(meeting.status)} is a terminal state — no
+                        further transitions are available.
                       </p>
                     )}
                   </div>
@@ -284,16 +305,25 @@ export function MeetingDetailSheet({
                   <Separator />
 
                   <div className="space-y-1">
-                    <DetailRow label="Status" value={<StatusBadge status={meeting.status} />} />
+                    <DetailRow
+                      label="Status"
+                      value={<StatusBadge status={meeting.status} />}
+                    />
                     <DetailRow
                       label="Starts"
                       value={
-                        meeting.startTime ? new Date(meeting.startTime).toLocaleString() : null
+                        meeting.startTime
+                          ? new Date(meeting.startTime).toLocaleString()
+                          : null
                       }
                     />
                     <DetailRow
                       label="Ends"
-                      value={meeting.endTime ? new Date(meeting.endTime).toLocaleString() : null}
+                      value={
+                        meeting.endTime
+                          ? new Date(meeting.endTime).toLocaleString()
+                          : null
+                      }
                     />
                     <DetailRow label="Location" value={meeting.location} />
                     <DetailRow label="Provider" value={meeting.provider} />
@@ -315,7 +345,9 @@ export function MeetingDetailSheet({
                   </div>
 
                   {meeting.description ? (
-                    <p className="text-muted-foreground text-sm">{meeting.description}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {meeting.description}
+                    </p>
                   ) : null}
 
                   <Separator />
@@ -348,7 +380,7 @@ export function MeetingDetailSheet({
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Notes</p>
                     {notesText(meeting.notes) ? (
-                      <p className="text-muted-foreground whitespace-pre-wrap text-sm">
+                      <p className="text-muted-foreground text-sm whitespace-pre-wrap">
                         {notesText(meeting.notes)}
                       </p>
                     ) : (
@@ -360,9 +392,13 @@ export function MeetingDetailSheet({
 
                   <Separator />
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">Activity ({data.activity.length})</p>
+                    <p className="text-sm font-medium">
+                      Activity ({data.activity.length})
+                    </p>
                     {data.activity.length === 0 ? (
-                      <p className="text-muted-foreground text-xs">No activity recorded.</p>
+                      <p className="text-muted-foreground text-xs">
+                        No activity recorded.
+                      </p>
                     ) : (
                       <ul className="space-y-1">
                         {data.activity.map((entry) => (
@@ -371,7 +407,9 @@ export function MeetingDetailSheet({
                             className="text-muted-foreground flex items-center justify-between gap-2 text-xs"
                           >
                             <span>{humanizeToken(entry.eventType)}</span>
-                            <span>{new Date(entry.createdAt).toLocaleString()}</span>
+                            <span>
+                              {new Date(entry.createdAt).toLocaleString()}
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -410,7 +448,10 @@ export function MeetingDetailSheet({
               pendingLabel="Cancelling…"
               variant="destructive"
               onConfirm={async () => {
-                await cancelMeeting(meeting.meetingId, cancelReason.trim() || undefined);
+                await cancelMeeting(
+                  meeting.meetingId,
+                  cancelReason.trim() || undefined,
+                );
                 setCancelReason("");
                 setDialog(null);
                 await refresh();
@@ -428,7 +469,9 @@ export function MeetingDetailSheet({
             </ConfirmDialog>
           </>
         ) : (
-          <div className="text-muted-foreground p-4 text-sm">Meeting not found.</div>
+          <div className="text-muted-foreground p-4 text-sm">
+            Meeting not found.
+          </div>
         )}
       </SheetContent>
     </Sheet>

@@ -11,11 +11,18 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Files as FilesIcon, FolderOpen, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/shared/data-table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getProjectFolders } from "../actions";
-import { FilePreviewSheet, type FileRow, type FolderOption } from "./file-preview-sheet";
+import {
+  FilePreviewSheet,
+  type FileRow,
+  type FolderOption,
+} from "./file-preview-sheet";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -70,7 +77,10 @@ export function FilesDirectory({
         if (!cancelled) {
           setFolderSet({
             projectId,
-            folders: rows.map((row) => ({ folderId: row.folderId, name: row.name })),
+            folders: rows.map((row) => ({
+              folderId: row.folderId,
+              name: row.name,
+            })),
           });
         }
       } catch {
@@ -118,7 +128,9 @@ export function FilesDirectory({
     {
       key: "fileType",
       header: "Type",
-      cell: (row) => <span className="text-sm text-muted-foreground">{row.fileType}</span>,
+      cell: (row) => (
+        <span className="text-muted-foreground text-sm">{row.fileType}</span>
+      ),
     },
     {
       key: "size",
@@ -141,7 +153,7 @@ export function FilesDirectory({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
@@ -153,13 +165,19 @@ export function FilesDirectory({
 
         {projects.length > 0 && (
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <span className="text-muted-foreground text-sm">Browse &amp; upload:</span>
+            <span className="text-muted-foreground text-sm">
+              Browse &amp; upload:
+            </span>
             {projects.map((project) => (
               <Button
                 key={project.projectId}
                 variant="outline"
                 size="sm"
-                render={<Link href={`/files?projectId=${project.projectId}&folderId=root`} />}
+                render={
+                  <Link
+                    href={`/files?projectId=${project.projectId}&folderId=root`}
+                  />
+                }
               >
                 <FolderOpen className="mr-2 h-4 w-4" />
                 {project.projectName}

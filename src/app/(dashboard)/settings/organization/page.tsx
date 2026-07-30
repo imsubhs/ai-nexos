@@ -10,7 +10,7 @@ export const metadata = {
 
 export default async function OrganizationSettingsPage() {
   const user = await requireCurrentUser();
-  
+
   // They must be able to at least read the organization
   if (!hasPermission(user.permissions, "organization", "read")) {
     redirect("/settings");
@@ -22,16 +22,15 @@ export default async function OrganizationSettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Organization Profile</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Organization Profile
+        </h1>
         <p className="text-muted-foreground text-sm">
           Manage your organization&apos;s general settings and brand identity.
         </p>
       </div>
 
-      <OrganizationForm 
-        organization={organization} 
-        canUpdate={canUpdate} 
-      />
+      <OrganizationForm organization={organization} canUpdate={canUpdate} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 /**
  * Module 07: File & Asset Management - Asynchronous Processing Interfaces
- * 
+ *
  * These interfaces define the contract for background workers in the pipeline.
  * Implementations will be executed by queue consumers or serverless webhooks
  * moving files through their lifecycle:
@@ -20,7 +20,10 @@ export interface MetadataExtractor {
   /**
    * Extracts EXIF, XMP, IPTC, or document properties.
    */
-  extract(storagePath: string, mimeType: string): Promise<Record<string, unknown>>;
+  extract(
+    storagePath: string,
+    mimeType: string,
+  ): Promise<Record<string, unknown>>;
 }
 
 export interface ThumbnailGenerator {
@@ -28,7 +31,10 @@ export interface ThumbnailGenerator {
    * Generates a preview image or video sprite.
    * Returns a base64 encoded string or a new storage path.
    */
-  generate(storagePath: string, mimeType: string): Promise<{
+  generate(
+    storagePath: string,
+    mimeType: string,
+  ): Promise<{
     thumbnailUrl: string;
     width: number;
     height: number;
@@ -46,7 +52,10 @@ export interface AITagger {
   /**
    * Generates auto-tags, captions, or embeddings for the file.
    */
-  generateMetadata(storagePath: string, mimeType: string): Promise<{
+  generateMetadata(
+    storagePath: string,
+    mimeType: string,
+  ): Promise<{
     tags: string[];
     caption?: string;
     aiMetadata?: Record<string, unknown>;

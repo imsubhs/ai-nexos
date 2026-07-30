@@ -8,7 +8,11 @@ const cfg = DEFAULT_ENGINE_CONFIG;
 
 describe("buildSession", () => {
   it("builds a single closed session", () => {
-    const s = buildSession([{ clockIn: at(0), clockOut: at(540) }], at(600), cfg);
+    const s = buildSession(
+      [{ clockIn: at(0), clockOut: at(540) }],
+      at(600),
+      cfg,
+    );
     expect(s.sessionMs).toBe(at(540));
     expect(s.isOngoing).toBe(false);
     expect(s.startedAt).toBe(0);
@@ -23,16 +27,26 @@ describe("buildSession", () => {
   });
 
   it("drops a segment whose clock-out precedes clock-in and flags it", () => {
-    const s = buildSession([{ clockIn: at(100), clockOut: at(40) }], at(100), cfg);
-    expect(s.sessionMs).toBe(0);
-    expect(s.findings.some((f) => f.code === "negative-session" && f.severity === "violation")).toBe(
-      true,
+    const s = buildSession(
+      [{ clockIn: at(100), clockOut: at(40) }],
+      at(100),
+      cfg,
     );
+    expect(s.sessionMs).toBe(0);
+    expect(
+      s.findings.some(
+        (f) => f.code === "negative-session" && f.severity === "violation",
+      ),
+    ).toBe(true);
   });
 
   it("handles a cross-midnight session with epoch bounds", () => {
     const dayMs = 24 * 60 * MIN;
-    const s = buildSession([{ clockIn: dayMs - at(60), clockOut: dayMs + at(120) }], dayMs + at(200), cfg);
+    const s = buildSession(
+      [{ clockIn: dayMs - at(60), clockOut: dayMs + at(120) }],
+      dayMs + at(200),
+      cfg,
+    );
     expect(s.sessionMs).toBe(at(180));
   });
 

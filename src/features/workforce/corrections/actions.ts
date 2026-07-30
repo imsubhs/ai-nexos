@@ -10,14 +10,16 @@ import * as mock from "./mock-actions";
 export async function submitCorrectionAction(
   ...args: Parameters<typeof real.submitCorrectionAction>
 ): Promise<Awaited<ReturnType<typeof real.submitCorrectionAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.submitCorrectionAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.submitCorrectionAction(...args);
   return real.submitCorrectionAction(...args);
 }
 
 export async function cancelCorrectionAction(
   ...args: Parameters<typeof real.cancelCorrectionAction>
 ): Promise<Awaited<ReturnType<typeof real.cancelCorrectionAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.cancelCorrectionAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.cancelCorrectionAction(...args);
   return real.cancelCorrectionAction(...args);
 }
 
@@ -33,21 +35,24 @@ export async function markCorrectionUnderReviewAction(
 export async function reviewCorrectionAction(
   ...args: Parameters<typeof real.reviewCorrectionAction>
 ): Promise<Awaited<ReturnType<typeof real.reviewCorrectionAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.reviewCorrectionAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.reviewCorrectionAction(...args);
   return real.reviewCorrectionAction(...args);
 }
 
 export async function listMyCorrectionsAction(
   ...args: Parameters<typeof real.listMyCorrectionsAction>
 ): Promise<Awaited<ReturnType<typeof real.listMyCorrectionsAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.listMyCorrectionsAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.listMyCorrectionsAction(...args);
   return real.listMyCorrectionsAction(...args);
 }
 
 export async function getCorrectionAction(
   ...args: Parameters<typeof real.getCorrectionAction>
 ): Promise<Awaited<ReturnType<typeof real.getCorrectionAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.getCorrectionAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.getCorrectionAction(...args);
   return real.getCorrectionAction(...args);
 }
 

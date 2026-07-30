@@ -10,11 +10,15 @@ describe("getTimelines (mock)", () => {
   it("returns the seeded project timeline with its ordered phases", async () => {
     const result = await getTimelines();
     expect(result.length).toBeGreaterThanOrEqual(1);
-    const seeded: any = result.find((t: any) => t.timelineId === "00000000-0000-4000-8000-000000000301");
+    const seeded: any = result.find(
+      (t: any) => t.timelineId === "00000000-0000-4000-8000-000000000301",
+    );
     expect(seeded).toBeDefined();
     expect(Array.isArray(seeded.phases)).toBe(true);
     for (let i = 1; i < seeded.phases.length; i++) {
-      expect(seeded.phases[i - 1].orderIndex).toBeLessThanOrEqual(seeded.phases[i].orderIndex);
+      expect(seeded.phases[i - 1].orderIndex).toBeLessThanOrEqual(
+        seeded.phases[i].orderIndex,
+      );
     }
   });
 

@@ -38,7 +38,11 @@ export default async function MeetingsPage() {
 
   // Attendee picker targets (Sprint 12B). A caller without people-read gets an
   // empty list and can still invite external attendees by email.
-  let members: { userId: string; firstName: string; lastName: string | null }[] = [];
+  let members: {
+    userId: string;
+    firstName: string;
+    lastName: string | null;
+  }[] = [];
   try {
     const employees = await listEmployeesAction({ page: 1, pageSize: 100 });
     members = (employees?.rows ?? []).map((row) => ({
@@ -54,7 +58,9 @@ export default async function MeetingsPage() {
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Meetings</h1>
-        <p className="text-sm text-muted-foreground">Every meeting across all projects.</p>
+        <p className="text-muted-foreground text-sm">
+          Every meeting across all projects.
+        </p>
       </div>
       <MeetingsDirectory rows={rows} projects={projects} members={members} />
     </div>

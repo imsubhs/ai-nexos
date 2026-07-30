@@ -18,15 +18,15 @@ export default async function SettingsLayout({
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto w-full">
-      <aside className="w-full md:w-64 shrink-0">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 md:flex-row">
+      <aside className="w-full shrink-0 md:w-64">
         {/* Not a heading: each settings page supplies the page <h1>, and a
             heading here would precede it and break the heading outline. */}
-        <p className="text-3xl font-bold tracking-tight mb-6">Settings</p>
+        <p className="mb-6 text-3xl font-bold tracking-tight">Settings</p>
         <SettingsNav />
       </aside>
       {/* <div>, not <main> — AppShell already provides the page's <main>. */}
-      <div className="flex-1 min-w-0">{children}</div>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }

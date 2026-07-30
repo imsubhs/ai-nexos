@@ -6,12 +6,14 @@ import { TimelineSkeleton } from "@/features/timelines/components/timeline-skele
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-export default async function ProjectTimelinePage(props: { params: Promise<{ projectId: string }> }) {
+export default async function ProjectTimelinePage(props: {
+  params: Promise<{ projectId: string }>;
+}) {
   const params = await props.params;
   const { projectId } = params;
 
   await requireCurrentUser();
-  
+
   const project = await getProjectById(projectId);
   if (!project) notFound();
 

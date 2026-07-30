@@ -25,10 +25,7 @@ import {
 } from "./apply-correction";
 import { CORRECTION_EVENTS } from "./events";
 import { notifyCorrectionDecision, notifyCorrectionSubmitted } from "./notify";
-import {
-  CorrectionError,
-  type CorrectionRepository,
-} from "./repository";
+import { CorrectionError, type CorrectionRepository } from "./repository";
 import { assertTransition } from "./state-machine";
 import {
   cancelCorrectionSchema,
@@ -130,7 +127,9 @@ export function buildCorrectionActions(
           `Corrections must be requested within ${policy.correctionWindowDays} days.`,
         );
       }
-      if (await repo.hasOpenForDate(user.organizationId, user.userId, data.date)) {
+      if (
+        await repo.hasOpenForDate(user.organizationId, user.userId, data.date)
+      ) {
         throw new CorrectionError(
           "correction/duplicate-open",
           "You already have an open correction request for this date.",
@@ -153,7 +152,11 @@ export function buildCorrectionActions(
         user.userId,
         detail.correctionId,
         CORRECTION_EVENTS.requested,
-        { userId: user.userId, date: data.date, correctionType: data.correctionType },
+        {
+          userId: user.userId,
+          date: data.date,
+          correctionType: data.correctionType,
+        },
       );
       notifyCorrectionSubmitted(
         user.organizationId,
@@ -174,7 +177,10 @@ export function buildCorrectionActions(
 
       const existing = await repo.findById(user.organizationId, correctionId);
       if (!existing) {
-        throw new CorrectionError("correction/not-found", "Correction not found.");
+        throw new CorrectionError(
+          "correction/not-found",
+          "Correction not found.",
+        );
       }
       if (existing.userId !== user.userId) {
         throw new CorrectionError(
@@ -184,7 +190,11 @@ export function buildCorrectionActions(
       }
       assertTransition(existing.status, "cancel");
 
-      const detail = await repo.cancel(user.organizationId, user.userId, correctionId);
+      const detail = await repo.cancel(
+        user.organizationId,
+        user.userId,
+        correctionId,
+      );
       await publishCorrectionEvent(
         user.organizationId,
         user.userId,
@@ -208,7 +218,10 @@ export function buildCorrectionActions(
 
       const existing = await repo.findById(user.organizationId, correctionId);
       if (!existing) {
-        throw new CorrectionError("correction/not-found", "Correction not found.");
+        throw new CorrectionError(
+          "correction/not-found",
+          "Correction not found.",
+        );
       }
       if (existing.userId === user.userId) {
         throw new CorrectionError(
@@ -244,9 +257,15 @@ export function buildCorrectionActions(
       requirePermission(user.permissions, "corrections", "review");
       const data = reviewCorrectionSchema.parse(input);
 
-      const existing = await repo.findById(user.organizationId, data.correctionId);
+      const existing = await repo.findById(
+        user.organizationId,
+        data.correctionId,
+      );
       if (!existing) {
-        throw new CorrectionError("correction/not-found", "Correction not found.");
+        throw new CorrectionError(
+          "correction/not-found",
+          "Correction not found.",
+        );
       }
       if (existing.userId === user.userId) {
         throw new CorrectionError(
@@ -256,12 +275,16 @@ export function buildCorrectionActions(
       }
       assertTransition(existing.status, "review");
 
-      let detail = await repo.applyDecision(user.organizationId, data.correctionId, {
-        decision: data.decision,
-        reviewNote: data.reviewNote,
-        reviewedBy: user.userId,
-        reviewedAt: nowIso(),
-      });
+      let detail = await repo.applyDecision(
+        user.organizationId,
+        data.correctionId,
+        {
+          decision: data.decision,
+          reviewNote: data.reviewNote,
+          reviewedBy: user.userId,
+          reviewedAt: nowIso(),
+        },
+      );
 
       // C-9 apply-on-approve (Sprint 4B): amend the AttendanceDay and recompute
       // its metrics through the frozen engine, then stamp appliedAt. Approval
@@ -319,7 +342,11 @@ export function buildCorrectionActions(
       const detail = await repo.findById(user.organizationId, correctionId);
       if (!detail) return null;
       const isOwner = detail.userId === user.userId;
-      const isReviewer = hasPermission(user.permissions, "corrections", "review");
+      const isReviewer = hasPermission(
+        user.permissions,
+        "corrections",
+        "review",
+      );
       if (!isOwner && !isReviewer) {
         throw new CorrectionError(
           "correction/forbidden",

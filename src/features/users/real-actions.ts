@@ -10,7 +10,7 @@ import { updateProfileSchema } from "./schemas";
 
 export async function getMyProfile() {
   const currentUser = await requireCurrentUser();
-  
+
   const [dbUser] = await db
     .select({
       userId: users.userId,
@@ -26,13 +26,16 @@ export async function getMyProfile() {
       departmentName: departments.departmentName,
     })
     .from(users)
-    .innerJoin(organizations, eq(users.organizationId, organizations.organizationId))
+    .innerJoin(
+      organizations,
+      eq(users.organizationId, organizations.organizationId),
+    )
     .innerJoin(roles, eq(users.roleId, roles.roleId))
     .leftJoin(departments, eq(users.departmentId, departments.departmentId))
     .where(eq(users.userId, currentUser.userId));
 
   if (!dbUser) throw new Error("Profile not found");
-  
+
   return {
     userId: dbUser.userId,
     email: dbUser.email,
@@ -48,7 +51,9 @@ export async function getMyProfile() {
   };
 }
 
-export async function updateMyProfile(data: z.infer<typeof updateProfileSchema>) {
+export async function updateMyProfile(
+  data: z.infer<typeof updateProfileSchema>,
+) {
   const user = await requireCurrentUser();
   const parsed = updateProfileSchema.parse(data);
 

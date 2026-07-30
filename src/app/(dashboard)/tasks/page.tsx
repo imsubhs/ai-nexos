@@ -26,7 +26,11 @@ const DEMO_TASK_SCOPE = {
 export default async function TasksPage() {
   // Assignment targets (Sprint 12B). A caller without people-read gets an empty
   // list and the assign control simply does not render.
-  let members: { userId: string; firstName: string; lastName: string | null }[] = [];
+  let members: {
+    userId: string;
+    firstName: string;
+    lastName: string | null;
+  }[] = [];
   try {
     const employees = await listEmployeesAction({ page: 1, pageSize: 100 });
     members = (employees?.rows ?? []).map((row) => ({
@@ -53,7 +57,9 @@ export default async function TasksPage() {
       </div>
 
       <div className="bg-card min-h-0 flex-1 overflow-hidden rounded-xl border">
-        <Suspense fallback={<div className="bg-muted/20 h-full w-full animate-pulse" />}>
+        <Suspense
+          fallback={<div className="bg-muted/20 h-full w-full animate-pulse" />}
+        >
           <TaskDashboard scope={DEMO_TASK_SCOPE} members={members} />
         </Suspense>
       </div>

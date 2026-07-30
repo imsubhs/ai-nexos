@@ -58,7 +58,7 @@ export function RolesReference({ roles }: { roles: RoleRow[] }) {
             </CardHeader>
             <CardContent className="space-y-4">
               {fullAccess ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   This role has unrestricted access to every module and action.
                 </p>
               ) : (

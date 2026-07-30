@@ -31,12 +31,7 @@ import { searchTasks } from "@/features/tasks/actions";
 import { listEmployeesAction } from "@/features/workforce/employees/actions";
 
 export type SearchGroupKey =
-  | "projects"
-  | "clients"
-  | "people"
-  | "deliverables"
-  | "files"
-  | "tasks";
+  "projects" | "clients" | "people" | "deliverables" | "files" | "tasks";
 
 export type SearchHit = {
   id: string;
@@ -66,20 +61,30 @@ export async function globalSearch(term: string): Promise<SearchGroup[]> {
   const query = term.trim();
   if (query.length < 2) return [];
 
-  const [projects, clients, people, deliverables, files, taskRows] = await Promise.all([
-    tolerate(getProjects(query, PER_GROUP, 0), [] as Awaited<ReturnType<typeof getProjects>>),
-    tolerate(getClients(query), [] as Awaited<ReturnType<typeof getClients>>),
-    tolerate(
-      listEmployeesAction({ search: query, page: 1, pageSize: 10 }),
-      null as Awaited<ReturnType<typeof listEmployeesAction>> | null,
-    ),
-    tolerate(
-      searchDeliverables(query, 0, PER_GROUP),
-      [] as Awaited<ReturnType<typeof searchDeliverables>>,
-    ),
-    tolerate(searchFiles(query, 0, PER_GROUP), [] as Awaited<ReturnType<typeof searchFiles>>),
-    tolerate(searchTasks(query, 0, PER_GROUP), [] as Awaited<ReturnType<typeof searchTasks>>),
-  ]);
+  const [projects, clients, people, deliverables, files, taskRows] =
+    await Promise.all([
+      tolerate(
+        getProjects(query, PER_GROUP, 0),
+        [] as Awaited<ReturnType<typeof getProjects>>,
+      ),
+      tolerate(getClients(query), [] as Awaited<ReturnType<typeof getClients>>),
+      tolerate(
+        listEmployeesAction({ search: query, page: 1, pageSize: 10 }),
+        null as Awaited<ReturnType<typeof listEmployeesAction>> | null,
+      ),
+      tolerate(
+        searchDeliverables(query, 0, PER_GROUP),
+        [] as Awaited<ReturnType<typeof searchDeliverables>>,
+      ),
+      tolerate(
+        searchFiles(query, 0, PER_GROUP),
+        [] as Awaited<ReturnType<typeof searchFiles>>,
+      ),
+      tolerate(
+        searchTasks(query, 0, PER_GROUP),
+        [] as Awaited<ReturnType<typeof searchTasks>>,
+      ),
+    ]);
 
   const groups: SearchGroup[] = [
     {

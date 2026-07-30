@@ -56,13 +56,15 @@ export async function getAttendanceTimelineAction(
 export async function listAttendanceAction(
   ...args: Parameters<typeof real.listAttendanceAction>
 ): Promise<Awaited<ReturnType<typeof real.listAttendanceAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.listAttendanceAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.listAttendanceAction(...args);
   return real.listAttendanceAction(...args);
 }
 
 export async function getAttendanceAction(
   ...args: Parameters<typeof real.getAttendanceAction>
 ): Promise<Awaited<ReturnType<typeof real.getAttendanceAction>>> {
-  if (process.env.DEMO_MODE === "true") return mock.getAttendanceAction(...args);
+  if (process.env.DEMO_MODE === "true")
+    return mock.getAttendanceAction(...args);
   return real.getAttendanceAction(...args);
 }

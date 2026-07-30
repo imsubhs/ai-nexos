@@ -45,8 +45,11 @@ export const notificationTemplates = pgTable(
     ...auditFields,
   },
   (table) => [
-    index("idx_notif_templates_org_event").on(table.organizationId, table.eventType),
-  ]
+    index("idx_notif_templates_org_event").on(
+      table.organizationId,
+      table.eventType,
+    ),
+  ],
 );
 
 export const notifications = pgTable(
@@ -71,7 +74,7 @@ export const notifications = pgTable(
     index("idx_notifications_user_status").on(table.userId, table.status),
     index("idx_notifications_event").on(table.eventId),
     index("idx_notifications_org").on(table.organizationId),
-  ]
+  ],
 );
 
 export const notificationPreferences = pgTable(
@@ -81,27 +84,33 @@ export const notificationPreferences = pgTable(
     organizationId: uuid("organization_id")
       .notNull()
       .references(() => organizations.organizationId, { onDelete: "restrict" }),
-    
+
     // Level determines if this applies to org defaults, a specific project, or a specific user
     level: notificationPreferenceLevelEnum("level").notNull(),
-    
-    userId: uuid("user_id").references(() => users.userId, { onDelete: "cascade" }),
-    projectId: uuid("project_id").references(() => projects.projectId, { onDelete: "cascade" }),
-    
+
+    userId: uuid("user_id").references(() => users.userId, {
+      onDelete: "cascade",
+    }),
+    projectId: uuid("project_id").references(() => projects.projectId, {
+      onDelete: "cascade",
+    }),
+
     eventTypePreferences: jsonb("event_type_preferences").notNull(),
-    
+
     quietHoursStart: time("quiet_hours_start"),
     quietHoursEnd: time("quiet_hours_end"),
     timezone: text("timezone").notNull().default("UTC"),
-    digestFrequency: notificationDigestFrequencyEnum("digest_frequency").notNull().default("instant"),
-    
+    digestFrequency: notificationDigestFrequencyEnum("digest_frequency")
+      .notNull()
+      .default("instant"),
+
     ...auditFields,
   },
   (table) => [
     index("idx_notif_prefs_user").on(table.userId),
     index("idx_notif_prefs_project").on(table.projectId),
     index("idx_notif_prefs_org_level").on(table.organizationId, table.level),
-  ]
+  ],
 );
 
 export const notificationChannels = pgTable(
@@ -117,8 +126,11 @@ export const notificationChannels = pgTable(
     ...auditFields,
   },
   (table) => [
-    index("idx_notif_channels_org_type").on(table.organizationId, table.channelType),
-  ]
+    index("idx_notif_channels_org_type").on(
+      table.organizationId,
+      table.channelType,
+    ),
+  ],
 );
 
 export const notificationDeliveries = pgTable(
@@ -130,15 +142,19 @@ export const notificationDeliveries = pgTable(
       .references(() => notifications.notificationId, { onDelete: "cascade" }),
     channelId: uuid("channel_id")
       .notNull()
-      .references(() => notificationChannels.channelId, { onDelete: "restrict" }),
-    status: notificationDeliveryStatusEnum("status").notNull().default("queued"),
+      .references(() => notificationChannels.channelId, {
+        onDelete: "restrict",
+      }),
+    status: notificationDeliveryStatusEnum("status")
+      .notNull()
+      .default("queued"),
     providerMessageId: text("provider_message_id"),
     ...auditFields,
   },
   (table) => [
     index("idx_notif_deliveries_notification").on(table.notificationId),
     index("idx_notif_deliveries_status").on(table.status),
-  ]
+  ],
 );
 
 export const notificationQueue = pgTable(
@@ -148,8 +164,12 @@ export const notificationQueue = pgTable(
     deliveryId: uuid("delivery_id")
       .notNull()
       .unique()
-      .references(() => notificationDeliveries.deliveryId, { onDelete: "cascade" }),
-    scheduledFor: timestamp("scheduled_for", { withTimezone: true }).notNull().defaultNow(),
+      .references(() => notificationDeliveries.deliveryId, {
+        onDelete: "cascade",
+      }),
+    scheduledFor: timestamp("scheduled_for", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     status: notificationQueueStatusEnum("status").notNull().default("pending"),
     attempts: integer("attempts").notNull().default(0),
     lockedAt: timestamp("locked_at", { withTimezone: true }),
@@ -158,7 +178,7 @@ export const notificationQueue = pgTable(
   },
   (table) => [
     index("idx_notif_queue_polling").on(table.status, table.scheduledFor),
-  ]
+  ],
 );
 
 export const notificationDigest = pgTable(
@@ -172,7 +192,9 @@ export const notificationDigest = pgTable(
       .notNull()
       .references(() => users.userId, { onDelete: "restrict" }),
     frequency: notificationDigestFrequencyEnum("frequency").notNull(),
-    status: notificationDigestStatusEnum("status").notNull().default("collecting"),
+    status: notificationDigestStatusEnum("status")
+      .notNull()
+      .default("collecting"),
     scheduledFor: timestamp("scheduled_for", { withTimezone: true }).notNull(),
     compiledPayload: jsonb("compiled_payload"),
     lockedAt: timestamp("locked_at", { withTimezone: true }),
@@ -182,7 +204,7 @@ export const notificationDigest = pgTable(
   (table) => [
     index("idx_notif_digest_polling").on(table.status, table.scheduledFor),
     index("idx_notif_digest_user").on(table.userId, table.status),
-  ]
+  ],
 );
 
 export const notificationLogs = pgTable(
@@ -191,15 +213,17 @@ export const notificationLogs = pgTable(
     logId: uuid("log_id").primaryKey().defaultRandom(),
     deliveryId: uuid("delivery_id")
       .notNull()
-      .references(() => notificationDeliveries.deliveryId, { onDelete: "cascade" }),
+      .references(() => notificationDeliveries.deliveryId, {
+        onDelete: "cascade",
+      }),
     action: text("action").notNull(), // e.g., 'dispatched_to_provider'
     logData: jsonb("log_data"),
     hmacSignature: text("hmac_signature"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
-    index("idx_notif_logs_delivery").on(table.deliveryId),
-  ]
+  (table) => [index("idx_notif_logs_delivery").on(table.deliveryId)],
 );
 
 export const notificationFailures = pgTable(
@@ -208,16 +232,16 @@ export const notificationFailures = pgTable(
     failureId: uuid("failure_id").primaryKey().defaultRandom(),
     deliveryId: uuid("delivery_id")
       .notNull()
-      .references(() => notificationDeliveries.deliveryId, { onDelete: "cascade" }),
+      .references(() => notificationDeliveries.deliveryId, {
+        onDelete: "cascade",
+      }),
     errorCode: text("error_code").notNull(),
     errorMessage: text("error_message"),
     retryCount: integer("retry_count").notNull().default(0),
     nextRetryAt: timestamp("next_retry_at", { withTimezone: true }),
     ...auditFields,
   },
-  (table) => [
-    index("idx_notif_failures_delivery").on(table.deliveryId),
-  ]
+  (table) => [index("idx_notif_failures_delivery").on(table.deliveryId)],
 );
 
 export const notificationWebhooks = pgTable(
@@ -233,9 +257,7 @@ export const notificationWebhooks = pgTable(
     isActive: boolean("is_active").notNull().default(true),
     ...auditFields,
   },
-  (table) => [
-    index("idx_notif_webhooks_org").on(table.organizationId),
-  ]
+  (table) => [index("idx_notif_webhooks_org").on(table.organizationId)],
 );
 
 export const notificationActivity = pgTable(
@@ -249,9 +271,11 @@ export const notificationActivity = pgTable(
       .notNull()
       .references(() => users.userId, { onDelete: "cascade" }),
     activityType: notificationActivityTypeEnum("activity_type").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     index("idx_notif_activity_notification").on(table.notificationId),
-  ]
+  ],
 );

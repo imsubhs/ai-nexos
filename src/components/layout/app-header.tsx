@@ -31,7 +31,10 @@ type HeaderUser = {
 /** Links the account-menu item to the sign-out form rendered outside the menu. */
 const SIGN_OUT_FORM_ID = "app-sign-out";
 
-export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser, isDemo?: boolean }>) {
+export function AppHeader({
+  user,
+  isDemo = false,
+}: Readonly<{ user: HeaderUser; isDemo?: boolean }>) {
   const { setTheme, resolvedTheme } = useTheme();
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
   const initials = fullName
@@ -47,7 +50,7 @@ export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser,
       <Separator orientation="vertical" className="h-5" />
 
       {isDemo && (
-        <div className="bg-primary/20 text-primary flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+        <div className="bg-primary/20 text-primary flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold tracking-wider uppercase">
           Demo Mode
         </div>
       )}
@@ -112,7 +115,11 @@ export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser,
               variant="destructive"
               nativeButton
               render={
-                <button type="submit" form={SIGN_OUT_FORM_ID} className="w-full" />
+                <button
+                  type="submit"
+                  form={SIGN_OUT_FORM_ID}
+                  className="w-full"
+                />
               }
             >
               <LogOut />

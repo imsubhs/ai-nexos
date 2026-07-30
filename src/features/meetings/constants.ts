@@ -45,7 +45,11 @@ export const MEETING_PROVIDERS = [
   "custom",
 ] as const;
 
-export const MEETING_ATTENDEE_ROLES = ["organizer", "participant", "optional"] as const;
+export const MEETING_ATTENDEE_ROLES = [
+  "organizer",
+  "participant",
+  "optional",
+] as const;
 
 export const MEETING_RSVP_STATUSES = [
   "pending",

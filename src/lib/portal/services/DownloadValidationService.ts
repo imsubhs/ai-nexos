@@ -9,57 +9,71 @@ export class DownloadValidationService {
    * Portal Session -> Permission -> Share Policy -> Signed URL
    */
   static async validateAndGetDownloadUrl(
-    sessionId: string, 
-    clientId: string, 
-    resourceId: string, 
-    _resourceType: 'deliverable' | 'share_session'
+    sessionId: string,
+    clientId: string,
+    resourceId: string,
+    _resourceType: "deliverable" | "share_session",
   ): Promise<string> {
-    
     // 1. Validate Portal Session
     const sessionValid = await this.validatePortalSession(sessionId, clientId);
     if (!sessionValid) throw new Error("Invalid or expired portal session.");
 
     // 2. Validate Permission
-    const hasPermission = await this.validatePermission(clientId, resourceId, _resourceType);
-    if (!hasPermission) throw new Error("Insufficient permissions to download this resource.");
+    const hasPermission = await this.validatePermission(
+      clientId,
+      resourceId,
+      _resourceType,
+    );
+    if (!hasPermission)
+      throw new Error("Insufficient permissions to download this resource.");
 
     // 3. Validate Share Policy
     const policyValid = await this.validateSharePolicy(resourceId);
-    if (!policyValid) throw new Error("Share policy restricts downloading this resource.");
+    if (!policyValid)
+      throw new Error("Share policy restricts downloading this resource.");
 
     // 4. Generate Signed URL
     const signedUrl = await this.generateSignedUrl(resourceId);
-    
+
     return signedUrl;
   }
 
-  private static async validatePortalSession(sessionId: string, clientId: string): Promise<boolean> {
+  private static async validatePortalSession(
+    sessionId: string,
+    clientId: string,
+  ): Promise<boolean> {
     const session = await db.query.clientPortalSessions.findFirst({
       where: and(
         eq(clientPortalSessions.sessionId, sessionId),
         eq(clientPortalSessions.clientId, clientId),
-        eq(clientPortalSessions.status, 'active'),
-        gt(clientPortalSessions.expiresAt, new Date())
-      )
+        eq(clientPortalSessions.status, "active"),
+        gt(clientPortalSessions.expiresAt, new Date()),
+      ),
     });
     return !!session;
   }
 
-  private static async validatePermission(clientId: string, resourceId: string, _resourceType: string): Promise<boolean> {
+  private static async validatePermission(
+    clientId: string,
+    resourceId: string,
+    _resourceType: string,
+  ): Promise<boolean> {
     const share = await db.query.shareSessions.findFirst({
-      where: eq(shareSessions.id, resourceId)
+      where: eq(shareSessions.id, resourceId),
     });
     return !!share;
   }
 
-  private static async validateSharePolicy(resourceId: string): Promise<boolean> {
+  private static async validateSharePolicy(
+    resourceId: string,
+  ): Promise<boolean> {
     const shareSession = await db.query.shareSessions.findFirst({
-      where: eq(shareSessions.id, resourceId)
+      where: eq(shareSessions.id, resourceId),
     });
     if (!shareSession || !shareSession.policyId) return true;
 
     const policy = await db.query.sharePolicies.findFirst({
-      where: eq(sharePolicies.id, shareSession.policyId)
+      where: eq(sharePolicies.id, shareSession.policyId),
     });
 
     if (policy && !policy.allowDownloads) return false;
@@ -72,4 +86,3 @@ export class DownloadValidationService {
     return `https://storage.ainexos.com/signed/${resourceId}?token=temp_token&expiresIn=${expiresIn}`;
   }
 }
-

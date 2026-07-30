@@ -22,10 +22,10 @@ export async function AppShell({
         return hasPermission(
           user.permissions,
           item.permission[0],
-          item.permission[1]
+          item.permission[1],
         );
       })
-      .map((item) => item.href)
+      .map((item) => item.href),
   );
 
   return (

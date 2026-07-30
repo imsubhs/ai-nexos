@@ -15,7 +15,7 @@ export interface GatewayRequest {
   conversationId?: string;
   capability: AICapability;
   messageContent: string;
-  contextReferences?: string[]; 
+  contextReferences?: string[];
 }
 
 export interface GatewayResponse {
@@ -27,56 +27,65 @@ export interface GatewayResponse {
 }
 
 export class AIExecutionGateway {
-  
   static async processRequest(req: GatewayRequest): Promise<GatewayResponse> {
     if (process.env.DEMO_MODE === "true") {
       return {
         messageId: `mock-msg-${Date.now()}`,
         conversationId: req.conversationId || `mock-conv-${Date.now()}`,
-        content: "This is a mocked response from the AI Execution Gateway in Demo Mode. Real AI APIs are currently bypassed.",
+        content:
+          "This is a mocked response from the AI Execution Gateway in Demo Mode. Real AI APIs are currently bypassed.",
         toolCallsMade: 0,
-        status: "completed"
+        status: "completed",
       };
     }
-    
+
     // 1. Resolve or Create Conversation
     let conversationId = req.conversationId;
     if (!conversationId) {
-      const [newConv] = await db.insert(aiConversations).values({
-        organizationId: req.organizationId,
-        sessionId: req.sessionId,
-        projectId: req.projectId,
-        title: "New AI Conversation",
-      }).returning({ id: aiConversations.id });
+      const [newConv] = await db
+        .insert(aiConversations)
+        .values({
+          organizationId: req.organizationId,
+          sessionId: req.sessionId,
+          projectId: req.projectId,
+          title: "New AI Conversation",
+        })
+        .returning({ id: aiConversations.id });
       conversationId = newConv.id;
     }
 
     // 2. Save User Message
-    const [userMessage] = await db.insert(aiMessages).values({
-      conversationId,
-      role: "user",
-      content: req.messageContent
-    }).returning({ id: aiMessages.id });
+    const [userMessage] = await db
+      .insert(aiMessages)
+      .values({
+        conversationId,
+        role: "user",
+        content: req.messageContent,
+      })
+      .returning({ id: aiMessages.id });
 
     // 3. Prompt Firewall
-    const isSafe = await AIGuardrails.validatePrompt(req.messageContent, req.organizationId);
+    const isSafe = await AIGuardrails.validatePrompt(
+      req.messageContent,
+      req.organizationId,
+    );
     if (!isSafe) {
       throw new Error("Request blocked by AI Prompt Firewall.");
     }
 
-    // 4. Context Budgeting & Builder 
+    // 4. Context Budgeting & Builder
     const context = await ContextBuilder.build({
       organizationId: req.organizationId,
       userId: req.userId,
       projectId: req.projectId,
       conversationId,
-      references: req.contextReferences || []
+      references: req.contextReferences || [],
     });
 
     // 5. AI Capability Profiles & Model Router
     const routedModel = await routeModel({
       capability: req.capability,
-      minContextWindow: context.totalTokens + 1000 
+      minContextWindow: context.totalTokens + 1000,
     });
 
     if (!routedModel) {
@@ -85,7 +94,11 @@ export class AIExecutionGateway {
 
     // 6. Execution via Provider Factory
     const startTime = Date.now();
-    let providerResponse = await executeProvider(routedModel, context, req.messageContent);
+    let providerResponse = await executeProvider(
+      routedModel,
+      context,
+      req.messageContent,
+    );
     let finalStatus: "completed" | "paused_for_approval" = "completed";
     let toolCallsProcessed = 0;
 
@@ -93,29 +106,33 @@ export class AIExecutionGateway {
 
     // 7. Process Tool Calls (if any)
     if (providerResponse.toolCalls && providerResponse.toolCalls.length > 0) {
-      const [assistantMessage] = await db.insert(aiMessages).values({
-        conversationId,
-        role: "assistant",
-        content: providerResponse.content, 
-        functionCall: providerResponse.toolCalls as unknown
-      }).returning({ id: aiMessages.id });
+      const [assistantMessage] = await db
+        .insert(aiMessages)
+        .values({
+          conversationId,
+          role: "assistant",
+          content: providerResponse.content,
+          functionCall: providerResponse.toolCalls as unknown,
+        })
+        .returning({ id: aiMessages.id });
       assistantMessageId = assistantMessage.id;
 
-      const { results, pendingHumanApproval } = await ToolExecutor.processToolCalls(
-        assistantMessage.id,
-        providerResponse.toolCalls, 
-        req.organizationId, 
-        req.userId
-      );
-      
+      const { results, pendingHumanApproval } =
+        await ToolExecutor.processToolCalls(
+          assistantMessage.id,
+          providerResponse.toolCalls,
+          req.organizationId,
+          req.userId,
+        );
+
       toolCallsProcessed = results.length;
 
       if (pendingHumanApproval) {
         finalStatus = "paused_for_approval";
       } else {
         context.appendToolResults(results);
-        providerResponse = await executeProvider(routedModel, context, null); 
-        
+        providerResponse = await executeProvider(routedModel, context, null);
+
         await db.insert(aiMessages).values({
           conversationId,
           role: "assistant",
@@ -123,18 +140,21 @@ export class AIExecutionGateway {
         });
       }
     } else {
-      const [assistantMessage] = await db.insert(aiMessages).values({
-        conversationId,
-        role: "assistant",
-        content: providerResponse.content,
-      }).returning({ id: aiMessages.id });
+      const [assistantMessage] = await db
+        .insert(aiMessages)
+        .values({
+          conversationId,
+          role: "assistant",
+          content: providerResponse.content,
+        })
+        .returning({ id: aiMessages.id });
       assistantMessageId = assistantMessage.id;
     }
 
     // 8. Dispatch Execution Logs & Token Usage asynchronously via Events (Scalability)
     const latencyMs = Date.now() - startTime;
-    
-    // In a real environment, we call EventEngine.emit() to let a background worker 
+
+    // In a real environment, we call EventEngine.emit() to let a background worker
     // insert into ai_token_usage and ai_execution_logs to avoid blocking the API response.
     this.dispatchAuditLogsAsync({
       organizationId: req.organizationId,
@@ -145,20 +165,24 @@ export class AIExecutionGateway {
       latencyMs,
       tokens: {
         promptTokens: context.totalTokens,
-        completionTokens: 250 // Estimated
-      }
+        completionTokens: 250, // Estimated
+      },
     });
 
     return {
-      messageId: userMessage.id, 
+      messageId: userMessage.id,
       conversationId,
       content: providerResponse.content,
       toolCallsMade: toolCallsProcessed,
-      status: finalStatus
+      status: finalStatus,
     };
   }
 
-  static async resumeExecution(_toolCallId: string, _approvalStatus: string, _approverId: string) {
+  static async resumeExecution(
+    _toolCallId: string,
+    _approvalStatus: string,
+    _approverId: string,
+  ) {
     // 1. Fetch persisted tool call and update status
     // 2. Fetch original context and conversation
     // 3. Inject approval status/result back into context
@@ -168,6 +192,9 @@ export class AIExecutionGateway {
 
   private static dispatchAuditLogsAsync(payload: unknown) {
     // Non-blocking fire-and-forget payload dispatch to Module 12
-    console.log("Async dispatching AI Execution logs to EventEngine...", payload);
+    console.log(
+      "Async dispatching AI Execution logs to EventEngine...",
+      payload,
+    );
   }
 }

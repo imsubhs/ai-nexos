@@ -26,7 +26,10 @@ function emptyMetrics(): AttendanceMetrics {
   };
 }
 
-function addMetrics(a: AttendanceMetrics, b: AttendanceMetrics): AttendanceMetrics {
+function addMetrics(
+  a: AttendanceMetrics,
+  b: AttendanceMetrics,
+): AttendanceMetrics {
   return {
     workingMinutes: a.workingMinutes + b.workingMinutes,
     breakMinutes: a.breakMinutes + b.breakMinutes,
@@ -61,12 +64,8 @@ export interface WorkforceDashboardMetrics {
   pendingReviewCount: number;
 }
 
-const PRESENT_STATUSES: ReadonlySet<AttendanceStatus> = new Set<AttendanceStatus>([
-  "PRESENT",
-  "LATE",
-  "WFH",
-  "HALF_DAY",
-]);
+const PRESENT_STATUSES: ReadonlySet<AttendanceStatus> =
+  new Set<AttendanceStatus>(["PRESENT", "LATE", "WFH", "HALF_DAY"]);
 
 /**
  * Project a day's directory rows into dashboard KPIs. `avgEffective` is taken
@@ -205,7 +204,9 @@ export function projectMonthlyReport(
       (a.departmentName ?? "~").localeCompare(b.departmentName ?? "~"),
     );
 
-  const daily = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  const daily = [...byDate.values()].sort((a, b) =>
+    a.date.localeCompare(b.date),
+  );
 
   return {
     from: range.from,

@@ -1,20 +1,20 @@
 import { z } from "zod";
-import { 
+import {
   createMeetingSchema,
   updateMeetingSchema,
   createDecisionSchema,
   createActionItemSchema,
-  createMeetingOutcomeSchema
+  createMeetingOutcomeSchema,
 } from "./schemas";
 import { InferSelectModel } from "drizzle-orm";
-import { 
-  meetings, 
-  meetingAttendees, 
+import {
+  meetings,
+  meetingAttendees,
   meetingOutcomes,
   meetingDecisions,
   meetingActionItems,
   meetingRecordings,
-  meetingTranscripts
+  meetingTranscripts,
 } from "@/db/schema/meetings";
 
 export type Meeting = InferSelectModel<typeof meetings>;
@@ -27,6 +27,8 @@ export type MeetingTranscript = InferSelectModel<typeof meetingTranscripts>;
 
 export type CreateMeetingInput = z.infer<typeof createMeetingSchema>;
 export type UpdateMeetingInput = z.infer<typeof updateMeetingSchema>;
-export type CreateMeetingOutcomeInput = z.infer<typeof createMeetingOutcomeSchema>;
+export type CreateMeetingOutcomeInput = z.infer<
+  typeof createMeetingOutcomeSchema
+>;
 export type CreateDecisionInput = z.infer<typeof createDecisionSchema>;
 export type CreateActionItemInput = z.infer<typeof createActionItemSchema>;

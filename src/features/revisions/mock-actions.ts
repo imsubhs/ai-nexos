@@ -1,11 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { createRevisionRequest as real_createRevisionRequest, createRevision as real_createRevision, updateRevisionStatus as real_updateRevisionStatus, assignRevision as real_assignRevision, mergeRevision as real_mergeRevision, rollbackRevision as real_rollbackRevision } from "./real-actions";
-import { getDemoStore, nextDemoId, DEMO_USER_ID, DEMO_ORG_ID } from "@/lib/demo/store";
+import type {
+  createRevisionRequest as real_createRevisionRequest,
+  createRevision as real_createRevision,
+  updateRevisionStatus as real_updateRevisionStatus,
+  assignRevision as real_assignRevision,
+  mergeRevision as real_mergeRevision,
+  rollbackRevision as real_rollbackRevision,
+} from "./real-actions";
+import {
+  getDemoStore,
+  nextDemoId,
+  DEMO_USER_ID,
+  DEMO_ORG_ID,
+} from "@/lib/demo/store";
 import {
   insertRevisionSchema,
   insertRevisionRequestSchema,
   updateRevisionStatusSchema,
-  assignRevisionSchema
+  assignRevisionSchema,
 } from "./schemas";
 import { validateRevisionTransition } from "./utils/state-machine";
 
@@ -30,7 +42,13 @@ function revisionCollections(store: any) {
   return store;
 }
 
-function logRevisionActivity(store: any, eventType: string, revisionId: string, projectId: string, metadata?: Record<string, unknown>) {
+function logRevisionActivity(
+  store: any,
+  eventType: string,
+  revisionId: string,
+  projectId: string,
+  metadata?: Record<string, unknown>,
+) {
   store.revisionActivity.push({
     activityId: nextDemoId(store),
     organizationId: DEMO_ORG_ID,
@@ -45,7 +63,7 @@ function logRevisionActivity(store: any, eventType: string, revisionId: string, 
 
 function findRevision(store: any, revisionId: string) {
   const revision = store.revisions.find(
-    (r: any) => r.revisionId === revisionId && r.organizationId === DEMO_ORG_ID
+    (r: any) => r.revisionId === revisionId && r.organizationId === DEMO_ORG_ID,
   );
   if (!revision) throw new Error("Revision not found or access denied.");
   return revision;
@@ -58,7 +76,9 @@ function nextVersionNumber(store: any, deliverableId: string): number {
   return versions.length > 0 ? Math.max(...versions) + 1 : 1;
 }
 
-export async function createRevisionRequest(...args: Parameters<typeof real_createRevisionRequest>): Promise<Awaited<ReturnType<typeof real_createRevisionRequest>>> {
+export async function createRevisionRequest(
+  ...args: Parameters<typeof real_createRevisionRequest>
+): Promise<Awaited<ReturnType<typeof real_createRevisionRequest>>> {
   const [input] = args;
   const store = revisionCollections(getDemoStore());
 
@@ -79,7 +99,9 @@ export async function createRevisionRequest(...args: Parameters<typeof real_crea
   return newRequest as any;
 }
 
-export async function createRevision(...args: Parameters<typeof real_createRevision>): Promise<Awaited<ReturnType<typeof real_createRevision>>> {
+export async function createRevision(
+  ...args: Parameters<typeof real_createRevision>
+): Promise<Awaited<ReturnType<typeof real_createRevision>>> {
   const [input] = args;
   const store = revisionCollections(getDemoStore());
 
@@ -98,12 +120,20 @@ export async function createRevision(...args: Parameters<typeof real_createRevis
   };
   store.revisions.push(newRevision);
 
-  logRevisionActivity(store, "REVISION_CREATED", newRevision.revisionId, newRevision.projectId, { versionNumber: nextVersion });
+  logRevisionActivity(
+    store,
+    "REVISION_CREATED",
+    newRevision.revisionId,
+    newRevision.projectId,
+    { versionNumber: nextVersion },
+  );
 
   return newRevision as any;
 }
 
-export async function updateRevisionStatus(...args: Parameters<typeof real_updateRevisionStatus>): Promise<Awaited<ReturnType<typeof real_updateRevisionStatus>>> {
+export async function updateRevisionStatus(
+  ...args: Parameters<typeof real_updateRevisionStatus>
+): Promise<Awaited<ReturnType<typeof real_updateRevisionStatus>>> {
   const [revisionId, input] = args;
   const store = revisionCollections(getDemoStore());
 
@@ -118,7 +148,8 @@ export async function updateRevisionStatus(...args: Parameters<typeof real_updat
   }
 
   const previousStatus = revision.status;
-  const isLockingState = data.status === "READY_FOR_APPROVAL" || data.status === "APPROVED";
+  const isLockingState =
+    data.status === "READY_FOR_APPROVAL" || data.status === "APPROVED";
 
   revision.status = data.status;
   revision.isLocked = isLockingState ? true : revision.isLocked;
@@ -136,12 +167,17 @@ export async function updateRevisionStatus(...args: Parameters<typeof real_updat
     createdAt: new Date(),
   });
 
-  logRevisionActivity(store, "STATUS_CHANGED", revisionId, revision.projectId, { from: previousStatus, to: data.status });
+  logRevisionActivity(store, "STATUS_CHANGED", revisionId, revision.projectId, {
+    from: previousStatus,
+    to: data.status,
+  });
 
   return revision as any;
 }
 
-export async function assignRevision(...args: Parameters<typeof real_assignRevision>): Promise<Awaited<ReturnType<typeof real_assignRevision>>> {
+export async function assignRevision(
+  ...args: Parameters<typeof real_assignRevision>
+): Promise<Awaited<ReturnType<typeof real_assignRevision>>> {
   const [revisionId, input] = args;
   const store = revisionCollections(getDemoStore());
 
@@ -159,7 +195,9 @@ export async function assignRevision(...args: Parameters<typeof real_assignRevis
   };
   store.revisionAssignments.push(newAssignment);
 
-  logRevisionActivity(store, "ASSIGNED", revisionId, revision.projectId, { assigneeId: data.userId });
+  logRevisionActivity(store, "ASSIGNED", revisionId, revision.projectId, {
+    assigneeId: data.userId,
+  });
 
   if (revision.status === "CREATED") {
     revision.status = "ASSIGNED";
@@ -168,7 +206,9 @@ export async function assignRevision(...args: Parameters<typeof real_assignRevis
   return newAssignment as any;
 }
 
-export async function mergeRevision(...args: Parameters<typeof real_mergeRevision>): Promise<Awaited<ReturnType<typeof real_mergeRevision>>> {
+export async function mergeRevision(
+  ...args: Parameters<typeof real_mergeRevision>
+): Promise<Awaited<ReturnType<typeof real_mergeRevision>>> {
   const [revisionId] = args;
   const store = revisionCollections(getDemoStore());
 
@@ -179,7 +219,8 @@ export async function mergeRevision(...args: Parameters<typeof real_mergeRevisio
   }
 
   const activeRevisions = store.revisions.filter(
-    (r: any) => r.deliverableId === revision.deliverableId && r.status === "MERGED"
+    (r: any) =>
+      r.deliverableId === revision.deliverableId && r.status === "MERGED",
   );
   for (const active of activeRevisions) {
     active.status = "ARCHIVED";
@@ -189,7 +230,9 @@ export async function mergeRevision(...args: Parameters<typeof real_mergeRevisio
   revision.updatedAt = new Date();
   revision.updatedBy = DEMO_USER_ID;
 
-  const deliverable = store.deliverables.find((d: any) => d.deliverableId === revision.deliverableId);
+  const deliverable = store.deliverables.find(
+    (d: any) => d.deliverableId === revision.deliverableId,
+  );
   if (deliverable) {
     deliverable.currentRevisionId = revisionId;
     deliverable.updatedAt = new Date();
@@ -201,7 +244,9 @@ export async function mergeRevision(...args: Parameters<typeof real_mergeRevisio
   return revision as any;
 }
 
-export async function rollbackRevision(...args: Parameters<typeof real_rollbackRevision>): Promise<Awaited<ReturnType<typeof real_rollbackRevision>>> {
+export async function rollbackRevision(
+  ...args: Parameters<typeof real_rollbackRevision>
+): Promise<Awaited<ReturnType<typeof real_rollbackRevision>>> {
   const [targetRevisionId] = args;
   const store = revisionCollections(getDemoStore());
 
@@ -225,7 +270,13 @@ export async function rollbackRevision(...args: Parameters<typeof real_rollbackR
   };
   store.revisions.push(rollbackRev);
 
-  logRevisionActivity(store, "ROLLBACK_INITIATED", rollbackRev.revisionId, target.projectId, { targetRevisionId });
+  logRevisionActivity(
+    store,
+    "ROLLBACK_INITIATED",
+    rollbackRev.revisionId,
+    target.projectId,
+    { targetRevisionId },
+  );
 
   return rollbackRev as any;
 }

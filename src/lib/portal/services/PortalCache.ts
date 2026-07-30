@@ -15,17 +15,21 @@ export class PortalCache {
     return this.strategy.get<T>(`portal:dashboard:${clientId}`);
   }
 
-  async setDashboardData<T>(clientId: string, data: T, ttlSeconds = 300): Promise<void> {
+  async setDashboardData<T>(
+    clientId: string,
+    data: T,
+    ttlSeconds = 300,
+  ): Promise<void> {
     await this.strategy.set(`portal:dashboard:${clientId}`, data, ttlSeconds);
   }
-  
+
   async invalidateDashboard(clientId: string): Promise<void> {
     await this.strategy.invalidate(`portal:dashboard:${clientId}`);
   }
 }
 
 export class InMemoryPortalCacheStrategy implements PortalCacheStrategy {
-  private cache = new Map<string, { value: unknown, expiresAt: number }>();
+  private cache = new Map<string, { value: unknown; expiresAt: number }>();
 
   async get<T>(key: string): Promise<T | null> {
     const item = this.cache.get(key);
@@ -40,7 +44,7 @@ export class InMemoryPortalCacheStrategy implements PortalCacheStrategy {
   async set<T>(key: string, value: T, ttlSeconds: number = 300): Promise<void> {
     this.cache.set(key, {
       value,
-      expiresAt: Date.now() + (ttlSeconds * 1000)
+      expiresAt: Date.now() + ttlSeconds * 1000,
     });
   }
 
@@ -51,10 +55,12 @@ export class InMemoryPortalCacheStrategy implements PortalCacheStrategy {
 
 export class RedisPortalCacheStrategy implements PortalCacheStrategy {
   // Usually implemented with ioredis or @upstash/redis
-  
+
   constructor() {
-    if (!process.env.REDIS_URL && process.env.NODE_ENV !== 'test') {
-      console.warn("Redis URL not provided. RedisPortalCacheStrategy is mock-only.");
+    if (!process.env.REDIS_URL && process.env.NODE_ENV !== "test") {
+      console.warn(
+        "Redis URL not provided. RedisPortalCacheStrategy is mock-only.",
+      );
     }
   }
 
@@ -64,7 +70,11 @@ export class RedisPortalCacheStrategy implements PortalCacheStrategy {
     return null;
   }
 
-  async set<T>(_key: string, _value: T, _ttlSeconds: number = 300): Promise<void> {
+  async set<T>(
+    _key: string,
+    _value: T,
+    _ttlSeconds: number = 300,
+  ): Promise<void> {
     // await redis.set(_key, JSON.stringify(_value), 'EX', _ttlSeconds);
   }
 

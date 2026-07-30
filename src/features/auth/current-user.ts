@@ -16,7 +16,7 @@ export const DEMO_ADMIN_USER: CurrentUser = {
   roleId: "demo-role-owner",
   roleKey: "owner",
   roleName: "Owner",
-  permissions: SYSTEM_ROLES.find(r => r.roleKey === "owner")!.permissions,
+  permissions: SYSTEM_ROLES.find((r) => r.roleKey === "owner")!.permissions,
   // Matches the seeded Leadership department (src/lib/demo/store.ts, WP-103).
   departmentId: "00000000-0000-4000-8000-000000000221",
   organizationName: "AI NEX OS Demo",
@@ -49,7 +49,9 @@ export type CurrentUser = {
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const cookieStore = await cookies();
-  const isDemo = process.env.DEMO_MODE === "true" && cookieStore.get("demo_session")?.value === "true";
+  const isDemo =
+    process.env.DEMO_MODE === "true" &&
+    cookieStore.get("demo_session")?.value === "true";
 
   if (isDemo) {
     return DEMO_ADMIN_USER;

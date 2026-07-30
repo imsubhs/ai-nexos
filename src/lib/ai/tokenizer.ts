@@ -22,15 +22,15 @@ export class Tokenizer {
     if (currentTokens <= maxTokens) return text;
 
     // Approximate the char limit, minus a safety buffer
-    const maxChars = Math.floor(maxTokens * 3.8); 
+    const maxChars = Math.floor(maxTokens * 3.8);
     let trimmed = text.substring(0, maxChars);
-    
+
     // Ensure we don't cut off mid-word
     const lastSpace = trimmed.lastIndexOf(" ");
     if (lastSpace > 0) {
       trimmed = trimmed.substring(0, lastSpace);
     }
-    
+
     return trimmed + "...\n[Content Trimmed to fit Context Window]";
   }
 }

@@ -78,7 +78,10 @@ export const realDepartmentReadRepository: DepartmentReadRepository = {
     ]);
     return {
       rows: rows.map((row) =>
-        toEntry({ ...row, memberCount: memberCounts.get(row.departmentId) ?? 0 }),
+        toEntry({
+          ...row,
+          memberCount: memberCounts.get(row.departmentId) ?? 0,
+        }),
       ),
       total,
     };
