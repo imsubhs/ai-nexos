@@ -3,9 +3,9 @@
 
 import { db } from "@/db";
 import crypto from "crypto";
-import { 
-  deliverables, 
-  deliverableRevisions, 
+import {
+  deliverables,
+  deliverableRevisions,
   deliverableReviewSessions,
   deliverableReviewThreads,
   deliverableReviewComments,
@@ -15,7 +15,7 @@ import {
 } from "@/db/schema/deliverables";
 import { CurrentUser, requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -292,4 +292,168 @@ export async function generateShareLink(
   // e.g. await jobQueue.enqueue("notification_delivery", { shareId: result.shareId, email: emailRecipient })
 
   return result;
+}
+
+/**
+ * PUBLIC READ LAYER (Sprint 11B)
+ */
+
+export type DeliverableListFilters = {
+  projectId?: string;
+  clientId?: string;
+  status?: string;
+};
+
+/**
+ * Global, cross-project list of deliverables for the enterprise workspace.
+ */
+export async function getDeliverables(
+  filters: DeliverableListFilters = {},
+  cursorOffset: number = 0,
+  limit: number = 50
+) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  return db.query.deliverables.findMany({
+    where: and(
+      eq(deliverables.organizationId, user.organizationId),
+      isNull(deliverables.deletedAt),
+      filters.projectId ? eq(deliverables.projectId, filters.projectId) : undefined,
+      filters.clientId ? eq(deliverables.clientId, filters.clientId) : undefined,
+      filters.status ? eq(deliverables.status, filters.status as (typeof deliverables.status.enumValues)[number]) : undefined
+    ),
+    offset: cursorOffset,
+    limit,
+    orderBy: [desc(deliverables.createdAt)],
+  });
+}
+
+export async function getDeliverableById(deliverableId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  const deliverable = await db.query.deliverables.findFirst({
+    where: and(
+      eq(deliverables.deliverableId, deliverableId),
+      eq(deliverables.organizationId, user.organizationId),
+      isNull(deliverables.deletedAt)
+    ),
+  });
+  if (!deliverable) return undefined;
+
+  const revisions = await db.query.deliverableRevisions.findMany({
+    where: eq(deliverableRevisions.deliverableId, deliverableId),
+    orderBy: [desc(deliverableRevisions.versionNumber)],
+  });
+
+  return { ...deliverable, revisions };
+}
+
+/**
+ * Sprint 12B — review sessions for one deliverable (technical-debt item 10).
+ *
+ * `approveRevision(deliverableId, sessionId, notes)` has always required a
+ * session id, but no read returned one. Approve was therefore reachable only
+ * inside the same drawer session that started the review: reload the page and
+ * the deliverable could be reviewed again but never approved. This closes that.
+ */
+export async function getReviewSessions(deliverableId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  return db.query.deliverableReviewSessions.findMany({
+    where: and(
+      eq(deliverableReviewSessions.deliverableId, deliverableId),
+      eq(deliverableReviewSessions.organizationId, user.organizationId)
+    ),
+    orderBy: [desc(deliverableReviewSessions.createdAt)],
+  });
+}
+
+/** Sprint 12B — approval history, joined to the session it was cast in. */
+export async function getDeliverableApprovals(deliverableId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  return db
+    .select({
+      approvalId: deliverableApprovals.approvalId,
+      sessionId: deliverableApprovals.sessionId,
+      approverId: deliverableApprovals.approverId,
+      status: deliverableApprovals.status,
+      notes: deliverableApprovals.notes,
+      createdAt: deliverableApprovals.createdAt,
+      reviewType: deliverableReviewSessions.reviewType,
+    })
+    .from(deliverableApprovals)
+    .innerJoin(
+      deliverableReviewSessions,
+      eq(deliverableApprovals.sessionId, deliverableReviewSessions.sessionId)
+    )
+    .where(
+      and(
+        eq(deliverableReviewSessions.deliverableId, deliverableId),
+        eq(deliverableApprovals.organizationId, user.organizationId)
+      )
+    )
+    .orderBy(desc(deliverableApprovals.createdAt));
+}
+
+/** Sprint 12B — share links issued for a deliverable. */
+export async function getDeliverableShareLinks(deliverableId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  return db.query.deliverableShareLinks.findMany({
+    where: and(
+      eq(deliverableShareLinks.deliverableId, deliverableId),
+      eq(deliverableShareLinks.organizationId, user.organizationId)
+    ),
+    orderBy: [desc(deliverableShareLinks.createdAt)],
+  });
+}
+
+/**
+ * Sprint 12B — the deliverable's own activity trail.
+ *
+ * `logDeliverableActivity` has written to this table since Sprint 11; nothing
+ * read it back, so create / review / approve / revision / share all happened
+ * with no visible history.
+ */
+export async function getDeliverableActivity(deliverableId: string, limit: number = 25) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  return db.query.deliverableActivity.findMany({
+    where: and(
+      eq(deliverableActivity.deliverableId, deliverableId),
+      eq(deliverableActivity.organizationId, user.organizationId)
+    ),
+    orderBy: [desc(deliverableActivity.createdAt)],
+    limit,
+  });
+}
+
+/**
+ * Title search across all deliverables in the organization (global fetcher).
+ */
+export async function searchDeliverables(
+  searchTerm: string,
+  cursorOffset: number = 0,
+  limit: number = 50
+) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  return db.query.deliverables.findMany({
+    where: and(
+      eq(deliverables.organizationId, user.organizationId),
+      isNull(deliverables.deletedAt),
+      ilike(deliverables.title, `%${searchTerm}%`)
+    ),
+    offset: cursorOffset,
+    limit,
+    orderBy: [desc(deliverables.createdAt)],
+  });
 }

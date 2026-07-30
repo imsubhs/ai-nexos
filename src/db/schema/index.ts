@@ -21,3 +21,4 @@ export * from "./client-portal";
 export * from "./ai-workspace";
 export * from "./automation";
 export * from "./ai-agents";
+export * from "./workforce";

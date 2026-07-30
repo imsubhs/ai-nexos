@@ -22,6 +22,7 @@ import type {
   createMilestone as real_createMilestone,
   addTimelineDependency as real_addTimelineDependency,
   recalculateTimelineProgress as real_recalculateTimelineProgress,
+  getTimelines as real_getTimelines,
 } from "./real-actions";
 
 function requireTimeline(timelineId: string) {
@@ -116,6 +117,22 @@ export async function getProjectTimeline(...args: Parameters<typeof real_getProj
       .sort((a, b) => b.versionNumber - a.versionNumber)
       .slice(0, 5),
   } as any;
+}
+
+export async function getTimelines(...args: Parameters<typeof real_getTimelines>): Promise<Awaited<ReturnType<typeof real_getTimelines>>> {
+  const [cursorOffset = 0, limit = 50] = args;
+  const store = getDemoStore();
+
+  return store.timelines
+    .slice()
+    .sort((a: any, b: any) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(cursorOffset, cursorOffset + limit)
+    .map((t: any) => ({
+      ...t,
+      phases: store.projectPhases
+        .filter((p: any) => p.timelineId === t.timelineId)
+        .sort((a: any, b: any) => a.orderIndex - b.orderIndex),
+    })) as any;
 }
 
 export async function getTimelineMilestones(...args: Parameters<typeof real_getTimelineMilestones>): Promise<Awaited<ReturnType<typeof real_getTimelineMilestones>>> {

@@ -12,43 +12,50 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireCurrentUser } from "@/features/auth/current-user";
+import { getActiveProjectsCount } from "@/features/projects/actions";
+import { getClientsCount } from "@/features/clients/actions";
+import { getMyOpenTasksCount } from "@/features/tasks/actions";
+import { getPendingApprovalsCount } from "@/features/approvals/actions";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-/**
- * Personal dashboard (PRD Module 02 — User Dashboard).
- * M1 ships the shell with zero-state metric cards; live metrics wire up as
- * each module lands (projects/tasks in M2, approvals in M3).
- */
-const METRICS = [
-  {
-    title: "Active Projects",
-    icon: FolderKanban,
-    value: 0,
-    hint: "Arrives with the Projects module (M2)",
-  },
-  {
-    title: "Clients",
-    icon: Building2,
-    value: 0,
-    hint: "Arrives with the Clients module (M2)",
-  },
-  {
-    title: "My Open Tasks",
-    icon: CheckSquare,
-    value: 0,
-    hint: "Arrives with the Tasks module (M2)",
-  },
-  {
-    title: "Pending Approvals",
-    icon: ClipboardCheck,
-    value: 0,
-    hint: "Arrives with Approvals (M3)",
-  },
-] as const;
-
 export default async function DashboardPage() {
   const user = await requireCurrentUser();
+
+  const [
+    activeProjects,
+    clientsCount,
+    myOpenTasks,
+    pendingApprovals
+  ] = await Promise.all([
+    getActiveProjectsCount(),
+    getClientsCount(),
+    getMyOpenTasksCount(),
+    getPendingApprovalsCount(),
+  ]);
+
+  const METRICS = [
+    {
+      title: "Active Projects",
+      icon: FolderKanban,
+      value: activeProjects,
+    },
+    {
+      title: "Clients",
+      icon: Building2,
+      value: clientsCount,
+    },
+    {
+      title: "My Open Tasks",
+      icon: CheckSquare,
+      value: myOpenTasks,
+    },
+    {
+      title: "Pending Approvals",
+      icon: ClipboardCheck,
+      value: pendingApprovals,
+    },
+  ] as const;
 
   return (
     <div className="flex flex-col gap-6">
@@ -72,24 +79,10 @@ export default async function DashboardPage() {
               <CardTitle className="text-3xl tabular-nums">
                 {metric.value}
               </CardTitle>
-              <p className="text-muted-foreground text-xs">{metric.hint}</p>
             </CardHeader>
           </Card>
         ))}
       </div>
-
-      <Card className="border-dashed">
-        <CardHeader className="items-center py-10 text-center">
-          <CardTitle className="text-base">
-            The platform foundation is live
-          </CardTitle>
-          <CardDescription className="max-w-md text-balance">
-            Authentication, organization, roles, and permissions are
-            operational. Client and project management arrive in Milestone 2 —
-            this dashboard will light up as each module ships.
-          </CardDescription>
-        </CardHeader>
-      </Card>
     </div>
   );
 }

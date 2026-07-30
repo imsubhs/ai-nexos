@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LogOut, Moon, Search, Sun, User } from "lucide-react";
+import { LogOut, Moon, Sun, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,18 +12,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { signOut } from "@/features/auth/actions";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
+import { GlobalSearch } from "@/features/search/components/global-search";
 
 type HeaderUser = {
+  userId: string;
+  organizationId: string;
   firstName: string;
   lastName: string | null;
   email: string;
   avatarUrl: string | null;
   roleName: string;
 };
+
+/** Links the account-menu item to the sign-out form rendered outside the menu. */
+const SIGN_OUT_FORM_ID = "app-sign-out";
 
 export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser, isDemo?: boolean }>) {
   const { setTheme, resolvedTheme } = useTheme();
@@ -46,16 +52,9 @@ export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser,
         </div>
       )}
 
-      {/* Global search (SDS §26) — command palette lands with universal search. */}
-      <div className="relative hidden max-w-md flex-1 md:block">
-        <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-        <Input
-          type="search"
-          placeholder="Search projects, clients, tasks…"
-          className="h-9 pl-8"
-          aria-label="Global search"
-        />
-      </div>
+      {/* P2-04: this was a decorative input. It now searches for real across
+          the five search-capable public reads — see features/search/actions.ts. */}
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-1.5">
         <Button
@@ -68,9 +67,13 @@ export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser,
           <Moon className="hidden size-4 dark:block" />
         </Button>
 
-        <Button variant="ghost" size="icon" aria-label="Notifications">
-          <Bell className="size-4" />
-        </Button>
+        {/* P2-05: the bell had an aria-label and no handler, no panel and no
+            unread count. It now reads and writes through the notifications
+            public gateway. */}
+        <NotificationBell
+          userId={user.userId}
+          organizationId={user.organizationId}
+        />
 
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -99,13 +102,27 @@ export function AppHeader({ user, isDemo = false }: Readonly<{ user: HeaderUser,
               Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onSelect={() => signOut()}>
+            {/* P1-01: `onSelect={() => signOut()}` discarded the promise, so
+                Next never applied the action's Set-Cookie or its redirect and
+                sign-out silently did nothing. The item is now a submit button
+                for the form below — the form is rendered outside the menu so
+                it survives the menu unmounting on click, and the flow works
+                without JavaScript (TD-14). */}
+            <DropdownMenuItem
+              variant="destructive"
+              nativeButton
+              render={
+                <button type="submit" form={SIGN_OUT_FORM_ID} className="w-full" />
+              }
+            >
               <LogOut />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <form id={SIGN_OUT_FORM_ID} action={signOut} className="hidden" />
     </header>
   );
 }

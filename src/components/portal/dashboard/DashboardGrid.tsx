@@ -1,10 +1,8 @@
 "use client";
 
-interface DashboardGridProps {
-  data: any; 
-}
+import type { PortalDashboardView } from "@/lib/portal/services/PortalServiceLayer";
 
-export function DashboardGrid({ data }: DashboardGridProps) {
+export function DashboardGrid({ data }: { data: PortalDashboardView }) {
   // V1 Constraints: Fixed Grid, supports visibility & ordering, NO drag and drop.
   
   return (

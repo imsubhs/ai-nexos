@@ -8,6 +8,29 @@ export const createFolderSchema = z.object({
   color: z.string().optional(),
 });
 
+/**
+ * Sprint 12B — rename / move / recolour a folder. `parentId: null` moves it
+ * back to the project root.
+ */
+export const updateFolderSchema = z.object({
+  folderId: z.string().uuid(),
+  name: z.string().min(1).max(255).optional(),
+  parentId: z.string().uuid().nullable().optional(),
+  color: z.string().optional(),
+});
+
+/**
+ * Sprint 12B — rename / move / describe a file. `folderId: null` moves it to
+ * the project root. Storage-side fields are absent by design: those belong to a
+ * version, not to the canonical file record.
+ */
+export const updateFileSchema = z.object({
+  fileId: z.string().uuid(),
+  title: z.string().min(1).max(500).optional(),
+  description: z.string().nullable().optional(),
+  folderId: z.string().uuid().nullable().optional(),
+});
+
 export const initializeUploadSchema = z.object({
   organizationId: z.string().uuid(),
   projectId: z.string().uuid(),

@@ -1,10 +1,8 @@
 "use client";
 
-interface UnifiedTimelineProps {
-  events: any[];
-}
+import type { PortalDashboardView } from "@/lib/portal/services/PortalServiceLayer";
 
-export function UnifiedTimeline({ events }: UnifiedTimelineProps) {
+export function UnifiedTimeline({ events }: { events: PortalDashboardView["unifiedTimeline"] }) {
   // Constraint #5: Unified Activity Timeline aggregating events from existing modules
   if (!events || events.length === 0) {
     return (

@@ -488,7 +488,49 @@ export const eventTypeEnum = pgEnum("event_type", [
   "comment",
   "mention",
   "client",
-  "system"
+  "system",
+  // Workforce bounded context (merge doc 14 §11.1; Sprint 3A / WP-109).
+  "attendance",
+  // Corrections aggregate (merge doc 14 §11.1; Sprint 3B / WP-120).
+  "correction"
+]);
+
+/**
+ * Correction request types (merge doc 14 §3). Canonical set from WorkTrack
+ * `types/index.ts`; the divergent form enum is normalized in the feature
+ * layer. Mirrored as TS in features/workforce/shared/enums.ts.
+ */
+export const correctionTypeEnum = pgEnum("correction_type", [
+  "LOGIN_TIME",
+  "LOGOUT_TIME",
+  "BOTH",
+  "STATUS_CHANGE",
+  "OTHER",
+]);
+
+/** Correction request lifecycle (merge doc 14 §3 / §8.2). */
+export const correctionStatusEnum = pgEnum("correction_status", [
+  "PENDING",
+  "UNDER_REVIEW",
+  "APPROVED",
+  "REJECTED",
+  "CANCELLED",
+]);
+
+/**
+ * Workforce attendance presence statuses (merge doc 14 §3).
+ * LEAVE and HOLIDAY are reserved for forward-compat (mapping W21) — no V1
+ * writer may set them. Mirrored as TS in features/workforce/shared/enums.ts.
+ */
+export const attendanceStatusEnum = pgEnum("attendance_status", [
+  "PRESENT",
+  "ABSENT",
+  "LATE",
+  "WFH",
+  "HALF_DAY",
+  "WORKING",
+  "LEAVE",
+  "HOLIDAY",
 ]);
 
 export const notificationPriorityEnum = pgEnum("notification_priority", [

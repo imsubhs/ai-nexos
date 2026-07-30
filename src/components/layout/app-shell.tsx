@@ -2,6 +2,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { requireCurrentUser } from "@/features/auth/current-user";
+import { hasPermission } from "@/features/permissions/engine";
+import { NAV_SECTIONS } from "@/config/navigation";
 
 /**
  * Authenticated application shell shared by every internal route group.
@@ -13,13 +15,32 @@ export async function AppShell({
 }: Readonly<{ children: React.ReactNode }>) {
   const user = await requireCurrentUser();
 
+  const permittedHrefs = NAV_SECTIONS.flatMap((section) =>
+    section.items
+      .filter((item) => {
+        if (!item.permission) return true;
+        return hasPermission(
+          user.permissions,
+          item.permission[0],
+          item.permission[1]
+        );
+      })
+      .map((item) => item.href)
+  );
+
   return (
     <SidebarProvider>
-      <AppSidebar organizationName={user.organizationName} />
+      <AppSidebar
+        organizationName={user.organizationName}
+        permittedHrefs={permittedHrefs}
+      />
       <SidebarInset>
         <AppHeader
           isDemo={process.env.DEMO_MODE === "true"}
           user={{
+            // Sprint 12A: the notification bell reads per-user, per-org.
+            userId: user.userId,
+            organizationId: user.organizationId,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
@@ -27,7 +48,12 @@ export async function AppShell({
             roleName: user.roleName,
           }}
         />
-        <main className="flex flex-1 flex-col gap-6 p-6">{children}</main>
+        {/* The page's single <main> landmark. `min-w-0` keeps wide content
+            (data tables) scrolling inside its own container rather than
+            widening the shell past the viewport. */}
+        <main className="flex min-w-0 flex-1 flex-col gap-6 p-6">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -10,8 +10,8 @@ export async function GET(request: Request) {
     // if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     
     // Mock authentication variables for architecture scaffolding
-    const organizationId = "mock-org-id";
-    const clientId = "mock-client-id";
+    const organizationId = process.env.DEMO_MODE === "true" ? "00000000-0000-4000-8000-00000000f001" : "mock-org-id";
+    const clientId = process.env.DEMO_MODE === "true" ? "00000000-0000-4000-8000-000000000101" : "mock-client-id";
 
     // 2. Fetch Dashboard data via Service Layer
     const dashboardData = await PortalServiceLayer.getDashboardView(organizationId, clientId);

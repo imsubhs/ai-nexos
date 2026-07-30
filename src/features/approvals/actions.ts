@@ -23,3 +23,8 @@ export async function resolveCondition(...args: Parameters<typeof real.resolveCo
   return (real as any).resolveCondition(...args);
 }
 
+export async function getPendingApprovalsCount(...args: Parameters<typeof real.getPendingApprovalsCount>): Promise<Awaited<ReturnType<typeof real.getPendingApprovalsCount>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getPendingApprovalsCount(...args);
+  return (real as any).getPendingApprovalsCount(...args);
+}
+

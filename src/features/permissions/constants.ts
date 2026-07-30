@@ -24,6 +24,10 @@ export const MODULES = [
   "share_links",
   "ai",
   "settings",
+  // Workforce bounded context (merge docs 14 §9 / 13 §2). SQL mirror
+  // (app.has_permission) is updated via the D-7 parity mechanism in Phase 7.
+  "attendance",
+  "corrections",
 ] as const;
 
 export const ACTIONS = [
@@ -40,6 +44,9 @@ export const ACTIONS = [
   "export",
   "restore",
   "archive",
+  // Workforce actions (merge doc 14 §9): clock in/out + breaks; team-scope reads.
+  "clock",
+  "view_team",
 ] as const;
 
 export type Module = (typeof MODULES)[number];
@@ -89,6 +96,24 @@ export const SYSTEM_ROLES: {
       share_links: ["*"],
       ai: ["*"],
       settings: ["read", "update"],
+      attendance: ["*"],
+      corrections: ["*"],
+    },
+  },
+  {
+    roleKey: "hr",
+    roleName: "HR",
+    description:
+      "People operations: employee directory, attendance oversight, correction reviews, workforce reporting.",
+    permissions: {
+      organization: ["read"],
+      departments: ["*"],
+      users: ["read"],
+      settings: ["read"],
+      notifications: ["read", "update"],
+      reports: ["read", "export"],
+      attendance: ["clock", "read", "view_team"],
+      corrections: ["create", "read", "review"],
     },
   },
   {
@@ -113,6 +138,8 @@ export const SYSTEM_ROLES: {
       analytics: ["read"],
       share_links: ["read", "create", "update"],
       ai: ["read", "create"],
+      attendance: ["clock", "read", "view_team"],
+      corrections: ["create", "read"],
     },
   },
   {
@@ -137,6 +164,8 @@ export const SYSTEM_ROLES: {
       analytics: ["read"],
       share_links: ["*"],
       ai: ["read", "create"],
+      attendance: ["clock", "read", "view_team"],
+      corrections: ["create", "read"],
     },
   },
   {
@@ -157,6 +186,8 @@ export const SYSTEM_ROLES: {
       meetings: ["read", "comment"],
       comments: ["*"],
       ai: ["read", "create"],
+      attendance: ["clock", "read"],
+      corrections: ["create", "read"],
     },
   },
   {
@@ -170,6 +201,8 @@ export const SYSTEM_ROLES: {
       projects: ["read"],
       reports: ["read", "create", "export"],
       analytics: ["read"],
+      attendance: ["clock", "read"],
+      corrections: ["create", "read"],
     },
   },
 ];

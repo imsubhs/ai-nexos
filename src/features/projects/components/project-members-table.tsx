@@ -11,8 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TrashIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { removeProjectMember } from "../actions";
 
 type Member = {
@@ -27,21 +29,17 @@ type Member = {
 };
 
 export function ProjectMembersTable({ members }: { members: Member[] }) {
-  const [isPending, setIsPending] = useState<string | null>(null);
+  const router = useRouter();
+  // Sprint 12A · Phase 6: removal used a native window.confirm() — the one
+  // place in the product that did — and never refreshed the table, so the
+  // removed row stayed on screen. It now uses the shared ConfirmDialog and
+  // re-reads the page on success.
+  const [pendingMember, setPendingMember] = useState<Member | null>(null);
 
-  async function handleRemove(memberId: string) {
-    if (!confirm("Are you sure you want to remove this member?")) return;
-    
-    setIsPending(memberId);
-    try {
-      await removeProjectMember(memberId);
-      toast.success("Member removed");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to remove member");
-    } finally {
-      setIsPending(null);
-    }
-  }
+  const memberName = (member: Member) =>
+    [member.user?.firstName, member.user?.lastName].filter(Boolean).join(" ") ||
+    member.user?.email ||
+    "this member";
 
   if (members.length === 0) {
     return (
@@ -53,7 +51,7 @@ export function ProjectMembersTable({ members }: { members: Member[] }) {
 
   return (
     <div className="border rounded-md">
-      <Table>
+      <Table aria-label="Project members">
         <TableHeader>
           <TableRow>
             <TableHead>User</TableHead>
@@ -76,12 +74,15 @@ export function ProjectMembersTable({ members }: { members: Member[] }) {
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                {/* P2-03: an icon-only DESTRUCTIVE control with no accessible
+                    name — a screen-reader user was offered an unlabelled button
+                    that deletes a team member. */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Remove ${memberName(member)} from this project`}
                   className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => handleRemove(member.memberId)}
-                  disabled={isPending === member.memberId}
+                  onClick={() => setPendingMember(member)}
                 >
                   <TrashIcon className="h-4 w-4" />
                 </Button>
@@ -90,6 +91,25 @@ export function ProjectMembersTable({ members }: { members: Member[] }) {
           ))}
         </TableBody>
       </Table>
+
+      <ConfirmDialog
+        open={pendingMember !== null}
+        onOpenChange={(open) => !open && setPendingMember(null)}
+        title="Remove project member"
+        description={
+          pendingMember
+            ? `${memberName(pendingMember)} will lose access to this project.`
+            : ""
+        }
+        confirmLabel="Remove member"
+        pendingLabel="Removing…"
+        variant="destructive"
+        onConfirm={async () => {
+          await removeProjectMember(pendingMember!.memberId);
+          toast.success("Member removed");
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

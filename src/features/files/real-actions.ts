@@ -7,15 +7,17 @@ import { projects } from "@/db/schema/projects";
 import { CurrentUser, requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission, Action as PermissionAction, PermissionDeniedError } from "@/features/permissions";
 import { storageService } from "@/lib/storage/SupabaseStorageProvider";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, ilike, isNull } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { 
-  createFolderSchema, 
-  initializeUploadSchema, 
-  finalizeUploadSchema, 
+import {
+  createFolderSchema,
+  initializeUploadSchema,
+  finalizeUploadSchema,
   linkFileSchema,
-  createShareLinkSchema
+  createShareLinkSchema,
+  updateFileSchema,
+  updateFolderSchema
 } from "./schemas";
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -144,6 +146,214 @@ export async function createFolder(data: z.infer<typeof createFolderSchema>) {
     
     await logFileActivity("Folder Created", null, validData.projectId, validData.organizationId, user, { folderId: folder.folderId, name: folder.name }, tx);
     return folder;
+  });
+}
+
+/**
+ * Sprint 12B — folder rename / move / recolour.
+ *
+ * Moving a folder re-runs the same depth check `createFolder` does, so a move
+ * cannot push a subtree past the ten-level limit. Re-parenting a folder into
+ * its own descendant is refused outright — the recursive depth query would not
+ * terminate on the resulting cycle.
+ */
+export async function updateFolder(data: z.infer<typeof updateFolderSchema>) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "files", "update");
+
+  const validData = updateFolderSchema.parse(data);
+
+  const folder = await db.query.fileFolders.findFirst({
+    where: and(
+      eq(fileFolders.folderId, validData.folderId),
+      eq(fileFolders.organizationId, user.organizationId)
+    ),
+  });
+  if (!folder) throw new Error("Folder not found.");
+
+  await validateProjectAccess(folder.projectId, user);
+
+  if (validData.parentId !== undefined && validData.parentId !== folder.parentId) {
+    if (validData.parentId === validData.folderId) {
+      throw new Error("A folder cannot be moved into itself.");
+    }
+    if (validData.parentId) {
+      const descendants = await db.execute(sql`
+        WITH RECURSIVE subtree AS (
+          SELECT folder_id FROM file_folders WHERE folder_id = ${validData.folderId}
+          UNION ALL
+          SELECT f.folder_id FROM file_folders f
+          INNER JOIN subtree s ON f.parent_id = s.folder_id
+        )
+        SELECT 1 FROM subtree WHERE folder_id = ${validData.parentId};
+      `);
+      if (descendants.length > 0) {
+        throw new Error("A folder cannot be moved into one of its own subfolders.");
+      }
+      await validateFolderDepth(folder.projectId, validData.parentId);
+    }
+  }
+
+  return await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(fileFolders)
+      .set({
+        ...(validData.name !== undefined ? { name: validData.name } : {}),
+        ...(validData.parentId !== undefined ? { parentId: validData.parentId } : {}),
+        ...(validData.color !== undefined ? { color: validData.color } : {}),
+        updatedAt: new Date(),
+        updatedBy: user.userId,
+      })
+      .where(eq(fileFolders.folderId, validData.folderId))
+      .returning();
+
+    await logFileActivity(
+      validData.name !== undefined ? "Folder Renamed" : "Folder Moved",
+      null,
+      folder.projectId,
+      folder.organizationId,
+      user,
+      { folderId: validData.folderId, name: updated.name },
+      tx
+    );
+
+    return updated;
+  });
+}
+
+/**
+ * Sprint 12B — folder delete. Refused while the folder still holds anything:
+ * `files.folderId` is ON DELETE SET NULL, so a cascade here would silently
+ * scatter live assets into the project root.
+ */
+export async function deleteFolder(folderId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "files", "delete");
+
+  const folder = await db.query.fileFolders.findFirst({
+    where: and(
+      eq(fileFolders.folderId, folderId),
+      eq(fileFolders.organizationId, user.organizationId)
+    ),
+  });
+  if (!folder) throw new Error("Folder not found.");
+
+  await validateProjectAccess(folder.projectId, user);
+
+  const childFolders = await db.query.fileFolders.findMany({
+    where: eq(fileFolders.parentId, folderId),
+    limit: 1,
+  });
+  if (childFolders.length > 0) {
+    throw new Error("This folder still contains subfolders. Empty it first.");
+  }
+
+  const childFiles = await db.query.files.findMany({
+    where: and(eq(files.folderId, folderId), isNull(files.deletedAt)),
+    limit: 1,
+  });
+  if (childFiles.length > 0) {
+    throw new Error("This folder still contains files. Move or delete them first.");
+  }
+
+  return await db.transaction(async (tx) => {
+    await tx.delete(fileFolders).where(eq(fileFolders.folderId, folderId));
+    await logFileActivity(
+      "Folder Deleted",
+      null,
+      folder.projectId,
+      folder.organizationId,
+      user,
+      { folderId, name: folder.name },
+      tx
+    );
+    return { success: true };
+  });
+}
+
+/**
+ * Sprint 12B — file rename / move / description edit.
+ */
+export async function updateFile(data: z.infer<typeof updateFileSchema>) {
+  const user = await requireCurrentUser();
+  const validData = updateFileSchema.parse(data);
+
+  return await db.transaction(async (tx) => {
+    const file = await validateFileAccess(validData.fileId, "update", user, tx);
+
+    // A file may only move within its own project — folders are project-scoped.
+    if (validData.folderId) {
+      const target = await tx.query.fileFolders.findFirst({
+        where: and(
+          eq(fileFolders.folderId, validData.folderId),
+          eq(fileFolders.projectId, file.projectId)
+        ),
+      });
+      if (!target) throw new Error("Target folder not found in this project.");
+    }
+
+    const [updated] = await tx
+      .update(files)
+      .set({
+        ...(validData.title !== undefined ? { title: validData.title } : {}),
+        ...(validData.description !== undefined ? { description: validData.description } : {}),
+        ...(validData.folderId !== undefined ? { folderId: validData.folderId } : {}),
+        updatedAt: new Date(),
+        updatedBy: user.userId,
+      })
+      .where(eq(files.fileId, validData.fileId))
+      .returning();
+
+    const renamed = validData.title !== undefined && validData.title !== file.title;
+    const moved = validData.folderId !== undefined && validData.folderId !== file.folderId;
+
+    await logFileActivity(
+      renamed ? "File Renamed" : moved ? "File Moved" : "File Updated",
+      validData.fileId,
+      file.projectId,
+      file.organizationId,
+      user,
+      { from: { title: file.title, folderId: file.folderId }, to: { title: updated.title, folderId: updated.folderId } },
+      tx
+    );
+
+    return updated;
+  });
+}
+
+/**
+ * Sprint 12B — file delete. Soft: `deletedAt` plus the terminal `deleted`
+ * lifecycle status, which is what every read already filters on. The blob and
+ * its versions are untouched, so a restore path remains possible.
+ */
+export async function deleteFile(fileId: string) {
+  const user = await requireCurrentUser();
+
+  return await db.transaction(async (tx) => {
+    const file = await validateFileAccess(fileId, "delete", user, tx);
+
+    await tx
+      .update(files)
+      .set({
+        status: "deleted",
+        deletedAt: new Date(),
+        deletedBy: user.userId,
+        updatedAt: new Date(),
+        updatedBy: user.userId,
+      })
+      .where(eq(files.fileId, fileId));
+
+    await logFileActivity(
+      "File Deleted",
+      fileId,
+      file.projectId,
+      file.organizationId,
+      user,
+      { title: file.title },
+      tx
+    );
+
+    return { success: true };
   });
 }
 
@@ -421,12 +631,188 @@ export async function promoteFileVersion(fileId: string, targetVersionId: string
       .where(eq(files.fileId, fileId));
       
     // 6. Log
-    await logFileActivity("Version Promoted", fileId, file.projectId, file.organizationId, user, { 
-      fromVersionId: targetVersionId, 
+    await logFileActivity("Version Promoted", fileId, file.projectId, file.organizationId, user, {
+      fromVersionId: targetVersionId,
       newVersionId,
       newVersionNumber: nextVersionNumber
     }, tx);
-    
+
     return { success: true, newVersionId };
+  });
+}
+
+/**
+ * PUBLIC READ LAYER (Sprint 11B)
+ */
+
+export type FileListFilters = {
+  projectId?: string;
+  folderId?: string | null;
+};
+
+/**
+ * Global, cross-project list of files for the enterprise workspace.
+ */
+export async function getFiles(
+  filters: FileListFilters = {},
+  cursorOffset: number = 0,
+  limit: number = 50
+) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "files", "read");
+
+  return db.query.files.findMany({
+    where: and(
+      eq(files.organizationId, user.organizationId),
+      isNull(files.deletedAt),
+      filters.projectId ? eq(files.projectId, filters.projectId) : undefined,
+      filters.folderId !== undefined
+        ? (filters.folderId === null ? isNull(files.folderId) : eq(files.folderId, filters.folderId))
+        : undefined
+    ),
+    offset: cursorOffset,
+    limit,
+    orderBy: [desc(files.createdAt)],
+  });
+}
+
+/**
+ * A folder plus its immediate child folders and files (one level of the hierarchy).
+ */
+export async function getFolder(folderId: string | null, projectId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "files", "read");
+
+  await validateProjectAccess(projectId, user);
+
+  const folder = folderId
+    ? await db.query.fileFolders.findFirst({
+        where: and(
+          eq(fileFolders.folderId, folderId),
+          eq(fileFolders.organizationId, user.organizationId),
+          eq(fileFolders.projectId, projectId)
+        ),
+      })
+    : null;
+
+  const childFolders = await db.query.fileFolders.findMany({
+    where: and(
+      eq(fileFolders.organizationId, user.organizationId),
+      eq(fileFolders.projectId, projectId),
+      folderId ? eq(fileFolders.parentId, folderId) : isNull(fileFolders.parentId)
+    ),
+    orderBy: [desc(fileFolders.createdAt)],
+  });
+
+  const childFiles = await db.query.files.findMany({
+    where: and(
+      eq(files.organizationId, user.organizationId),
+      eq(files.projectId, projectId),
+      isNull(files.deletedAt),
+      folderId ? eq(files.folderId, folderId) : isNull(files.folderId)
+    ),
+    orderBy: [desc(files.createdAt)],
+  });
+
+  return { folder, childFolders, childFiles };
+}
+
+/**
+ * Sprint 12B — every folder in a project, flat.
+ *
+ * Move needs a destination list, and `getFolder` deliberately returns one level
+ * at a time. Folder trees are small (max depth 10, enforced above), so a flat
+ * read is the honest shape rather than N level-by-level calls.
+ */
+export async function getProjectFolders(projectId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "files", "read");
+  await validateProjectAccess(projectId, user);
+
+  return db.query.fileFolders.findMany({
+    where: and(
+      eq(fileFolders.organizationId, user.organizationId),
+      eq(fileFolders.projectId, projectId)
+    ),
+    orderBy: [fileFolders.name],
+  });
+}
+
+/**
+ * Sprint 12B — version history for one file.
+ *
+ * `promoteFileVersion` has existed since Sprint 11 but there was no read that
+ * listed versions, so "restore an earlier version" was unreachable from the UI
+ * even though the write was fully implemented.
+ */
+export async function getFileVersions(fileId: string) {
+  const user = await requireCurrentUser();
+  await validateFileAccess(fileId, "read", user);
+
+  return db.query.fileVersions.findMany({
+    where: eq(fileVersions.fileId, fileId),
+    orderBy: [desc(fileVersions.versionNumber)],
+  });
+}
+
+/** Sprint 12B — share links issued against any version of one file. */
+export async function getFileShares(fileId: string) {
+  const user = await requireCurrentUser();
+  await validateFileAccess(fileId, "read", user);
+
+  return db
+    .select({
+      shareId: fileShares.shareId,
+      versionId: fileShares.versionId,
+      token: fileShares.token,
+      accessLevel: fileShares.accessLevel,
+      expiresAt: fileShares.expiresAt,
+      maxDownloads: fileShares.maxDownloads,
+      downloadCount: fileShares.downloadCount,
+      createdAt: fileShares.createdAt,
+      versionNumber: fileVersions.versionNumber,
+    })
+    .from(fileShares)
+    .innerJoin(fileVersions, eq(fileShares.versionId, fileVersions.versionId))
+    .where(eq(fileVersions.fileId, fileId))
+    .orderBy(desc(fileShares.createdAt));
+}
+
+/** Sprint 12B — the audit trail every file write above already appends to. */
+export async function getFileActivity(fileId: string, limit: number = 25) {
+  const user = await requireCurrentUser();
+  await validateFileAccess(fileId, "read", user);
+
+  return db.query.activityLogs.findMany({
+    where: and(
+      eq(activityLogs.entityType, "file"),
+      eq(activityLogs.entityId, fileId),
+      eq(activityLogs.organizationId, user.organizationId)
+    ),
+    orderBy: [desc(activityLogs.createdAt)],
+    limit,
+  });
+}
+
+/**
+ * Title search across all files in the organization (global fetcher).
+ */
+export async function searchFiles(
+  searchTerm: string,
+  cursorOffset: number = 0,
+  limit: number = 50
+) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "files", "read");
+
+  return db.query.files.findMany({
+    where: and(
+      eq(files.organizationId, user.organizationId),
+      isNull(files.deletedAt),
+      ilike(files.title, `%${searchTerm}%`)
+    ),
+    offset: cursorOffset,
+    limit,
+    orderBy: [desc(files.createdAt)],
   });
 }

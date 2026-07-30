@@ -4,20 +4,22 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Projects | AIC Nex OS",
+  title: "Projects",
   description: "Manage your projects and workflows.",
 };
 
-export default function ProjectsPage({
+export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: { query?: string };
+  searchParams: Promise<{ query?: string }>;
 }) {
+  const { query } = await searchParams;
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
           <p className="text-muted-foreground">
             Manage and track all ongoing projects across your organization.
           </p>
@@ -29,7 +31,7 @@ export default function ProjectsPage({
 
       <div className="space-y-4">
         <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-xl" />}>
-          <ProjectList query={searchParams.query} />
+          <ProjectList query={query} />
         </Suspense>
       </div>
     </div>

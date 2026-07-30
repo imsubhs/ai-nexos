@@ -23,6 +23,7 @@ import type {
   addProjectMember as real_addProjectMember,
   updateProjectMemberRole as real_updateProjectMemberRole,
   removeProjectMember as real_removeProjectMember,
+  getActiveProjectsCount as real_getActiveProjectsCount,
 } from "./real-actions";
 import type { ProjectDashboardSummary } from "./real-actions";
 
@@ -228,4 +229,9 @@ export async function removeProjectMember(...args: Parameters<typeof real_remove
 
   revalidatePath(`/projects/${member.projectId}`);
   return member as any;
+}
+
+export async function getActiveProjectsCount(...args: Parameters<typeof real_getActiveProjectsCount>): Promise<Awaited<ReturnType<typeof real_getActiveProjectsCount>>> {
+  const store = getDemoStore();
+  return store.projects.filter((p) => p.deletedAt === null && !["completed", "cancelled", "archived"].includes(p.status)).length as any;
 }

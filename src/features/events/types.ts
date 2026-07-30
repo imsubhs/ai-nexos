@@ -11,7 +11,11 @@ export type EventType =
   | "comment"
   | "mention"
   | "client"
-  | "system";
+  | "system"
+  // Workforce bounded context (merge doc 14 §11.1; Sprint 3A / WP-109).
+  | "attendance"
+  // Corrections aggregate (merge doc 14 §11.1; Sprint 3B / WP-120).
+  | "correction";
 
 export interface IEventPayload {
   [key: string]: unknown;

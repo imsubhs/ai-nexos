@@ -1,69 +1,119 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+/**
+ * Kanban board over the milestone's tasks.
+ *
+ * Sprint 12A made the board writable. Board movement is a per-card "Move to"
+ * menu rather than drag-and-drop: it is the same supported domain call
+ * (updateTask with a new status), it works from the keyboard and on touch, and
+ * it does not invent a reordering concept the task domain has no column for.
+ * The menu offers only the five statuses that have a column; the twelve-value
+ * vocabulary lives in the detail dialog.
+ */
+import React, { useRef, useState } from "react";
+import { MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { getTasks } from "../actions";
-import { TaskDetailModal } from "./task-detail-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { updateTask } from "../actions";
+import { BOARD_COLUMNS } from "../constants";
 
-interface TaskBoardProps {
-  milestoneId: string;
-}
+type TaskRow = Record<string, any>;
 
-const COLUMNS = [
-  { id: "backlog", label: "Backlog" },
-  { id: "todo", label: "To Do" },
-  { id: "in_progress", label: "In Progress" },
-  { id: "review", label: "Review" },
-  { id: "completed", label: "Completed" },
-];
+export function TaskBoard({
+  tasks,
+  loading,
+  onTaskClick,
+  onChanged,
+}: Readonly<{
+  tasks: TaskRow[];
+  loading: boolean;
+  onTaskClick: (taskId: string) => void;
+  onChanged: () => Promise<void>;
+}>) {
+  const [movingId, setMovingId] = useState<string | null>(null);
 
-export function TaskBoard({ milestoneId }: TaskBoardProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedTask, setSelectedTask] = useState<any | null>(null);
-
-  useEffect(() => {
-    async function loadTasks() {
-      setLoading(true);
-      try {
-        const loadedTasks = await getTasks(milestoneId, 0, 1000); // Demo load
-        setTasks(loadedTasks);
-      } catch (error) {
-        console.error("Failed to load tasks", error);
-      } finally {
-        setLoading(false);
-      }
+  const move = async (task: TaskRow, status: string) => {
+    if (task.status === status) return;
+    setMovingId(task.taskId);
+    try {
+      await updateTask(task.taskId, { status: status as never });
+      await onChanged();
+      toast.success(`Moved to ${labelFor(status)}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not move the task");
+    } finally {
+      setMovingId(null);
     }
-    loadTasks();
-  }, [milestoneId]);
+  };
 
   if (loading) {
-    return <div className="p-4 text-sm text-gray-500">Loading board...</div>;
+    return (
+      <div className="text-muted-foreground p-4 text-sm">Loading board...</div>
+    );
   }
 
+  // Statuses outside the five columns are real domain states with no column.
+  // Surfacing the count keeps the board honest rather than silently hiding
+  // work — the list view and the detail dialog can still reach them.
+  const offBoard = tasks.filter(
+    (task) => !BOARD_COLUMNS.some((column) => column.id === task.status),
+  );
+
   return (
-    <>
+    <div className="flex h-full flex-col gap-2">
       <div className="flex h-[600px] gap-4 overflow-x-auto pb-4">
-        {COLUMNS.map((col) => (
-          <BoardColumn 
-            key={col.id} 
-            column={col} 
-            tasks={tasks.filter(t => t.status === col.id)} 
-            onTaskClick={setSelectedTask} 
+        {BOARD_COLUMNS.map((column) => (
+          <BoardColumn
+            key={column.id}
+            column={column}
+            tasks={tasks.filter((task) => task.status === column.id)}
+            movingId={movingId}
+            onTaskClick={onTaskClick}
+            onMove={move}
           />
         ))}
       </div>
-      {selectedTask && (
-        <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+
+      {offBoard.length > 0 && (
+        <p className="text-muted-foreground text-xs">
+          {offBoard.length} task{offBoard.length === 1 ? "" : "s"} in a status
+          without a board column ({[...new Set(offBoard.map((t) => labelFor(t.status)))].join(", ")}).
+          Switch to List View to see them.
+        </p>
       )}
-    </>
+    </div>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function BoardColumn({ column, tasks, onTaskClick }: { column: any, tasks: any[], onTaskClick: (task: any) => void }) {
+function labelFor(status: string): string {
+  return (
+    BOARD_COLUMNS.find((column) => column.id === status)?.label ??
+    status.replaceAll("_", " ")
+  );
+}
+
+function BoardColumn({
+  column,
+  tasks,
+  movingId,
+  onTaskClick,
+  onMove,
+}: Readonly<{
+  column: { id: string; label: string };
+  tasks: TaskRow[];
+  movingId: string | null;
+  onTaskClick: (taskId: string) => void;
+  onMove: (task: TaskRow, status: string) => Promise<void>;
+}>) {
   const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
@@ -74,18 +124,24 @@ function BoardColumn({ column, tasks, onTaskClick }: { column: any, tasks: any[]
   });
 
   return (
-    <div className="flex-shrink-0 w-80 flex flex-col bg-black/40 border border-white/10 rounded-lg backdrop-blur-md">
-      <div className="p-3 border-b border-white/10">
-        <h3 className="font-semibold text-white">{column.label} <span className="text-gray-500 text-sm font-normal ml-2">{tasks.length}</span></h3>
+    <div className="bg-card flex w-80 shrink-0 flex-col rounded-lg border">
+      <div className="border-b p-3">
+        <h3 className="text-foreground font-semibold">
+          {column.label}
+          <span className="text-muted-foreground ml-2 text-sm font-normal">
+            {tasks.length}
+          </span>
+        </h3>
       </div>
-      
+
       <div ref={parentRef} className="flex-1 overflow-y-auto p-2">
         <div
-          className="w-full relative"
+          className="relative w-full"
           style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
             const task = tasks[virtualItem.index];
+            const isMoving = movingId === task.taskId;
             return (
               <div
                 key={virtualItem.key}
@@ -96,20 +152,65 @@ function BoardColumn({ column, tasks, onTaskClick }: { column: any, tasks: any[]
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <div 
-                  className="bg-white/5 hover:bg-white/10 transition-colors p-3 rounded-md border border-white/5 cursor-pointer flex flex-col gap-2 shadow-sm"
-                  onClick={() => onTaskClick(task)}
+                <div
+                  className={`bg-background rounded-md border shadow-sm transition-opacity ${
+                    isMoving ? "opacity-50" : ""
+                  }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">
-                      {task.taskCode}
-                    </span>
-                    <span className="text-xs text-gray-500">{task.priority}</span>
-                  </div>
-                  <h4 className="text-sm font-medium text-white">{task.name}</h4>
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    {task.estimatedDurationMins > 0 && <span>Est: {task.estimatedDurationMins}m</span>}
-                    {task.isPrivate && <span>🔒 Private</span>}
+                  {/* A real <button> rather than a click-handling <div>: the
+                      card opens a dialog, so it must be reachable and
+                      activatable from the keyboard. */}
+                  <button
+                    type="button"
+                    className="hover:bg-muted/50 focus-visible:ring-ring flex w-full flex-col gap-2 rounded-t-md p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    onClick={() => onTaskClick(task.taskId)}
+                  >
+                    <div className="flex w-full items-start justify-between gap-2">
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {task.taskCode}
+                      </Badge>
+                      <span className="text-muted-foreground text-xs capitalize">
+                        {task.priority}
+                      </span>
+                    </div>
+                    <h4 className="text-foreground text-sm font-medium">
+                      {task.name}
+                    </h4>
+                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                      {task.estimatedDurationMins > 0 && (
+                        <span>Est: {task.estimatedDurationMins}m</span>
+                      )}
+                      {task.isPrivate && <span>🔒 Private</span>}
+                    </div>
+                  </button>
+
+                  <div className="flex justify-end border-t px-2 py-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={isMoving}
+                            aria-label={`Move ${task.name} to another column`}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Move to</DropdownMenuLabel>
+                        {BOARD_COLUMNS.map((target) => (
+                          <DropdownMenuItem
+                            key={target.id}
+                            disabled={target.id === task.status}
+                            onClick={() => onMove(task, target.id)}
+                          >
+                            {target.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </div>

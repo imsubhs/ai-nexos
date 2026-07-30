@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { activityLogs, clientContacts, clients } from "@/db/schema";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, eq, ilike, inArray, isNull } from "drizzle-orm";
+import { and, eq, ilike, inArray, isNull, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
@@ -344,4 +344,21 @@ export async function archiveContact(contactId: string, clientId: string) {
 
   revalidatePath(`/clients/${clientId}`);
   return contact;
+}
+
+export async function getClientsCount() {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "clients", "read");
+
+  const [result] = await db
+    .select({ value: count(clients.clientId) })
+    .from(clients)
+    .where(
+      and(
+        eq(clients.organizationId, user.organizationId),
+        isNull(clients.deletedAt)
+      )
+    );
+
+  return result?.value ?? 0;
 }

@@ -5,7 +5,7 @@ import { activityLogs, projectMembers, projects } from "@/db/schema";
 import { organizationSequences } from "@/db/schema/organizations";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, eq, ilike, isNull, sql } from "drizzle-orm";
+import { and, eq, ilike, isNull, sql, count, not, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { insertProjectSchema, updateProjectSchema } from "./schemas";
@@ -337,4 +337,22 @@ export async function removeProjectMember(memberId: string) {
   }
 
   return member;
+}
+
+export async function getActiveProjectsCount() {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "projects", "read");
+
+  const [result] = await db
+    .select({ value: count(projects.projectId) })
+    .from(projects)
+    .where(
+      and(
+        eq(projects.organizationId, user.organizationId),
+        isNull(projects.deletedAt),
+        not(inArray(projects.status, ["completed", "cancelled", "archived"]))
+      )
+    );
+
+  return result?.value ?? 0;
 }

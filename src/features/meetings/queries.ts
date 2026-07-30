@@ -23,3 +23,28 @@ export async function getMeetingActionItems(...args: Parameters<typeof real.getM
   return (real as any).getMeetingActionItems(...args);
 }
 
+export async function getMeetings(...args: Parameters<typeof real.getMeetings>): Promise<Awaited<ReturnType<typeof real.getMeetings>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getMeetings(...args);
+  return (real as any).getMeetings(...args);
+}
+
+export async function getMeetingAttendees(...args: Parameters<typeof real.getMeetingAttendees>): Promise<Awaited<ReturnType<typeof real.getMeetingAttendees>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getMeetingAttendees(...args);
+  return (real as any).getMeetingAttendees(...args);
+}
+
+export async function getMeetingAgenda(...args: Parameters<typeof real.getMeetingAgenda>): Promise<Awaited<ReturnType<typeof real.getMeetingAgenda>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getMeetingAgenda(...args);
+  return (real as any).getMeetingAgenda(...args);
+}
+
+export async function getMeetingOutcomes(...args: Parameters<typeof real.getMeetingOutcomes>): Promise<Awaited<ReturnType<typeof real.getMeetingOutcomes>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getMeetingOutcomes(...args);
+  return (real as any).getMeetingOutcomes(...args);
+}
+
+export async function getMeetingActivity(...args: Parameters<typeof real.getMeetingActivity>): Promise<Awaited<ReturnType<typeof real.getMeetingActivity>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getMeetingActivity(...args);
+  return (real as any).getMeetingActivity(...args);
+}
+

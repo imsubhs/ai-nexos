@@ -5,9 +5,9 @@ import { PortalServiceLayer } from "@/lib/portal/services/PortalServiceLayer";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  // Mock auth context
-  const organizationId = "mock-org-id";
-  const clientId = "mock-client-id";
+  // Mock auth context for Demo
+  const organizationId = process.env.DEMO_MODE === "true" ? "00000000-0000-4000-8000-00000000f001" : "mock-org-id";
+  const clientId = process.env.DEMO_MODE === "true" ? "00000000-0000-4000-8000-000000000101" : "mock-client-id";
 
   const dashboardData = await PortalServiceLayer.getDashboardView(organizationId, clientId);
 

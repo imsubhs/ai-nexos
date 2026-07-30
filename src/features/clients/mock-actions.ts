@@ -21,6 +21,7 @@ import type {
   createContact as real_createContact,
   updateContact as real_updateContact,
   archiveContact as real_archiveContact,
+  getClientsCount as real_getClientsCount,
 } from "./real-actions";
 
 export async function getClients(...args: Parameters<typeof real_getClients>): Promise<Awaited<ReturnType<typeof real_getClients>>> {
@@ -210,4 +211,9 @@ export async function archiveContact(...args: Parameters<typeof real_archiveCont
 
   revalidatePath(`/clients/${clientId}`);
   return { contactId, name: contact.name } as any;
+}
+
+export async function getClientsCount(...args: Parameters<typeof real_getClientsCount>): Promise<Awaited<ReturnType<typeof real_getClientsCount>>> {
+  const store = getDemoStore();
+  return store.clients.filter((c) => c.deletedAt === null).length as any;
 }

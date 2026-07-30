@@ -33,3 +33,52 @@ export async function addTaskDependency(...args: Parameters<typeof real.addTaskD
   return (real as any).addTaskDependency(...args);
 }
 
+export async function getMyOpenTasksCount(...args: Parameters<typeof real.getMyOpenTasksCount>): Promise<Awaited<ReturnType<typeof real.getMyOpenTasksCount>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getMyOpenTasksCount(...args);
+  return (real as any).getMyOpenTasksCount(...args);
+}
+
+export async function deleteTask(...args: Parameters<typeof real.deleteTask>): Promise<Awaited<ReturnType<typeof real.deleteTask>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).deleteTask(...args);
+  return (real as any).deleteTask(...args);
+}
+
+export async function assignTask(...args: Parameters<typeof real.assignTask>): Promise<Awaited<ReturnType<typeof real.assignTask>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).assignTask(...args);
+  return (real as any).assignTask(...args);
+}
+
+export async function unassignTask(...args: Parameters<typeof real.unassignTask>): Promise<Awaited<ReturnType<typeof real.unassignTask>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).unassignTask(...args);
+  return (real as any).unassignTask(...args);
+}
+
+export async function getTaskAssignees(...args: Parameters<typeof real.getTaskAssignees>): Promise<Awaited<ReturnType<typeof real.getTaskAssignees>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getTaskAssignees(...args);
+  return (real as any).getTaskAssignees(...args);
+}
+
+export async function addTaskComment(...args: Parameters<typeof real.addTaskComment>): Promise<Awaited<ReturnType<typeof real.addTaskComment>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).addTaskComment(...args);
+  return (real as any).addTaskComment(...args);
+}
+
+export async function getTaskComments(...args: Parameters<typeof real.getTaskComments>): Promise<Awaited<ReturnType<typeof real.getTaskComments>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getTaskComments(...args);
+  return (real as any).getTaskComments(...args);
+}
+
+export async function getTaskActivity(...args: Parameters<typeof real.getTaskActivity>): Promise<Awaited<ReturnType<typeof real.getTaskActivity>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getTaskActivity(...args);
+  return (real as any).getTaskActivity(...args);
+}
+
+export async function searchTasks(...args: Parameters<typeof real.searchTasks>): Promise<Awaited<ReturnType<typeof real.searchTasks>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).searchTasks(...args);
+  return (real as any).searchTasks(...args);
+}
+
+export async function getActiveTaskTimer(...args: Parameters<typeof real.getActiveTaskTimer>): Promise<Awaited<ReturnType<typeof real.getActiveTaskTimer>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getActiveTaskTimer(...args);
+  return (real as any).getActiveTaskTimer(...args);
+}

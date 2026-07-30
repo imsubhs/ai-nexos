@@ -155,6 +155,29 @@ export async function getProjectTimeline(projectId: string) {
   });
 }
 
+/**
+ * PUBLIC READ LAYER (Sprint 11B) — global, cross-project timeline listing
+ * for the enterprise workspace. Does not use the Projection/DAG engines;
+ * it is a flat list of one row per project's timeline with its current
+ * progress, which is all the workspace view needs.
+ */
+export async function getTimelines(cursorOffset: number = 0, limit: number = 50) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "timeline", "read");
+
+  return db.query.timelines.findMany({
+    where: eq(timelines.organizationId, user.organizationId),
+    orderBy: [desc(timelines.updatedAt)],
+    offset: cursorOffset,
+    limit,
+    with: {
+      phases: {
+        orderBy: [asc(projectPhases.orderIndex)],
+      },
+    },
+  });
+}
+
 export async function getTimelineMilestones(timelineId: string, limit: number = 50, cursorOffset: number = 0) {
   const user = await requireCurrentUser();
   // Ensure access

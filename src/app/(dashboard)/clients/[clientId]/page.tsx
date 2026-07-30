@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ clientId:
   const { clientId } = await params;
   const client = await getClientById(clientId);
   if (!client) return { title: "Not Found" };
-  return { title: `${client.companyName} | Clients | AIC Nex OS` };
+  return { title: `${client.companyName} | Clients` };
 }
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ clientId: string }> }) {
@@ -36,7 +36,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
             </AvatarFallback>
           </Avatar>
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">{client.companyName}</h2>
+            <h1 className="text-3xl font-bold tracking-tight">{client.companyName}</h1>
             <div className="flex items-center space-x-3 mt-1">
               <ClientStatusBadge status={client.status} />
               <ClientHealthBadge health={client.clientHealth} />

@@ -1,8 +1,27 @@
+"use client";
+
+/**
+ * Sprint 12A: the card's "more" control was a no-op button (P4). It now opens
+ * a menu with the two things the project domain actually supports from a card —
+ * opening the project and archiving it (archiveProject) — routed through the
+ * shared ConfirmDialog like every other destructive action.
+ */
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CalendarIcon, MoreVerticalIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { ProjectHealthBadge, ProjectPriorityBadge, ProjectStatusBadge } from "./project-badges";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { archiveProject } from "../actions";
 
 export function ProjectCard({ project }: { project: Record<string, unknown> & {
   projectId: string;
@@ -16,6 +35,9 @@ export function ProjectCard({ project }: { project: Record<string, unknown> & {
   completionPercentage: number;
   client?: { companyName: string } | null;
 } }) {
+  const router = useRouter();
+  const [archiveOpen, setArchiveOpen] = useState(false);
+
   return (
     <Card className="hover:border-primary/50 transition-colors">
       <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
@@ -33,9 +55,31 @@ export function ProjectCard({ project }: { project: Record<string, unknown> & {
             {project.projectName}
           </Link>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2">
-          <MoreVerticalIcon className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 -mr-2 -mt-2"
+                aria-label={`Project actions for ${project.projectName}`}
+              >
+                <MoreVerticalIcon className="h-4 w-4" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem render={<Link href={`/projects/${project.projectId}`} />}>
+              Open project
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setArchiveOpen(true)}
+            >
+              Archive project
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       
       <CardContent>
@@ -69,6 +113,21 @@ export function ProjectCard({ project }: { project: Record<string, unknown> & {
           </div>
         </div>
       </CardContent>
+
+      <ConfirmDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        title="Archive project"
+        description={`${project.projectName} will be archived and removed from the active project list.`}
+        confirmLabel="Archive project"
+        pendingLabel="Archiving…"
+        variant="destructive"
+        onConfirm={async () => {
+          await archiveProject(project.projectId);
+          toast.success("Project archived");
+          router.refresh();
+        }}
+      />
     </Card>
   );
 }

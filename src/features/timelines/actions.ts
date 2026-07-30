@@ -18,6 +18,11 @@ export async function getProjectTimeline(...args: Parameters<typeof real.getProj
   return (real as any).getProjectTimeline(...args);
 }
 
+export async function getTimelines(...args: Parameters<typeof real.getTimelines>): Promise<Awaited<ReturnType<typeof real.getTimelines>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getTimelines(...args);
+  return (real as any).getTimelines(...args);
+}
+
 export async function getTimelineMilestones(...args: Parameters<typeof real.getTimelineMilestones>): Promise<Awaited<ReturnType<typeof real.getTimelineMilestones>>> {
   if (process.env.DEMO_MODE === "true") return (mock as any).getTimelineMilestones(...args);
   return (real as any).getTimelineMilestones(...args);

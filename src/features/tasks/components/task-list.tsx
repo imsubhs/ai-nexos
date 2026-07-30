@@ -1,34 +1,27 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+/**
+ * Virtualised task list. Sprint 12A: rows are now buttons that open the detail
+ * dialog — previously the list rendered read-only and only the board could
+ * open a task. Tasks are supplied by TaskDashboard so a mutation in any view
+ * refreshes every view.
+ */
+import React, { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { getTasks } from "../actions";
+import { Badge } from "@/components/ui/badge";
 
-interface TaskListProps {
-  milestoneId: string;
-}
+type TaskRow = Record<string, any>;
 
-export function TaskList({ milestoneId }: TaskListProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  
+export function TaskList({
+  tasks,
+  loading,
+  onTaskClick,
+}: Readonly<{
+  tasks: TaskRow[];
+  loading: boolean;
+  onTaskClick: (taskId: string) => void;
+}>) {
   const parentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    async function loadTasks() {
-      setLoading(true);
-      try {
-        const loadedTasks = await getTasks(milestoneId, 0, 1000); // For demo, load a big chunk
-        setTasks(loadedTasks);
-      } catch (error) {
-        console.error("Failed to load tasks", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadTasks();
-  }, [milestoneId]);
 
   const rowVirtualizer = useVirtualizer({
     count: tasks.length,
@@ -38,20 +31,26 @@ export function TaskList({ milestoneId }: TaskListProps) {
   });
 
   if (loading) {
-    return <div className="p-4 text-sm text-gray-500">Loading tasks...</div>;
+    return (
+      <div className="text-muted-foreground p-4 text-sm">Loading tasks...</div>
+    );
   }
 
   if (tasks.length === 0) {
-    return <div className="p-4 text-sm text-gray-500">No tasks found.</div>;
+    return (
+      <div className="text-muted-foreground p-4 text-sm">
+        No tasks found. Use &ldquo;New Task&rdquo; to add the first one.
+      </div>
+    );
   }
 
   return (
     <div
       ref={parentRef}
-      className="h-[500px] overflow-auto border border-white/10 rounded-lg bg-black/40 backdrop-blur-md"
+      className="bg-card h-[500px] overflow-auto rounded-lg border"
     >
       <div
-        className="w-full relative"
+        className="relative w-full"
         style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualItem) => {
@@ -61,27 +60,41 @@ export function TaskList({ milestoneId }: TaskListProps) {
               key={virtualItem.key}
               data-index={virtualItem.index}
               ref={rowVirtualizer.measureElement}
-              className="absolute top-0 left-0 w-full px-4 py-3 border-b border-white/5 flex items-center justify-between hover:bg-white/5 transition-colors"
+              className="absolute top-0 left-0 w-full"
               style={{
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">
-                    {task.taskCode}
-                  </span>
-                  <h4 className="text-sm font-medium text-white">{task.name}</h4>
+              <button
+                type="button"
+                onClick={() => onTaskClick(task.taskId)}
+                className="hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-between gap-3 border-b px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              >
+                <div className="flex min-w-0 flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono text-xs">
+                      {task.taskCode}
+                    </Badge>
+                    <span className="text-foreground truncate text-sm font-medium">
+                      {task.name}
+                    </span>
+                  </div>
+                  <div className="text-muted-foreground flex items-center gap-3 text-xs">
+                    <span className="capitalize">
+                      {String(task.status).replaceAll("_", " ")}
+                    </span>
+                    <span>&bull;</span>
+                    <span className="capitalize">{task.priority} Priority</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-gray-400">
-                  <span className="capitalize">{task.status.replace("_", " ")}</span>
-                  <span>&bull;</span>
-                  <span className="capitalize">{task.priority} Priority</span>
-                </div>
-              </div>
-              <div className="text-xs text-gray-500">
-                {task.progress}%
-              </div>
+                {/* Rendered only when the row actually carries a progress
+                    value — a bare "%" reads as a bug. */}
+                {typeof task.progress === "number" ? (
+                  <div className="text-muted-foreground shrink-0 text-xs">
+                    {task.progress}%
+                  </div>
+                ) : null}
+              </button>
             </div>
           );
         })}

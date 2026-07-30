@@ -10,7 +10,7 @@ import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Project Dashboard | AIC Nex OS",
+  title: "Project Dashboard",
 };
 
 export default async function ProjectDashboardPage({
@@ -31,7 +31,14 @@ export default async function ProjectDashboardPage({
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
       <div className="flex items-center space-x-4 mb-2">
-        <Button variant="ghost" size="icon" render={<Link href="/projects" />}>
+        {/* Sprint 12A: icon-only back control with no accessible name — the
+            same defect class as P2-03, found by the Phase 8 sweep. */}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Back to all projects"
+          render={<Link href="/projects" />}
+        >
           <ChevronLeftIcon className="h-4 w-4" />
         </Button>
         <div>
@@ -50,7 +57,7 @@ export default async function ProjectDashboardPage({
 
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">{project.projectName}</h2>
+          <h1 className="text-3xl font-bold tracking-tight">{project.projectName}</h1>
           <p className="text-muted-foreground max-w-3xl mt-2">
             {project.description || "No description provided for this project."}
           </p>

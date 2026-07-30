@@ -48,3 +48,8 @@ export async function archiveContact(...args: Parameters<typeof real.archiveCont
   return (real as any).archiveContact(...args);
 }
 
+export async function getClientsCount(...args: Parameters<typeof real.getClientsCount>): Promise<Awaited<ReturnType<typeof real.getClientsCount>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getClientsCount(...args);
+  return (real as any).getClientsCount(...args);
+}
+

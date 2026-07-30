@@ -9,7 +9,7 @@ import {
   approvalConditions 
 } from "@/db/schema/approvals";
 import { requireCurrentUser } from "@/features/auth/current-user";
-import { eq } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
 import { createHash } from "crypto";
 import { 
@@ -171,4 +171,23 @@ export async function resolveCondition(data: z.infer<typeof resolveConditionSche
       }
     }
   });
+}
+
+export async function getPendingApprovalsCount() {
+  const user = await requireCurrentUser();
+  
+  const [result] = await db
+    .select({ value: count(reviews.reviewId) })
+    .from(reviews)
+    .innerJoin(approvalStages, eq(reviews.stageId, approvalStages.stageId))
+    .innerJoin(approvalCycles, eq(approvalStages.cycleId, approvalCycles.cycleId))
+    .where(
+      and(
+        eq(reviews.reviewerId, user.userId),
+        eq(reviews.status, "pending"),
+        eq(approvalCycles.organizationId, user.organizationId)
+      )
+    );
+    
+  return result?.value ?? 0;
 }

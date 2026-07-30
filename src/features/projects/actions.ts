@@ -50,3 +50,8 @@ export async function removeProjectMember(...args: Parameters<typeof real.remove
   return (real as any).removeProjectMember(...args);
 }
 
+export async function getActiveProjectsCount(...args: Parameters<typeof real.getActiveProjectsCount>): Promise<Awaited<ReturnType<typeof real.getActiveProjectsCount>>> {
+  if (process.env.DEMO_MODE === "true") return (mock as any).getActiveProjectsCount(...args);
+  return (real as any).getActiveProjectsCount(...args);
+}
+
