@@ -40,6 +40,14 @@ Host-based routing lives in [src/proxy.ts](src/proxy.ts).
    `supabase_realtime` publication in their migrations.
 7. Soft deletes + audit fields (`created_by`, `updated_at`, `version`, …) on
    every table; `activity_logs` is append-only.
+8. **The tenant is never a parameter.** `organizationId` is derived from the
+   authenticated user, or for external callers from a verified share token —
+   never accepted as an argument. Every write is additionally scoped by
+   `organization_id` in its `WHERE` clause. Enforced by
+   `tests/unit/authorization-coverage.test.ts`; see
+   [docs/SECURITY.md](docs/SECURITY.md).
+9. Most write paths use Drizzle, which **bypasses RLS**. On those paths
+   `requirePermission()` is the only authorization control, not a second layer.
 
 ## Getting started
 
@@ -76,19 +84,21 @@ Local portal testing: `http://portal.localhost:3000` (browsers resolve
 
 ## Scripts
 
-| Script                | Purpose                                |
-| --------------------- | -------------------------------------- |
-| `npm run dev`         | Development server                     |
-| `npm run build`       | Production build                       |
-| `npm run lint`        | ESLint                                 |
-| `npm run typecheck`   | TypeScript                             |
-| `npm test`            | Vitest suite                           |
-| `npm run env:check`   | Validate environment configuration     |
-| `npm run format`      | Prettier                               |
-| `npm run db:generate` | Generate migration from schema changes |
-| `npm run db:migrate`  | Apply migrations                       |
-| `npm run db:seed`     | Idempotent bootstrap seed              |
-| `npm run db:studio`   | Drizzle Studio                         |
+| Script                | Purpose                                  |
+| --------------------- | ---------------------------------------- |
+| `npm run dev`         | Development server                       |
+| `npm run build`       | Production build                         |
+| `npm run lint`        | ESLint                                   |
+| `npm run typecheck`   | TypeScript                               |
+| `npm test`            | Vitest suite                             |
+| `npm run env:check`   | Validate environment configuration       |
+| `npm run audit:authz` | Report server actions with no auth guard |
+| `npm run audit:deps`  | Dependency advisories (high and above)   |
+| `npm run format`      | Prettier                                 |
+| `npm run db:generate` | Generate migration from schema changes   |
+| `npm run db:migrate`  | Apply migrations                         |
+| `npm run db:seed`     | Idempotent bootstrap seed                |
+| `npm run db:studio`   | Drizzle Studio                           |
 
 ## Repository layout
 
@@ -100,14 +110,29 @@ src/
   db/             # Drizzle client + schema (one file per module)
   features/       # Feature-first modules: auth/, permissions/, …
   hooks/          # Shared hooks
-  lib/            # Supabase clients, utilities
+  lib/            # Supabase clients, security primitives, utilities
+    security/     # Rate limiting, CSP, egress guard, hashing, logging, errors
 database/
   migrations/     # Drizzle SQL migrations (0001+ includes RLS)
 scripts/
-  seed.ts         # Bootstrap seed
+  seed.ts                  # Bootstrap seed
+  check-env.ts             # Environment pre-flight
+  audit-authorization.ts   # Static authorization audit
 ```
 
 ## Documentation
+
+Security:
+
+- [docs/SECURITY.md](docs/SECURITY.md) — the controls: authentication,
+  authorization, tenant isolation, headers, input handling, egress. Includes
+  what is still unproven and an operational pre-production checklist.
+- [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) — assets, adversaries, attack
+  paths and residual risk.
+- [docs/SECURITY-DEPENDENCY-BACKLOG.md](docs/SECURITY-DEPENDENCY-BACKLOG.md) —
+  dependency advisories and the reasoning behind each accept-or-upgrade call.
+- [docs/PRODUCTION_READINESS_CHECKLIST.md](docs/PRODUCTION_READINESS_CHECKLIST.md)
+  — the full release gate.
 
 Source-of-truth product documents live in `../DOCS` (PRD, SDS, TRD, DBD,
 API Specification, UI/UX Design System, Development Roadmap). Conflict

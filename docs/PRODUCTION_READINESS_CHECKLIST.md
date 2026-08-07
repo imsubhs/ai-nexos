@@ -9,6 +9,13 @@
 
 **Every ❌ and ⚠️ below is a release gate.** This checklist is the exit criteria for `BETA_FREEZE.md`.
 
+> **Sprint 2.2 update (2026-08-07).** Section 3 (Auth/Authz) and section 7
+> (Security) were reworked. Details in `docs/SECURITY.md` and
+> `docs/THREAT-MODEL.md`. The items that moved are marked below; the ones that
+> did **not** move are more important to read — 3.5 / 7.6 (RLS never evaluated
+> by a database) remains the single largest open risk, and no amount of
+> application-layer work in this sprint changes that.
+
 ---
 
 ## Summary
@@ -17,19 +24,21 @@
 | --------------------------------- | ------ | ------- | ----------- | ------------------ |
 | 1. Repository & Release           | 1      | 1       | 5           | **1 / 7**          |
 | 2. Persistence                    | 2      | 1       | 8           | **2 / 11**         |
-| 3. Authentication & Authorization | 3      | 3       | 6           | **3 / 12**         |
-| 4. Object Storage                 | 1      | 1       | 7           | **1 / 9**          |
+| 3. Authentication & Authorization | 7      | 0       | 5           | **7 / 12**         |
+| 4. Object Storage                 | 2      | 1       | 6           | **2 / 9**          |
 | 5. Background Runtime             | 1      | 2       | 6           | **1 / 9**          |
 | 6. Observability                  | 1      | 0       | 6           | **1 / 7**          |
-| 7. Security                       | 5      | 3       | 7           | **5 / 15**         |
+| 7. Security                       | 10     | 4       | 1           | **10 / 15**        |
 | 8. Performance                    | 3      | 2       | 4           | **3 / 9**          |
 | 9. Quality & Testing              | 6      | 2       | 3           | **6 / 11**         |
 | 10. Deployment & DR               | 0      | 1       | 8           | **0 / 9**          |
 | 11. Documentation & Process       | 6      | 1       | 4           | **6 / 11**         |
 | 12. Compliance                    | 0      | 0       | 5           | **0 / 5**          |
-| **TOTAL**                         | **29** | **17**  | **65**      | **29 / 115 (25%)** |
+| **TOTAL**                         | **43** | **19**  | **53**      | **43 / 115 (37%)** |
 
-**25% is the honest number for a product whose entire production substrate is unstarted.** The domain and interaction work is done; almost everything on this list is infrastructure that Sprints 13–17 exist to build.
+**37% after Sprint 2.2, and the honest reading has not changed much.** Section 7 moved from 5/15 to 10/15 and section 3 from 3/12 to 7/12, but every one of those points is _application-layer_: code that has been reviewed, type-checked and unit-tested, and in the case of the CSP verified against a running production build.
+
+What did not move is the part that matters most. **RLS has still never been evaluated by a database** (3.5, 7.6), there are still no integration tests against Postgres (9.9), and five of the six system roles have still never run (3.6). Every tenant-isolation fix in Sprint 2.2 is a `WHERE` clause that has never executed against real rows. Those are Sprint 13's to close, and until they are, the security posture is _well-constructed and unverified_ rather than proven.
 
 ---
 
@@ -63,34 +72,34 @@
 
 ## 3. Authentication & Authorization
 
-| #    | Item                                      | Status | Note                                                                                                                                        |
-| ---- | ----------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.1  | Auth provider integrated                  | ✅     | Supabase Auth: password, magic link, Google OAuth, PKCE — written                                                                           |
-| 3.2  | Session handling in the gateway           | ✅     | `proxy.ts` `getUser()` refresh — frozen                                                                                                     |
-| 3.3  | Permission vocabulary defined             | ✅     | 22 modules × 15 actions, mirrored in SQL and TypeScript                                                                                     |
-| 3.4  | Real auth flows verified                  | ❌     | Never executed. Sprint 15                                                                                                                   |
-| 3.5  | RLS policies evaluated by a database      | ❌     | **Never. The platform's central security claim is unverified.**                                                                             |
-| 3.6  | All six system roles exercised            | ❌     | Only `owner` has ever been used                                                                                                             |
-| 3.7  | `requirePermission` on every real action  | ⚠️     | Pattern followed; **never audited exhaustively.** The service-layer connection bypasses RLS, so a single omission is unprotected. Sprint 13 |
-| 3.8  | `DEMO_MODE` cannot reach production       | ❌     | **P2-06 open.** No build-time guard. Demo login accepts any credentials and grants `*:*`.                                                   |
-| 3.9  | Session cookie flags correct on all paths | ⚠️     | `enterDemoWorkspace()` correct; **`mock-actions.ts` sets `demo_session` with no `httpOnly`/`secure`/`sameSite`**                            |
-| 3.10 | Portal session auth real                  | ❌     | TD-10. Sprint 15                                                                                                                            |
-| 3.11 | Password reset / email verification       | ❌     | Sprint 15                                                                                                                                   |
-| 3.12 | User provisioning / invitation flow       | ❌     | Sprint 15                                                                                                                                   |
+| #    | Item                                      | Status | Note                                                                                                                                                                                                                                                                                            |
+| ---- | ----------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.1  | Auth provider integrated                  | ✅     | Supabase Auth: password, magic link, Google OAuth, PKCE — written                                                                                                                                                                                                                               |
+| 3.2  | Session handling in the gateway           | ✅     | `proxy.ts` `getUser()` refresh — frozen                                                                                                                                                                                                                                                         |
+| 3.3  | Permission vocabulary defined             | ✅     | 22 modules × 15 actions, mirrored in SQL and TypeScript                                                                                                                                                                                                                                         |
+| 3.4  | Real auth flows verified                  | ❌     | Never executed. Sprint 15                                                                                                                                                                                                                                                                       |
+| 3.5  | RLS policies evaluated by a database      | ❌     | **Never. The platform's central security claim is unverified.**                                                                                                                                                                                                                                 |
+| 3.6  | All six system roles exercised            | ❌     | Only `owner` has ever been used                                                                                                                                                                                                                                                                 |
+| 3.7  | `requirePermission` on every real action  | ✅     | **Sprint 2.2.** Audited mechanically and enforced on every commit — `scripts/audit-authorization.ts` + `tests/unit/authorization-coverage.test.ts`. First run found 6 unguarded actions across automation, agents and shares; all closed. 4 sign-in actions exempt, each with a written reason. |
+| 3.8  | `DEMO_MODE` cannot reach production       | ✅     | **Sprint 2.2.** `isDemoMode()` returns false under `NODE_ENV=production` unconditionally, independent of the boot gate (which skips the Edge runtime and the build phase). P2-06 closed.                                                                                                        |
+| 3.9  | Session cookie flags correct on all paths | ✅     | **Sprint 2.2.** One definition in `features/auth/demo-session.ts`; both writers use it. Portal sessions likewise (`httpOnly`, `secure`, `sameSite=lax`, bounded TTL).                                                                                                                           |
+| 3.10 | Portal session auth real                  | ✅     | **Sprint 2.2.** `lib/portal/session.ts` — share token verified, then exchanged for a server-side session scoped to the share's own organisation and client. Token stored as SHA-256 only; revocation is a status update. TD-10 closed.                                                          |
+| 3.11 | Password reset / email verification       | ❌     | Sprint 15                                                                                                                                                                                                                                                                                       |
+| 3.12 | User provisioning / invitation flow       | ❌     | Sprint 15                                                                                                                                                                                                                                                                                       |
 
 ## 4. Object Storage
 
-| #   | Item                                | Status | Note                                                                                                                            |
-| --- | ----------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| 4.1 | Provider interface defined          | ✅     | `StorageService` — clean, provider-agnostic                                                                                     |
-| 4.2 | Real storage provider               | ❌     | **TD-02.** A hand-written object literal returns `mock.supabase.co` URLs                                                        |
-| 4.3 | Bucket provisioned with policies    | ❌     | Sprint 14                                                                                                                       |
-| 4.4 | Upload path transfers bytes         | ⚠️     | Record, version and a real browser-computed SHA-256 are created; **no bytes move**                                              |
-| 4.5 | Download works                      | ❌     | Sprint 14                                                                                                                       |
-| 4.6 | Inline preview                      | ❌     | Sprint 14                                                                                                                       |
-| 4.7 | Virus scanning                      | ❌     | **TD-09. `MockVirusScanner` always returns `isClean: true`.**                                                                   |
-| 4.8 | Dedup is organisation-scoped        | ❌     | **`finalizeFileUpload` matches `sha256Hash` with no org filter** — cross-tenant blob sharing. Treat as a security defect (R-9). |
-| 4.9 | Share-link downloads expire and cap | ❌     | Schema supports `expiresAt` / `maxDownloads`; unenforced without real storage                                                   |
+| #   | Item                                | Status | Note                                                                                                                                                                               |
+| --- | ----------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.1 | Provider interface defined          | ✅     | `StorageService` — clean, provider-agnostic                                                                                                                                        |
+| 4.2 | Real storage provider               | ❌     | **TD-02.** Still a hand-written mock returning `mock.supabase.co` URLs. Sprint 2.2 made it **throw in production** — a "signed" URL no backend enforces is an unauthenticated one. |
+| 4.3 | Bucket provisioned with policies    | ❌     | Sprint 14                                                                                                                                                                          |
+| 4.4 | Upload path transfers bytes         | ⚠️     | Record, version and a real browser-computed SHA-256 are created; **no bytes move**                                                                                                 |
+| 4.5 | Download works                      | ❌     | Sprint 14                                                                                                                                                                          |
+| 4.6 | Inline preview                      | ❌     | Sprint 14                                                                                                                                                                          |
+| 4.7 | Virus scanning                      | ⚠️     | **TD-09.** Still a mock, but **fails closed in production** as of Sprint 2.2 rather than returning `isClean: true` everywhere.                                                     |
+| 4.8 | Dedup is organisation-scoped        | ✅     | **Sprint 2.2.** Organisation filter added. R-9 closed, including the existence oracle it created.                                                                                  |
+| 4.9 | Share-link downloads expire and cap | ❌     | Schema supports `expiresAt` / `maxDownloads`; unenforced without real storage                                                                                                      |
 
 ## 5. Background Runtime
 
@@ -120,37 +129,37 @@
 
 ## 7. Security
 
-| #    | Item                              | Status | Note                                                                          |
-| ---- | --------------------------------- | ------ | ----------------------------------------------------------------------------- |
-| 7.1  | Multi-tenant schema design        | ✅     | `organization_id` on every operational table                                  |
-| 7.2  | RLS policies written              | ✅     | Migration `0001` + per-module policies                                        |
-| 7.3  | Permission engine SQL/TS parity   | ✅     | `app.has_permission` mirrors the TypeScript vocabulary                        |
-| 7.4  | Org-isolation policy helper       | ✅     | `orgIsolationPolicy` applied across modules                                   |
-| 7.5  | Portal token security             | ✅     | JWT + HMAC signing implemented                                                |
-| 7.6  | RLS verified at runtime           | ❌     | **Never evaluated by a database**                                             |
-| 7.7  | Demo bypass blocked in production | ❌     | **P2-06**                                                                     |
-| 7.8  | Cookie flags on every path        | ⚠️     | See 3.9                                                                       |
-| 7.9  | Virus scanning                    | ❌     | See 4.7                                                                       |
-| 7.10 | Cross-tenant dedup closed         | ❌     | See 4.8                                                                       |
-| 7.11 | Rate limiting / WAF               | ❌     | Sprint 17                                                                     |
-| 7.12 | Security headers / CSP            | ❌     | Sprint 17                                                                     |
-| 7.13 | Dependency vulnerability audit    | ❌     | Sprint 17                                                                     |
-| 7.14 | Penetration test                  | ❌     | Sprint 17                                                                     |
-| 7.15 | Secrets management                | ⚠️     | `.env.local` gitignored, `.env.example` tracked; no vault, no rotation policy |
+| #    | Item                              | Status | Note                                                                                                                                                                                                                                                                                                                         |
+| ---- | --------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 7.1  | Multi-tenant schema design        | ✅     | `organization_id` on every operational table                                                                                                                                                                                                                                                                                 |
+| 7.2  | RLS policies written              | ✅     | Migration `0001` + per-module policies                                                                                                                                                                                                                                                                                       |
+| 7.3  | Permission engine SQL/TS parity   | ✅     | `app.has_permission` mirrors the TypeScript vocabulary                                                                                                                                                                                                                                                                       |
+| 7.4  | Org-isolation policy helper       | ✅     | `orgIsolationPolicy` applied across modules                                                                                                                                                                                                                                                                                  |
+| 7.5  | Portal token security             | ✅     | JWT + HMAC signing implemented                                                                                                                                                                                                                                                                                               |
+| 7.6  | RLS verified at runtime           | ❌     | **Never evaluated by a database**                                                                                                                                                                                                                                                                                            |
+| 7.7  | Demo bypass blocked in production | ✅     | **Sprint 2.2.** See 3.8.                                                                                                                                                                                                                                                                                                     |
+| 7.8  | Cookie flags on every path        | ✅     | **Sprint 2.2.** See 3.9                                                                                                                                                                                                                                                                                                      |
+| 7.9  | Virus scanning                    | ⚠️     | **Sprint 2.2.** Still a mock (TD-09), but it now _fails closed_ in production instead of stamping every file clean. Cannot ship silently.                                                                                                                                                                                    |
+| 7.10 | Cross-tenant dedup closed         | ✅     | **Sprint 2.2.** `finalizeFileUpload` deduplicates within the organisation. Closed the existence oracle too — R-9.                                                                                                                                                                                                            |
+| 7.11 | Rate limiting / WAF               | ⚠️     | **Sprint 2.2.** Application-layer rate limiting shipped (`lib/security/rate-limit.ts`): weighted sliding window, Redis-backed with an in-memory fallback, on sign-in, magic link, auth callback, approval verify, portal session and share passwords. **No WAF** — that remains Sprint 17. Per-instance without `REDIS_URL`. |
+| 7.12 | Security headers / CSP            | ✅     | **Sprint 2.2.** Nonce-based CSP with no `'unsafe-inline'` for scripts, emitted per request by the proxy; full static header set. Verified against a production build, not just unit-tested. `style-src` keeps `'unsafe-inline'` — documented in `docs/SECURITY.md` §4.                                                       |
+| 7.13 | Dependency vulnerability audit    | ✅     | **Sprint 2.2.** Run, acted on (Next → 16.3.0, clearing a proxy bypass + SSRF + DoS and transitively postcss/sharp), and wired into CI as `npm run audit:deps` at `--audit-level=high`. 4 moderate dev-only findings accepted with reasons.                                                                                   |
+| 7.14 | Penetration test                  | ❌     | Sprint 17                                                                                                                                                                                                                                                                                                                    |
+| 7.15 | Secrets management                | ⚠️     | Unchanged: `.env.local` gitignored, `.env.example` tracked, boot-time validation and no constant fallbacks (Sprint 2.1). Still **no vault and no rotation policy** — Sprint 2.3.                                                                                                                                             |
 
 ## 8. Performance
 
-| #   | Item                                    | Status | Note                                                                       |
-| --- | --------------------------------------- | ------ | -------------------------------------------------------------------------- |
-| 8.1 | Production build green                  | ✅     | 3.8 s compile, 31 static pages, 36 routes                                  |
-| 8.2 | List virtualisation                     | ✅     | `@tanstack/react-virtual` on task list and board                           |
-| 8.3 | Parallelised reads                      | ✅     | Drawer sub-reads use `Promise.all`                                         |
-| 8.4 | Pagination                              | ⚠️     | Works; **over-fetches one row to infer "has more"** (no total-count query) |
-| 8.5 | Server-side filtering everywhere        | ⚠️     | Meetings and Timeline filter client-side over a bounded batch (TD item 7)  |
-| 8.6 | Measured under real latency             | ❌     | **Every measurement to date is in-memory**                                 |
-| 8.7 | Load tested                             | ❌     | Sprint 17                                                                  |
-| 8.8 | Query plans reviewed / indexes verified | ❌     | Indexes declared; never `EXPLAIN`ed                                        |
-| 8.9 | Caching strategy                        | ❌     | Redis cache falls back to a warning stub                                   |
+| #   | Item                                    | Status | Note                                                                                                                                                                                      |
+| --- | --------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 8.1 | Production build green                  | ✅     | Green on Next 16.3.0. **Sprint 2.2:** all 36 routes are now dynamic — the nonce-based CSP requires a per-request header in the root layout, which costs prerendering on 9 trivial shells. |
+| 8.2 | List virtualisation                     | ✅     | `@tanstack/react-virtual` on task list and board                                                                                                                                          |
+| 8.3 | Parallelised reads                      | ✅     | Drawer sub-reads use `Promise.all`                                                                                                                                                        |
+| 8.4 | Pagination                              | ⚠️     | Works; **over-fetches one row to infer "has more"** (no total-count query)                                                                                                                |
+| 8.5 | Server-side filtering everywhere        | ⚠️     | Meetings and Timeline filter client-side over a bounded batch (TD item 7)                                                                                                                 |
+| 8.6 | Measured under real latency             | ❌     | **Every measurement to date is in-memory**                                                                                                                                                |
+| 8.7 | Load tested                             | ❌     | Sprint 17                                                                                                                                                                                 |
+| 8.8 | Query plans reviewed / indexes verified | ❌     | Indexes declared; never `EXPLAIN`ed                                                                                                                                                       |
+| 8.9 | Caching strategy                        | ❌     | Redis cache falls back to a warning stub                                                                                                                                                  |
 
 ## 9. Quality & Testing
 

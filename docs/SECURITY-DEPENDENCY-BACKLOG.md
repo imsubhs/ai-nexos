@@ -1,5 +1,16 @@
 # Security dependency backlog
 
+> **Status: item 1 resolved in Sprint 2.2 (2026-08-07).** `next` and
+> `eslint-config-next` are now pinned to `16.3.0`, which clears all three
+> high-severity advisories plus the transitive `postcss` and `sharp` ones. Item
+> 2 (`drizzle-kit` → esbuild, moderate, dev-only) is accepted and unchanged —
+> the reasoning is below and still holds.
+>
+> `npm run audit:deps` runs in CI at `--audit-level=high`, so a new
+> high-severity advisory now fails the pipeline rather than waiting for someone
+> to remember to look. The section below is kept as the record of what was
+> found and why each call was made.
+
 Findings from `npm audit` during Phase 1 repository hardening. **No dependency
 was upgraded in that phase** — upgrades were deliberately deferred to a separate
 PR so the header/env changes could be reviewed and merged on their own.
@@ -9,7 +20,7 @@ Re-run `npm audit` before acting; advisory lists change.
 
 ---
 
-## 1. `next` — 9 advisories, high severity (runtime, ships to production)
+## 1. `next` — 9 advisories, high severity (runtime, ships to production) — **RESOLVED**
 
 Installed: **16.2.10**. Every advisory below is fixed in **16.3.0**, a
 patch-level move inside the same major line.
@@ -44,9 +55,15 @@ Verify after bumping: `npm run typecheck && npm run lint && npm test &&
 npm run build`, then exercise both domains — an internal route (auth gate) and
 a portal share link — since the proxy advisory touches exactly that code path.
 
+**Done, Sprint 2.2.** Bumped to `16.3.0` (both packages, pinned exactly). All
+five gates green afterwards, and the proxy path was re-exercised against a
+production build: nonce-only CSP still emitted, all inline scripts nonced, the
+portal-domain rewrite still routes, and an unauthenticated `/api/*` request
+still receives 401 rather than a redirect.
+
 ---
 
-## 2. `drizzle-kit` — moderate, **dev-only**
+## 2. `drizzle-kit` — moderate, **dev-only** — accepted
 
 Chain: `drizzle-kit` → `@esbuild-kit/esm-loader` → `@esbuild-kit/core-utils` →
 `esbuild <=0.24.2`.
@@ -64,12 +81,31 @@ running, not a deployed environment. `drizzle-kit` is a `devDependency` used for
 Accept for now and re-check on the next `drizzle-kit` minor. Do not run
 `drizzle-kit studio` on an untrusted network in the meantime.
 
+**Confirmed in Sprint 2.2.** `npm audit` offers `drizzle-kit@0.18.1` as the
+fix, which is a major downgrade: it predates the migration format the ten
+journaled migrations in this repository are written in. Trading a working,
+verifiable migration history for a dev-server advisory this project never
+exposes is the wrong side of that trade. These four moderate findings are the
+reason `audit:deps` runs at `--audit-level=high` rather than failing on
+everything — a gate that is always red is a gate nobody reads.
+
 ---
 
-## Suggested sequencing
+## Sequencing — completed
 
-1. Merge Phase 1 hardening (headers, env validation, secret-fallback removal).
-2. Open a dependency-only PR: `next` + `eslint-config-next` → 16.3.0. Keep it
-   free of behavioural changes so a regression is easy to bisect.
-3. Re-run `npm audit`; expect only the dev-only `drizzle-kit`/esbuild chain to
-   remain.
+1. ~~Merge Phase 1 hardening (headers, env validation, secret-fallback removal).~~ Done.
+2. ~~Bump `next` + `eslint-config-next` → 16.3.0, free of behavioural changes.~~
+   Done in Sprint 2.2 as its own commit, so a regression bisects cleanly.
+3. ~~Re-run `npm audit`.~~ Done: only the dev-only `drizzle-kit`/esbuild chain
+   remains, exactly as predicted.
+
+## Ongoing
+
+`npm run audit:deps` is a CI gate. When it fails, the decision is one of:
+
+- **Upgrade** if a non-major fix exists — that was item 1, and it took one
+  commit.
+- **Accept with a written reason** if the fix costs more than the exposure, as
+  with item 2. Record it in this file. An accepted finding with no reasoning is
+  indistinguishable from one nobody looked at.
+- **Never** silence the gate by lowering `--audit-level`.
