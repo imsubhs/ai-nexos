@@ -1,9 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 import { randomBytes } from "crypto";
+import { getSigningSecret } from "@/lib/env";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "default_development_secret",
-);
+/**
+ * Resolved per call rather than captured at import time: a missing secret must
+ * fail loudly in production instead of falling back to a constant living in
+ * this file, which would make every external review token forgeable.
+ */
+const jwtSecret = () => getSigningSecret("JWT_SECRET");
 
 export async function signExternalReviewToken(
   reviewId: string,
@@ -17,14 +21,14 @@ export async function signExternalReviewToken(
     .setJti(jti)
     .setIssuedAt()
     .setExpirationTime(expiresIn)
-    .sign(JWT_SECRET);
+    .sign(jwtSecret());
 
   return token;
 }
 
 export async function verifyExternalReviewToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, jwtSecret());
     return payload as { reviewId: string; externalEmail: string; jti: string };
   } catch (err) {
     throw new Error("Invalid or expired external review token");

@@ -8,10 +8,15 @@ import {
 } from "@/db/schema/shares";
 import { db } from "@/db";
 import { eq, and, isNull } from "drizzle-orm";
+import { getSigningSecret } from "@/lib/env";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.SHARE_JWT_SECRET || "default_secret_for_dev_only",
-);
+/**
+ * Resolved per call rather than captured at import time: a missing secret must
+ * fail loudly in production instead of falling back to a constant living in
+ * this file. Share tokens gate unauthenticated portal access, so a predictable
+ * signing key would let anyone mint a valid share session.
+ */
+const jwtSecret = () => getSigningSecret("SHARE_JWT_SECRET");
 
 export interface ShareTokenPayload {
   sessionId: string;
@@ -51,7 +56,7 @@ export class ShareSecurityMiddleware {
       .setProtectedHeader({ alg })
       .setIssuedAt()
       .setExpirationTime(expirationTime)
-      .sign(JWT_SECRET);
+      .sign(jwtSecret());
   }
 
   /**
@@ -76,7 +81,7 @@ export class ShareSecurityMiddleware {
    */
   static async validateToken(token: string, passwordProvided?: string) {
     try {
-      const { payload } = await jwtVerify(token, JWT_SECRET);
+      const { payload } = await jwtVerify(token, jwtSecret());
       const { sessionId, identityId, nonce } =
         payload as unknown as ShareTokenPayload;
 

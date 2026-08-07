@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
+/blob-report/
+/.playwright/
 
 # next.js
 /.next/
@@ -22,7 +26,21 @@
 
 # misc
 .DS_Store
+Thumbs.db
+
+# credentials — never commit key material of any kind
 *.pem
+*.key
+*.p12
+*.pfx
+*.crt
+!**/public/**/*.key
+
+# editor / IDE local state
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 
 # local working notes — never part of the product
 /scratch/
