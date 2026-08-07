@@ -33,17 +33,17 @@ Ordered. Each blocks the next. Full detail in `VERSION_CONTROL_PLAN.md` §8 and 
 
 - [ ] **1. Commit the migrations first, atomically, with explicit paths.**
 
-      ```bash
-                  git add database/migrations/0008_same_johnny_storm.sql \
-                          database/migrations/0009_mute_wallow.sql \
-                          database/migrations/meta/0008_snapshot.json \
-                          database/migrations/meta/0009_snapshot.json \
-                          database/migrations/meta/_journal.json
-                  git status --short database/          # all five staged? nothing missing?
-                  git commit -m "fix(db): journal migrations 0008 and 0009"
-                  ```
+  ```bash
+  git add database/migrations/0008_same_johnny_storm.sql \
+          database/migrations/0009_mute_wallow.sql \
+          database/migrations/meta/0008_snapshot.json \
+          database/migrations/meta/0009_snapshot.json \
+          database/migrations/meta/_journal.json
+  git status --short database/          # all five staged? nothing missing?
+  git commit -m "fix(db): journal migrations 0008 and 0009"
+  ```
 
-                  ⛔ **Never `git add -u` or `git commit -a` here.** Both stage the modified `_journal.json` while ignoring the untracked `.sql` files, producing a repository whose journal references migrations that do not exist. This is the one ordering detail that must survive any shortcut.
+  ⛔ **Never `git add -u` or `git commit -a` here.** Both stage the modified `_journal.json` while ignoring the untracked `.sql` files, producing a repository whose journal references migrations that do not exist. This is the one ordering detail that must survive any shortcut.
 
 - [ ] **2. Commit the sprint history** — Commits 2–8 (`REPOSITORY_STABILIZATION_REPORT.md` §8).
 - [ ] **3. Commit documentation** — Commit 9; set `package.json` version to `1.0.0-beta`.
@@ -51,12 +51,12 @@ Ordered. Each blocks the next. Full detail in `VERSION_CONTROL_PLAN.md` §8 and 
 - [ ] **5. Fast-forward `main`:** `git checkout main && git merge --ff-only phase-03-core-product`
 - [ ] **6. ⛔ Add a private remote and push branches _and_ tags.**
 
-      ```bash
-                  git remote add origin git@github.com:<org>/ai-nexos.git
-                  git push -u origin main
-                  git push origin phase-03-core-product
-                  git push origin --tags
-                  ```
+  ```bash
+  git remote add origin git@github.com:<org>/ai-nexos.git
+  git push -u origin main
+  git push origin phase-03-core-product
+  git push origin --tags
+  ```
 
 - [ ] **7. Verify the push actually protected the work** — §2. A remote that has never been cloned from is an assumption, not a backup.
 - [ ] **8. Create an offline bundle** as a second copy — §5.
@@ -74,22 +74,22 @@ Run **after** step 6, on a different directory — ideally a different machine.
 
 - [ ] Refs exist remotely
 
-      ```bash
-                  git ls-remote --heads origin      # main present?
-                  git ls-remote --tags  origin      # v1.0.0-beta AND v1.0.0-baseline present?
-                  git rev-parse HEAD                # equals origin/main?
-                  git rev-parse origin/main
-                  ```
+  ```bash
+  git ls-remote --heads origin      # main present?
+  git ls-remote --tags  origin      # v1.0.0-beta AND v1.0.0-baseline present?
+  git rev-parse HEAD                # equals origin/main?
+  git rev-parse origin/main
+  ```
 
 - [ ] **Clone it somewhere else and run §3 against the clone.** This is the actual test. Everything above only proves bytes moved.
 - [ ] Confirm the clone's migration set is consistent:
 
-      ```bash
-                  ls database/migrations/*.sql | wc -l                        # 10
-                  grep -c '"tag"' database/migrations/meta/_journal.json      # 10
-                  ```
+  ```bash
+  ls database/migrations/*.sql | wc -l                        # 10
+  grep -c '"tag"' database/migrations/meta/_journal.json      # 10
+  ```
 
-                  **If these disagree, the journal hazard fired.** Fix on the source and re-push before doing anything else.
+  **If these disagree, the journal hazard fired.** Fix on the source and re-push before doing anything else.
 
 - [ ] Confirm no secret travelled: `git log --all --name-only | grep -E '^\.env' | grep -v '\.env\.example'` returns nothing.
 
@@ -101,44 +101,44 @@ This section was executed in Phase C.1 against a clean copy of the full committa
 
 - [ ] **Clone and install**
 
-      ```bash
-                  git clone <remote> ai-nexos && cd ai-nexos
-                  node -v                    # 24.x — CI uses 24; repo has no engines/.nvmrc pin
-                  npm ci                     # ✅ exit 0, clean from package-lock.json (v3)
-                  ```
+  ```bash
+  git clone <remote> ai-nexos && cd ai-nexos
+  node -v                    # 24.x — CI uses 24; repo has no engines/.nvmrc pin
+  npm ci                     # ✅ exit 0, clean from package-lock.json (v3)
+  ```
 
 - [ ] **Environment — the 4-variable minimum**
 
-      ```bash
-                  cat > .env.local <<'EOF'
-                  DEMO_MODE="true"
-                  DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/postgres"
-                  NEXT_PUBLIC_SUPABASE_URL="https://placeholder.supabase.co"
-                  NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder-anon-key"
-                  EOF
-                  ```
+  ```bash
+  cat > .env.local <<'EOF'
+  DEMO_MODE="true"
+  DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/postgres"
+  NEXT_PUBLIC_SUPABASE_URL="https://placeholder.supabase.co"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder-anon-key"
+  EOF
+  ```
 
-                  ⚠️ `DEMO_MODE` is **not** in `.env.example` (F-3). ⚠️ `DATABASE_URL` is required even in demo mode (F-2) — module-eval guard in `src/db/index.ts`; nothing connects.
+  ⚠️ `DEMO_MODE` is **not** in `.env.example` (F-3). ⚠️ `DATABASE_URL` is required even in demo mode (F-2) — module-eval guard in `src/db/index.ts`; nothing connects.
 
 - [ ] **Gates — expected results**
 
-      | Command | Verified result |
-                  |---|---|
-                  | `npm run lint` | ✅ exit 0 — **0 errors, 109 warnings** (warnings are the baseline) |
-                  | `npm run typecheck` | ✅ exit 0, strict |
-                  | `npm test` | ✅ **240 passed (240)**, 22 files, 2.72 s |
-                  | `npm run build` | ✅ green, **35 routes**, 3.4 s compile |
-                  | `npm run format:check` | ❌ **exit 1 — 341 files. Known (F-1). Not a recovery failure.** |
+  | Command                | Verified result                                                    |
+  | ---------------------- | ------------------------------------------------------------------ |
+  | `npm run lint`         | ✅ exit 0 — **0 errors, 109 warnings** (warnings are the baseline) |
+  | `npm run typecheck`    | ✅ exit 0, strict                                                  |
+  | `npm test`             | ✅ **240 passed (240)**, 22 files, 2.72 s                          |
+  | `npm run build`        | ✅ green, **35 routes**, 3.4 s compile                             |
+  | `npm run format:check` | ❌ **exit 1 — 341 files. Known (F-1). Not a recovery failure.**    |
 
 - [ ] **Runtime**
 
-      ```bash
-                  npm run dev                                    # ✅ Ready in 176 ms
-                  curl -s http://localhost:3000/api/health       # ✅ {"status":"healthy","demoMode":true,...}
-                  curl -o /dev/null -w '%{http_code}\n' http://localhost:3000/login   # ✅ 200
-                  ```
+  ```bash
+  npm run dev                                    # ✅ Ready in 176 ms
+  curl -s http://localhost:3000/api/health       # ✅ {"status":"healthy","demoMode":true,...}
+  curl -o /dev/null -w '%{http_code}\n' http://localhost:3000/login   # ✅ 200
+  ```
 
-                  **`"demoMode":true` is the check that matters.** If it reads `false`, `DEMO_MODE` is not being read and nothing downstream will behave.
+  **`"demoMode":true` is the check that matters.** If it reads `false`, `DEMO_MODE` is not being read and nothing downstream will behave.
 
 - [ ] **Confirm no dependency on local-only state.** Verified in Phase C.1: nothing outside the four environment variables. No file outside the repository is required.
 
@@ -180,17 +180,17 @@ A single remote is one provider outage or one account lockout away from unavaila
 
 - [ ] Create a bundle after tagging:
 
-      ```bash
-                  git bundle create ai-nexos-$(date +%Y%m%d)-v1.0.0-beta.bundle --all
-                  git bundle verify ai-nexos-*.bundle
-                  ```
+  ```bash
+  git bundle create ai-nexos-$(date +%Y%m%d)-v1.0.0-beta.bundle --all
+  git bundle verify ai-nexos-*.bundle
+  ```
 
 - [ ] **Verify it restores** — the same discipline as §4 demands of database backups:
 
-      ```bash
-                  git clone ai-nexos-20260728-v1.0.0-beta.bundle /tmp/restore-test
-                  cd /tmp/restore-test && git log --oneline && git tag
-                  ```
+  ```bash
+  git clone ai-nexos-20260728-v1.0.0-beta.bundle /tmp/restore-test
+  cd /tmp/restore-test && git log --oneline && git tag
+  ```
 
 - [ ] Store the bundle off the working disk — external drive or cloud storage, **not** the same machine.
 - [ ] Refresh at each tag: `v1.0.0-beta`, `v1.0.0-rc.1`, `v1.0.0`.
