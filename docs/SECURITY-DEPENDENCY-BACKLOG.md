@@ -14,16 +14,16 @@ Re-run `npm audit` before acting; advisory lists change.
 Installed: **16.2.10**. Every advisory below is fixed in **16.3.0**, a
 patch-level move inside the same major line.
 
-| Advisory | Relevance to this app |
-| --- | --- |
+| Advisory                                                                  | Relevance to this app                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Middleware / Proxy bypass in App Router using Turbopack and single locale | **Highest concern.** `src/proxy.ts` is what routes the portal domain and gates unauthenticated internal traffic to `/login`. A bypass weakens that gate. The real boundary is still RLS + `requireCurrentUser()` at render time, which is why this is serious but not an open door. |
-| Unauthenticated disclosure of internal Server Function endpoints | The app is server-action heavy across `src/features/**`. |
-| SSRF in rewrites via attacker-controlled destination hostname | `proxy.ts` rewrites portal traffic into `/portal/*`. Destinations are internal paths, not attacker-supplied hostnames — likely not exploitable here, but the rewrite path is in use. |
-| SSRF in Server Actions on custom servers | Not deployed on a custom server today. |
-| Cache confusion of response bodies for requests with bodies (×2) | Applies to the response cache generally. |
-| DoS in App Router using Server Actions | Availability only. |
-| Unbounded Server Action payload in Edge runtime | Availability only. |
-| DoS in the Image Optimization API using SVGs | `next.config.ts` sets no `images.remotePatterns`, so only local images are optimizable. Low exposure. |
+| Unauthenticated disclosure of internal Server Function endpoints          | The app is server-action heavy across `src/features/**`.                                                                                                                                                                                                                            |
+| SSRF in rewrites via attacker-controlled destination hostname             | `proxy.ts` rewrites portal traffic into `/portal/*`. Destinations are internal paths, not attacker-supplied hostnames — likely not exploitable here, but the rewrite path is in use.                                                                                                |
+| SSRF in Server Actions on custom servers                                  | Not deployed on a custom server today.                                                                                                                                                                                                                                              |
+| Cache confusion of response bodies for requests with bodies (×2)          | Applies to the response cache generally.                                                                                                                                                                                                                                            |
+| DoS in App Router using Server Actions                                    | Availability only.                                                                                                                                                                                                                                                                  |
+| Unbounded Server Action payload in Edge runtime                           | Availability only.                                                                                                                                                                                                                                                                  |
+| DoS in the Image Optimization API using SVGs                              | `next.config.ts` sets no `images.remotePatterns`, so only local images are optimizable. Low exposure.                                                                                                                                                                               |
 
 **Transitive, pulled in by `next` and fixed by the same bump:**
 

@@ -44,7 +44,11 @@ export function buildContentSecurityPolicy(
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
     // 'unsafe-inline' — see the file header. 'unsafe-eval' is dev-only.
-    "script-src": ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])],
+    "script-src": [
+      "'self'",
+      "'unsafe-inline'",
+      ...(isDev ? ["'unsafe-eval'"] : []),
+    ],
     "style-src": ["'self'", "'unsafe-inline'"],
     // next/font/google self-hosts at build time, so no external font origin.
     "font-src": ["'self'", "data:"],

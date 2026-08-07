@@ -56,7 +56,9 @@ describe("server env validation", () => {
       ...BASE_ENV,
       JWT_SECRET: undefined,
     });
-    expect(() => getServerEnv()).toThrow(/JWT_SECRET is required in production/);
+    expect(() => getServerEnv()).toThrow(
+      /JWT_SECRET is required in production/,
+    );
   });
 
   it("fails in production when SHARE_JWT_SECRET is missing", async () => {
@@ -70,7 +72,10 @@ describe("server env validation", () => {
   });
 
   it("rejects a signing secret that is too short to be meaningful", async () => {
-    const { getServerEnv } = await loadEnv({ ...BASE_ENV, JWT_SECRET: "short" });
+    const { getServerEnv } = await loadEnv({
+      ...BASE_ENV,
+      JWT_SECRET: "short",
+    });
     expect(() => getServerEnv()).toThrow(/at least 32 characters/);
   });
 
