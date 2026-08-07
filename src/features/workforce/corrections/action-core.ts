@@ -44,6 +44,7 @@ import {
   type SubmitCorrectionInput,
 } from "./schemas";
 import type { CorrectionDetail, CorrectionListResult } from "./types";
+import { isDemoMode } from "@/lib/env.server";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -56,7 +57,7 @@ function nowIso(): string {
 
 /** Reviewer ids for the demo notification consumer (roles with review, §9). */
 function demoReviewerIds(organizationId: string): string[] {
-  if (process.env.DEMO_MODE !== "true") return [];
+  if (!isDemoMode()) return [];
   const users = getDemoStore().users as {
     userId: string;
     organizationId: string;

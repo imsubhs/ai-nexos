@@ -8,7 +8,7 @@ import {
 } from "@/db/schema/shares";
 import { db } from "@/db";
 import { eq, and, isNull } from "drizzle-orm";
-import { getSigningSecret } from "@/lib/env";
+import { getSigningSecret } from "@/lib/env.server";
 
 /**
  * Resolved per call rather than captured at import time: a missing secret must

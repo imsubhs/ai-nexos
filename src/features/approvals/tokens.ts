@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { randomBytes } from "crypto";
-import { getSigningSecret } from "@/lib/env";
+import { getSigningSecret } from "@/lib/env.server";
 
 /**
  * Resolved per call rather than captured at import time: a missing secret must

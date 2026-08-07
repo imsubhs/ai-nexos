@@ -13,6 +13,7 @@ import { getDemoStore, nextDemoId } from "@/lib/demo/store";
 import { EventEngine } from "./engine";
 import { LocalEventPublisher } from "./publisher";
 import type { EventType, IEventPayload } from "./types";
+import { isDemoMode } from "@/lib/env.server";
 
 export interface PublishDomainEventInput {
   organizationId: string;
@@ -104,7 +105,7 @@ export async function publishDomainEvent(
     correlationId: input.correlationId ?? input.aggregateId,
   };
 
-  if (process.env.DEMO_MODE === "true") {
+  if (isDemoMode()) {
     const store = getDemoStore();
     store.domainEvents.push({
       eventId: nextDemoId(store),

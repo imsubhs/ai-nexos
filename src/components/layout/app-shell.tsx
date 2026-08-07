@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { hasPermission } from "@/features/permissions/engine";
 import { NAV_SECTIONS } from "@/config/navigation";
+import { isDemoMode } from "@/lib/env.server";
 
 /**
  * Authenticated application shell shared by every internal route group.
@@ -36,7 +37,7 @@ export async function AppShell({
       />
       <SidebarInset>
         <AppHeader
-          isDemo={process.env.DEMO_MODE === "true"}
+          isDemo={isDemoMode()}
           user={{
             // Sprint 12A: the notification bell reads per-user, per-org.
             userId: user.userId,

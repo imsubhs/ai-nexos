@@ -27,18 +27,15 @@ import {
   type WorkforceReport,
 } from "./read-models";
 import type { AttendanceDirectoryRow } from "./types";
+import { isDemoMode } from "@/lib/env.server";
 
 const ALL_ROWS_PAGE_SIZE = 10_000;
 
 function attendanceRepo(): AttendanceRepository {
-  return process.env.DEMO_MODE === "true"
-    ? mockAttendanceRepository
-    : realAttendanceRepository;
+  return isDemoMode() ? mockAttendanceRepository : realAttendanceRepository;
 }
 function correctionRepo(): CorrectionRepository {
-  return process.env.DEMO_MODE === "true"
-    ? mockCorrectionRepository
-    : realCorrectionRepository;
+  return isDemoMode() ? mockCorrectionRepository : realCorrectionRepository;
 }
 
 function todayIso(): string {

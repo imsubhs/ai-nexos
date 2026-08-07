@@ -6,6 +6,7 @@ import { ContextBuilder } from "./context-builder";
 import { routeModel } from "./model-router";
 import { executeProvider } from "./provider-factory";
 import { ToolExecutor } from "./tool-executor";
+import { isDemoMode } from "@/lib/env.server";
 
 export interface GatewayRequest {
   organizationId: string;
@@ -28,7 +29,7 @@ export interface GatewayResponse {
 
 export class AIExecutionGateway {
   static async processRequest(req: GatewayRequest): Promise<GatewayResponse> {
-    if (process.env.DEMO_MODE === "true") {
+    if (isDemoMode()) {
       return {
         messageId: `mock-msg-${Date.now()}`,
         conversationId: req.conversationId || `mock-conv-${Date.now()}`,

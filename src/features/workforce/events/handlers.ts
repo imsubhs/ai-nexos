@@ -28,6 +28,7 @@ import type {
 } from "../attendance/validation-result-repository";
 import { mockValidationResultRepository } from "../attendance/validation-result-mock-repository";
 import { realValidationResultRepository } from "../attendance/validation-result-real-repository";
+import { isDemoMode } from "@/lib/env.server";
 
 /** The projection events — only these carry a validation result. */
 const PROJECTION_EVENTS: Record<string, ValidationSnapshotSource> = {
@@ -36,7 +37,7 @@ const PROJECTION_EVENTS: Record<string, ValidationSnapshotSource> = {
 };
 
 function validationRepo(): ValidationResultRepository {
-  return process.env.DEMO_MODE === "true"
+  return isDemoMode()
     ? mockValidationResultRepository
     : realValidationResultRepository;
 }

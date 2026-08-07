@@ -2,9 +2,10 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { isDemoMode } from "@/lib/env.server";
 
 export async function enterDemoWorkspace() {
-  if (process.env.DEMO_MODE !== "true") {
+  if (!isDemoMode()) {
     throw new Error("Demo mode is not enabled.");
   }
 

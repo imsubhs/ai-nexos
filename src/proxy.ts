@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { safeInternalPath } from "@/features/auth/redirect";
+import { isDemoMode } from "@/lib/env.server";
 
 /**
  * Request proxy (Next 16 file convention, successor to middleware).
@@ -86,8 +87,7 @@ export async function proxy(request: NextRequest) {
   // IMPORTANT: getUser() revalidates the JWT against Supabase Auth on every
   // request — do not replace with getSession(), which trusts the cookie.
   const isDemoSession =
-    process.env.DEMO_MODE === "true" &&
-    request.cookies.get("demo_session")?.value === "true";
+    isDemoMode() && request.cookies.get("demo_session")?.value === "true";
   let user = null;
 
   if (isDemoSession) {

@@ -6,8 +6,9 @@
  */
 import * as real from "./real-actions";
 import * as mock from "./mock-actions";
+import { isDemoMode } from "@/lib/env.server";
 
-const demo = () => process.env.DEMO_MODE === "true";
+const demo = () => isDemoMode();
 
 export async function createEmployeeAction(
   ...args: Parameters<typeof real.createEmployeeAction>

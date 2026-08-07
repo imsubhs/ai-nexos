@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { PermissionMap } from "@/features/permissions";
 import { cookies } from "next/headers";
 import { SYSTEM_ROLES } from "@/features/permissions/constants";
+import { isDemoMode } from "@/lib/env.server";
 
 export const DEMO_ADMIN_USER: CurrentUser = {
   userId: "00000000-0000-4000-8000-00000000f002",
@@ -50,8 +51,7 @@ export type CurrentUser = {
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const cookieStore = await cookies();
   const isDemo =
-    process.env.DEMO_MODE === "true" &&
-    cookieStore.get("demo_session")?.value === "true";
+    isDemoMode() && cookieStore.get("demo_session")?.value === "true";
 
   if (isDemo) {
     return DEMO_ADMIN_USER;

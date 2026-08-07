@@ -12,6 +12,7 @@
  */
 import { getDemoStore, nextDemoId } from "@/lib/demo/store";
 import type { CorrectionDetail } from "./types";
+import { isDemoMode } from "@/lib/env.server";
 
 function pushNotification(
   organizationId: string,
@@ -37,7 +38,7 @@ export function notifyCorrectionSubmitted(
   correction: CorrectionDetail,
   reviewerUserIds: string[],
 ): void {
-  if (process.env.DEMO_MODE !== "true") return;
+  if (!isDemoMode()) return;
   for (const reviewerId of reviewerUserIds) {
     if (reviewerId === correction.userId) continue; // never self-review
     pushNotification(
@@ -53,7 +54,7 @@ export function notifyCorrectionDecision(
   organizationId: string,
   correction: CorrectionDetail,
 ): void {
-  if (process.env.DEMO_MODE !== "true") return;
+  if (!isDemoMode()) return;
   const decided = correction.status === "APPROVED" ? "approved" : "rejected";
   pushNotification(
     organizationId,

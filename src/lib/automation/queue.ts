@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { isDemoMode } from "@/lib/env.server";
 export interface QueueMessage {
   id: string;
   runId: string;
@@ -44,10 +45,7 @@ export class InMemoryQueueProvider implements QueueProvider {
   private queues: Map<string, QueueMessage[]> = new Map();
 
   constructor() {
-    if (
-      process.env.NODE_ENV === "production" &&
-      process.env.DEMO_MODE !== "true"
-    ) {
+    if (process.env.NODE_ENV === "production" && !isDemoMode()) {
       throw new Error(
         "InMemoryQueueProvider is unsafe and not allowed in production environments. Please configure a Redis or Kafka provider.",
       );

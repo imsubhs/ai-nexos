@@ -16,6 +16,7 @@ import {
 import { eq } from "drizzle-orm";
 // Real Module 17 integration
 import { QueueProvider, InMemoryQueueProvider } from "@/lib/automation/queue";
+import { isDemoMode } from "@/lib/env.server";
 
 // Initialize Module 17 services
 const queueProvider: QueueProvider = new InMemoryQueueProvider(); // Assuming default config
@@ -27,7 +28,7 @@ export async function handleAgentExecutionJob(jobData: {
   runId: string;
   agentId: string;
 }) {
-  if (process.env.DEMO_MODE === "true") {
+  if (isDemoMode()) {
     console.log("[Demo Mode] Mocking agent execution job:", jobData);
     return;
   }

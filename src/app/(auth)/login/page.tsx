@@ -3,6 +3,7 @@ import { APP_NAME, APP_TAGLINE } from "@/config/app";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { enterDemoWorkspace } from "@/features/auth/actions/demo-login";
 import { Button } from "@/components/ui/button";
+import { isDemoMode } from "@/lib/env.server";
 
 // Bare title — the root layout template appends "· AI NEX OS".
 export const metadata: Metadata = { title: "Sign in" };
@@ -51,7 +52,7 @@ export default async function LoginPage({
 
         <LoginForm next={next} />
 
-        {process.env.DEMO_MODE === "true" && (
+        {isDemoMode() && (
           <div className="mt-6">
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">

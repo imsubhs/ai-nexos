@@ -19,13 +19,14 @@ import {
   type WorkforcePolicyOverride,
 } from "./policy-resolver";
 import type { WorkforcePolicy } from "./types";
+import { isDemoMode } from "@/lib/env.server";
 
 export async function getWorkforcePolicyAction(): Promise<WorkforcePolicy> {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "attendance", "read");
 
   let override: WorkforcePolicyOverride | null = null;
-  if (process.env.DEMO_MODE === "true") {
+  if (isDemoMode()) {
     const org = (
       getDemoStore().organizations as {
         organizationId: string;
