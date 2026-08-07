@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createBareClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { requirePublicEnv } from "@/lib/env";
+import { getServerEnv } from "@/lib/env.server";
 
 /**
  * Server Component / Server Action / Route Handler client.
@@ -10,8 +12,8 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requirePublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
     {
       cookies: {
         getAll() {
@@ -41,9 +43,16 @@ export async function createClient() {
  * Never import from client components.
  */
 export function createServiceClient() {
+  const serviceRoleKey = getServerEnv().SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is not set. The service-role client bypasses RLS and has no anon-key fallback by design; copy the key from Supabase \u203a Project Settings \u203a API into .env.local (server-side only \u2014 never prefix it with NEXT_PUBLIC_).",
+    );
+  }
+
   return createBareClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    serviceRoleKey,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 }

@@ -3,6 +3,7 @@ import {
   PreSignedUploadParams,
   PreSignedUrlResponse,
 } from "./StorageService";
+import { getStorageBucket } from "@/lib/env";
 
 // Mock placeholder for actual Supabase client initialization
 const supabaseAdmin = {
@@ -37,7 +38,7 @@ const supabaseAdmin = {
 export class SupabaseStorageProvider implements StorageService {
   private bucketName: string;
 
-  constructor(bucketName: string = "nexos-assets") {
+  constructor(bucketName: string = getStorageBucket()) {
     this.bucketName = bucketName;
   }
 

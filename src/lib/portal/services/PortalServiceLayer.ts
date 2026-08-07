@@ -11,6 +11,7 @@ import { approvalCycles } from "@/db/schema/approvals";
 import { projects } from "@/db/schema/projects";
 import { meetings } from "@/db/schema/meetings";
 import { eq, and, desc, lte, inArray } from "drizzle-orm";
+import { hasRedis, isDemoMode } from "@/lib/env.server";
 
 export interface PortalDashboardView {
   recentDeliverables: { id: string; name: string; status: string }[];
@@ -25,7 +26,7 @@ export interface PortalDashboardView {
   nextCursor?: string;
 }
 
-const cacheStrategy = process.env.REDIS_URL
+const cacheStrategy = hasRedis()
   ? new RedisPortalCacheStrategy()
   : new InMemoryPortalCacheStrategy();
 const cache = new PortalCache(cacheStrategy);
@@ -40,7 +41,7 @@ export class PortalServiceLayer {
     clientId: string,
     timelineCursor?: string,
   ): Promise<PortalDashboardView> {
-    if (process.env.DEMO_MODE === "true") {
+    if (isDemoMode()) {
       const { getDemoStore, DEMO_ORG_ID } = await import("../../demo/store");
       const store = getDemoStore();
 
@@ -276,7 +277,7 @@ export class PortalServiceLayer {
     deliverableId: string,
     comments?: string,
   ) {
-    if (process.env.DEMO_MODE === "true") {
+    if (isDemoMode()) {
       return { success: true, message: "Mock approval successful." };
     }
 

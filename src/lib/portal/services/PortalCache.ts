@@ -1,3 +1,4 @@
+import { hasRedis } from "@/lib/env.server";
 export interface PortalCacheStrategy {
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, value: T, ttlSeconds?: number): Promise<void>;
@@ -57,7 +58,7 @@ export class RedisPortalCacheStrategy implements PortalCacheStrategy {
   // Usually implemented with ioredis or @upstash/redis
 
   constructor() {
-    if (!process.env.REDIS_URL && process.env.NODE_ENV !== "test") {
+    if (!hasRedis() && process.env.NODE_ENV !== "test") {
       console.warn(
         "Redis URL not provided. RedisPortalCacheStrategy is mock-only.",
       );
