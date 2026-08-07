@@ -210,6 +210,26 @@
 
 ---
 
+## 13. Configuration (Phase 2, Sprint 2.1)
+
+Delivered in Sprint 2.1 unless noted. Reference: [ENVIRONMENT.md](ENVIRONMENT.md).
+
+| #     | Item                                                       | Status | Note                                                                      |
+| ----- | ---------------------------------------------------------- | ------ | ------------------------------------------------------------------------- |
+| 13.1  | Every variable classified and documented                   | ✅     | `ENV_MANIFEST` + `.env.example` + `ENVIRONMENT.md`                        |
+| 13.2  | Missing required variables fail at boot, not per-request   | ✅     | `src/instrumentation.ts` → `assertProductionConfig()`                     |
+| 13.3  | All problems reported in one message                       | ✅     | Shape and production checks run independently and merge                   |
+| 13.4  | Optional variables never crash an import                   | ✅     | Public parse is non-fatal; blank treated as absent                        |
+| 13.5  | Build succeeds with no secrets configured                  | ✅     | Verified; boot gate skipped during the build phase                        |
+| 13.6  | Server secrets absent from client bundles                  | ✅     | `env.server.ts` split; `.next/static` scanned for names and values        |
+| 13.7  | Obsolete / dead variables removed                          | ✅     | 6 removed (see ENVIRONMENT.md §2.2)                                       |
+| 13.8  | `DEMO_MODE=true` impossible in production                  | ✅     | Fatal startup error. Complements G3 (bypass at the auth layer, Sprint 15) |
+| 13.9  | Startup diagnostics, redacted                              | ✅     | `[env]` boot summary + `/api/health` services/fallbacks                   |
+| 13.10 | Pre-flight validation available to developers and CI       | ✅     | `npm run env:check [-- --production]`                                     |
+| 13.11 | Secret rotation runbook                                    | ❌     | Sprint 17. Rotating a signing secret invalidates outstanding tokens       |
+| 13.12 | Secrets held in a managed store, not platform env vars     | ❌     | Sprint 17 decision                                                        |
+| 13.13 | Production values verified against a real Supabase project | ❌     | Sprint 13 — no variable has been exercised against real infrastructure    |
+
 ## Release Gates
 
 **Cannot ship to any customer until all of these are green:**
@@ -223,9 +243,13 @@
 | **G5 — Restore rehearsed**         | 10.5, 10.6       | 17        |
 | **G6 — Observable**                | 6.2, 6.3, 6.4    | 16        |
 | **G7 — Legally able to hold data** | 12.1, 12.3, 12.5 | 17        |
+| **G8 — Configuration verified**    | 13.11–13.13      | 13 / 17   |
 
 **G1 and G2 are the two that would make a failure unrecoverable** — one because there is no second copy of the work, the other because a tenant-isolation defect discovered after customer data exists is a breach, not a bug.
 
 ---
 
 _Checklist only. No infrastructure was implemented in Phase C._
+
+_Section 13 added in Phase 2, Sprint 2.1. Sections 1–12 remain the Phase C
+point-in-time audit and were not re-audited._

@@ -345,7 +345,11 @@ Five sprints, **strictly ordered**. Each has a rollback that returns to `DEMO_MO
 **Objectives**
 
 1. Production environment: domains, TLS, DNS for `app.*` and `portal.*`.
-2. CI/CD deploy pipeline with gates (lint, typecheck, test, build) — CI exists; deployment does not.
+   Environment configuration itself is done (Phase 2 Sprint 2.1): set every
+   REQUIRED and PRODUCTION variable per [ENVIRONMENT.md](ENVIRONMENT.md) §6, then
+   gate the deploy on `npm run env:check -- --production`. A misconfigured
+   deployment now refuses to boot rather than serving broken requests.
+2. CI/CD deploy pipeline with gates (lint, format, typecheck, test, build) — CI exists and runs all five; deployment does not.
 3. Backup and DR: PITR, nightly logical dumps, **a rehearsed and timed restore**.
 4. Rate limiting and WAF.
 5. Security review: dependency audit, header policy, CSP, penetration test.
@@ -368,6 +372,8 @@ Five sprints, **strictly ordered**. Each has a rollback that returns to `DEMO_MO
 
 **Acceptance criteria**
 
+- [ ] `npm run env:check -- --production` green against the production environment
+- [ ] Secret rotation runbook written (checklist 13.11)
 - [ ] Production reachable on both domains with valid TLS
 - [ ] CI/CD deploys on merge with all gates enforced
 - [ ] **Restore rehearsed, timed, and the RTO documented**

@@ -1,9 +1,16 @@
 # AI NEX OS — Environment Setup
 
-**Version:** 1.0
-**Date:** 2026-07-28
+**Version:** 1.1
+**Date:** 2026-08-07 (revised, Phase 2 Sprint 2.1)
 **Applies to:** `v1.0.0-beta` (demo persistence)
-**Source of truth for variable _names_:** `.env.example`
+**Source of truth for variable _names_ and classification:** `.env.example` and
+[ENVIRONMENT.md](ENVIRONMENT.md)
+
+> **Superseded in part.** [ENVIRONMENT.md](ENVIRONMENT.md) is now the
+> authoritative environment reference. This document remains for the
+> demo-persistence walkthrough and prerequisites. The two "read this first"
+> warnings below described defects that have since been fixed — kept, corrected,
+> so anyone who read the earlier version knows they no longer apply.
 
 > **No secret values appear in this document.** Every value shown is a placeholder or an instruction to obtain one.
 
@@ -11,29 +18,46 @@
 
 ## 1. Read This First
 
-Two facts are not in `.env.example` and will cost you an hour if you do not know them.
+Both warnings that used to open this document have been resolved. Neither is a
+trap any more.
 
-### 1.1 `DEMO_MODE` is missing from `.env.example`
+### 1.1 `DEMO_MODE` is in `.env.example` (fixed)
 
-`DEMO_MODE` is the variable that selects the **entire persistence layer**. `DEMO_MODE === "true"` routes every read and write to the in-memory DemoStore, in roughly 20 dispatcher files. It is the only supported mode at `v1.0.0-beta`.
+`DEMO_MODE` selects the entire persistence layer: `"true"` routes every read and
+write to the in-memory DemoStore. It was previously missing from the template,
+so copying `.env.example` verbatim left it unset and sent every call to Drizzle
+adapters that had never run against a database — with no error naming the cause.
 
-**It is not in the template.** If you copy `.env.example` verbatim, `DEMO_MODE` is unset, unset is falsy, and every call goes to the real Drizzle adapters — **which have never been executed against a database.** With placeholder Supabase credentials every page fails; with real credentials against an unmigrated database every page fails differently. Neither error names the cause.
+It is now in `.env.example`, classified DEV ONLY, read through a single
+`isDemoMode()` accessor, and validated as an enum, so `DEMO_MODE=1` or
+`DEMO_MODE=yes` now fails at startup instead of silently selecting the live
+path. Setting it to `"true"` with `NODE_ENV=production` is a fatal startup
+error.
 
-**Always set `DEMO_MODE="true"` in `.env.local`.**
+**For a demo walkthrough, set `DEMO_MODE="true"` in `.env.local`.**
 
-This is tracked as finding F-3 in `REPOSITORY_STABILIZATION_REPORT.md` §6.1. The fix is a three-line addition to `.env.example` and has not yet been approved.
+### 1.2 `DATABASE_URL` no longer throws at import (fixed)
 
-### 1.2 `DATABASE_URL` is required even in demo mode
+`src/db/index.ts` used to throw `DATABASE_URL is not set` at _module
+evaluation_, so any route transitively reaching it failed the build regardless
+of `DEMO_MODE`. The Drizzle client is now initialised lazily (Phase 1), so the
+connection string is only needed when a query actually runs.
 
-`src/db/index.ts` throws `DATABASE_URL is not set` **at module evaluation**, not on first query. `next build` imports the module graph while collecting page data, so any route that transitively reaches it fails the build — regardless of `DEMO_MODE`, because the dispatcher chooses its branch at _call_ time while the import happens at _module_ time.
-
-**A placeholder DSN is sufficient. No database is contacted in demo mode.**
+`DATABASE_URL` is still REQUIRED by classification, and a placeholder DSN is
+sufficient in demo mode — nothing dials it.
 
 ```
 DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/postgres"
 ```
 
-Finding F-2 / TD-23. The correct fix is lazy client initialisation; that is a code change and out of scope for Phase C.1.
+### 1.3 Validate before you start
+
+```bash
+npm run env:check
+```
+
+Runs the same validation the server runs at boot and tells you exactly which
+variables are missing or falling back, before `npm run dev` does.
 
 ---
 

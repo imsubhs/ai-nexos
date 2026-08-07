@@ -16,7 +16,7 @@ through secure, login-free share links.
 | State/Data | Zustand · TanStack Query · React Hook Form · Zod                   |
 | Backend    | Supabase (PostgreSQL · Auth · Storage · Realtime · Edge Functions) |
 | ORM        | Drizzle ORM + Drizzle Kit migrations                               |
-| Email      | Resend                                                             |
+| Email      | Not yet integrated (see docs/ENVIRONMENT.md §2.2)                  |
 | Deployment | Vercel (dual domain)                                               |
 
 ### Domain topology
@@ -46,10 +46,30 @@ Host-based routing lives in [src/proxy.ts](src/proxy.ts).
 ```bash
 npm install
 cp .env.example .env.local   # fill in Supabase credentials
+npm run env:check            # validate configuration before starting
 npm run db:migrate           # apply migrations (uses DIRECT_DATABASE_URL)
 npm run db:seed              # bootstrap org, roles, departments, owner
 npm run dev
 ```
+
+### Environment
+
+[`.env.example`](.env.example) is the template; every variable is classified
+REQUIRED / PRODUCTION / OPTIONAL / DEV ONLY / TOOLING.
+[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) is the full reference — what each
+variable does, what happens when it is absent, and when validation fires.
+
+Three things worth knowing up front:
+
+- A misconfigured server **refuses to start** and lists every problem at once
+  (`src/instrumentation.ts`). It does not boot and fail one request at a time.
+- `next build` requires no secrets. Enforcement happens at boot, not at build,
+  because the build stage has no runtime environment.
+- `NEXT_PUBLIC_*` values are baked into the bundle at build time. Changing one
+  needs a rebuild, not a restart.
+
+Run `npm run env:check` (or `npm run env:check -- --production`) to validate
+without starting the app.
 
 Local portal testing: `http://portal.localhost:3000` (browsers resolve
 `*.localhost` automatically).
@@ -62,6 +82,8 @@ Local portal testing: `http://portal.localhost:3000` (browsers resolve
 | `npm run build`       | Production build                       |
 | `npm run lint`        | ESLint                                 |
 | `npm run typecheck`   | TypeScript                             |
+| `npm test`            | Vitest suite                           |
+| `npm run env:check`   | Validate environment configuration     |
 | `npm run format`      | Prettier                               |
 | `npm run db:generate` | Generate migration from schema changes |
 | `npm run db:migrate`  | Apply migrations                       |
