@@ -18,7 +18,9 @@
     "format:check": "prettier --check .",
     "env:check": "tsx scripts/check-env.ts",
     "audit:authz": "tsx scripts/audit-authorization.ts",
-    "audit:deps": "npm audit --audit-level=high"
+    "audit:deps": "npm audit --audit-level=high",
+    "storage:setup": "tsx scripts/storage-setup.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -1,70 +1,39 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   StorageService,
   PreSignedUploadParams,
   PreSignedUrlResponse,
 } from "./StorageService";
 import { getStorageBucket } from "@/lib/env";
+import { createServiceClient } from "@/lib/supabase/service";
+
+/** How long a client has to complete an upload it was handed a URL for. */
+const UPLOAD_URL_TTL_SECONDS = 60 * 60;
 
 /**
- * This provider is not wired to Supabase yet (TD-02, readiness checklist 4.2).
- * The object below returns fabricated `mock.supabase.co` URLs.
+ * Supabase Storage backing for {@link StorageService} (closes TD-02).
  *
- * That is acceptable in development and dangerous in production, because it
- * fails *open* in a way that is invisible: an upload appears to succeed, a
- * download hands back a URL, and nothing transfers or is authorised. Worse, a
- * "signed" URL that no backend enforces is an unauthenticated one. The guard
- * below turns that into a loud failure on the first call, matching the stance
- * `InMemoryQueueProvider` already takes for the same reason.
- *
- * Sprint 14 replaces the mock; this guard is what makes shipping without it
- * impossible rather than merely inadvisable.
+ * Signing requires the service-role key: an upload URL authorises a write, so
+ * it can only be minted server-side. Callers are responsible for authorising
+ * the request *before* asking for a URL — this class does not know who the
+ * caller is and deliberately makes no access decision of its own.
  */
-function assertProviderIsUsable(operation: string): void {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      `Object storage is not configured: SupabaseStorageProvider is still the ` +
-        `development mock, so "${operation}" would return a URL that transfers ` +
-        `nothing and authorises nothing. Wire the real Supabase Storage client ` +
-        `before serving production traffic (TD-02).`,
-    );
-  }
-}
-
-// Mock placeholder for actual Supabase client initialization
-const supabaseAdmin = {
-  storage: {
-    from: (bucket: string) => ({
-      createSignedUploadUrl: async (path: string) => {
-        // MOCK IMPLEMENTATION
-        return {
-          data: {
-            signedUrl: `https://mock.supabase.co/storage/v1/object/sign/${bucket}/${path}?token=mock`,
-            path,
-          },
-          error: null as { message: string } | null,
-        };
-      },
-      createSignedUrl: async (path: string, expiresInSeconds: number) => {
-        // MOCK IMPLEMENTATION
-        return {
-          data: {
-            signedUrl: `https://mock.supabase.co/storage/v1/object/sign/${bucket}/${path}?token=mock_download&expires=${expiresInSeconds}`,
-          },
-          error: null as { message: string } | null,
-        };
-      },
-      remove: async (paths: string[]) => {
-        return { data: paths, error: null };
-      },
-    }),
-  },
-};
-
 export class SupabaseStorageProvider implements StorageService {
   private bucketName: string;
+  private client: SupabaseClient | undefined;
 
   constructor(bucketName: string = getStorageBucket()) {
     this.bucketName = bucketName;
+  }
+
+  /**
+   * Built on first use rather than in the constructor, so that importing this
+   * module (or the `storageService` singleton below) never reaches for
+   * credentials at module-load time.
+   */
+  private bucket() {
+    this.client ??= createServiceClient();
+    return this.client.storage.from(this.bucketName);
   }
 
   getStoragePath(
@@ -80,8 +49,6 @@ export class SupabaseStorageProvider implements StorageService {
   async createPreSignedUploadUrl(
     params: PreSignedUploadParams,
   ): Promise<PreSignedUrlResponse> {
-    assertProviderIsUsable("createPreSignedUploadUrl");
-
     const path = this.getStoragePath(
       params.organizationId,
       params.projectId,
@@ -90,9 +57,7 @@ export class SupabaseStorageProvider implements StorageService {
       params.extension,
     );
 
-    const { data, error } = await supabaseAdmin.storage
-      .from(this.bucketName)
-      .createSignedUploadUrl(path);
+    const { data, error } = await this.bucket().createSignedUploadUrl(path);
 
     if (error || !data) {
       throw new Error(
@@ -100,13 +65,10 @@ export class SupabaseStorageProvider implements StorageService {
       );
     }
 
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1); // Mock 1 hour expiration
-
     return {
       uploadUrl: data.signedUrl,
       path,
-      expiresAt,
+      expiresAt: new Date(Date.now() + UPLOAD_URL_TTL_SECONDS * 1000),
     };
   }
 
@@ -114,11 +76,10 @@ export class SupabaseStorageProvider implements StorageService {
     path: string,
     expiresInSeconds: number,
   ): Promise<string> {
-    assertProviderIsUsable("createPreSignedDownloadUrl");
-
-    const { data, error } = await supabaseAdmin.storage
-      .from(this.bucketName)
-      .createSignedUrl(path, expiresInSeconds);
+    const { data, error } = await this.bucket().createSignedUrl(
+      path,
+      expiresInSeconds,
+    );
 
     if (error || !data) {
       throw new Error(
@@ -130,11 +91,7 @@ export class SupabaseStorageProvider implements StorageService {
   }
 
   async deleteFile(path: string): Promise<boolean> {
-    assertProviderIsUsable("deleteFile");
-
-    const { error } = await supabaseAdmin.storage
-      .from(this.bucketName)
-      .remove([path]);
+    const { error } = await this.bucket().remove([path]);
 
     if (error) {
       console.error(`Failed to delete blob at ${path}`, error);

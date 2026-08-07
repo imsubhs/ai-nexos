@@ -1,8 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
-import { createClient as createBareClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { requirePublicEnv } from "@/lib/env";
-import { getServerEnv } from "@/lib/env.server";
 
 /**
  * Server Component / Server Action / Route Handler client.
@@ -35,24 +33,8 @@ export async function createClient() {
 }
 
 /**
- * Service-role client — BYPASSES RLS. Server-only, and exclusively for:
- *  - background workers,
- *  - the share-link portal service layer (M4), which does its own
- *    token → permission validation before every query,
- *  - administrative seeding.
- * Never import from client components.
+ * Service-role client — BYPASSES RLS. Defined in `./service` so that scripts
+ * and integration tests can construct it without pulling in `next/headers`,
+ * and re-exported here so existing server-side imports keep working.
  */
-export function createServiceClient() {
-  const serviceRoleKey = getServerEnv().SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceRoleKey) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY is not set. The service-role client bypasses RLS and has no anon-key fallback by design; copy the key from Supabase \u203a Project Settings \u203a API into .env.local (server-side only \u2014 never prefix it with NEXT_PUBLIC_).",
-    );
-  }
-
-  return createBareClient(
-    requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    serviceRoleKey,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+export { createServiceClient } from "./service";
