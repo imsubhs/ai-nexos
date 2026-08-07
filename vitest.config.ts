@@ -8,7 +8,14 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
-    exclude: ["e2e/**", "node_modules/**"],
+    // The integration suite talks to the real Supabase project and runs from
+    // vitest.integration.config.ts — `npm test` stays hermetic and offline.
+    exclude: [
+      "e2e/**",
+      "node_modules/**",
+      "tests/integration/**",
+      "**/*.integration.test.{ts,tsx}",
+    ],
     coverage: {
       provider: "v8",
       include: ["src/**"],
