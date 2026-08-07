@@ -163,6 +163,31 @@ export const ENV_MANIFEST: readonly EnvSpec[] = [
     fallback: 'Reported as "local-dev".',
   },
   {
+    name: "TRUSTED_PROXY_HOPS",
+    requirement: "optional",
+    exposure: "server",
+    purpose:
+      "How many reverse proxies append to X-Forwarded-For before a request arrives. Decides which entry is the real client address for rate limiting.",
+    fallback:
+      "Defaults to 1, correct for a single platform edge. Too high and a client can spoof its address; too low and everything behind the edge shares one bucket.",
+  },
+  {
+    name: "EGRESS_ALLOWED_HOSTS",
+    requirement: "optional",
+    exposure: "server",
+    purpose:
+      "Comma-separated hosts that server-side fetches (automation webhooks) may reach. A leading dot permits subdomains.",
+    fallback:
+      "Unset permits any public host; private, loopback and cloud-metadata addresses are refused either way.",
+  },
+  {
+    name: "LOG_LEVEL",
+    requirement: "optional",
+    exposure: "server",
+    purpose: "Minimum severity emitted by the structured logger.",
+    fallback: 'Defaults to "info" ("error" under NODE_ENV=test).',
+  },
+  {
     name: "DEMO_MODE",
     requirement: "development",
     exposure: "server",
@@ -240,6 +265,21 @@ const serverSchemaShape = z.object({
 
   // Optional integration; absence is a supported configuration.
   REDIS_URL: z.string().optional(),
+
+  // Length of the trusted reverse-proxy chain. Bounded rather than free-form:
+  // a mistyped large value would make every request look like it came from the
+  // first, attacker-controlled X-Forwarded-For entry.
+  TRUSTED_PROXY_HOPS: z.coerce
+    .number()
+    .int("TRUSTED_PROXY_HOPS must be a whole number.")
+    .min(0)
+    .max(10, "TRUSTED_PROXY_HOPS above 10 is a configuration error.")
+    .optional(),
+
+  // Server-side fetch allow-list for automation webhooks.
+  EGRESS_ALLOWED_HOSTS: z.string().optional(),
+
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional(),
 
   // Selects the demo data path. Read through isDemoMode() everywhere; parsed
   // here so an unexpected value surfaces at boot instead of silently falling
@@ -447,6 +487,21 @@ export function getEnvDiagnostics(): EnvDiagnostics {
         "REDIS_URL is unset — the portal cache is in-memory and not shared between instances.",
       );
     }
+  }
+
+  // In production the same missing variable is a security note, not a
+  // performance one: rate limits enforced per instance are weaker by exactly
+  // the instance count, so a login limit of 5 becomes 5 × N across a fleet.
+  if (env.NODE_ENV === "production" && !isSet("REDIS_URL")) {
+    warnings.push(
+      "REDIS_URL is unset — rate limits and brute-force counters are per-instance. Behind more than one instance the effective limit is multiplied by the instance count.",
+    );
+  }
+
+  if (env.NODE_ENV === "production" && !isSet("EGRESS_ALLOWED_HOSTS")) {
+    warnings.push(
+      "EGRESS_ALLOWED_HOSTS is unset — automation webhooks may reach any public host. Private, loopback and metadata addresses are still refused.",
+    );
   }
 
   if (env.DEMO_MODE === "true") {
