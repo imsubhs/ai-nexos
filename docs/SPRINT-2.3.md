@@ -115,21 +115,35 @@ Two checks worth calling out:
 
 ## Blocked: database password
 
-The database password supplied for this project is rejected by the server.
-Verified against the correct pooler host, region, and username format:
+The database password in `.env.local` is rejected by the server. Every layer
+beneath authentication was verified independently, so the failure is isolated
+to one step:
 
-```
-28P01  password authentication failed for user "postgres"
-```
+| Step                   | Result                                           |
+| ---------------------- | ------------------------------------------------ |
+| URL parsing / encoding | ✓ decodes to exactly the intended 12-char value  |
+| DNS                    | ✓ pooler resolves (3 A records)                  |
+| TCP 5432 / 6543        | ✓ both open                                      |
+| SSL negotiation        | ✓ TLSv1.3, `TLS_AES_256_GCM_SHA384`              |
+| Pooler tenant routing  | ✓ `postgres.<ref>` accepted as tenant identifier |
+| **PostgreSQL auth**    | **✗ `28P01 password authentication failed`**     |
 
-The server responds, so the host, port, region, username form and TLS are all
-correct — only the secret is wrong. **The database password is a different
-secret from the service-role API key**; the API keys in `.env.local` are valid
-and were used to provision and verify Storage.
+A control run with a deliberately wrong password returns the _identical_
+error, which is what establishes that the server treats the configured
+password the same way it treats a known-wrong one.
 
-To unblock: Supabase › Project Settings › Database › **Reset database
-password**, then update both URLs in `.env.local`, percent-encoding special
-characters (`@` → `%40`). Confirm with `npm run env:check -- --verify`.
+Encoding is not the cause: the value decodes to the intended string
+byte-for-byte (verified by SHA-256 fingerprint, with no stray brackets or
+whitespace). Neither is routing: a bare `postgres` username fails differently
+(`ENOIDENTIFIER`), confirming the `postgres.<ref>` form is correct.
+
+**The database password is a different secret from the service-role API key.**
+The API keys in `.env.local` are valid and were used to provision and verify
+Storage — the project is real and reachable.
+
+To unblock, `.env.local` needs the project's actual database password.
+Supabase does not display it after project creation; it can only be set.
+Confirm any change with `npm run env:check -- --verify`.
 
 Blocked until then:
 
