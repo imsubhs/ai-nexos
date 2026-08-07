@@ -41,3 +41,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Sprint 2.2. Not folded into `npm test` because a vulnerable dependency
+      # is an operational signal, not a broken build: it can appear on a commit
+      # that changed nothing, and it is fixed by upgrading rather than by
+      # editing code. The authorization audit runs inside the test suite
+      # (tests/unit/authorization-coverage.test.ts), where a regression *is* a
+      # code defect and should block exactly like any other failing test.
+      - name: Dependency vulnerability audit
+        run: npm run audit:deps
