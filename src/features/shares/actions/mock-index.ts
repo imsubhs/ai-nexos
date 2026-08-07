@@ -7,7 +7,19 @@ import type {
   submitExternalApprovalAction as real_submitExternalApprovalAction,
   requestShareMeetingAction as real_requestShareMeetingAction,
 } from "./real-index";
-import { getDemoStore, nextDemoId } from "@/lib/demo/store";
+import { getDemoStore, nextDemoId, DEMO_ORG_ID } from "@/lib/demo/store";
+
+// These mirror the real actions' signatures, which changed in Sprint 2.2: the
+// external ones now take a share token instead of a caller-supplied
+// identityId/sessionId, and the internal one derives the organisation from the
+// authenticated user. src/features/shares/actions/index.ts derives its
+// parameter lists from the real module, so drift here is a type error.
+//
+// The demo path resolves a session from the token by looking it up in the
+// store rather than verifying a signature — there is no real token to verify
+// against an in-memory dataset — but it still refuses an item that does not
+// belong to the resolved session, so the demo and real paths agree on what is
+// rejected.
 
 const SHARE_EXPIRY_DAYS = 14;
 
@@ -47,8 +59,21 @@ function emitShareEvent(
   return event;
 }
 
-function findSessionItem(store: any, itemId: string) {
-  const sessionItem = store.shareSessionItems.find((i: any) => i.id === itemId);
+function resolveDemoShare(store: any, shareToken: string) {
+  const session = store.shareSessions.find(
+    (s: any) => s.secureToken === shareToken && s.status === "published",
+  );
+  if (!session) {
+    throw new Error("This link is invalid, expired, or no longer active.");
+  }
+  return session;
+}
+
+/** The item must belong to the session the token resolved to. */
+function findSessionItem(store: any, itemId: string, sessionId: string) {
+  const sessionItem = store.shareSessionItems.find(
+    (i: any) => i.id === itemId && i.sessionId === sessionId,
+  );
   if (!sessionItem) throw new Error("Item not found");
   return sessionItem;
 }
@@ -62,7 +87,7 @@ export async function createShareSessionAction(
   const now = new Date();
   const session = {
     id: nextDemoId(store),
-    organizationId: payload.organizationId,
+    organizationId: DEMO_ORG_ID,
     projectId: payload.projectId,
     policyId: payload.policyId ?? null,
     title: payload.title,
@@ -83,7 +108,7 @@ export async function createShareSessionAction(
   payload.deliverableIds.forEach((deliverableId, index) => {
     store.shareSessionItems.push({
       id: nextDemoId(store),
-      organizationId: payload.organizationId,
+      organizationId: DEMO_ORG_ID,
       projectId: payload.projectId,
       sessionId: session.id,
       deliverableId,
@@ -94,7 +119,7 @@ export async function createShareSessionAction(
 
   emitShareEvent(
     store,
-    payload.organizationId,
+    DEMO_ORG_ID,
     payload.projectId,
     session.id,
     "Share.Created",
@@ -110,8 +135,9 @@ export async function createShareSessionAction(
 export async function resolveExternalIdentityAction(
   ...args: Parameters<typeof real_resolveExternalIdentityAction>
 ): Promise<Awaited<ReturnType<typeof real_resolveExternalIdentityAction>>> {
-  const [organizationId, email, displayName] = args;
+  const [shareToken, email, displayName] = args;
   const store = shareCollections(getDemoStore());
+  const organizationId = resolveDemoShare(store, shareToken).organizationId;
 
   let identity = store.externalIdentities.find(
     (i: any) => i.organizationId === organizationId && i.email === email,
@@ -141,15 +167,16 @@ export async function submitExternalCommentAction(
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
-  const sessionItem = findSessionItem(store, payload.itemId);
+  const session = resolveDemoShare(store, payload.shareToken);
+  const sessionItem = findSessionItem(store, payload.itemId, session.id);
 
   const comment = {
     id: nextDemoId(store),
     organizationId: sessionItem.organizationId,
     projectId: sessionItem.projectId,
-    sessionId: payload.sessionId,
+    sessionId: session.id,
     itemId: payload.itemId,
-    authorIdentityId: payload.identityId,
+    authorIdentityId: session.identityId ?? null,
     content: payload.content,
     parentId: payload.parentId ?? null,
     createdAt: new Date(),
@@ -160,7 +187,7 @@ export async function submitExternalCommentAction(
     store,
     sessionItem.organizationId,
     sessionItem.projectId,
-    payload.sessionId,
+    session.id,
     "Share.CommentAdded",
     {
       commentId: comment.id,
@@ -177,13 +204,14 @@ export async function submitExternalAnnotationAction(
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
-  const sessionItem = findSessionItem(store, payload.itemId);
+  const session = resolveDemoShare(store, payload.shareToken);
+  const sessionItem = findSessionItem(store, payload.itemId, session.id);
 
   const annotation = {
     id: nextDemoId(store),
     organizationId: sessionItem.organizationId,
     projectId: sessionItem.projectId,
-    sessionId: payload.sessionId,
+    sessionId: session.id,
     itemId: payload.itemId,
     commentId: payload.commentId ?? null,
     type: payload.type,
@@ -200,7 +228,7 @@ export async function submitExternalAnnotationAction(
     store,
     sessionItem.organizationId,
     sessionItem.projectId,
-    payload.sessionId,
+    session.id,
     "Share.AnnotationAdded",
     {
       annotationId: annotation.id,
@@ -217,21 +245,23 @@ export async function submitExternalApprovalAction(
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
+  const session = resolveDemoShare(store, payload.shareToken);
+
   if (!payload.explicitConfirmationToken) {
     throw new Error("Invalid or Expired Token (Replay Protection)");
   }
 
-  const sessionItem = findSessionItem(store, payload.itemId);
+  const sessionItem = findSessionItem(store, payload.itemId, session.id);
 
   const event = emitShareEvent(
     store,
     sessionItem.organizationId,
     sessionItem.projectId,
-    payload.sessionId,
+    session.id,
     "Share.ApprovalSubmitted",
     {
       itemId: payload.itemId,
-      identityId: payload.identityId,
+      identityId: session.identityId ?? null,
       decision: payload.decision,
       reason: payload.reason,
     },
@@ -246,18 +276,19 @@ export async function requestShareMeetingAction(
   const [payload] = args;
   const store = shareCollections(getDemoStore());
 
-  const sessionItem = findSessionItem(store, payload.itemId);
+  const session = resolveDemoShare(store, payload.shareToken);
+  const sessionItem = findSessionItem(store, payload.itemId, session.id);
 
   const event = emitShareEvent(
     store,
     sessionItem.organizationId,
     sessionItem.projectId,
-    payload.sessionId,
+    session.id,
     "Share.MeetingRequested",
     {
       itemId: payload.itemId,
       commentId: payload.commentId,
-      identityId: payload.identityId,
+      identityId: session.identityId ?? null,
     },
   );
 

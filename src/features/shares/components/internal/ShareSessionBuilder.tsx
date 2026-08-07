@@ -4,13 +4,14 @@ import React, { useState } from "react";
 import { createShareSessionAction } from "../../actions";
 
 interface ShareSessionBuilderProps {
-  organizationId: string;
+  // organizationId is deliberately absent: the action derives the tenant from
+  // the authenticated user. A client-supplied one was how a share could be
+  // published inside someone else's organisation.
   projectId: string;
   availableDeliverables: { id: string; name: string }[];
 }
 
 export function ShareSessionBuilder({
-  organizationId,
   projectId,
   availableDeliverables,
 }: ShareSessionBuilderProps) {
@@ -24,7 +25,6 @@ export function ShareSessionBuilder({
   const handleCreateSession = async () => {
     try {
       const session = await createShareSessionAction({
-        organizationId,
         projectId,
         title: "New Review Session",
         shareType,

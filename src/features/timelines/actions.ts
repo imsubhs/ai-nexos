@@ -59,10 +59,3 @@ export async function addTimelineDependency(
   if (isDemoMode()) return (mock as any).addTimelineDependency(...args);
   return (real as any).addTimelineDependency(...args);
 }
-
-export async function recalculateTimelineProgress(
-  ...args: Parameters<typeof real.recalculateTimelineProgress>
-): Promise<Awaited<ReturnType<typeof real.recalculateTimelineProgress>>> {
-  if (isDemoMode()) return (mock as any).recalculateTimelineProgress(...args);
-  return (real as any).recalculateTimelineProgress(...args);
-}

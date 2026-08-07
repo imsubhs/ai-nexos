@@ -21,7 +21,6 @@ import type {
   getTimelineDependencies as real_getTimelineDependencies,
   createMilestone as real_createMilestone,
   addTimelineDependency as real_addTimelineDependency,
-  recalculateTimelineProgress as real_recalculateTimelineProgress,
   getTimelines as real_getTimelines,
 } from "./real-actions";
 
@@ -251,38 +250,4 @@ export async function addTimelineDependency(
 
   revalidatePath(`/projects/${timeline.projectId}/timeline`);
   return dependency as any;
-}
-
-export async function recalculateTimelineProgress(
-  ...args: Parameters<typeof real_recalculateTimelineProgress>
-): Promise<Awaited<ReturnType<typeof real_recalculateTimelineProgress>>> {
-  const [timelineId] = args;
-  const store = getDemoStore();
-
-  const timeline = store.timelines.find((t) => t.timelineId === timelineId);
-  if (!timeline) return undefined as any;
-
-  const timelineMilestones = store.milestones.filter(
-    (m) => m.timelineId === timelineId,
-  );
-  const progress =
-    timelineMilestones.length === 0
-      ? 0
-      : Math.round(
-          timelineMilestones.reduce((sum, m) => sum + (m.progress ?? 0), 0) /
-            timelineMilestones.length,
-        );
-
-  timeline.overallProgress = progress;
-  timeline.updatedAt = new Date();
-
-  const project = store.projects.find(
-    (p) => p.projectId === timeline.projectId,
-  );
-  if (project) {
-    project.completionPercentage = progress;
-    project.updatedAt = new Date();
-  }
-
-  return undefined as any;
 }

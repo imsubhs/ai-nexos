@@ -3,7 +3,14 @@ import {
   logDemoActivity,
   nextDemoId,
   DEMO_USER_ID,
+  DEMO_ORG_ID,
 } from "@/lib/demo/store";
+
+// The real actions take no organisation parameter any more: the tenant comes
+// from the authenticated user, because a caller-supplied one is a cross-tenant
+// write. These mocks mirror that signature — src/lib/automation/actions.ts
+// derives its parameter list from the real module, so drift here is a type
+// error rather than a runtime surprise.
 import type {
   createWorkflow as real_createWorkflow,
   publishWorkflowVersion as real_publishWorkflowVersion,
@@ -13,7 +20,6 @@ import type {
 } from "./real-actions";
 
 export async function createWorkflow(
-  orgId: string,
   name: string,
   description?: string,
   capabilityId?: string,
@@ -23,7 +29,7 @@ export async function createWorkflow(
 
   const workflow = {
     id: newId,
-    organizationId: orgId,
+    organizationId: DEMO_ORG_ID,
     name,
     description: description || null,
     status: "draft",
@@ -54,7 +60,6 @@ export async function createWorkflow(
 
 export async function publishWorkflowVersion(
   workflowId: string,
-  orgId: string,
   _rawDefinition: any,
 ): Promise<Awaited<ReturnType<typeof real_publishWorkflowVersion>>> {
   const store = getDemoStore();
@@ -67,7 +72,7 @@ export async function publishWorkflowVersion(
 
   const version = {
     id: versionId,
-    organizationId: orgId,
+    organizationId: DEMO_ORG_ID,
     workflowId,
     versionNumber: nextVersionNumber,
     executablePlan: {}, // Mock compiled plan
@@ -105,7 +110,6 @@ export async function publishWorkflowVersion(
 
 export async function triggerManualWorkflow(
   workflowId: string,
-  orgId: string,
   payload: Record<string, any>,
 ): Promise<Awaited<ReturnType<typeof real_triggerManualWorkflow>>> {
   const store = getDemoStore();
@@ -117,7 +121,7 @@ export async function triggerManualWorkflow(
 
   const run = {
     id: runId,
-    organizationId: orgId,
+    organizationId: DEMO_ORG_ID,
     workflowId,
     versionId,
     status: "queued",
@@ -151,11 +155,10 @@ export async function triggerManualWorkflow(
 
 export async function cancelExecutionRun(
   runId: string,
-  orgId: string,
 ): Promise<Awaited<ReturnType<typeof real_cancelExecutionRun>>> {
   const store = getDemoStore();
   const run = store.automationExecutionRuns.find(
-    (r) => r.id === runId && r.organizationId === orgId,
+    (r) => r.id === runId && r.organizationId === DEMO_ORG_ID,
   );
 
   if (run) {
@@ -178,11 +181,10 @@ export async function cancelExecutionRun(
 
 export async function replayDlqItem(
   dlqId: string,
-  orgId: string,
 ): Promise<Awaited<ReturnType<typeof real_replayDlqItem>>> {
   const store = getDemoStore();
   const itemIndex = store.automationDeadLetterQueue.findIndex(
-    (i) => i.id === dlqId && i.organizationId === orgId,
+    (i) => i.id === dlqId && i.organizationId === DEMO_ORG_ID,
   );
 
   if (itemIndex === -1) throw new Error("DLQ item not found.");

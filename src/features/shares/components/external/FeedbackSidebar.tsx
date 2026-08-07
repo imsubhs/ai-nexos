@@ -4,9 +4,13 @@ import React, { useState } from "react";
 import { submitExternalApprovalAction } from "../../actions";
 
 interface FeedbackSidebarProps {
-  sessionId: string;
+  /**
+   * The external client's credential. The server derives the session and the
+   * submitting identity from it — both were previously props, which meant the
+   * browser chose whose approval this was and which share it landed on.
+   */
+  shareToken: string;
   itemId: string;
-  identityId: string;
   canApprove: boolean;
 }
 
@@ -15,9 +19,8 @@ interface FeedbackSidebarProps {
  * Architecture Decision #5: Approval requires explicit confirmation. Never submit immediately.
  */
 export function FeedbackSidebar({
-  sessionId,
+  shareToken,
   itemId,
-  identityId,
   canApprove,
 }: FeedbackSidebarProps) {
   const [approvalState, setApprovalState] = useState<
@@ -39,9 +42,8 @@ export function FeedbackSidebar({
 
     try {
       await submitExternalApprovalAction({
-        sessionId,
+        shareToken,
         itemId,
-        identityId,
         decision,
         explicitConfirmationToken: "simulated_secure_nonce_" + Date.now(), // E.g., generated during confirmation challenge
       });

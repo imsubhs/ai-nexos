@@ -412,34 +412,14 @@ export async function addTimelineDependency(
  * Recalculate progress for a timeline based on its milestones.
  * Updates project.completionPercentage as well.
  */
-export async function recalculateTimelineProgress(
-  timelineId: string,
-  tx: DbTransaction,
-) {
-  const [timeline] = await tx
-    .select()
-    .from(timelines)
-    .where(eq(timelines.timelineId, timelineId));
-  if (!timeline) return;
-
-  const allMilestones = await tx
-    .select()
-    .from(milestones)
-    .where(eq(milestones.timelineId, timelineId));
-
-  let overallProgress = 0;
-  if (allMilestones.length > 0) {
-    const totalProgress = allMilestones.reduce((acc, m) => acc + m.progress, 0);
-    overallProgress = Math.round(totalProgress / allMilestones.length);
-  }
-
-  await tx
-    .update(timelines)
-    .set({ overallProgress })
-    .where(eq(timelines.timelineId, timelineId));
-
-  await tx
-    .update(projects)
-    .set({ completionPercentage: overallProgress })
-    .where(eq(projects.projectId, timeline.projectId));
-}
+// recalculateTimelineProgress moved to ./progress.
+//
+// It takes a Drizzle transaction and is meant to be called from inside an
+// already-authorised action — but it was exported from this "use server"
+// module, which makes every export a public HTTP endpoint, and it was wired
+// through actions.ts onto the client surface with no authorization of its own.
+// It is not exploitable as it stands (Next cannot serialise a transaction
+// argument across the action boundary, so a browser call fails before it
+// runs), and it had no callers at all. Both are accidents of the current
+// state rather than a defence, so it now lives in a plain module where it
+// cannot become an endpoint by being exported.
