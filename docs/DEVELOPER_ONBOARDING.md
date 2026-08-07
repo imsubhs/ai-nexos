@@ -104,7 +104,7 @@ ai-nexos/
 │  │  └─ schema/                  Drizzle tables, snake_case casing
 │  ├─ lib/
 │  │  ├─ demo/store.ts            ~1,400-line in-memory fixture, 40+ collections
-│  │  ├─ storage/                 StorageService (real) + mocked provider (TD-02)
+│  │  ├─ storage/                 StorageService + real Supabase provider (TD-02 closed)
 │  │  ├─ security/VirusScanner.ts MockVirusScanner ALWAYS returns clean (TD-09)
 │  │  ├─ automation/              scheduler + queue. Nothing calls .start()
 │  │  ├─ portal/                  portal service layer, JWT/HMAC tokens
