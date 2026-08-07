@@ -2,6 +2,10 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { safeInternalPath } from "./redirect";
+// One definition of the demo cookie and its flags. These functions used to set
+// it with `path` alone: no httpOnly, so any script could read or forge it, and
+// no secure, so it travelled in clear over plain http.
+import { clearDemoSessionCookie, setDemoSessionCookie } from "./demo-session";
 import type {
   signInWithPassword as real_signInWithPassword,
   signInWithMagicLink as real_signInWithMagicLink,
@@ -14,7 +18,7 @@ export async function signInWithPassword(
   ...args: Parameters<typeof real_signInWithPassword>
 ): Promise<Awaited<ReturnType<typeof real_signInWithPassword>>> {
   const [, formData] = args;
-  (await cookies()).set("demo_session", "true", { path: "/" });
+  setDemoSessionCookie(await cookies());
   redirect(safeInternalPath(formData.get("next") as string));
 }
 
@@ -22,7 +26,7 @@ export async function signInWithMagicLink(
   ...args: Parameters<typeof real_signInWithMagicLink>
 ): Promise<Awaited<ReturnType<typeof real_signInWithMagicLink>>> {
   const [, formData] = args;
-  (await cookies()).set("demo_session", "true", { path: "/" });
+  setDemoSessionCookie(await cookies());
   // The production version usually redirects if we click the magic link, but sending magic link returns success state
   // We can return success as per production action behavior:
   return {
@@ -35,13 +39,13 @@ export async function signInWithGoogle(
   ...args: Parameters<typeof real_signInWithGoogle>
 ): Promise<Awaited<ReturnType<typeof real_signInWithGoogle>>> {
   const [formData] = args;
-  (await cookies()).set("demo_session", "true", { path: "/" });
+  setDemoSessionCookie(await cookies());
   redirect(safeInternalPath(formData.get("next") as string));
 }
 
 export async function signOut(
   ...args: Parameters<typeof real_signOut>
 ): Promise<Awaited<ReturnType<typeof real_signOut>>> {
-  (await cookies()).delete("demo_session");
+  clearDemoSessionCookie(await cookies());
   redirect("/login");
 }

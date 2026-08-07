@@ -383,8 +383,23 @@ export function resetServerEnvCache(): void {
  * walkthrough must not require a database connection string to be present.
  * The literal `process.env.DEMO_MODE` reference is also what lets Next inline
  * the value into the Edge/proxy bundle.
+ *
+ * The NODE_ENV test is the important half, and it is not redundant with the
+ * boot gate above. Demo mode is not a data-source toggle — it is an
+ * authentication bypass: `mock-actions.signInWithPassword` accepts any
+ * credentials and `DEMO_ADMIN_USER` carries owner permissions on every module.
+ * `productionIssues()` refuses to start a process configured that way, but it
+ * only runs where the boot hook runs, and `src/instrumentation.ts` skips both
+ * the Edge runtime and the build phase. A single code path that reached this
+ * function with DEMO_MODE=true in production — an Edge-rendered route, a
+ * prerendered page, a worker started outside the Next lifecycle — would grant
+ * an unauthenticated visitor an owner session.
+ *
+ * So the answer is false in production, unconditionally, and the boot gate
+ * remains as the loud signal that the deployment is misconfigured.
  */
 export function isDemoMode(): boolean {
+  if (process.env.NODE_ENV === "production") return false;
   return process.env.DEMO_MODE === "true";
 }
 

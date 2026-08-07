@@ -8,6 +8,14 @@ import { safeInternalPath } from "@/features/auth/redirect";
 import { PORTAL_DOMAIN } from "@/config/app";
 import { requirePublicEnv } from "@/lib/env";
 import { isDemoMode } from "@/lib/env.server";
+import {
+  buildContentSecurityPolicy,
+  generateCspNonce,
+} from "@/lib/security/headers";
+import {
+  DEMO_SESSION_COOKIE,
+  DEMO_SESSION_VALUE,
+} from "@/features/auth/demo-session";
 
 /**
  * Request proxy (Next 16 file convention, successor to middleware).
@@ -19,6 +27,7 @@ import { isDemoMode } from "@/lib/env.server";
  *      share links live at portal.<domain>/s/{secure_token}
  * 2. Supabase session refresh for internal users.
  * 3. Auth gating: unauthenticated internal traffic → /login.
+ * 4. Per-request Content-Security-Policy, carrying a fresh nonce.
  *
  * The portal never requires authentication — share-token validation happens
  * in the portal service layer, not here. This check is convenience routing;
@@ -32,6 +41,9 @@ const PUBLIC_INTERNAL_PATHS = [
   "/api/health",
 ];
 
+/** Header the root layout reads to nonce its inline scripts. */
+const NONCE_HEADER = "x-nonce";
+
 function isPortalHost(host: string): boolean {
   if (!host) return false;
   const bare = host.toLowerCase().split(":")[0];
@@ -40,32 +52,66 @@ function isPortalHost(host: string): boolean {
   return bare.startsWith("portal.");
 }
 
+/**
+ * Builds the request headers forwarded downstream, with the nonce attached.
+ *
+ * The inbound `x-nonce` is deleted first. Without that, a caller can set the
+ * header themselves, have the layout stamp their chosen value onto every
+ * inline script, and then satisfy the policy from injected markup — the nonce
+ * has to be unguessable *to the attacker*, and one they supplied is not.
+ */
+function requestHeadersWithNonce(request: NextRequest, nonce: string): Headers {
+  const headers = new Headers(request.headers);
+  headers.delete(NONCE_HEADER);
+  headers.set(NONCE_HEADER, nonce);
+  return headers;
+}
+
+/**
+ * Attaches the per-request CSP.
+ *
+ * Every exit from this function goes through here, including redirects and the
+ * 401 JSON: a response without a policy is a response where an injection has
+ * no constraint at all, and the login redirect is exactly where an open-redirect
+ * or injected-form attack would land.
+ */
+function withCsp(response: NextResponse, nonce: string): NextResponse {
+  response.headers.set(
+    "Content-Security-Policy",
+    buildContentSecurityPolicy({ nonce }),
+  );
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
+
+  const nonce = generateCspNonce();
+  const headers = requestHeadersWithNonce(request, nonce);
 
   // --- Client portal domain: rewrite into the /portal route group. ---
   if (isPortalHost(host)) {
     // Health checks must work on every domain, unauthenticated.
     if (pathname === "/api/health") {
-      return NextResponse.next();
+      return withCsp(NextResponse.next({ request: { headers } }), nonce);
     }
     if (pathname.startsWith("/portal")) {
       // Never expose the internal path shape on the portal domain.
-      return NextResponse.redirect(new URL("/", request.url));
+      return withCsp(NextResponse.redirect(new URL("/", request.url)), nonce);
     }
     const url = request.nextUrl.clone();
     url.pathname = `/portal${pathname === "/" ? "" : pathname}`;
-    return NextResponse.rewrite(url);
+    return withCsp(NextResponse.rewrite(url, { request: { headers } }), nonce);
   }
 
   // --- Internal domain: block direct access to portal routes. ---
   if (pathname.startsWith("/portal")) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return withCsp(NextResponse.redirect(new URL("/", request.url)), nonce);
   }
 
   // --- Session refresh (Supabase SSR pattern). ---
-  let response = NextResponse.next({ request });
+  let response = NextResponse.next({ request: { headers } });
 
   const supabase = createServerClient(
     requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL"),
@@ -79,7 +125,7 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          response = NextResponse.next({ request });
+          response = NextResponse.next({ request: { headers } });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );
@@ -90,8 +136,13 @@ export async function proxy(request: NextRequest) {
 
   // IMPORTANT: getUser() revalidates the JWT against Supabase Auth on every
   // request — do not replace with getSession(), which trusts the cookie.
+  //
+  // isDemoMode() is false in production regardless of how DEMO_MODE is set
+  // (see src/lib/env.server.ts), so this branch cannot be reached there even
+  // if the variable survives into the deployment's environment.
   const isDemoSession =
-    isDemoMode() && request.cookies.get("demo_session")?.value === "true";
+    isDemoMode() &&
+    request.cookies.get(DEMO_SESSION_COOKIE)?.value === DEMO_SESSION_VALUE;
   let user = null;
 
   if (isDemoSession) {
@@ -108,7 +159,7 @@ export async function proxy(request: NextRequest) {
     response.cookies.getAll().forEach((cookie) => {
       redirect.cookies.set(cookie);
     });
-    return redirect;
+    return withCsp(redirect, nonce);
   };
 
   const isPublicPath = PUBLIC_INTERNAL_PATHS.some(
@@ -118,7 +169,13 @@ export async function proxy(request: NextRequest) {
   if (!user && !isPublicPath) {
     // API routes get a machine-readable 401, never a login redirect.
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return withCsp(
+        NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401, headers: { "Cache-Control": "no-store" } },
+        ),
+        nonce,
+      );
     }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -132,7 +189,17 @@ export async function proxy(request: NextRequest) {
     return redirectWithCookies(new URL(next, request.url));
   }
 
-  return response;
+  // Authenticated documents are tenant-specific. Without this, a shared cache
+  // keyed on URL alone can serve one organisation's rendered page to another,
+  // and a browser "back" after sign-out can redisplay it from disk.
+  if (user) {
+    response.headers.set(
+      "Cache-Control",
+      "private, no-store, no-cache, must-revalidate",
+    );
+  }
+
+  return withCsp(response, nonce);
 }
 
 export const config = {
