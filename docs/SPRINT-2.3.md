@@ -132,6 +132,49 @@ A control run with a deliberately wrong password returns the _identical_
 error, which is what establishes that the server treats the configured
 password the same way it treats a known-wrong one.
 
+### Wire-level proof
+
+A raw PostgreSQL v3 client (no driver involved) shows the full SCRAM-SHA-256
+exchange completing before the rejection:
+
+```
+STARTUP  protocol=3.0 user=postgres database=postgres
+AUTH     server offers SASL: SCRAM-SHA-256-PLUS, SCRAM-SHA-256
+AUTH     <- SASLContinue  salt=24b64chars  iterations=4096
+AUTH     -> SASLResponse  proof computed (PBKDF2 4096 rounds)
+AUTH     <- ErrorResponse
+           code     28P01
+           message  password authentication failed for user "postgres"
+           file     auth.c
+           line     329
+           routine  auth_failed
+```
+
+The server issues a real salt and iteration count, receives our client proof,
+and rejects it in its own `auth.c:auth_failed`. The failure is the SCRAM proof
+comparison — not transport, not role resolution, not mechanism negotiation.
+
+Four independent client implementations, fed one shared connection object
+parsed from `.env.local` at call time, all return the same result — including
+`psql`, which is C/libpq and shares no code with the JavaScript drivers:
+
+| Client             | Result                                  |
+| ------------------ | --------------------------------------- |
+| psql (libpq, C)    | `FATAL: password authentication failed` |
+| node-postgres (JS) | `28P01`                                 |
+| postgres.js (JS)   | `28P01`                                 |
+| drizzle-orm        | `28P01`                                 |
+
+Username format is correct for each endpoint, proven by how the failures
+differ:
+
+| Endpoint | Username         | Result                                           |
+| -------- | ---------------- | ------------------------------------------------ |
+| direct   | `postgres`       | `28P01` for user `postgres` — reaches auth       |
+| direct   | `postgres.<ref>` | `28P01` for user `postgres.<ref>` — literal role |
+| pooler   | `postgres.<ref>` | `28P01` for user `postgres` — tenant stripped    |
+| pooler   | `postgres`       | `ENOIDENTIFIER` — pooler requires the suffix     |
+
 Encoding is not the cause: the value decodes to the intended string
 byte-for-byte (verified by SHA-256 fingerprint, with no stray brackets or
 whitespace). Neither is routing: a bare `postgres` username fails differently
