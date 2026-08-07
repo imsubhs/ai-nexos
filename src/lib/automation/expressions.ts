@@ -1,6 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import jsep from "jsep";
 
+/**
+ * Property names an expression may never read, under any spelling.
+ *
+ * Refused outright rather than returned as `undefined` so a rule author sees
+ * why their expression failed instead of debugging a silent empty value.
+ */
+const BLOCKED_PROPERTIES = new Set([
+  "__proto__",
+  "constructor",
+  "prototype",
+  "__defineGetter__",
+  "__defineSetter__",
+  "__lookupGetter__",
+  "__lookupSetter__",
+]);
+
 export class ExpressionEvaluationError extends Error {
   constructor(message: string) {
     super(message);
@@ -34,19 +50,76 @@ export class RestrictedExpressionEngine {
     }
   }
 
+  /**
+   * Reads a property without traversing the prototype chain.
+   *
+   * The evaluator previously used `obj[key]` directly. Function *calls* were
+   * already refused, which is the obvious escape, but plain reads still
+   * reached everything an object inherits:
+   *
+   *     x.constructor.constructor      → the Function constructor
+   *     x.__proto__                    → the shared prototype object
+   *     x.constructor.prototype.foo    → another tenant's patched prototype
+   *
+   * None of those executes on its own here, but each hands an
+   * operator-authored expression a reference it has no business holding, and
+   * the first one is one `CallExpression` — or one future convenience feature
+   * — away from arbitrary code execution inside an automation rule. Automation
+   * rules are authored by tenant users and evaluated server-side, so that
+   * distance is the entire boundary.
+   *
+   * Restricting reads to own enumerable properties keeps every legitimate use
+   * (`deliverable.status`, `task.assignee.email`) working, because those are
+   * plain data on plain objects.
+   */
+  private readProperty(target: unknown, key: unknown): unknown {
+    if (target == null) return undefined;
+
+    const name = typeof key === "symbol" ? undefined : String(key);
+    if (name === undefined) return undefined;
+
+    if (BLOCKED_PROPERTIES.has(name)) {
+      throw new ExpressionEvaluationError(
+        `Access to "${name}" is not permitted.`,
+      );
+    }
+
+    // Strings and arrays are ordinary data in a rule; `.length` and index
+    // access are expected and safe.
+    if (typeof target === "string" || Array.isArray(target)) {
+      if (name === "length") return (target as { length: number }).length;
+      if (/^\d+$/.test(name)) {
+        return (target as unknown as Record<string, unknown>)[name];
+      }
+      return undefined;
+    }
+
+    if (typeof target !== "object") return undefined;
+
+    // hasOwn, not `in`: `in` follows the prototype chain, which is the thing
+    // being closed off.
+    if (!Object.hasOwn(target as object, name)) return undefined;
+
+    return (target as Record<string, unknown>)[name];
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private evaluateAst(node: any, context: Record<string, any>): any {
     switch (node.type) {
       case "Literal":
         return node.value;
       case "Identifier":
-        return context[node.name];
-      case "MemberExpression":
+        // Own properties only — see readProperty. `context.constructor` would
+        // otherwise resolve through the prototype chain.
+        return this.readProperty(context, node.name);
+      case "MemberExpression": {
         const obj = this.evaluateAst(node.object, context);
         if (obj == null) return undefined;
-        return node.computed
-          ? obj[this.evaluateAst(node.property, context)]
-          : obj[node.property.name];
+        const key = node.computed
+          ? this.evaluateAst(node.property, context)
+          : node.property.name;
+        return this.readProperty(obj, key);
+      }
       case "BinaryExpression":
       case "LogicalExpression":
         const left = this.evaluateAst(node.left, context);

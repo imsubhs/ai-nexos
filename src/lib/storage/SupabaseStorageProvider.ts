@@ -5,6 +5,31 @@ import {
 } from "./StorageService";
 import { getStorageBucket } from "@/lib/env";
 
+/**
+ * This provider is not wired to Supabase yet (TD-02, readiness checklist 4.2).
+ * The object below returns fabricated `mock.supabase.co` URLs.
+ *
+ * That is acceptable in development and dangerous in production, because it
+ * fails *open* in a way that is invisible: an upload appears to succeed, a
+ * download hands back a URL, and nothing transfers or is authorised. Worse, a
+ * "signed" URL that no backend enforces is an unauthenticated one. The guard
+ * below turns that into a loud failure on the first call, matching the stance
+ * `InMemoryQueueProvider` already takes for the same reason.
+ *
+ * Sprint 14 replaces the mock; this guard is what makes shipping without it
+ * impossible rather than merely inadvisable.
+ */
+function assertProviderIsUsable(operation: string): void {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      `Object storage is not configured: SupabaseStorageProvider is still the ` +
+        `development mock, so "${operation}" would return a URL that transfers ` +
+        `nothing and authorises nothing. Wire the real Supabase Storage client ` +
+        `before serving production traffic (TD-02).`,
+    );
+  }
+}
+
 // Mock placeholder for actual Supabase client initialization
 const supabaseAdmin = {
   storage: {
@@ -55,6 +80,8 @@ export class SupabaseStorageProvider implements StorageService {
   async createPreSignedUploadUrl(
     params: PreSignedUploadParams,
   ): Promise<PreSignedUrlResponse> {
+    assertProviderIsUsable("createPreSignedUploadUrl");
+
     const path = this.getStoragePath(
       params.organizationId,
       params.projectId,
@@ -87,6 +114,8 @@ export class SupabaseStorageProvider implements StorageService {
     path: string,
     expiresInSeconds: number,
   ): Promise<string> {
+    assertProviderIsUsable("createPreSignedDownloadUrl");
+
     const { data, error } = await supabaseAdmin.storage
       .from(this.bucketName)
       .createSignedUrl(path, expiresInSeconds);
@@ -101,6 +130,8 @@ export class SupabaseStorageProvider implements StorageService {
   }
 
   async deleteFile(path: string): Promise<boolean> {
+    assertProviderIsUsable("deleteFile");
+
     const { error } = await supabaseAdmin.storage
       .from(this.bucketName)
       .remove([path]);

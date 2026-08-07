@@ -552,9 +552,33 @@ export async function finalizeFileUpload(
   return await db.transaction(async (tx) => {
     const file = await validateFileAccess(validData.fileId, "upload", user, tx);
 
-    // Server-side Deduplication:
+    // Server-side deduplication, scoped to the uploader's organisation.
+    //
+    // This match was previously on sha256Hash alone. Content hashes are
+    // global, so the first tenant to upload a given file became the owner of
+    // its storage path, and every later upload of the same bytes — by any
+    // other organisation — was silently repointed at that object. Two
+    // consequences, both reportable:
+    //
+    //   · Tenant B's file record referenced an object living under tenant A's
+    //     storage prefix, so A's retention, deletion or bucket policy silently
+    //     governed B's data.
+    //   · It is an existence oracle. Upload a suspected document, observe
+    //     `deduplicatedStorage: true`, and you have confirmed that another
+    //     organisation on this platform holds that exact file — a
+    //     confidentiality breach that needs no read access at all.
+    //
+    // The organisation filter closes both. Storage is deduplicated within a
+    // tenant, which is where the saving is real and the isolation is intact.
+    // The narrower project scope used by initializeFileUpload is not required
+    // here: `validateFileAccess` has already established that this user may
+    // write to this file, and an organisation-wide blob never crosses the
+    // boundary the checklist calls R-9.
     const existingOrgBlob = await tx.query.fileVersions.findFirst({
-      where: and(eq(fileVersions.sha256Hash, validData.sha256Hash)),
+      where: and(
+        eq(fileVersions.sha256Hash, validData.sha256Hash),
+        eq(fileVersions.organizationId, file.organizationId),
+      ),
     });
 
     let finalStoragePath = undefined;

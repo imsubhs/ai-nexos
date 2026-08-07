@@ -71,7 +71,7 @@ describe("isDemoMode", () => {
 });
 
 describe("safeInternalPath", () => {
-  it.each([
+  it.each<[string | null, string]>([
     ["https://evil.example.net/", "an absolute URL"],
     ["//evil.example.net/path", "a protocol-relative URL"],
     ["/\\evil.example.net", "a backslash-smuggled host"],
@@ -79,7 +79,7 @@ describe("safeInternalPath", () => {
     ["", "an empty value"],
     [null, "a missing value"],
   ])("refuses %s (%s)", (input) => {
-    expect(safeInternalPath(input as string | null)).toBe("/dashboard");
+    expect(safeInternalPath(input)).toBe("/dashboard");
   });
 
   it("refuses portal and auth internals as post-login destinations", () => {
