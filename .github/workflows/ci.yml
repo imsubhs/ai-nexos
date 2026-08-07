@@ -7,10 +7,13 @@ on:
 
 jobs:
   quality:
-    name: Lint · Typecheck · Build
+    name: Lint · Format · Typecheck · Test · Build
     runs-on: ubuntu-latest
     env:
       # Build-time placeholders — real values are Vercel/Supabase secrets.
+      # NODE_ENV is deliberately left unset: `next build` must succeed without
+      # runtime secrets (src/instrumentation.ts skips the boot gate during the
+      # build phase), and this job proves it.
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
     steps:
@@ -32,6 +35,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Test
+        run: npm test
 
       - name: Build
         run: npm run build
