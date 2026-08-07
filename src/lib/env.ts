@@ -1,119 +1,76 @@
 /**
- * Environment validation (Phase 1 repository hardening).
+ * Public environment configuration — client-safe.
  *
- * Two schemas, deliberately separated:
+ * Everything in this module is either a NEXT_PUBLIC_* value or derived from one,
+ * so it is safe to import from a client component, the proxy or next.config.ts.
+ * Server secrets, their validation and the startup gate live in
+ * `src/lib/env.server.ts`, which is never reachable from a browser bundle.
  *
- *   publicEnv  — NEXT_PUBLIC_* only. Safe in the browser bundle. Every value is
- *                referenced as a literal `process.env.NEXT_PUBLIC_X` so Next's
- *                build-time inlining still works (dynamic lookup would not).
- *   serverEnv  — secrets and connection strings. Validated lazily on first
- *                access and cached, so importing this module never throws in a
- *                context that only needs the public half.
+ * The split is deliberate: when both halves lived in one module, importing it
+ * from the browser Supabase client pulled the server schema — and the names of
+ * every secret — into a client chunk. Values were never exposed, but shipping
+ * that surface to the browser at all is the wrong default.
  *
- * The point of this module is to turn "silently wrong in production" into a
- * loud failure. The previous behaviour — signing JWTs with a fallback constant
- * committed to the repository — is exactly what the required-secret rules below
- * exist to prevent.
+ * Parsing here is non-fatal by construction. Every field is optional and a
+ * malformed value is dropped rather than thrown, so a misconfigured deployment
+ * still renders; it fails at the point of use with a message that names the
+ * variable (`requirePublicEnv`) and loudly at boot (`assertProductionConfig`).
  */
 
 import { z } from "zod";
 
-/**
- * Secrets used for signing. Optional at the field level and required in
- * production by the object-level check below — a refinement attached to an
- * optional field is not run when the value is absent, which is precisely the
- * case that matters here.
- *
- * Outside production a random per-process value is generated instead (see
- * `getSigningSecret`), so a well-known constant can never sign a real token.
- */
-const signingSecret = (name: string) =>
-  z
-    .string()
-    .min(
-      32,
-      `${name} must be at least 32 characters. Generate one with: openssl rand -base64 48`,
-    )
-    .optional();
-
-/** Secrets with no safe default: absent in production is a hard failure. */
-const PRODUCTION_REQUIRED = ["JWT_SECRET", "SHARE_JWT_SECRET"] as const;
-
-const serverSchemaShape = z.object({
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .default("development"),
-
-  // Transaction-mode pooler connection used by the Drizzle client.
-  DATABASE_URL: z
-    .string()
-    .min(1, "DATABASE_URL is required (Supabase pooler, port 6543)"),
-  // Direct connection; only drizzle-kit migrations need it.
-  DIRECT_DATABASE_URL: z.string().optional(),
-
-  // Server-only Supabase key. Bypasses RLS — never expose to the browser.
-  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
-
-  JWT_SECRET: signingSecret("JWT_SECRET"),
-  SHARE_JWT_SECRET: signingSecret("SHARE_JWT_SECRET"),
-
-  // Optional integrations; absence is a supported configuration.
-  REDIS_URL: z.string().optional(),
-  RESEND_API_KEY: z.string().optional(),
-  SENTRY_DSN: z.string().optional(),
-
-  // Seeds the demo data path. Read in ~190 call sites as a raw string; parsed
-  // here only so an unexpected value surfaces at boot instead of silently
-  // falling through to the live path.
-  DEMO_MODE: z.enum(["true", "false"]).optional(),
-});
+/** Bucket used when NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET is not configured. */
+export const DEFAULT_STORAGE_BUCKET = "nexos-assets";
 
 /**
- * Applied after the shape parses, so the check sees the resolved NODE_ENV
- * rather than a value captured when this module happened to be imported.
+ * Why each public variable exists, used to build the error `requirePublicEnv`
+ * throws. Kept here rather than read from ENV_MANIFEST so the full manifest —
+ * which describes server secrets too — stays out of client bundles.
  */
-const serverSchema = serverSchemaShape.superRefine((env, ctx) => {
-  if (env.NODE_ENV !== "production") return;
-  for (const name of PRODUCTION_REQUIRED) {
-    if (!env[name]) {
-      ctx.addIssue({
-        code: "custom",
-        path: [name],
-        message: `${name} is required in production. Generate one with: openssl rand -base64 48`,
-      });
-    }
-  }
-});
+const PUBLIC_PURPOSE: Record<string, string> = {
+  NEXT_PUBLIC_SUPABASE_URL:
+    "Supabase project URL, from Project Settings › API.",
+  NEXT_PUBLIC_SUPABASE_ANON_KEY:
+    "Supabase anon/publishable key, from Project Settings › API.",
+  NEXT_PUBLIC_APP_DOMAIN: "Internal dashboard host, e.g. app.example.com.",
+  NEXT_PUBLIC_PORTAL_DOMAIN: "Client portal host, e.g. portal.example.com.",
+  NEXT_PUBLIC_APP_URL: "Absolute dashboard URL.",
+  NEXT_PUBLIC_PORTAL_URL: "Absolute portal URL, used to build share links.",
+  NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: "Supabase Storage bucket for uploads.",
+  NEXT_PUBLIC_BUILD_NUMBER: "Build identifier surfaced by /api/health.",
+};
+
+/**
+ * An unset variable and one set to the empty string mean the same thing here.
+ * Deployment platforms routinely inject `KEY=""` for a variable that was
+ * declared but left blank, and treating that as a present-but-invalid value is
+ * what previously turned a blank NEXT_PUBLIC_SUPABASE_URL into a crash at
+ * module import rather than a missing-configuration message at the point of use.
+ */
+const blankAsAbsent = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), schema);
 
 const publicSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z
-    .url("NEXT_PUBLIC_SUPABASE_URL must be a valid URL")
-    .optional(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
-  NEXT_PUBLIC_APP_DOMAIN: z.string().optional(),
-  NEXT_PUBLIC_PORTAL_DOMAIN: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().optional(),
-  NEXT_PUBLIC_PORTAL_URL: z.string().optional(),
-  NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: z.string().optional(),
-  NEXT_PUBLIC_BUILD_NUMBER: z.string().optional(),
+  NEXT_PUBLIC_SUPABASE_URL: blankAsAbsent(
+    z.url("NEXT_PUBLIC_SUPABASE_URL must be a valid URL").optional(),
+  ),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: blankAsAbsent(z.string().optional()),
+  NEXT_PUBLIC_APP_DOMAIN: blankAsAbsent(z.string().optional()),
+  NEXT_PUBLIC_PORTAL_DOMAIN: blankAsAbsent(z.string().optional()),
+  NEXT_PUBLIC_APP_URL: blankAsAbsent(z.string().optional()),
+  NEXT_PUBLIC_PORTAL_URL: blankAsAbsent(z.string().optional()),
+  NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: blankAsAbsent(z.string().optional()),
+  NEXT_PUBLIC_BUILD_NUMBER: blankAsAbsent(z.string().optional()),
 });
 
-export type ServerEnv = z.infer<typeof serverSchema>;
 export type PublicEnv = z.infer<typeof publicSchema>;
-
-function formatIssues(error: z.ZodError): string {
-  const lines = error.issues.map((issue) => {
-    const path = issue.path.join(".") || "(root)";
-    return `  · ${path}: ${issue.message}`;
-  });
-  return `Invalid environment configuration:\n${lines.join("\n")}\n\nSee .env.example for the full template.`;
-}
+export type PublicEnvKey = keyof PublicEnv;
 
 /**
  * Literal references only — Next replaces these at build time. Do not rewrite
  * as a loop over key names; the values would be `undefined` in the browser.
  */
-export const publicEnv: PublicEnv = publicSchema.parse({
+const rawPublicEnv = {
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_APP_DOMAIN: process.env.NEXT_PUBLIC_APP_DOMAIN,
@@ -123,66 +80,78 @@ export const publicEnv: PublicEnv = publicSchema.parse({
   NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET:
     process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET,
   NEXT_PUBLIC_BUILD_NUMBER: process.env.NEXT_PUBLIC_BUILD_NUMBER,
-});
+};
 
-let cachedServerEnv: ServerEnv | undefined;
+const parsedPublicEnv = publicSchema.safeParse(rawPublicEnv);
 
 /**
- * Validates and returns the server environment. Throws on the first access if
- * configuration is invalid — call it from a server entry point to fail fast.
+ * Problems found in the public configuration, as readable lines.
+ *
+ * A malformed public value must not throw here. This module is imported by
+ * client components, the proxy and next.config.ts; a throw at import time
+ * replaces every page with an unrelated build/render error that names no
+ * variable. Instead the offending field is dropped, the problem is recorded,
+ * and it becomes fatal at the two places where that is useful: `getEnvDiagnostics()`
+ * (logged at boot, served by /api/health) and `assertProductionConfig()`.
  */
-export function getServerEnv(): ServerEnv {
-  if (cachedServerEnv) return cachedServerEnv;
+export const publicEnvIssues: readonly string[] = parsedPublicEnv.success
+  ? []
+  : parsedPublicEnv.error.issues.map(
+      (issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`,
+    );
 
-  if (typeof window !== "undefined") {
+/**
+ * The validated public environment. Every field is optional, so an
+ * unconfigured deployment still renders and fails at the point of use with a
+ * message that names the variable (see `requirePublicEnv`).
+ */
+export const publicEnv: PublicEnv = parsedPublicEnv.success
+  ? parsedPublicEnv.data
+  : // Keep the fields that parsed; drop the ones that did not, so a bad value
+    // behaves exactly like an absent one.
+    (() => {
+      const rejected = new Set(
+        parsedPublicEnv.error.issues.map((issue) => String(issue.path[0])),
+      );
+      const kept: Record<string, string | undefined> = {};
+      for (const [key, value] of Object.entries(rawPublicEnv)) {
+        kept[key] = rejected.has(key) || value === "" ? undefined : value;
+      }
+      return kept as PublicEnv;
+    })();
+
+/**
+ * Reads a public variable that the calling code genuinely cannot work without,
+ * failing with a message that names the variable and how to obtain it.
+ *
+ * This replaces the `process.env.X!` non-null assertions that used to be spread
+ * across the Supabase clients, where a missing value surfaced as an opaque
+ * third-party error ("supabaseUrl is required") with no indication of which
+ * deployment setting was wrong.
+ */
+export function requirePublicEnv<K extends PublicEnvKey>(
+  name: K,
+): NonNullable<PublicEnv[K]> {
+  const value = publicEnv[name];
+  if (value === undefined || value === "") {
+    const purpose = PUBLIC_PURPOSE[name] ?? "";
     throw new Error(
-      "getServerEnv() was called in the browser. Server environment variables are not available client-side; use publicEnv instead.",
+      `${name} is not set. ${purpose} Add it to .env.local for local development, or to the deployment's environment variables. See .env.example.`.replace(
+        /\s+/g,
+        " ",
+      ),
     );
   }
-
-  const parsed = serverSchema.safeParse(process.env);
-  if (!parsed.success) {
-    throw new Error(formatIssues(parsed.error));
-  }
-
-  cachedServerEnv = parsed.data;
-  return cachedServerEnv;
+  return value as NonNullable<PublicEnv[K]>;
 }
-
-/** Test-only: clears the memoised server env so a new process.env can be read. */
-export function resetServerEnvCache(): void {
-  cachedServerEnv = undefined;
-}
-
-const ephemeralSecrets = new Map<string, Uint8Array>();
 
 /**
- * Returns the signing key for `name` as bytes.
- *
- * Production: the configured secret, or a hard failure. There is no fallback —
- * a predictable signing key means forgeable approval and share-link tokens.
- * Development/test: a random per-process key, so nothing constant is ever used.
+ * The Supabase Storage bucket backing uploads. Configuration rather than a
+ * hardcoded provider default, so a deployment can point at its own bucket
+ * without a code change.
  */
-export function getSigningSecret(
-  name: "JWT_SECRET" | "SHARE_JWT_SECRET",
-): Uint8Array {
-  const env = getServerEnv();
-  const configured = env[name];
-  if (configured) return new TextEncoder().encode(configured);
-
-  // getServerEnv() already rejects a missing secret in production; this guard
-  // keeps the invariant explicit and local to where the key is handed out.
-  if (env.NODE_ENV === "production") {
-    throw new Error(`${name} is required in production.`);
-  }
-
-  const existing = ephemeralSecrets.get(name);
-  if (existing) return existing;
-
-  const generated = crypto.getRandomValues(new Uint8Array(48));
-  ephemeralSecrets.set(name, generated);
-  console.warn(
-    `[env] ${name} is not set. Using a random key for this process — tokens will not verify after a restart. Set ${name} in .env.local to make them stable.`,
+export function getStorageBucket(): string {
+  return (
+    publicEnv.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || DEFAULT_STORAGE_BUCKET
   );
-  return generated;
 }

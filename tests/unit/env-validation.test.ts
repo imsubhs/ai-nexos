@@ -9,6 +9,11 @@ const BASE_ENV = {
   DATABASE_URL: "postgres://user:pass@localhost:5432/db",
   JWT_SECRET: "a".repeat(48),
   SHARE_JWT_SECRET: "b".repeat(48),
+  SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
+  NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co",
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
+  NEXT_PUBLIC_APP_DOMAIN: "app.example.com",
+  NEXT_PUBLIC_PORTAL_DOMAIN: "portal.example.com",
 };
 
 let originalEnv: NodeJS.ProcessEnv;
@@ -30,7 +35,13 @@ async function loadEnv(overrides: Record<string, string | undefined>) {
     else process.env[key] = value;
   }
   vi.resetModules();
-  return import("@/lib/env");
+  // The public and server halves are separate modules (see src/lib/env.ts).
+  // Tests exercise both, so hand back the union.
+  const [publicHalf, serverHalf] = await Promise.all([
+    import("@/lib/env"),
+    import("@/lib/env.server"),
+  ]);
+  return { ...publicHalf, ...serverHalf };
 }
 
 describe("server env validation", () => {
@@ -88,10 +99,47 @@ describe("server env validation", () => {
     const { getServerEnv } = await loadEnv({
       ...BASE_ENV,
       REDIS_URL: undefined,
-      RESEND_API_KEY: undefined,
-      SENTRY_DSN: undefined,
+      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
+      NEXT_PUBLIC_BUILD_NUMBER: undefined,
     });
     expect(() => getServerEnv()).not.toThrow();
+  });
+
+  it("fails in production when SUPABASE_SERVICE_ROLE_KEY is missing", async () => {
+    // The service-role client has no anon-key fallback by design: silently
+    // degrading would make the share-link portal read nothing rather than fail.
+    const { getServerEnv } = await loadEnv({
+      ...BASE_ENV,
+      SUPABASE_SERVICE_ROLE_KEY: undefined,
+    });
+    expect(() => getServerEnv()).toThrow(
+      /SUPABASE_SERVICE_ROLE_KEY is required in production/,
+    );
+  });
+
+  it("refuses to run the demo dataset in production", async () => {
+    const { getServerEnv } = await loadEnv({ ...BASE_ENV, DEMO_MODE: "true" });
+    expect(() => getServerEnv()).toThrow(
+      /DEMO_MODE must not be "true" in production/,
+    );
+  });
+
+  it("reports every problem at once rather than the first", async () => {
+    const { getServerEnv } = await loadEnv({
+      ...BASE_ENV,
+      DATABASE_URL: undefined,
+      JWT_SECRET: undefined,
+      SHARE_JWT_SECRET: undefined,
+    });
+    let message = "";
+    try {
+      getServerEnv();
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toMatch(/DATABASE_URL/);
+    expect(message).toMatch(/JWT_SECRET/);
+    expect(message).toMatch(/SHARE_JWT_SECRET/);
   });
 
   it("does not require signing secrets outside production", async () => {
@@ -142,6 +190,136 @@ describe("getSigningSecret", () => {
 
     expect(getSigningSecret("JWT_SECRET")).not.toEqual(
       getSigningSecret("SHARE_JWT_SECRET"),
+    );
+  });
+});
+
+describe("isDemoMode", () => {
+  it('is true only for the exact string "true"', async () => {
+    for (const [value, expected] of [
+      ["true", true],
+      ["false", false],
+      ["TRUE", false],
+      [undefined, false],
+    ] as const) {
+      const { isDemoMode } = await loadEnv({
+        ...BASE_ENV,
+        NODE_ENV: "development",
+        DEMO_MODE: value,
+      });
+      expect(isDemoMode()).toBe(expected);
+    }
+  });
+});
+
+describe("requirePublicEnv", () => {
+  it("returns a configured value", async () => {
+    const { requirePublicEnv } = await loadEnv(BASE_ENV);
+    expect(requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL")).toBe(
+      "https://project.supabase.co",
+    );
+  });
+
+  it("names the missing variable instead of failing inside a third-party client", async () => {
+    const { requirePublicEnv } = await loadEnv({
+      ...BASE_ENV,
+      NODE_ENV: "development",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
+    });
+    expect(() => requirePublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")).toThrow(
+      /NEXT_PUBLIC_SUPABASE_ANON_KEY is not set/,
+    );
+  });
+
+  it("treats an empty string as unset", async () => {
+    const { requirePublicEnv } = await loadEnv({
+      ...BASE_ENV,
+      NODE_ENV: "development",
+      NEXT_PUBLIC_SUPABASE_URL: "",
+    });
+    expect(() => requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL")).toThrow(
+      /NEXT_PUBLIC_SUPABASE_URL is not set/,
+    );
+  });
+});
+
+describe("getStorageBucket", () => {
+  it("falls back to the default bucket", async () => {
+    const { getStorageBucket, DEFAULT_STORAGE_BUCKET } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
+    });
+    expect(getStorageBucket()).toBe(DEFAULT_STORAGE_BUCKET);
+  });
+
+  it("prefers the configured bucket", async () => {
+    const { getStorageBucket } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: "documents",
+    });
+    expect(getStorageBucket()).toBe("documents");
+  });
+});
+
+describe("assertProductionConfig", () => {
+  it("passes for a fully configured production environment", async () => {
+    const { assertProductionConfig } = await loadEnv(BASE_ENV);
+    expect(() => assertProductionConfig()).not.toThrow();
+  });
+
+  it("fails when a production-required public variable is absent", async () => {
+    // These stay optional in the public schema so importing the module never
+    // breaks a browser bundle; production enforcement happens here instead.
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_PORTAL_DOMAIN: undefined,
+    });
+    expect(() => assertProductionConfig()).toThrow(/NEXT_PUBLIC_PORTAL_DOMAIN/);
+  });
+
+  it("is a no-op outside production", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NODE_ENV: "development",
+      NEXT_PUBLIC_SUPABASE_URL: undefined,
+      NEXT_PUBLIC_APP_DOMAIN: undefined,
+      NEXT_PUBLIC_PORTAL_DOMAIN: undefined,
+    });
+    expect(() => assertProductionConfig()).not.toThrow();
+  });
+});
+
+describe("getEnvDiagnostics", () => {
+  it("reports names and never values", async () => {
+    const { getEnvDiagnostics } = await loadEnv(BASE_ENV);
+    const diagnostics = getEnvDiagnostics();
+    const serialised = JSON.stringify(diagnostics);
+
+    expect(diagnostics.configured).toContain("DATABASE_URL");
+    expect(diagnostics.configured).toContain("JWT_SECRET");
+    expect(serialised).not.toContain(BASE_ENV.JWT_SECRET);
+    expect(serialised).not.toContain(BASE_ENV.DATABASE_URL);
+    expect(serialised).not.toContain(BASE_ENV.SUPABASE_SERVICE_ROLE_KEY);
+  });
+
+  it("lists absent optional variables as fallbacks, not failures", async () => {
+    const { getEnvDiagnostics } = await loadEnv({
+      ...BASE_ENV,
+      REDIS_URL: undefined,
+    });
+    const diagnostics = getEnvDiagnostics();
+    expect(diagnostics.usingFallback).toContain("REDIS_URL");
+    expect(diagnostics.services.redis).toBe("not-configured");
+  });
+
+  it("warns about ephemeral signing keys in development", async () => {
+    const { getEnvDiagnostics } = await loadEnv({
+      ...BASE_ENV,
+      NODE_ENV: "development",
+      JWT_SECRET: undefined,
+    });
+    expect(getEnvDiagnostics().warnings.join(" ")).toMatch(
+      /JWT_SECRET is unset/,
     );
   });
 });
