@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import { getServerEnv } from "@/lib/env.server";
 
 /**
  * Server-only Drizzle client over the Supabase connection pooler.
@@ -17,8 +18,10 @@ declare global {
 }
 
 function createDb() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is not set");
+  // getServerEnv() rather than a raw read: a missing DATABASE_URL is reported
+  // with the same message and alongside every other configuration problem,
+  // instead of a bare "DATABASE_URL is not set" that names no remedy.
+  const url = getServerEnv().DATABASE_URL;
   const client = postgres(url, { prepare: false });
   return drizzle(client, { schema, casing: "snake_case" });
 }
@@ -42,8 +45,9 @@ function getDb() {
  * CI, and DEMO_MODE installs that never touch Postgres at all.
  *
  * This defers the failure to first use; it does not remove it. A request that
- * actually reaches the database with DATABASE_URL unset still throws
- * "DATABASE_URL is not set", exactly as before.
+ * actually reaches the database with DATABASE_URL unset still throws — now via
+ * getServerEnv(), so the message names the variable and lists any other
+ * configuration problems at the same time.
  */
 export const db = new Proxy({} as ReturnType<typeof createDb>, {
   get(_target, prop) {

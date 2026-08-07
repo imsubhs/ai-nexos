@@ -1,6 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { safeInternalPath } from "@/features/auth/redirect";
+// Shared with the rest of the app rather than re-defaulted here. This used to
+// fall back to "" while src/config/app.ts fell back to "portal.localhost:3000",
+// so the same variable had two different unset behaviours: host matching here
+// silently never matched, and local portal testing did not route.
+import { PORTAL_DOMAIN } from "@/config/app";
+import { requirePublicEnv } from "@/lib/env";
 import { isDemoMode } from "@/lib/env.server";
 
 /**
@@ -18,8 +24,6 @@ import { isDemoMode } from "@/lib/env.server";
  * in the portal service layer, not here. This check is convenience routing;
  * the real security boundary is RLS + requireCurrentUser() at render time.
  */
-
-const PORTAL_DOMAIN = process.env.NEXT_PUBLIC_PORTAL_DOMAIN ?? "";
 
 const PUBLIC_INTERNAL_PATHS = [
   "/login",
@@ -64,8 +68,8 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requirePublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
     {
       cookies: {
         getAll() {
