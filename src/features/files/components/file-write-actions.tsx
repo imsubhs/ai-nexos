@@ -5,19 +5,16 @@
  *
  * Wired (the write actions the files public gateway exposes):
  *   • createFolder          — new folder at the current level
- *   • initializeFileUpload  → finalizeFileUpload — registers a file and its v1
+ *   • performFileUpload     — initialize → transfer bytes → finalize
  *   • generateShareLink     — tokenised link to a file version
  *
  * Not wired, because no such action exists (see docs/SPRINT-12A.md):
  *   • rename / move / delete — the files domain has no such call
- *   • in-place preview and download — blocked by TD-02: storage returns mock
- *     signed URLs, so there is no byte stream to render or download
  *
- * One honest limitation, stated in the upload dialog rather than hidden: the
- * two-step upload registers metadata and the real SHA-256 of the chosen file,
- * but the binary itself is not transferred, because `initializeFileUpload`
- * returns a mock storage URL (TD-02). The file record, its version, and the
- * dedup hash are all real; the bytes are not.
+ * The upload is a real three-step flow as of Sprint 2.4: the browser computes
+ * a SHA-256, the server mints a signed upload URL, the browser PUTs the bytes
+ * straight to Supabase Storage, and only a successful transfer finalises the
+ * version. Ordering and failure semantics live in ../upload.ts.
  */
 import { useRef, useState } from "react";
 import { FolderPlus, Upload } from "lucide-react";
@@ -26,11 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import {
-  createFolder,
-  finalizeFileUpload,
-  initializeFileUpload,
-} from "../actions";
+import { createFolder } from "../actions";
+import { performFileUpload } from "../upload";
 
 /** MIME → the fileType enum in src/features/files/schemas.ts. */
 function fileTypeFor(mimeType: string, filename: string): string {
@@ -152,23 +146,20 @@ export function FileWriteActions({
             : "bin";
           const hash = await sha256Hex(selected);
 
-          const init = await initializeFileUpload({
+          // Throws if the bytes do not reach storage, so the success path
+          // below is unreachable for a file that was not actually stored.
+          await performFileUpload({
             organizationId,
             projectId,
             folderId,
             title: title.trim() || selected.name,
-            fileType: fileTypeFor(mimeType, selected.name) as never,
+            fileType: fileTypeFor(mimeType, selected.name),
             originalFilename: selected.name,
             mimeType,
             sizeBytes: selected.size,
             extension,
             clientHash: hash,
-          });
-
-          await finalizeFileUpload({
-            fileId: (init as any).fileId,
-            versionId: (init as any).versionId,
-            sha256Hash: hash,
+            file: selected,
           });
 
           setSelected(null);
@@ -198,9 +189,8 @@ export function FileWriteActions({
             />
           </div>
           <p className="text-muted-foreground text-xs">
-            The file record, version and checksum are created for real. The
-            binary itself is not transferred — object storage still returns mock
-            signed URLs (TD-02), so there is nowhere to put the bytes yet.
+            The file is uploaded directly to secure storage from your browser.
+            Its SHA-256 checksum is computed here and recorded with the version.
           </p>
         </div>
       </ConfirmDialog>

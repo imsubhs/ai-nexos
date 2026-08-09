@@ -311,11 +311,19 @@ export async function initializeFileUpload(
     return { fileId, versionId, deduplicated: true, uploadUrl: null } as any;
   }
 
+  // No upload URL, because the demo store has nowhere to put bytes.
+  //
+  // This used to return `https://mock.storage.com/upload/...`. Nothing ever
+  // requested it, so it was harmless — until the client began actually
+  // transferring bytes to whatever URL it is handed (src/features/files/upload.ts),
+  // at which point a fabricated host would turn every demo upload into a failed
+  // network request. `null` is the honest answer and the same one the real
+  // adapter gives when no transfer is required.
   return {
     fileId,
     versionId,
     deduplicated: false,
-    uploadUrl: `https://mock.storage.com/upload/${fileId}/${versionId}`,
+    uploadUrl: null,
   } as any;
 }
 
