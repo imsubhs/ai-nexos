@@ -17,6 +17,17 @@
 export const DEMO_ORG_ID = "00000000-0000-4000-8000-00000000f001";
 export const DEMO_USER_ID = "00000000-0000-4000-8000-00000000f002";
 
+/**
+ * The client whose portal the demo walkthrough shows (Acme, `id.clientAcme`).
+ *
+ * Exported because the portal previously repeated this UUID as a literal in
+ * `src/app/portal/(portal)/dashboard/page.tsx`, beside a second literal
+ * `"mock-client-id"` used outside demo mode. One name, defined next to the data
+ * it identifies, is what keeps the demo identity from drifting into a
+ * production code path again.
+ */
+export const DEMO_PORTAL_CLIENT_ID = "00000000-0000-4000-8000-000000000101";
+
 const SEED_DATE = new Date("2026-07-01T09:00:00.000Z");
 
 function seedDate(daysOffset: number): Date {
