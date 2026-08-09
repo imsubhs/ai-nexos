@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { buildShareUrl } from "@/features/shares/utils/share-url";
 import {
   approveRevision,
   generateShareLink,
@@ -250,9 +251,7 @@ export function DeliverableActions({
             false,
           );
           const token = (link as any)?.token;
-          setShareUrl(
-            token ? `${window.location.origin}/portal/s/${token}` : null,
-          );
+          setShareUrl(token ? buildShareUrl(token) : null);
           await onChanged();
           toast.success("Share link created");
         }}

@@ -39,6 +39,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { buildShareUrl } from "@/features/shares/utils/share-url";
 import type { files } from "@/db/schema/files";
 
 export type FileRow = typeof files.$inferSelect;
@@ -536,10 +537,7 @@ export function FilePreviewSheet({
                 const token = (link as { token?: string })?.token;
                 setShare(
                   token
-                    ? {
-                        fileId: file.fileId,
-                        url: `${window.location.origin}/portal/s/${token}`,
-                      }
+                    ? { fileId: file.fileId, url: buildShareUrl(token) }
                     : null,
                 );
                 setDialog(null);
