@@ -41,6 +41,11 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+*.code-workspace
+
+# local agent tooling — MCP server roster is per-developer, and this file is
+# where a project-scoped URL or inline token would land if one were ever added
+.mcp.json
 
 # local working notes — never part of the product
 /scratch/
