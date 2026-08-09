@@ -95,6 +95,11 @@ async function verifyConnectivity(): Promise<boolean> {
       const sql = postgres(databaseUrl, {
         max: 1,
         prepare: false,
+        // Without this postgres.js negotiates no TLS, and Supabase accepts the
+        // plaintext connection — which would send the database password over
+        // the network in the clear just to run a health check. Matches
+        // scripts/migrate.ts.
+        ssl: "require",
         connect_timeout: 15,
         onnotice: () => {},
       });

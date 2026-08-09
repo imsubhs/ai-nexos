@@ -2,6 +2,7 @@ import {
   index,
   integer,
   pgTable,
+  primaryKey,
   text,
   uniqueIndex,
   uuid,
@@ -52,6 +53,7 @@ export const organizationSequences = pgTable(
     nextValue: integer("next_value").notNull().default(1),
   },
   (table) => [
+    primaryKey({ columns: [table.organizationId, table.entityType] }),
     uniqueIndex("uq_org_seq_entity").on(table.organizationId, table.entityType),
   ],
 );

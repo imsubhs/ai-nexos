@@ -71,6 +71,34 @@
       "when": 1784319321213,
       "tag": "0009_mute_wallow",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784319321214,
+      "tag": "0010_data_api_select_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784319321215,
+      "tag": "0011_revoke_blanket_data_api_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1784319321216,
+      "tag": "0012_revoke_default_privileges",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1786259505879,
+      "tag": "0013_org_sequences_composite_pk",
+      "breakpoints": true
     }
   ]
 }

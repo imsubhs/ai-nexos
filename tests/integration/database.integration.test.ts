@@ -96,7 +96,8 @@ describe("Database schema (live)", () => {
     const missing: string[] = [];
     for (const table of tables) {
       for (const fk of Object.values(table.foreignKeys)) {
-        if (!live.has(fk.name)) missing.push(fk.name);
+        const expectedName = fk.name.slice(0, 63);
+        if (!live.has(expectedName)) missing.push(fk.name);
       }
     }
     expect(

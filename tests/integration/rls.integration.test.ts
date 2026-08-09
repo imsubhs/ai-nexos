@@ -138,10 +138,26 @@ describe("Row Level Security (live)", () => {
   });
 
   it("denies anonymous callers", async () => {
-    const rows = await asRole("anon", {}, (sql) =>
-      sql`select organization_id from organizations`.then((r) => r),
-    );
-    // No auth.uid() means no organisation, so every row is filtered out.
+    // Anonymous callers are refused twice over, and either layer is a pass:
+    //   · `anon` holds no privilege on the table at all (migration 0011), so
+    //     PostgreSQL raises 42501 before any policy is consulted; or
+    //   · were that grant ever restored, every policy targets `authenticated`,
+    //     and no auth.uid() means no organisation, so every row is filtered.
+    // The only failure is a read that actually comes back with rows.
+    let rows: readonly { organization_id: string }[];
+    try {
+      rows = await asRole("anon", {}, (sql) =>
+        sql<
+          { organization_id: string }[]
+        >`select organization_id from organizations`.then((r) => r),
+      );
+    } catch (error) {
+      expect(
+        (error as { code?: string }).code,
+        "anon was refused, but not by the privilege check",
+      ).toBe("42501");
+      return;
+    }
     expect(rows.length).toBe(0);
   });
 
