@@ -616,7 +616,7 @@ code or configuration.
 
 **Regression**
 
-- [ ] 423/423 unit tests · 25/25 integration tests
+- [ ] 468/468 unit tests · 25/25 integration tests
 - [ ] lint 0 errors · typecheck clean · format clean · build green · `audit:authz` pass
 
 **Documentation**
@@ -719,7 +719,7 @@ Sprint 2.4 is DONE when **all** of the following are true:
 6. The pipeline deploys only after every quality gate passes, and has been
    observed rejecting a misconfigured deployment.
 7. A restore has been rehearsed and timed, and the RTO is written down.
-8. 423/423 unit tests, 25/25 integration tests, lint 0 errors, typecheck clean,
+8. 468/468 unit tests, 25/25 integration tests, lint 0 errors, typecheck clean,
    format clean, build green, `audit:authz` pass.
 9. Migration hash integrity is 0 mismatches and no new `GRANT` was issued.
 10. Deployment, rollback and secret-rotation runbooks exist and someone who did
