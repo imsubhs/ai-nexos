@@ -19,8 +19,20 @@
 
 import { z } from "zod";
 
-/** Bucket used when NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET is not configured. */
-export const DEFAULT_STORAGE_BUCKET = "nexos-assets";
+/**
+ * Bucket used when NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET is not configured.
+ *
+ * `documents` is the bucket that actually exists in the Supabase project
+ * (verified live in Sprint 2.3). The previous default named `nexos-assets`,
+ * which has never existed here — so an unset variable produced an application
+ * that booted green and failed every upload and download at runtime. A default
+ * that cannot work is worse than no default, because it hides the omission.
+ *
+ * The variable is production-required as well (see `ENV_MANIFEST`); this
+ * default is what keeps local development working, not a substitute for
+ * configuring the deployment.
+ */
+export const DEFAULT_STORAGE_BUCKET = "documents";
 
 /**
  * Why each public variable exists, used to build the error `requirePublicEnv`
@@ -57,8 +69,16 @@ const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: blankAsAbsent(z.string().optional()),
   NEXT_PUBLIC_APP_DOMAIN: blankAsAbsent(z.string().optional()),
   NEXT_PUBLIC_PORTAL_DOMAIN: blankAsAbsent(z.string().optional()),
-  NEXT_PUBLIC_APP_URL: blankAsAbsent(z.string().optional()),
-  NEXT_PUBLIC_PORTAL_URL: blankAsAbsent(z.string().optional()),
+  // Absolute URLs, so they are validated as URLs rather than as strings. A
+  // bare host ("app.example.com") parsed fine as a string and then produced a
+  // relative-looking base that `new URL(path, base)` rejects at request time,
+  // in the auth callback — the one place a bad value costs a login.
+  NEXT_PUBLIC_APP_URL: blankAsAbsent(
+    z.url("NEXT_PUBLIC_APP_URL must be an absolute URL").optional(),
+  ),
+  NEXT_PUBLIC_PORTAL_URL: blankAsAbsent(
+    z.url("NEXT_PUBLIC_PORTAL_URL must be an absolute URL").optional(),
+  ),
   NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: blankAsAbsent(z.string().optional()),
   NEXT_PUBLIC_BUILD_NUMBER: blankAsAbsent(z.string().optional()),
 });

@@ -143,10 +143,11 @@ export const ENV_MANIFEST: readonly EnvSpec[] = [
   },
   {
     name: "NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET",
-    requirement: "optional",
+    requirement: "production",
     exposure: "public",
-    purpose: "Supabase Storage bucket backing document and asset uploads.",
-    fallback: `Defaults to "${DEFAULT_STORAGE_BUCKET}".`,
+    purpose:
+      "Supabase Storage bucket backing document and asset uploads. The live bucket is `documents`.",
+    fallback: `Development defaults to "${DEFAULT_STORAGE_BUCKET}"; required explicitly in production.`,
   },
   {
     name: "REDIS_URL",
@@ -229,13 +230,79 @@ const PRODUCTION_REQUIRED = [
   "SUPABASE_SERVICE_ROLE_KEY",
 ] as const;
 
-/** Public values with no safe default in production. Checked at boot, not at import. */
+/**
+ * Public values with no safe default in production. Checked at boot, not at
+ * import.
+ *
+ * The last three were declared `production` in `ENV_MANIFEST` from the start
+ * but were never listed here, so the classification described an enforcement
+ * that did not exist. Each has a development fallback that is actively wrong in
+ * production:
+ *
+ *   · NEXT_PUBLIC_APP_URL     — derives `http://<app domain>`; it is the
+ *     redirect target for the auth callback, magic links and OAuth, so an
+ *     http:// value drops the `secure` session cookie on the hop that matters.
+ *   · NEXT_PUBLIC_PORTAL_URL  — derives `http://<portal domain>`; share links
+ *     are built from it, and a share token is an unauthenticated credential.
+ *   · NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET — see `DEFAULT_STORAGE_BUCKET`.
+ */
 const PRODUCTION_REQUIRED_PUBLIC = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
   "NEXT_PUBLIC_APP_DOMAIN",
   "NEXT_PUBLIC_PORTAL_DOMAIN",
+  "NEXT_PUBLIC_APP_URL",
+  "NEXT_PUBLIC_PORTAL_URL",
+  "NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET",
 ] as const;
+
+/**
+ * Absolute URLs that must be reachable over TLS in production.
+ *
+ * Presence is not enough for these two. Both are consumed as the base of a
+ * redirect that has just set, or is about to be presented with, a `secure`
+ * cookie — so an `http://` origin is not a downgrade in theory, it is a session
+ * that silently does not work. `localhost` is refused for the same reason it is
+ * never right in production: it names the deployment's own loopback, not the
+ * user's browser.
+ */
+const PRODUCTION_HTTPS_URLS = [
+  "NEXT_PUBLIC_APP_URL",
+  "NEXT_PUBLIC_PORTAL_URL",
+] as const;
+
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]"]);
+
+/** Production-only URL rules. Returns one readable line per problem. */
+function insecureUrlIssues(): string[] {
+  const issues: string[] = [];
+
+  for (const name of PRODUCTION_HTTPS_URLS) {
+    const value = publicEnv[name];
+    // Absence is already reported by the PRODUCTION_REQUIRED_PUBLIC check, and
+    // a malformed value was dropped at parse time and recorded in
+    // publicEnvIssues. Neither should be reported twice.
+    if (value === undefined) continue;
+
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      continue;
+    }
+
+    if (url.protocol !== "https:") {
+      issues.push(
+        `${name}: must use https:// in production — it is the base of a redirect that carries a secure cookie.`,
+      );
+    }
+    if (LOOPBACK_HOSTS.has(url.hostname.toLowerCase())) {
+      issues.push(`${name}: must not point at ${url.hostname} in production.`);
+    }
+  }
+
+  return issues;
+}
 
 const serverSchemaShape = z.object({
   NODE_ENV: z
@@ -570,8 +637,9 @@ export function assertProductionConfig(): void {
   const missing = PRODUCTION_REQUIRED_PUBLIC.filter(
     (name) => publicEnv[name] === undefined,
   );
+  const insecure = insecureUrlIssues();
 
-  if (missing.length > 0 || publicEnvIssues.length > 0) {
+  if (missing.length > 0 || publicEnvIssues.length > 0 || insecure.length > 0) {
     const lines = [
       ...missing.map((name) => {
         const spec = MANIFEST_BY_NAME.get(name);
@@ -580,6 +648,7 @@ export function assertProductionConfig(): void {
       // A malformed value is tolerated at import so pages still render; in
       // production it is a deployment defect, not a degraded mode.
       ...publicEnvIssues.map((issue) => `  · ${issue}`),
+      ...insecure.map((issue) => `  · ${issue}`),
     ];
     throw new Error(
       `Invalid environment configuration:\n${lines.join("\n")}\n\nThese are required in production. See .env.example for the full template.`,

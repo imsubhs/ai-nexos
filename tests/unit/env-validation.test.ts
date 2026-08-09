@@ -14,6 +14,9 @@ const BASE_ENV = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
   NEXT_PUBLIC_APP_DOMAIN: "app.example.com",
   NEXT_PUBLIC_PORTAL_DOMAIN: "portal.example.com",
+  NEXT_PUBLIC_APP_URL: "https://app.example.com",
+  NEXT_PUBLIC_PORTAL_URL: "https://portal.example.com",
+  NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: "documents",
 };
 
 let originalEnv: NodeJS.ProcessEnv;
@@ -96,10 +99,12 @@ describe("server env validation", () => {
   });
 
   it("treats optional integrations as genuinely optional", async () => {
+    // The storage bucket was removed from this list in Sprint 2.4: it is
+    // production-required now, because its development default names the only
+    // bucket that exists rather than a safe placeholder.
     const { getServerEnv } = await loadEnv({
       ...BASE_ENV,
       REDIS_URL: undefined,
-      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
       NEXT_PUBLIC_BUILD_NUMBER: undefined,
     });
     expect(() => getServerEnv()).not.toThrow();
@@ -252,6 +257,18 @@ describe("getStorageBucket", () => {
     expect(getStorageBucket()).toBe(DEFAULT_STORAGE_BUCKET);
   });
 
+  it("defaults to the bucket that actually exists", async () => {
+    // Sprint 2.3 verified `documents` live. The previous default was
+    // `nexos-assets`, which has never existed in this project — so an unset
+    // variable produced an app that booted green and failed every transfer.
+    const { getStorageBucket, DEFAULT_STORAGE_BUCKET } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
+    });
+    expect(DEFAULT_STORAGE_BUCKET).toBe("documents");
+    expect(getStorageBucket()).toBe("documents");
+  });
+
   it("prefers the configured bucket", async () => {
     const { getStorageBucket } = await loadEnv({
       ...BASE_ENV,
@@ -284,6 +301,130 @@ describe("assertProductionConfig", () => {
       NEXT_PUBLIC_SUPABASE_URL: undefined,
       NEXT_PUBLIC_APP_DOMAIN: undefined,
       NEXT_PUBLIC_PORTAL_DOMAIN: undefined,
+      NEXT_PUBLIC_APP_URL: undefined,
+      NEXT_PUBLIC_PORTAL_URL: undefined,
+      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
+    });
+    expect(() => assertProductionConfig()).not.toThrow();
+  });
+});
+
+/**
+ * Sprint 2.4, gate G2.4-1.
+ *
+ * These three were declared `production` (or, for the bucket, `optional` with a
+ * default naming a bucket that does not exist) and enforced nowhere. Each has a
+ * development fallback that is silently wrong in production, so absence
+ * produced a deployment that booted green and failed at the first login, share
+ * link or upload.
+ */
+describe("assertProductionConfig — Sprint 2.4 enforcement", () => {
+  it("fails in production when NEXT_PUBLIC_APP_URL is missing", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_APP_URL: undefined,
+    });
+    expect(() => assertProductionConfig()).toThrow(/NEXT_PUBLIC_APP_URL/);
+  });
+
+  it("fails in production when NEXT_PUBLIC_PORTAL_URL is missing", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_PORTAL_URL: undefined,
+    });
+    expect(() => assertProductionConfig()).toThrow(/NEXT_PUBLIC_PORTAL_URL/);
+  });
+
+  it("fails in production when NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET is missing", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
+    });
+    expect(() => assertProductionConfig()).toThrow(
+      /NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET/,
+    );
+  });
+
+  it("reports all three in a single failure", async () => {
+    // One redeploy per missing variable is the failure mode this whole module
+    // exists to avoid.
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_APP_URL: undefined,
+      NEXT_PUBLIC_PORTAL_URL: undefined,
+      NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
+    });
+
+    let message = "";
+    try {
+      assertProductionConfig();
+    } catch (error) {
+      message = (error as Error).message;
+    }
+
+    expect(message).toMatch(/NEXT_PUBLIC_APP_URL/);
+    expect(message).toMatch(/NEXT_PUBLIC_PORTAL_URL/);
+    expect(message).toMatch(/NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET/);
+  });
+
+  it("rejects a malformed NEXT_PUBLIC_APP_URL", async () => {
+    // A bare host parsed fine as a string and then failed at request time
+    // inside the auth callback, where `new URL(path, base)` needs an origin.
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_APP_URL: "app.example.com",
+    });
+    expect(() => assertProductionConfig()).toThrow(/NEXT_PUBLIC_APP_URL/);
+  });
+
+  it("rejects a malformed NEXT_PUBLIC_PORTAL_URL", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_PORTAL_URL: "not a url",
+    });
+    expect(() => assertProductionConfig()).toThrow(/NEXT_PUBLIC_PORTAL_URL/);
+  });
+
+  it("rejects an http:// application URL in production", async () => {
+    // This is the exact value the old fallback produced.
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_APP_URL: "http://app.example.com",
+    });
+    expect(() => assertProductionConfig()).toThrow(/https/);
+  });
+
+  it("rejects an http:// portal URL in production", async () => {
+    // Share links are built from this value and carry an unauthenticated
+    // credential, so an unencrypted origin is a disclosure, not a downgrade.
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_PORTAL_URL: "http://portal.example.com",
+    });
+    expect(() => assertProductionConfig()).toThrow(/https/);
+  });
+
+  it("rejects a loopback URL in production", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NEXT_PUBLIC_APP_URL: "https://localhost:3000",
+    });
+    expect(() => assertProductionConfig()).toThrow(/localhost/);
+  });
+
+  it("still accepts a correctly configured production environment", async () => {
+    const { assertProductionConfig } = await loadEnv(BASE_ENV);
+    expect(() => assertProductionConfig()).not.toThrow();
+  });
+
+  it("leaves development free to use the http fallbacks", async () => {
+    // Local development runs on http://localhost:3000 and
+    // http://portal.localhost:3000. Enforcement is production-only by design.
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      NODE_ENV: "development",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      NEXT_PUBLIC_PORTAL_URL: "http://portal.localhost:3000",
     });
     expect(() => assertProductionConfig()).not.toThrow();
   });

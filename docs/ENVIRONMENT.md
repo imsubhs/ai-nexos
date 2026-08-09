@@ -48,9 +48,9 @@ Every variable belongs to exactly one class. `ENV_MANIFEST` in
 | `SHARE_JWT_SECRET`                    | PRODUCTION | server   | Signs share-link session tokens (≥32 chars)       | Random per-process key; tokens die on restart           |
 | `NEXT_PUBLIC_APP_DOMAIN`              | PRODUCTION | public   | Dashboard host                                    | `localhost:3000`                                        |
 | `NEXT_PUBLIC_PORTAL_DOMAIN`           | PRODUCTION | public   | Portal host                                       | `portal.localhost:3000`                                 |
-| `NEXT_PUBLIC_APP_URL`                 | PRODUCTION | public   | Absolute dashboard URL                            | Derived from `NEXT_PUBLIC_APP_DOMAIN` over `http://`    |
-| `NEXT_PUBLIC_PORTAL_URL`              | PRODUCTION | public   | Absolute portal URL (share links)                 | Derived from `NEXT_PUBLIC_PORTAL_DOMAIN` over `http://` |
-| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | OPTIONAL   | public   | Storage bucket for uploads                        | `nexos-assets`                                          |
+| `NEXT_PUBLIC_APP_URL`                 | PRODUCTION | public   | Absolute dashboard URL (https)                    | Derived from `NEXT_PUBLIC_APP_DOMAIN` over `http://`    |
+| `NEXT_PUBLIC_PORTAL_URL`              | PRODUCTION | public   | Absolute portal URL, https (share links)          | Derived from `NEXT_PUBLIC_PORTAL_DOMAIN` over `http://` |
+| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | PRODUCTION | public   | Storage bucket for uploads                        | `documents`                                             |
 | `REDIS_URL`                           | OPTIONAL   | server   | Portal cache backend                              | In-memory cache (per-instance, **not shared**)          |
 | `NEXT_PUBLIC_BUILD_NUMBER`            | OPTIONAL   | public   | Build id surfaced by `/api/health`                | `local-dev`                                             |
 | `DEMO_MODE`                           | DEV ONLY   | server   | Serves the in-memory demo dataset                 | Treated as `false`; `true` in production is fatal       |
@@ -60,6 +60,27 @@ Every variable belongs to exactly one class. `ENV_MANIFEST` in
 An empty string is treated as absent everywhere. Deployment platforms routinely
 inject `KEY=""` for a variable that was declared and left blank, and treating
 that as a present-but-invalid value is not useful to anyone.
+
+### 2.1.1 Production URL rules (Sprint 2.4)
+
+`NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_PORTAL_URL` carry three production rules
+beyond presence, enforced by `assertProductionConfig()`:
+
+1. **Absolute URLs.** Both are parsed as URLs, not strings. A bare host
+   (`app.example.com`) is rejected at boot rather than at the first login, where
+   `new URL(path, base)` throws inside the auth callback.
+2. **`https://` only.** Both are the base of a redirect that carries a `secure`
+   cookie. An `http://` origin does not degrade the session, it silently breaks
+   it — and for the portal it publishes an unauthenticated share credential over
+   plaintext.
+3. **No loopback.** `localhost`, `127.0.0.1`, `0.0.0.0` and `[::1]` name the
+   deployment's own machine, never the user's browser.
+
+All three were previously declared `production` in `ENV_MANIFEST` but absent
+from `PRODUCTION_REQUIRED_PUBLIC`, so the classification described an
+enforcement that did not exist. `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` moved
+from OPTIONAL to PRODUCTION in the same change; its default now names
+`documents`, the bucket that exists, instead of `nexos-assets`, which does not.
 
 ### 2.2 Deliberately absent
 
