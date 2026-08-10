@@ -2,8 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # `phase-2-production-readiness` is Phase 2's branch of record
+    # (docs/SPRINT-2.4.md) and is the branch the deploy job below gates on.
+    branches: [main, phase-2-production-readiness]
   pull_request:
+
+# Two pushes in quick succession would otherwise race two promotions to the same
+# production alias. Queue rather than cancel: cancelling a deploy mid-promotion
+# can leave the alias pointing at a build that was never finished.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   quality:
@@ -50,3 +59,145 @@ jobs:
       # code defect and should block exactly like any other failing test.
       - name: Dependency vulnerability audit
         run: npm run audit:deps
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Sprint 2.4 — production deploy, gated on configuration (P-01…P-07).
+  #
+  # `needs: quality` is the whole of P-01: lint, format, typecheck, test, build
+  # and audit:deps must pass before anything reaches production, and a pull
+  # request runs `quality` alone, so it validates without deploying (P-03).
+  #
+  # The configuration gate is the reason this job exists. `next build` succeeds
+  # with no runtime secrets at all — every route is dynamic, so nothing is
+  # prerendered against the database — which means a green build says nothing
+  # about whether the deployment is configured. The boot gate in
+  # src/instrumentation.ts does catch it, but it fires at process start, which on
+  # Vercel is *after* the deployment is live. Checking here moves the failure
+  # from "users see errors" to "the deploy stops" (P-02).
+  #
+  # The gate validates the configuration pulled from Vercel rather than a copy of
+  # it held in GitHub secrets. Duplicating every production value into a second
+  # store would mean the pipeline could pass against values the build never sees;
+  # `vercel pull` gives us the actual production environment, so the thing
+  # checked and the thing deployed are the same thing.
+  # ───────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Production deploy
+    needs: quality
+    # Push-only, and only from the production branch. The literal is repeated
+    # rather than read from `env:` because the `env` context is not available in
+    # a job-level `if`. When Phase 2 merges to `main`, change it here.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/phase-2-production-readiness'
+    runs-on: ubuntu-latest
+    # Lets a required reviewer or a deployment protection rule be attached
+    # without touching this file.
+    environment: production
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # Writes .vercel/.env.production.local. `.env*` is gitignored, so nothing
+      # pulled here can be committed by a later step.
+      - name: Pull production environment from Vercel
+        run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # check-env.ts reads .env.local (docs/ENVIRONMENT.md §1), so the pulled
+      # production environment is put where it looks. Values are never printed —
+      # the script reports names and states only (P-04, K-06).
+      - name: Stage pulled environment for the gate
+        run: cp .vercel/.env.production.local .env.local
+
+      # THE GATE. `--production` applies the stricter rules; `--verify` opens a
+      # real Postgres connection and a real Storage request, because a
+      # syntactically perfect connection string pointing at a project that does
+      # not exist passes every presence check. A deployment that cannot reach its
+      # own database must not be promoted (M-15, G2.4-3).
+      - name: Production configuration gate
+        run: npm run env:check -- --production --verify
+
+      # Idempotent, and re-privatises the bucket if it has drifted. Placed after
+      # the gate so it runs only against a configuration already proven valid
+      # (T-05, T-06).
+      - name: Verify production storage bucket
+        run: npm run storage:setup
+
+      # Public values only — these are baked into the client bundle by design.
+      - name: Resolve production origins
+        id: origins
+        run: |
+          node -e '
+            require("dotenv").config({ path: ".env.local" });
+            const fs = require("node:fs");
+            const app = process.env.NEXT_PUBLIC_APP_URL;
+            const portal = process.env.NEXT_PUBLIC_PORTAL_URL;
+            if (!app || !portal) throw new Error("app/portal URL missing after the gate passed");
+            if (app === portal) throw new Error("APP_URL and PORTAL_URL must be different origins");
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `app=${app}\nportal=${portal}\n`);
+          '
+
+      # Builds with the pulled production environment, so every NEXT_PUBLIC_*
+      # value is substituted at build time rather than expected at runtime
+      # (C-06, C-07 — this is why a changed public value needs a rebuild).
+      - name: Build for production
+        run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # Promotion happens only if this step succeeds. A failed gate, build or
+      # upload leaves the previous production deployment serving untouched
+      # (P-07).
+      - name: Deploy to production
+        id: deploy
+        run: |
+          url="$(vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}")"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed $GITHUB_SHA to $url"
+
+      # P-06: the deployed commit is discoverable from the pipeline output.
+      - name: Record deployed revision
+        run: |
+          {
+            echo "### Production deploy"
+            echo ""
+            echo "- commit: \`$GITHUB_SHA\`"
+            echo "- deployment: ${{ steps.deploy.outputs.url }}"
+            echo "- app: ${{ steps.origins.outputs.app }}"
+            echo "- portal: ${{ steps.origins.outputs.portal }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # The boot gate runs at process start, which is after promotion. This is
+      # the first evidence that the deployed process actually started and is
+      # answering on both hosts (M-01, M-02, D-07).
+      - name: Post-deploy health check
+        run: |
+          set -euo pipefail
+          for origin in "${{ steps.origins.outputs.app }}" "${{ steps.origins.outputs.portal }}"; do
+            echo "checking $origin/api/health"
+            for attempt in 1 2 3 4 5; do
+              code="$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "$origin/api/health" || true)"
+              if [ "$code" = "200" ]; then break; fi
+              echo "  attempt $attempt: HTTP $code"
+              sleep 5
+            done
+            if [ "$code" != "200" ]; then
+              echo "::error::$origin/api/health returned HTTP $code"
+              cat /tmp/health.json || true
+              exit 1
+            fi
+            grep -q '"status":"healthy"' /tmp/health.json \
+              || { echo "::error::$origin/api/health is not healthy"; cat /tmp/health.json; exit 1; }
+            grep -q '"environment":"production"' /tmp/health.json \
+              || { echo "::error::$origin/api/health is not running as production"; cat /tmp/health.json; exit 1; }
+          done
+          echo "both origins healthy and reporting production"
