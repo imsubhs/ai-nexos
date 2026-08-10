@@ -22,9 +22,11 @@ never by intent.
 | Deploy gate observed rejecting a bad configuration      | **Done at the gate step** — §4.1. Not yet observed in a pipeline run    |
 | Local quality gate                                      | **Green** — 489 unit tests · lint 0 errors · typecheck · format · build |
 | Supabase project reachable with the production topology | **Verified** — Session Pooler, PostgreSQL 17.6, `documents` bucket      |
-| Vercel project                                          | **Not created.** No Vercel credential exists on the build machine       |
-| Production URLs                                         | **Not assigned**                                                        |
-| Production secrets (`JWT_SECRET`, `SHARE_JWT_SECRET`)   | **Not generated.** Generated only when a target exists to receive them  |
+| Vercel project                                          | **Created** — `ai-nexos`, unlinked from Git by design (§2.1)            |
+| Production hostnames                                    | **Assigned** — both attached to the one project (§2.2)                  |
+| Production secrets (`JWT_SECRET`, `SHARE_JWT_SECRET`)   | **Generated and installed**, encrypted, 64 chars each (§6)              |
+| Supabase variables in Vercel                            | **Operator-supplied** — set directly in the dashboard, not by tooling   |
+| First deployment                                        | **Not yet made**                                                        |
 | Real user sign-in against a deployed URL (A-01)         | **Not executed**                                                        |
 | Byte-identical upload/download in production (M-08)     | **Not executed**                                                        |
 | Backup restore rehearsal (B-10)                         | **Not executed**                                                        |
@@ -62,15 +64,45 @@ building, so this cannot reach production silently.
 
 ### 2.1 Vercel project
 
-| Setting         | Value                                       |
-| --------------- | ------------------------------------------- |
-| Repository      | `https://github.com/imsubhs/ai-nexos`       |
-| Root directory  | `.`                                         |
-| Framework       | Next.js                                     |
-| Node version    | 24 — matches `.github/workflows/ci.yml`     |
-| Install command | `npm ci`                                    |
-| Build command   | `npm run build`                             |
-| Region          | choose nearest to Supabase `ap-northeast-1` |
+**As provisioned.** These are the live values, read back from the Vercel API.
+
+| Setting         | Value                                                 |
+| --------------- | ----------------------------------------------------- |
+| Team            | `riansaha321-4968s-projects`                          |
+| Team ID         | `team_rd4VxH3wAWO6l3IfywaeCgkW`                       |
+| Project         | `ai-nexos`                                            |
+| Project ID      | `prj_d86pnPSjmbBvyutWaVCL6OVmW78z`                    |
+| Plan            | Hobby                                                 |
+| Framework       | Next.js                                               |
+| Root directory  | `.`                                                   |
+| Node version    | 24.x — matches `.github/workflows/ci.yml`             |
+| Install command | `npm ci`                                              |
+| Build command   | `npm run build`                                       |
+| Region          | `hnd1` (Tokyo) — nearest to Supabase `ap-northeast-1` |
+| Git repository  | **deliberately not linked** — see below               |
+
+`hnd1` was accepted on the Hobby plan. That was not assumed: the region was
+applied as a separate API call precisely so a plan restriction would surface as
+its own refusal rather than silently reverting the whole project to defaults.
+
+**The project is deliberately unlinked from Git.** A linked project auto-builds
+and promotes on every push to the production branch using **Vercel's own build**,
+which never runs `env:check --production --verify`. That would leave the deploy
+gate decorative — the exact failure this sprint exists to prevent. With no link,
+the only route to production is the gated pipeline in
+`.github/workflows/ci.yml`, which checks out the code itself and uploads a
+prebuilt deployment. The cost is the loss of Vercel's automatic PR previews.
+
+**A separate Vercel project, `narratix-lab`
+(`prj_bzGzDEDTyJmGq2ZZERH0ekDhMxjC`), exists in the same team and is unrelated
+to this application.** It is not to be modified by any AI NEX OS operation.
+
+### 2.1.1 Which repository this deploys
+
+`https://github.com/imsubhs/ai-nexos`, branch `phase-2-production-readiness`.
+The Vercel account's GitHub installation can see that namespace, so linking
+would be possible — it is declined for the reason above, not because it is
+unavailable.
 
 **Region is not cosmetic here.** All 36 routes are dynamic — the nonce-based CSP
 requires a per-request header in the root layout, so nothing is prerendered — and
@@ -92,16 +124,21 @@ added under **Project → Settings → Domains**.
 Vercel documents that `.vercel.app` deployment URLs are "allocated on a
 first-come, first-served basis and cannot be reserved", and does not state
 whether a second `.vercel.app` hostname may be attached to an existing project.
-**That is an empirical question, answered in the dashboard, not from the
-documentation.** Resolve it in this order:
+That was an empirical question, and it has now been answered by execution.
 
-1. Attempt to add the portal hostname to the same project. If Vercel accepts it,
-   one project serves both hosts — the preferred architecture.
-2. Only if Vercel refuses `.vercel.app` in the Domains form, create a second
-   project from the same repository for the portal host, with its own
-   environment values. Record the refusal as the reason.
+**Answer: Vercel accepts it. One project serves both hosts.**
 
-Either way, the deployed code is identical; only the `Host` header differs.
+| Host                         | Role   | How it was obtained                     |
+| ---------------------------- | ------ | --------------------------------------- |
+| `ai-nexos.vercel.app`        | App    | Auto-assigned from the project name     |
+| `ai-nexos-portal.vercel.app` | Portal | Added to the **same** project, verified |
+
+No second Vercel project was needed, and none was created. The deployed code is
+identical on both hosts; only the `Host` header differs, and `src/proxy.ts`
+branches on it.
+
+Both hostnames answered `DEPLOYMENT_NOT_FOUND` before creation, confirming
+neither was claimed by anyone else.
 
 ### 2.3 Environment variables
 

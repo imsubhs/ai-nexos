@@ -148,6 +148,14 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `app=${app}\nportal=${portal}\n`);
           '
 
+      # C-13: /api/health should report a real build identity, not "local-dev".
+      # Appended to the pulled environment rather than stored as a project
+      # variable, because it changes on every deploy and NEXT_PUBLIC_* values
+      # are substituted at build time — a stored variable would have to be
+      # edited before each build to mean anything.
+      - name: Stamp the build identity
+        run: printf '\nNEXT_PUBLIC_BUILD_NUMBER="%s"\n' "${GITHUB_SHA::12}" >> .vercel/.env.production.local
+
       # Builds with the pulled production environment, so every NEXT_PUBLIC_*
       # value is substituted at build time rather than expected at runtime
       # (C-06, C-07 — this is why a changed public value needs a rebuild).
