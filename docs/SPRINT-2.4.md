@@ -3,8 +3,11 @@
 **Status:** specification, partially implemented. **G2.4-1 (configuration
 enforced) is complete**, together with two remediations this document's own
 acceptance criteria depended on — the upload byte transfer (§11.1) and
-share-link addressing (§9.1). G2.4-2 through G2.4-7 have not started, and no
-infrastructure exists yet. See §19.1.
+share-link addressing (§9.1). **G2.4-6's pipeline is now built and its gate has
+been observed rejecting a bad configuration** (§19.2), but the gate has not yet
+run in a pipeline because no deployment target exists. G2.4-2, G2.4-3, G2.4-4,
+G2.4-5 and G2.4-7 are **blocked on external platform access**, not on repository
+work. See §19.1, §19.2 and §25.
 **Phase:** 2 (Production Readiness)
 **Predecessor:** [SPRINT-2.3.md](SPRINT-2.3.md) — complete and verified
 **Branch of record:** `phase-2-production-readiness`
@@ -104,6 +107,15 @@ not new scope — see X-08 and X-09.
 **Status at the close of the G2.4-1 work:** S-01, S-02, S-13, S-15 and S-16 are
 delivered. S-16 corrects addressing only; M-10 remains blocked by Y-05. S-14 is
 this document. Everything else is deployment work and has not started.
+
+**Status after the G2.4-6 repository work:** S-09 and S-12 are additionally
+delivered — the deploy stage exists in `.github/workflows/ci.yml` gated on every
+existing quality check plus `env:check --production --verify`, and the
+deployment, rollback and secret-rotation runbooks are written
+([DEPLOYMENT.md](DEPLOYMENT.md)). S-13 gained a second layer: the gate is now
+tested as a **process**, by exit code, the way CI invokes it. S-03 through S-08,
+S-10 and S-11 require platform access that does not exist on the build machine
+(§25).
 
 ## 3. Non-scope
 
@@ -544,17 +556,17 @@ rejected anything is an untested gate.
 
 ## 17. Regression-test requirements
 
-| #    | Requirement                                                                                                                          |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| R-01 | `tests/unit/env-validation.test.ts` gains assertions that production configuration missing `NEXT_PUBLIC_APP_URL` fails the boot gate |
-| R-02 | Same for `NEXT_PUBLIC_PORTAL_URL`                                                                                                    |
-| R-03 | Same for `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` once reclassified                                                                     |
-| R-04 | A test asserts the default storage bucket is `documents`                                                                             |
-| R-05 | **All 423 existing unit tests remain green.** No existing test is weakened or deleted to accommodate this sprint                     |
-| R-06 | The 25 integration tests remain green against the live project                                                                       |
-| R-07 | `npm run lint` 0 errors · `npm run typecheck` clean · `npm run format:check` clean · `npm run build` green                           |
-| R-08 | `npm run audit:authz` passes                                                                                                         |
-| R-09 | Migration hash integrity re-verified: 14 files · 14 journal entries · 14 ledger rows · 0 mismatches                                  |
+| #    | Requirement                                                                                                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| R-01 | `tests/unit/env-validation.test.ts` gains assertions that production configuration missing `NEXT_PUBLIC_APP_URL` fails the boot gate            |
+| R-02 | Same for `NEXT_PUBLIC_PORTAL_URL`                                                                                                               |
+| R-03 | Same for `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` once reclassified                                                                                |
+| R-04 | A test asserts the default storage bucket is `documents`                                                                                        |
+| R-05 | **All 468 pre-sprint unit tests remain green.** No existing test is weakened or deleted to accommodate this sprint. The suite now stands at 489 |
+| R-06 | The 25 integration tests remain green against the live project                                                                                  |
+| R-07 | `npm run lint` 0 errors · `npm run typecheck` clean · `npm run format:check` clean · `npm run build` green                                      |
+| R-08 | `npm run audit:authz` passes                                                                                                                    |
+| R-09 | Migration hash integrity re-verified: 14 files · 14 journal entries · 14 ledger rows · 0 mismatches                                             |
 
 ## 18. Acceptance criteria
 
@@ -616,8 +628,9 @@ code or configuration.
 
 **Regression**
 
-- [ ] 468/468 unit tests · 25/25 integration tests
-- [ ] lint 0 errors · typecheck clean · format clean · build green · `audit:authz` pass
+- [x] **489/489 unit tests** — 468 carried forward plus 21 new deploy-gate cases, no existing test weakened
+- [ ] 25/25 integration tests
+- [x] lint 0 errors · typecheck clean · format clean · build green · `audit:authz` pass
 
 **Documentation**
 
@@ -630,15 +643,15 @@ code or configuration.
 Ordered. **A gate does not open until every criterion beneath it is green**, and
 a later gate cannot be worked around by skipping an earlier one.
 
-| Gate       | Name                   | Opens when                                                                                             | Blocks         |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------------------------ | -------------- |
-| **G2.4-1** | Configuration enforced | C-01…C-05 done; R-01…R-04 green; full local gate suite green — **OPEN** (see §19.1)                    | All deployment |
-| **G2.4-2** | Secrets provisioned    | K-01…K-06 done; no secret in the repository or logs                                                    | G2.4-3         |
-| **G2.4-3** | Environment reachable  | `env:check -- --production --verify` passes against the production configuration                       | G2.4-4         |
-| **G2.4-4** | Deployed and serving   | Application reachable on both domains with valid TLS; boot gate passed                                 | G2.4-5         |
-| **G2.4-5** | Smoke-tested           | M-01…M-15 pass, **including M-06 real login and M-14 rejected bad deploy**                             | G2.4-6         |
-| **G2.4-6** | Pipeline enforced      | Deploy stage gated on all quality checks; failed deploy leaves the previous version serving            | G2.4-7         |
-| **G2.4-7** | Recoverable            | Backup posture confirmed; **restore rehearsed and timed**; rollback runbook written and walked through | DONE           |
+| Gate       | Name                   | Opens when                                                                                                                                         | Blocks         |
+| ---------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **G2.4-1** | Configuration enforced | C-01…C-05 done; R-01…R-04 green; full local gate suite green — **OPEN** (see §19.1)                                                                | All deployment |
+| **G2.4-2** | Secrets provisioned    | K-01…K-06 done; no secret in the repository or logs                                                                                                | G2.4-3         |
+| **G2.4-3** | Environment reachable  | `env:check -- --production --verify` passes against the production configuration                                                                   | G2.4-4         |
+| **G2.4-4** | Deployed and serving   | Application reachable on both domains with valid TLS; boot gate passed                                                                             | G2.4-5         |
+| **G2.4-5** | Smoke-tested           | M-01…M-15 pass, **including M-06 real login and M-14 rejected bad deploy**                                                                         | G2.4-6         |
+| **G2.4-6** | Pipeline enforced      | Deploy stage gated on all quality checks; failed deploy leaves the previous version serving — **built, gate proven, pipeline run pending** (§19.2) | G2.4-7         |
+| **G2.4-7** | Recoverable            | Backup posture confirmed; **restore rehearsed and timed**; rollback runbook written and walked through                                             | DONE           |
 
 **G2.4-1 is deliberately first.** Deploying before the enforcement gap is closed
 means deploying the exact misconfiguration this sprint exists to prevent — an
@@ -666,7 +679,66 @@ criteria depended on them: the upload transfer (§11.1) and share-link addressin
 **No migration, no schema change, no grant, no policy, no Supabase change and no
 Vercel change was required or made.**
 
-G2.4-2 through G2.4-7 have not started.
+### 19.2 G2.4-6 — pipeline built, gate proven, run pending
+
+The deploy stage exists in `.github/workflows/ci.yml` as job `deploy`, with
+`needs: quality`, so lint, format, typecheck, test, build and `audit:deps` all
+gate it (P-01). It is `push`-only and branch-restricted, so a pull request
+validates without deploying (P-03).
+
+**The gate validates the configuration pulled from Vercel, not a copy of it.**
+`vercel pull --environment=production` writes the production environment, which
+is staged where `check-env.ts` reads it, and `env:check --production --verify` runs
+against that. Duplicating every production value into GitHub secrets would allow
+the pipeline to pass against values the build never sees; this way the thing
+checked and the thing deployed are the same object, and only three secrets
+(`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`) reach CI at all (P-04).
+
+`--verify` is used rather than presence-only because a syntactically valid
+connection string pointing at a project that does not exist passes every presence
+check, and the build passes too. That is M-15 executed in the pipeline.
+
+**M-14 — the gate rejecting a bad configuration — has been observed**, two ways:
+
+| Evidence                                             | Result                                                       |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| `tests/unit/production-deploy-gate.test.ts`          | 21 cases green; spawns the script and asserts **exit codes** |
+| Gate executed manually, complete configuration       | exit **0**                                                   |
+| Gate with `NEXT_PUBLIC_PORTAL_URL` removed           | exit **1**, naming the variable                              |
+| Gate with `NEXT_PUBLIC_PORTAL_URL` set to `http://…` | exit **1**, naming the https requirement                     |
+| Gate with configuration restored                     | exit **0**                                                   |
+
+The new test file covers the gate as a **process**, which is what the pipeline
+consumes. `env-validation.test.ts` covers `assertProductionConfig()` as a
+function; a deploy stage is gated on a non-zero exit, and that had never been
+asserted anywhere.
+
+**What is still unverified:** the _pipeline_ stopping. GitHub Actions fails a job
+at its first failing step, so a non-zero gate means `vercel build` and
+`vercel deploy` never execute — but no pipeline run has been watched, because
+there is no deployment target. G2.4-6 is therefore **not declared open**.
+
+### 19.3 G2.4-2 … G2.4-5 and G2.4-7 — blocked on platform access
+
+Everything remaining is infrastructure, and none of it can be executed from the
+repository. See §25 for the exact blockers. What was established without touching
+any infrastructure:
+
+| Fact                                                  | How it was verified                                                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Supabase project reachable on the production topology | `env:check -- --verify` → `aws-0-ap-northeast-1.pooler.supabase.com:5432`, PostgreSQL 17.6 |
+| Storage state                                         | **exactly one bucket, `documents`**. `nexos-assets` does not exist and was not created     |
+| Schema shape unchanged                                | 202 public base tables · 52 with RLS · 74 policies · 14 applied migrations                 |
+| Migration tree untouched                              | `0000`–`0013` present, no `0014`                                                           |
+| Candidate hostnames unclaimed                         | `ai-nexos.vercel.app`, `ai-nexos-portal.vercel.app` both answer `DEPLOYMENT_NOT_FOUND`     |
+| Auth callback path                                    | `/auth/callback` — read from `src/app/auth/callback/route.ts`, not assumed                 |
+| Existing tenant                                       | 1 organisation, 1 user, 7 roles, 0 clients/projects/files                                  |
+
+The single-organisation state matters for M-07 and for tenant isolation: real
+data exists, but a _second_ tenant does not, so cross-tenant isolation in
+production can only be demonstrated by the live integration suite
+(`rls.integration.test.ts`), not by two accounts in a browser, unless a second
+organisation is deliberately created.
 
 ## 20. Rollback and failure criteria
 
@@ -719,7 +791,7 @@ Sprint 2.4 is DONE when **all** of the following are true:
 6. The pipeline deploys only after every quality gate passes, and has been
    observed rejecting a misconfigured deployment.
 7. A restore has been rehearsed and timed, and the RTO is written down.
-8. 468/468 unit tests, 25/25 integration tests, lint 0 errors, typecheck clean,
+8. 489/489 unit tests, 25/25 integration tests, lint 0 errors, typecheck clean,
    format clean, build green, `audit:authz` pass.
 9. Migration hash integrity is 0 mismatches and no new `GRANT` was issued.
 10. Deployment, rollback and secret-rotation runbooks exist and someone who did
@@ -793,8 +865,37 @@ These block implementation and are **not** decided by this document.
 | D-6 | **Supabase plan and backup posture.** PITR availability depends on the project plan; B-09/B-10 may have a cost implication                                         |
 | D-7 | **Seeding production.** Does production start empty, or is `npm run db:seed` run once? (Q-08)                                                                      |
 
+### 24.1 Decisions taken
+
+| #   | Decision                                                                                                                                                                                                                                                                                                                                       |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D-1 | **Vercel, confirmed.** The evidenced intent is the decision                                                                                                                                                                                                                                                                                    |
+| D-2 | **No staging.** Deploy straight to production. Staging against the same Supabase project shares one database, which makes it a second front door to production data rather than an isolated environment                                                                                                                                        |
+| D-3 | **Resolved, and not as this document assumed.** `app.aicollective.agency` / `portal.aicollective.agency` are **withdrawn** — no custom domain is owned and none is to be purchased. Production uses Vercel-assigned `.vercel.app` hostnames. `.env.example` still carries the withdrawn hosts and is corrected once the real ones are assigned |
+| D-4 | **Integration suite stays out of the deploy job.** It needs live credentials and fails rather than skips; the deploy gate's `--verify` already opens a real database and storage connection, which is the reachability property the pipeline needs                                                                                             |
+| D-5 | **Reopened as a real decision, because the stated fallback does not exist.** "Pin production to a single instance" is not possible on Vercel — functions scale horizontally on demand. Either Redis is provisioned or per-instance rate limiting is an accepted, recorded weakness. See [DEPLOYMENT.md](DEPLOYMENT.md) §2.5                    |
+| D-6 | Open — requires reading the Supabase project's plan, which needs dashboard or management-API access                                                                                                                                                                                                                                            |
+| D-7 | **Production does not need seeding.** One organisation, one user and seven roles already exist in the verified project. `db:seed` is not run                                                                                                                                                                                                   |
+
+## 25. Blockers
+
+Every remaining gate depends on external platform access the build machine does
+not have. Recorded rather than worked around.
+
+| Blocker                                            | Evidence                                                                                                                                                                                                  | Consequence                                                                             |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **No Vercel credential of any kind**               | No `vercel` CLI installed; no `~/.local/share/com.vercel.cli`; no `~/.vercel`; no `.vercel/` in the repository; no `VERCEL_*` variable in the environment; `api.vercel.com` answers `403` unauthenticated | G2.4-2, G2.4-3, G2.4-4 and G2.4-5 cannot be executed                                    |
+| **No Supabase dashboard or management-API access** | Only `~/.supabase/telemetry.json` exists — there is no CLI login                                                                                                                                          | Auth URL configuration and D-6 backup posture are unreadable; G2.4-7 cannot be executed |
+| **No credential for a real user**                  | One `auth.users` row exists and its password is stored as a hash                                                                                                                                          | A-01 / M-06 cannot be executed                                                          |
+
+**No secret was generated.** K-01 and K-02 are deliberately deferred until a
+production environment exists to receive the values, so that a live signing
+secret never sits unused on a developer machine.
+
 ---
 
-_Specification only. No source code was modified, no migration was created, no
-database or Supabase change was made, no secret was generated, and no deployment
-was configured. Awaiting approval before implementation._
+_G2.4-1 complete and verified. G2.4-6 built, and its gate proven by execution;
+the pipeline run itself is pending a deployment target. G2.4-2 through G2.4-5 and
+G2.4-7 are blocked per §25. No migration was created, no schema, grant, policy or
+privilege was changed, no Supabase configuration was altered, no secret was
+generated, and no deployment exists._
