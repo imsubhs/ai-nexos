@@ -127,7 +127,7 @@ restart**.
 | `TRUSTED_PROXY_HOPS`                  | optional   | `1` — correct for a single platform edge                             |
 | `LOG_LEVEL`                           | optional   | `info`                                                               |
 | `NEXT_PUBLIC_BUILD_NUMBER`            | optional   | Build/commit identifier, so `/api/health` is not `local-dev`         |
-| `REDIS_URL`                           | optional   | See §2.5 — this is a decision, not a default                         |
+| `REDIS_URL`                           | optional   | **Intentionally unset** — decision recorded in §2.5                  |
 | `EGRESS_ALLOWED_HOSTS`                | optional   | Unset permits any public host; private/loopback/metadata refused     |
 
 **Must not be set in the deployed environment:**
@@ -185,8 +185,30 @@ So there are exactly two honest positions:
 2. **Accept the weakness explicitly** and record that sign-in and share-password
    throttling is per-instance in production.
 
-The boot log warns on every start under option 2, which is intended. Do not
-silence the warning.
+**Decision: option 2.** `REDIS_URL` is intentionally left unset for the first
+production deployment. No Redis instance is provisioned, and this is a recorded
+acceptance rather than an oversight.
+
+What that buys and what it costs:
+
+- Rate limiting still functions. The weighted sliding window is unchanged; only
+  its scope narrows from the fleet to one instance.
+- The limits that matter — sign-in, magic link, auth callback, approval verify,
+  portal session and share passwords — are weaker by exactly the concurrent
+  instance count. A limit of 5 sign-in attempts is 5 × N in the worst case.
+- This is a throttle, not the authentication boundary. Supabase Auth still
+  verifies every credential; the weakening is in how quickly an attacker may
+  retry, not in whether a wrong password is accepted.
+
+The boot log warns about this on every start. **Do not silence the warning** —
+it is the record that the deployment is running in the accepted-weakness
+configuration, and it is how the decision gets revisited when traffic justifies
+it. Revisit when the deployment sees real concurrent load, or before any
+credential-stuffing exposure is a realistic concern.
+
+Reversing the decision is one environment variable and a redeploy: provision
+Redis, set `REDIS_URL`, and `getRedisStore()` picks it up on the next boot. No
+code change is involved.
 
 ### 2.6 GitHub Actions secrets
 
@@ -406,7 +428,7 @@ An unrehearsed backup is a belief, not a control.
 | #   | Limitation                                                                                                                                                                                                                                                                                    |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | **Share-token resolution does not work (Y-05).** `src/app/portal/s/[token]/page.tsx` discards its token and renders "This link is not active". Share link _addressing_ is correct; what answers there is not implemented. Three incompatible token systems exist and no unified resolver does |
-| 2   | **Rate limits are per-instance unless Redis is provisioned** (§2.5)                                                                                                                                                                                                                           |
+| 2   | **Rate limits are per-instance. Accepted deliberately** — `REDIS_URL` is unset by decision, so sign-in, share-password and brute-force budgets are multiplied by the concurrent instance count (§2.5)                                                                                         |
 | 3   | **150 of 202 tables have no RLS.** Their protection is the absence of a Data API grant, not a policy. Intact, and one `GRANT` away from being gone                                                                                                                                            |
 | 4   | **Application writes bypass RLS.** Drizzle connects as the table owner; `requirePermission()` plus tenant-scoped `WHERE` clauses are the only enforced write control                                                                                                                          |
 | 5   | **No error tracking.** No Sentry SDK is installed; `SENTRY_DSN` is deliberately absent                                                                                                                                                                                                        |
