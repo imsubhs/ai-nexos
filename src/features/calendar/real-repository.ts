@@ -8,20 +8,27 @@
  */
 import { db } from "@/db";
 import { meetings, milestones, tasks, timelines } from "@/db/schema";
-import { and, asc, eq, gte, isNotNull, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, isNotNull, lt, sql } from "drizzle-orm";
 import type { CalendarRepository } from "./repository";
 import type { CalendarEntry, CalendarSource } from "./types";
 
 /** Widest window a single read will serve — a year of entries. */
 const MAX_ENTRIES = 2_000;
 
-/** Inclusive ISO date → the exclusive UTC instant just past its end. */
-function endExclusive(isoDate: string): Date {
-  return new Date(Date.parse(`${isoDate}T00:00:00.000Z`) + 86_400_000);
-}
-
+/**
+ * The range is half-open in UTC: `[from 00:00, to+1day 00:00)`.
+ *
+ * `to` is an inclusive *date* but the columns are instants, so an inclusive
+ * upper bound would either drop everything after midnight on the last day or —
+ * if written as `<= to+1day` — admit an entry at exactly 00:00:00.000 the
+ * following morning and date it to the wrong day.
+ */
 function startInstant(isoDate: string): Date {
   return new Date(`${isoDate}T00:00:00.000Z`);
+}
+
+function endInstantExclusive(isoDate: string): Date {
+  return new Date(Date.parse(`${isoDate}T00:00:00.000Z`) + 86_400_000);
 }
 
 function dayOf(value: Date): string {
@@ -46,7 +53,7 @@ async function meetingEntries(
         eq(meetings.organizationId, organizationId),
         isNotNull(meetings.startTime),
         gte(meetings.startTime, startInstant(range.from)),
-        lte(meetings.startTime, endExclusive(range.to)),
+        lt(meetings.startTime, endInstantExclusive(range.to)),
       ),
     )
     .orderBy(asc(meetings.startTime))
@@ -75,6 +82,15 @@ async function milestoneEntries(
   // to its start date when only that is set.
   const observed = sql<Date>`coalesce(${milestones.endDate}, ${milestones.startDate})`;
 
+  // The bounds are written as SQL fragments with explicit `::timestamptz` casts
+  // rather than through gte()/lt(). Drizzle infers a parameter's type from the
+  // *column* being compared, and `observed` is a raw expression with no column
+  // to infer from — so a Date bound reached the driver untyped and postgres.js
+  // rejected it ("must be of type string"). Caught by running the query against
+  // the live database; a typecheck cannot see it.
+  const lower = startInstant(range.from).toISOString();
+  const upper = endInstantExclusive(range.to).toISOString();
+
   const rows = await db
     .select({
       milestoneId: milestones.milestoneId,
@@ -88,9 +104,11 @@ async function milestoneEntries(
     .where(
       and(
         eq(milestones.organizationId, organizationId),
-        isNotNull(observed),
-        gte(observed, startInstant(range.from)),
-        lte(observed, endExclusive(range.to)),
+        // coalesce is null only when both dates are, and a null fails both
+        // comparisons below — so an undated milestone is simply not on the
+        // calendar, with no separate null check needed.
+        sql`${observed} >= ${lower}::timestamptz`,
+        sql`${observed} < ${upper}::timestamptz`,
       ),
     )
     .limit(MAX_ENTRIES);
@@ -128,7 +146,7 @@ async function taskEntries(
         eq(tasks.organizationId, organizationId),
         isNotNull(tasks.dueDate),
         gte(tasks.dueDate, startInstant(range.from)),
-        lte(tasks.dueDate, endExclusive(range.to)),
+        lt(tasks.dueDate, endInstantExclusive(range.to)),
         eq(tasks.isTemplate, false),
       ),
     )
