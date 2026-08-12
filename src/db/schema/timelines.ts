@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   index,
   integer,
@@ -156,4 +157,100 @@ export const timelineDependencies = pgTable(
     ),
     index("idx_timeline_deps_timeline").on(table.timelineId),
   ],
+);
+
+/**
+ * Relational-query graph for the timeline tables.
+ *
+ * Drizzle's `db.query.*` builder resolves `with: { … }` against these
+ * declarations, not against the foreign keys — a table with no `relations()`
+ * entry has an empty relation map, and asking for a nested key throws while the
+ * SQL is being built ("Cannot read properties of undefined (reading
+ * 'referencedTable')"), before any row is read. The timeline read paths have
+ * always asked for these embeds — `getTimelines` for `phases`,
+ * `getProjectTimeline` for `phases` + `versions`, `createTimelineSnapshot` for
+ * `phases.milestones.successors` — so the declarations are what was missing,
+ * not the queries.
+ *
+ * `predecessors`/`successors` need explicit relation names because
+ * `timeline_dependencies` reaches `milestones` through two foreign keys and
+ * drizzle cannot otherwise tell which one an embed means. A milestone's
+ * `successors` are the dependency edges on which it is the PREDECESSOR — the
+ * edges pointing at what comes after it.
+ */
+export const timelinesRelations = relations(timelines, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [timelines.organizationId],
+    references: [organizations.organizationId],
+  }),
+  project: one(projects, {
+    fields: [timelines.projectId],
+    references: [projects.projectId],
+  }),
+  phases: many(projectPhases),
+  milestones: many(milestones),
+  versions: many(timelineVersions),
+  dependencies: many(timelineDependencies),
+}));
+
+export const timelineVersionsRelations = relations(
+  timelineVersions,
+  ({ one }) => ({
+    timeline: one(timelines, {
+      fields: [timelineVersions.timelineId],
+      references: [timelines.timelineId],
+    }),
+    user: one(users, {
+      fields: [timelineVersions.userId],
+      references: [users.userId],
+    }),
+  }),
+);
+
+export const projectPhasesRelations = relations(
+  projectPhases,
+  ({ one, many }) => ({
+    timeline: one(timelines, {
+      fields: [projectPhases.timelineId],
+      references: [timelines.timelineId],
+    }),
+    milestones: many(milestones),
+  }),
+);
+
+export const milestonesRelations = relations(milestones, ({ one, many }) => ({
+  phase: one(projectPhases, {
+    fields: [milestones.phaseId],
+    references: [projectPhases.phaseId],
+  }),
+  timeline: one(timelines, {
+    fields: [milestones.timelineId],
+    references: [timelines.timelineId],
+  }),
+  successors: many(timelineDependencies, {
+    relationName: "timeline_dependency_predecessor",
+  }),
+  predecessors: many(timelineDependencies, {
+    relationName: "timeline_dependency_successor",
+  }),
+}));
+
+export const timelineDependenciesRelations = relations(
+  timelineDependencies,
+  ({ one }) => ({
+    timeline: one(timelines, {
+      fields: [timelineDependencies.timelineId],
+      references: [timelines.timelineId],
+    }),
+    predecessor: one(milestones, {
+      fields: [timelineDependencies.predecessorId],
+      references: [milestones.milestoneId],
+      relationName: "timeline_dependency_predecessor",
+    }),
+    successor: one(milestones, {
+      fields: [timelineDependencies.successorId],
+      references: [milestones.milestoneId],
+      relationName: "timeline_dependency_successor",
+    }),
+  }),
 );

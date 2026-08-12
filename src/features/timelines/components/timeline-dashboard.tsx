@@ -11,8 +11,21 @@ import { RoadmapView } from "./views/roadmap-view";
 import { CalendarView } from "./views/calendar-view";
 import { getTimelineMilestones } from "../actions";
 
+/**
+ * What the server actually hands this component: a timeline with its ordered
+ * phases and nothing below them. `getProjectTimeline` embeds `phases` only —
+ * milestones are fetched here, client-side, and merged in below to build the
+ * `TimelineData` the views consume. Typing the prop as `TimelineData` claimed
+ * the phases already carried their milestones, which was never true; it went
+ * unnoticed only because the timeline tables had no relational declarations,
+ * so the action's return type carried no `phases` for TypeScript to check.
+ */
+type TimelineInput = Omit<TimelineData, "phases"> & {
+  phases: Omit<PhaseData, "milestones">[];
+};
+
 type TimelineDashboardProps = {
-  timeline: TimelineData | null | undefined;
+  timeline: TimelineInput | null | undefined;
 };
 
 export function TimelineDashboard({
