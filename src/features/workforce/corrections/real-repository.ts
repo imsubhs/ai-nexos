@@ -8,10 +8,19 @@
  * C-9 apply-to-AttendanceDay amendment is deferred (see action-core).
  */
 import { db } from "@/db";
-import { attendanceCorrections, events, users } from "@/db/schema";
-import { and, asc, count, desc, eq, inArray, type SQL } from "drizzle-orm";
+import {
+  attendanceCorrections,
+  events,
+  organizationSequences,
+  users,
+} from "@/db/schema";
+import { and, asc, count, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import type { CorrectionStatus } from "../shared/enums";
 import { CORRECTION_STATUSES } from "../shared/enums";
+import {
+  CORRECTION_SEQUENCE_ENTITY,
+  formatCorrectionCode,
+} from "./correction-code";
 import {
   CorrectionError,
   type CorrectionListFilters,
@@ -28,9 +37,40 @@ import type {
 } from "./types";
 
 type CorrectionRow = typeof attendanceCorrections.$inferSelect;
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 function iso(value: Date | null): string | null {
   return value ? value.toISOString() : null;
+}
+
+/**
+ * Reserves the next COR-#### for this organization.
+ *
+ * The upsert is the reservation: `nextValue` is incremented and returned in one
+ * statement, so two concurrent submissions serialize on the row rather than
+ * both reading the same number. Runs inside the caller's transaction so a
+ * failed insert does not burn a code.
+ */
+async function mintCorrectionCode(
+  organizationId: string,
+  tx: typeof db | DbTransaction,
+): Promise<string> {
+  const [sequence] = await tx
+    .insert(organizationSequences)
+    .values({
+      organizationId,
+      entityType: CORRECTION_SEQUENCE_ENTITY,
+      nextValue: 1,
+    })
+    .onConflictDoUpdate({
+      target: [
+        organizationSequences.organizationId,
+        organizationSequences.entityType,
+      ],
+      set: { nextValue: sql`${organizationSequences.nextValue} + 1` },
+    })
+    .returning();
+  return formatCorrectionCode(sequence.nextValue);
 }
 
 async function nameOf(userId: string | null): Promise<string> {
@@ -136,31 +176,37 @@ async function requireRow(
 
 export const realCorrectionRepository: CorrectionRepository = {
   async create(organizationId, actorUserId, data: CreateCorrectionData) {
-    // COR-#### comes from organization_sequences in Phase 7; placeholder now.
-    const inserted = await db
-      .insert(attendanceCorrections)
-      .values({
-        organizationId,
-        correctionCode: "COR-PENDING",
-        userId: data.userId,
-        date: data.date,
-        correctionType: data.correctionType,
-        requestedClockInAt: data.requestedClockInAt
-          ? new Date(data.requestedClockInAt)
-          : null,
-        requestedClockOutAt: data.requestedClockOutAt
-          ? new Date(data.requestedClockOutAt)
-          : null,
-        requestedStatus: data.requestedStatus ?? null,
-        reason: data.reason,
-        evidenceUrl: data.evidenceUrl ?? null,
-        status: "PENDING",
-        approvalCycleId: data.approvalCycleId ?? null,
-        createdBy: actorUserId,
-        updatedBy: actorUserId,
-      })
-      .returning();
-    return toDetail(inserted[0]);
+    // The code reservation and the insert share one transaction: the unique
+    // index on (organization_id, correction_code) is the last line of defence,
+    // and a code handed out before a failed insert would leave a permanent gap.
+    const inserted = await db.transaction(async (tx) => {
+      const correctionCode = await mintCorrectionCode(organizationId, tx);
+      const rows = await tx
+        .insert(attendanceCorrections)
+        .values({
+          organizationId,
+          correctionCode,
+          userId: data.userId,
+          date: data.date,
+          correctionType: data.correctionType,
+          requestedClockInAt: data.requestedClockInAt
+            ? new Date(data.requestedClockInAt)
+            : null,
+          requestedClockOutAt: data.requestedClockOutAt
+            ? new Date(data.requestedClockOutAt)
+            : null,
+          requestedStatus: data.requestedStatus ?? null,
+          reason: data.reason,
+          evidenceUrl: data.evidenceUrl ?? null,
+          status: "PENDING",
+          approvalCycleId: data.approvalCycleId ?? null,
+          createdBy: actorUserId,
+          updatedBy: actorUserId,
+        })
+        .returning();
+      return rows[0];
+    });
+    return toDetail(inserted);
   },
 
   async findById(organizationId, correctionId) {

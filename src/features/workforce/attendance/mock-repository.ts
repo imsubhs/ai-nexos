@@ -20,6 +20,7 @@ import {
 import type {
   AttendanceDetail,
   AttendanceDirectoryRow,
+  AttendanceHistoryRow,
   AttendanceMetrics,
   AttendanceState,
   AttendanceTimelineEntry,
@@ -79,6 +80,15 @@ type DemoUser = {
 };
 
 type DemoDepartment = { departmentId: string; name: string };
+
+/** Only the columns the §12.3 correction marker needs. */
+type DemoCorrection = {
+  organizationId: string;
+  userId: string;
+  date: string;
+  status: string;
+  appliedAt: Date | string | null;
+};
 
 function toIso(value: Date | string | null): string | null {
   if (value == null) return null;
@@ -365,6 +375,7 @@ export const mockAttendanceRepository: AttendanceRepository = {
           clockOutAt: toIso(r.clockOutAt),
           metrics: metricsOf(r),
           isArchived: user?.isArchived === true || user?.status === "archived",
+          isOnBreak: openBreakOf(r.attendanceId) !== null,
         };
       })
       .sort(
@@ -376,6 +387,47 @@ export const mockAttendanceRepository: AttendanceRepository = {
     const total = mapped.length;
     const start = (filters.page - 1) * filters.pageSize;
     return { rows: mapped.slice(start, start + filters.pageSize), total };
+  },
+
+  async listRange(
+    organizationId,
+    userId,
+    range,
+  ): Promise<AttendanceHistoryRow[]> {
+    const corrections = getDemoStore()
+      .attendanceCorrections as DemoCorrection[];
+    const correctedDates = new Set(
+      corrections
+        .filter(
+          (c) =>
+            c.organizationId === organizationId &&
+            c.userId === userId &&
+            c.status === "APPROVED" &&
+            c.appliedAt != null,
+        )
+        .map((c) => c.date),
+    );
+
+    return records()
+      .filter(
+        (r) =>
+          r.organizationId === organizationId &&
+          r.userId === userId &&
+          r.date >= range.from &&
+          r.date <= range.to,
+      )
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((r) => ({
+        attendanceId: r.attendanceId,
+        date: r.date,
+        status: r.status,
+        isLate: r.isLate,
+        clockInAt: toIso(r.clockInAt),
+        clockOutAt: toIso(r.clockOutAt),
+        metrics: metricsOf(r),
+        wasCorrected: correctedDates.has(r.date),
+        isDerived: false,
+      }));
   },
 
   async findById(
@@ -416,6 +468,7 @@ export const mockAttendanceRepository: AttendanceRepository = {
       clockOutAt: toIso(r.clockOutAt),
       metrics: metricsOf(r),
       isArchived: user?.isArchived === true || user?.status === "archived",
+      isOnBreak: openBreakOf(attendanceId) !== null,
       breaks: dayBreaks,
       clockInContext: r.clockInContext,
       clockOutContext: r.clockOutContext,

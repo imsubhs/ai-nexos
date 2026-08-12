@@ -7,12 +7,24 @@
 import { db } from "@/db";
 import {
   attendanceBreaks,
+  attendanceCorrections,
   attendanceRecords,
   departments,
   events,
   users,
 } from "@/db/schema";
-import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+} from "drizzle-orm";
 import { DEFAULT_WORKFORCE_POLICY } from "../shared/types";
 import {
   AttendanceError,
@@ -25,6 +37,7 @@ import {
 import type {
   AttendanceDetail,
   AttendanceDirectoryRow,
+  AttendanceHistoryRow,
   AttendanceMetrics,
   AttendanceState,
   AttendanceTimelineEntry,
@@ -71,6 +84,29 @@ async function openBreakOf(attendanceId: string): Promise<BreakRow | null> {
     )
     .limit(1);
   return rows[0] ?? null;
+}
+
+/**
+ * Which of `attendanceIds` currently have an open break. Org-scoped even though
+ * the ids are already org-scoped by the caller's query: the predicate is the
+ * repository's invariant, not an optimisation to skip when it looks redundant.
+ */
+async function openBreakIds(
+  organizationId: string,
+  attendanceIds: string[],
+): Promise<Set<string>> {
+  if (attendanceIds.length === 0) return new Set();
+  const rows = await db
+    .selectDistinct({ attendanceId: attendanceBreaks.attendanceId })
+    .from(attendanceBreaks)
+    .where(
+      and(
+        eq(attendanceBreaks.organizationId, organizationId),
+        inArray(attendanceBreaks.attendanceId, attendanceIds),
+        isNull(attendanceBreaks.endAt),
+      ),
+    );
+  return new Set(rows.map((r) => r.attendanceId));
 }
 
 async function toTodayView(r: RecordRow): Promise<TodayAttendanceView> {
@@ -305,6 +341,14 @@ export const realAttendanceRepository: AttendanceRepository = {
         .where(where),
     ]);
 
+    // One extra query rather than one per row: the T-1 onBreak KPI needs the
+    // break state of every row on the page, and a left join would multiply the
+    // record rows by their breaks.
+    const onBreakIds = await openBreakIds(
+      organizationId,
+      rows.map((row) => row.record.attendanceId),
+    );
+
     const mapped: AttendanceDirectoryRow[] = rows.map((row) => ({
       attendanceId: row.record.attendanceId,
       userId: row.record.userId,
@@ -319,9 +363,60 @@ export const realAttendanceRepository: AttendanceRepository = {
       clockOutAt: iso(row.record.clockOutAt),
       metrics: metricsOf(row.record),
       isArchived: row.userStatus === "archived",
+      isOnBreak: onBreakIds.has(row.record.attendanceId),
     }));
 
     return { rows: mapped, total: totals[0]?.value ?? 0 };
+  },
+
+  async listRange(
+    organizationId,
+    userId,
+    range,
+  ): Promise<AttendanceHistoryRow[]> {
+    const rows = await db
+      .select()
+      .from(attendanceRecords)
+      .where(
+        and(
+          eq(attendanceRecords.organizationId, organizationId),
+          eq(attendanceRecords.userId, userId),
+          gte(attendanceRecords.date, range.from),
+          lte(attendanceRecords.date, range.to),
+          isNull(attendanceRecords.deletedAt),
+        ),
+      )
+      .orderBy(asc(attendanceRecords.date));
+
+    // The §12.3 correction marker: attendance_records has no such column, so it
+    // comes from the corrections that were actually applied to these days.
+    // Scoped to the same (org, user, range) predicate as the rows themselves.
+    const corrected = await db
+      .select({ date: attendanceCorrections.date })
+      .from(attendanceCorrections)
+      .where(
+        and(
+          eq(attendanceCorrections.organizationId, organizationId),
+          eq(attendanceCorrections.userId, userId),
+          gte(attendanceCorrections.date, range.from),
+          lte(attendanceCorrections.date, range.to),
+          eq(attendanceCorrections.status, "APPROVED"),
+          isNotNull(attendanceCorrections.appliedAt),
+        ),
+      );
+    const correctedDates = new Set(corrected.map((c) => c.date));
+
+    return rows.map((r) => ({
+      attendanceId: r.attendanceId,
+      date: r.date,
+      status: r.status,
+      isLate: r.isLate,
+      clockInAt: iso(r.clockInAt),
+      clockOutAt: iso(r.clockOutAt),
+      metrics: metricsOf(r),
+      wasCorrected: correctedDates.has(r.date),
+      isDerived: false,
+    }));
   },
 
   async findById(
@@ -371,6 +466,7 @@ export const realAttendanceRepository: AttendanceRepository = {
       clockOutAt: iso(row.record.clockOutAt),
       metrics: metricsOf(row.record),
       isArchived: row.userStatus === "archived",
+      isOnBreak: dayBreaks.some((b) => b.endAt == null),
       breaks: dayBreaks.map(breakView),
       clockInContext: row.record.clockInContext ?? null,
       clockOutContext: row.record.clockOutContext ?? null,

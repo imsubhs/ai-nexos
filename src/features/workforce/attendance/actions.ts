@@ -67,3 +67,17 @@ export async function getAttendanceAction(
   if (isDemoMode()) return mock.getAttendanceAction(...args);
   return real.getAttendanceAction(...args);
 }
+
+export async function getAttendanceHistoryAction(
+  ...args: Parameters<typeof real.getAttendanceHistoryAction>
+): Promise<Awaited<ReturnType<typeof real.getAttendanceHistoryAction>>> {
+  if (isDemoMode()) return mock.getAttendanceHistoryAction(...args);
+  return real.getAttendanceHistoryAction(...args);
+}
+
+export async function getTeamAttendanceAction(
+  ...args: Parameters<typeof real.getTeamAttendanceAction>
+): Promise<Awaited<ReturnType<typeof real.getTeamAttendanceAction>>> {
+  if (isDemoMode()) return mock.getTeamAttendanceAction(...args);
+  return real.getTeamAttendanceAction(...args);
+}

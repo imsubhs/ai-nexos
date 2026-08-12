@@ -23,24 +23,35 @@ import { DEFAULT_WORKFORCE_POLICY } from "../shared/types";
 import { deriveIsLate, recomputeDay } from "./clock-service";
 import { ensureWorkforceHandlersRegistered } from "../events/handlers";
 import { ATTENDANCE_EVENTS } from "./events";
+import {
+  deriveHistoryRows,
+  projectAttendanceSummary,
+  projectTeamKpis,
+} from "./read-models";
 import { AttendanceError, type AttendanceRepository } from "./repository";
 import { assertTransition } from "./state-machine";
 import {
   clockInSchema,
   clockOutSchema,
+  getAttendanceHistorySchema,
   getAttendanceSchema,
+  getTeamAttendanceSchema,
   listAttendanceSchema,
   startBreakSchema,
   type ClockInInput,
   type ClockOutInput,
+  type GetAttendanceHistoryInput,
   type GetAttendanceInput,
+  type GetTeamAttendanceInput,
   type ListAttendanceInput,
   type StartBreakInput,
 } from "./schemas";
 import type {
   AttendanceDetail,
+  AttendanceHistoryResult,
   AttendanceListResult,
   AttendanceTimelineEntry,
+  TeamAttendanceResult,
   TodayAttendanceView,
 } from "./types";
 
@@ -82,7 +93,50 @@ function toPeriods(
   }));
 }
 
-export function buildAttendanceActions(repo: AttendanceRepository) {
+/** Matches the report projections' breadth — see read-model-actions.ts. */
+const ALL_ROWS_PAGE_SIZE = 10_000;
+
+/**
+ * Turns the A-6 month-XOR-range input into a concrete inclusive range,
+ * defaulting to the current month. Pure UTC arithmetic: `new Date(y, m, 0)`
+ * would resolve the month's last day in the server's local zone, which is a
+ * different day for anyone east of UTC on the 1st.
+ */
+function resolveHistoryRange(filters: {
+  month?: string;
+  from?: string;
+  to?: string;
+}): { from: string; to: string } {
+  if (filters.from && filters.to) {
+    return { from: filters.from, to: filters.to };
+  }
+  const month = filters.month ?? today().slice(0, 7);
+  const [year, mon] = month.split("-").map(Number);
+  // Day 0 of the following month is the last day of this one.
+  const lastDay = new Date(Date.UTC(year, mon, 0)).getUTCDate();
+  return {
+    from: `${month}-01`,
+    to: `${month}-${String(lastDay).padStart(2, "0")}`,
+  };
+}
+
+/**
+ * How many active members the organization has (optionally within one
+ * department) — the denominator behind the T-1 `absent` KPI.
+ *
+ * Injected rather than queried here because head-count belongs to Identity:
+ * attendance must not grow its own idea of who is employed. Doc 10 §2.2 keeps
+ * it a query-time computation, never a stored counter.
+ */
+export type ActiveMemberCountPort = (
+  organizationId: string,
+  departmentId?: string,
+) => Promise<number>;
+
+export function buildAttendanceActions(
+  repo: AttendanceRepository,
+  countActiveMembers: ActiveMemberCountPort,
+) {
   // Sprint 4B: ensure the read-model projection handler is wired before any
   // attendance event fires (idempotent).
   ensureWorkforceHandlersRegistered();
@@ -323,6 +377,94 @@ export function buildAttendanceActions(repo: AttendanceRepository) {
           workStartTime: DEFAULT_WORKFORCE_POLICY.workStartTime,
           workEndTime: DEFAULT_WORKFORCE_POLICY.workEndTime,
         },
+      };
+    },
+
+    /**
+     * A-6 getAttendanceHistory (Q-2/Q-3) — permission `attendance.read`,
+     * SELF ONLY. The userId comes from CurrentUser and is never accepted from
+     * input (doc 15 §0); another employee's history is T-2's business, behind
+     * `attendance.view_team`.
+     *
+     * The repository returns stored days; the ABSENT days a range implies are
+     * derived here through the pure projection, and the summary is computed
+     * over the WHOLE range before pagination — a page-local summary would
+     * silently report a different month than the one asked for.
+     */
+    async getAttendanceHistory(
+      input: GetAttendanceHistoryInput = {},
+    ): Promise<AttendanceHistoryResult> {
+      const user = await requireCurrentUser();
+      requirePermission(user.permissions, "attendance", "read");
+      const filters = getAttendanceHistorySchema.parse(input);
+      const { from, to } = resolveHistoryRange(filters);
+
+      const stored = await repo.listRange(user.organizationId, user.userId, {
+        from,
+        to,
+      });
+      const rows = deriveHistoryRows(stored, {
+        from,
+        to,
+        today: today(),
+        policy: DEFAULT_WORKFORCE_POLICY,
+      });
+
+      const start = (filters.page - 1) * filters.pageSize;
+      return {
+        from,
+        to,
+        rows: rows.slice(start, start + filters.pageSize),
+        summary: projectAttendanceSummary(rows),
+        total: rows.length,
+      };
+    },
+
+    /**
+     * T-1 getTeamAttendance (Q-7) — permission `attendance.view_team`,
+     * organization-scoped. The TeamScopeResolver (WP-121) is still deferred, so
+     * breadth is the organization: every role holding `view_team` today
+     * (owner / super_admin / hr / creative_director / project_manager) is
+     * org-wide by design (doc 14 §10.2).
+     *
+     * `absent` needs an active headcount, which is Identity's number, not
+     * attendance's — hence the injected `countActiveMembers` port rather than a
+     * headcount column that would go stale.
+     */
+    async getTeamAttendance(
+      input: GetTeamAttendanceInput = {},
+    ): Promise<TeamAttendanceResult> {
+      const user = await requireCurrentUser();
+      requirePermission(user.permissions, "attendance", "view_team");
+      const filters = getTeamAttendanceSchema.parse(input);
+      const date = filters.date ?? today();
+
+      // The KPI row describes the whole day, not the visible page — reading it
+      // off `rows` would make the numbers change as the user paginates. Fetched
+      // at the same all-rows breadth the report projections already use.
+      const [{ rows, total }, allRows, activeMemberCount] = await Promise.all([
+        repo.list(user.organizationId, {
+          date,
+          departmentId: filters.departmentId,
+          page: filters.page,
+          pageSize: filters.pageSize,
+        }),
+        repo
+          .list(user.organizationId, {
+            date,
+            departmentId: filters.departmentId,
+            page: 1,
+            pageSize: ALL_ROWS_PAGE_SIZE,
+          })
+          .then((result) => result.rows),
+        countActiveMembers(user.organizationId, filters.departmentId),
+      ]);
+
+      return {
+        date,
+        rows,
+        kpis: projectTeamKpis(allRows, { activeMemberCount }),
+        total,
       };
     },
 

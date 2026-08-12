@@ -60,3 +60,12 @@ export async function listCorrectionReviewQueueAction(
   }
   return real.listCorrectionReviewQueueAction(...args);
 }
+
+export async function getCorrectionReviewContextAction(
+  ...args: Parameters<typeof real.getCorrectionReviewContextAction>
+): Promise<Awaited<ReturnType<typeof real.getCorrectionReviewContextAction>>> {
+  if (isDemoMode()) {
+    return mock.getCorrectionReviewContextAction(...args);
+  }
+  return real.getCorrectionReviewContextAction(...args);
+}

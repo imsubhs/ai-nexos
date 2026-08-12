@@ -7,21 +7,39 @@
  */
 import { buildAttendanceActions } from "./action-core";
 import { realAttendanceRepository } from "./real-repository";
+import { realEmployeeReadRepository } from "../employees/real-repository";
 import type {
   ClockInInput,
   ClockOutInput,
+  GetAttendanceHistoryInput,
   GetAttendanceInput,
+  GetTeamAttendanceInput,
   ListAttendanceInput,
   StartBreakInput,
 } from "./schemas";
 import type {
   AttendanceDetail,
+  AttendanceHistoryResult,
   AttendanceListResult,
   AttendanceTimelineEntry,
+  TeamAttendanceResult,
   TodayAttendanceView,
 } from "./types";
 
-const actions = buildAttendanceActions(realAttendanceRepository);
+// The T-1 `absent` denominator comes from the Identity read model, asked for a
+// single row so the count arrives without paging the whole directory.
+const actions = buildAttendanceActions(
+  realAttendanceRepository,
+  async (organizationId, departmentId) => {
+    const { total } = await realEmployeeReadRepository.list(organizationId, {
+      status: "active",
+      departmentId,
+      page: 1,
+      pageSize: 10,
+    });
+    return total;
+  },
+);
 
 export async function clockInAction(
   input?: ClockInInput,
@@ -65,4 +83,16 @@ export async function getAttendanceAction(
   input: GetAttendanceInput,
 ): Promise<AttendanceDetail | null> {
   return actions.getAttendance(input);
+}
+
+export async function getAttendanceHistoryAction(
+  input?: GetAttendanceHistoryInput,
+): Promise<AttendanceHistoryResult> {
+  return actions.getAttendanceHistory(input);
+}
+
+export async function getTeamAttendanceAction(
+  input?: GetTeamAttendanceInput,
+): Promise<TeamAttendanceResult> {
+  return actions.getTeamAttendance(input);
 }

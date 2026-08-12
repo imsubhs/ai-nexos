@@ -8,6 +8,7 @@ import type {
   CorrectionStatus,
   CorrectionType,
 } from "../shared/enums";
+import type { TodayAttendanceView } from "../attendance/types";
 
 export interface CorrectionListItem {
   correctionId: string;
@@ -42,6 +43,20 @@ export interface CorrectionDetail extends CorrectionListItem {
   reviewNote: string | null;
   appliedAt: string | null;
   timeline: CorrectionTimelineEntry[];
+}
+
+/**
+ * What a reviewer needs on screen to decide: the request, and the stored
+ * AttendanceDay it would amend.
+ *
+ * `dayVisible` distinguishes "there is no record for that date" from "you may
+ * not see that record" — collapsing the two into `day: null` would tell a
+ * reviewer without `attendance.view_team` that an existing day does not exist.
+ */
+export interface ReviewContext {
+  correction: CorrectionDetail;
+  day: TodayAttendanceView | null;
+  dayVisible: boolean;
 }
 
 export type CorrectionStatusCounts = Record<CorrectionStatus, number>;

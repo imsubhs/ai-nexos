@@ -50,6 +50,16 @@ describe("Row Level Security (live)", () => {
   let userB = "";
   const authUserIds: string[] = [];
 
+  // Workforce fixtures (migration 0014). A fixed past date keeps the rows
+  // recognisable and outside any real reporting window.
+  const DAY = "2020-01-15";
+  const attendanceA = randomUUID();
+  const attendanceB = randomUUID();
+  const breakA = randomUUID();
+  const breakB = randomUUID();
+  const correctionA = randomUUID();
+  const correctionB = randomUUID();
+
   beforeAll(async () => {
     await assertDatabaseReachable();
 
@@ -85,10 +95,51 @@ describe("Row Level Security (live)", () => {
       values (${userA}, ${orgA}, ${roleA}, 'Ada', ${`a-${userA}@integration.test`}, 'active'),
              (${userB}, ${orgB}, ${roleB}, 'Grace', ${`b-${userB}@integration.test`}, 'active')
     `;
+
+    // Workforce rows for both tenants. Migration 0014 turned RLS on for these
+    // three tables and granted SELECT; with no rows to filter, "RLS is enabled"
+    // could be asserted while RLS was still never *evaluated* — the precise
+    // state migrations 0010/0011 existed to escape. These rows make the new
+    // policies run.
+    await sql`
+      insert into attendance_records
+        (attendance_id, organization_id, user_id, date, clock_in_at, clock_out_at,
+         status, working_minutes, effective_minutes)
+      values (${attendanceA}, ${orgA}, ${userA}, ${DAY}, ${`${DAY}T09:00:00Z`},
+              ${`${DAY}T17:00:00Z`}, 'PRESENT', 480, 480),
+             (${attendanceB}, ${orgB}, ${userB}, ${DAY}, ${`${DAY}T09:00:00Z`},
+              ${`${DAY}T17:00:00Z`}, 'PRESENT', 480, 480)
+    `;
+    await sql`
+      insert into attendance_breaks
+        (break_id, organization_id, attendance_id, start_at, end_at, kind)
+      values (${breakA}, ${orgA}, ${attendanceA}, ${`${DAY}T12:00:00Z`},
+              ${`${DAY}T12:30:00Z`}, 'break'),
+             (${breakB}, ${orgB}, ${attendanceB}, ${`${DAY}T12:00:00Z`},
+              ${`${DAY}T12:30:00Z`}, 'break')
+    `;
+    // Both use COR-0001: the unique index is per-organisation, so two tenants
+    // holding the same code is correct and worth pinning down.
+    await sql`
+      insert into attendance_corrections
+        (correction_id, organization_id, correction_code, user_id, date,
+         correction_type, reason, status)
+      values (${correctionA}, ${orgA}, 'COR-0001', ${userA}, ${DAY},
+              'LOGIN_TIME', 'Integration fixture for tenant A.', 'PENDING'),
+             (${correctionB}, ${orgB}, 'COR-0001', ${userB}, ${DAY},
+              'LOGIN_TIME', 'Integration fixture for tenant B.', 'PENDING')
+    `;
   });
 
   afterAll(async () => {
     const sql = db();
+    // Workforce rows first: attendance_records.user_id and
+    // attendance_corrections.user_id are ON DELETE RESTRICT, so the user delete
+    // below fails while they exist. Breaks cascade from the record, but are
+    // removed explicitly rather than relying on that.
+    await sql`delete from attendance_breaks where organization_id in (${orgA}, ${orgB})`;
+    await sql`delete from attendance_corrections where organization_id in (${orgA}, ${orgB})`;
+    await sql`delete from attendance_records where organization_id in (${orgA}, ${orgB})`;
     await sql`delete from users where organization_id in (${orgA}, ${orgB})`;
     await sql`delete from roles where organization_id in (${orgA}, ${orgB})`;
     await sql`delete from organizations where organization_id in (${orgA}, ${orgB})`;
@@ -241,5 +292,108 @@ describe("Row Level Security (live)", () => {
       where organization_id in (${orgA}, ${orgB})
     `;
     expect(rows.length).toBe(2);
+  });
+
+  // ── Workforce tables (migration 0014) ────────────────────────────────────
+  //
+  // These read as `authenticated` with each tenant's claims, which is the only
+  // way to establish that the policies added by 0014 actually filter. The
+  // application's own Drizzle connection is the table owner and bypasses them
+  // entirely, so nothing in the unit suite or the app can prove this.
+
+  it("hides another tenant's attendance records", async () => {
+    const seen = await asRole(
+      "authenticated",
+      { sub: userA, organizationId: orgA },
+      (sql) =>
+        sql`select attendance_id, organization_id from attendance_records`,
+    );
+    const ids = seen.map((r) => r.attendance_id as string);
+    expect(ids, "tenant A cannot see its own attendance").toContain(
+      attendanceA,
+    );
+    expect(ids, "cross-tenant attendance leaked").not.toContain(attendanceB);
+  });
+
+  it("hides another tenant's attendance breaks", async () => {
+    const seen = await asRole(
+      "authenticated",
+      { sub: userA, organizationId: orgA },
+      (sql) => sql`select break_id from attendance_breaks`,
+    );
+    const ids = seen.map((r) => r.break_id as string);
+    expect(ids).toContain(breakA);
+    expect(ids, "cross-tenant break rows leaked").not.toContain(breakB);
+  });
+
+  it("hides another tenant's correction requests", async () => {
+    const seen = await asRole(
+      "authenticated",
+      { sub: userA, organizationId: orgA },
+      (sql) => sql`select correction_id from attendance_corrections`,
+    );
+    const ids = seen.map((r) => r.correction_id as string);
+    expect(ids).toContain(correctionA);
+    expect(ids, "cross-tenant correction rows leaked").not.toContain(
+      correctionB,
+    );
+  });
+
+  it("withholds attendance from a tenant whose role has no attendance permission", async () => {
+    // Tenant B's role is {"projects": ["read"]} — no attendance module at all.
+    // Its own organisation's row must still be invisible: the 0014 policies are
+    // permission-aware, not merely tenant-aware, and this is the half that a
+    // tenant-only test would pass without ever checking.
+    const rows = await asRole(
+      "authenticated",
+      { sub: userB, organizationId: orgB },
+      (sql) => sql`select attendance_id from attendance_records`,
+    );
+    expect(rows.length, "a role without attendance permission read rows").toBe(
+      0,
+    );
+
+    const breaks = await asRole(
+      "authenticated",
+      { sub: userB, organizationId: orgB },
+      (sql) => sql`select break_id from attendance_breaks`,
+    );
+    expect(breaks.length).toBe(0);
+
+    const corrections = await asRole(
+      "authenticated",
+      { sub: userB, organizationId: orgB },
+      (sql) => sql`select correction_id from attendance_corrections`,
+    );
+    expect(corrections.length).toBe(0);
+  });
+
+  it("refuses a Data API write to attendance", async () => {
+    // 0014 grants SELECT only and adds no write policy, so writes are denied
+    // twice over: no privilege, and no policy if the privilege were granted.
+    // Writes stay on the owner connection behind requirePermission().
+    let failed = false;
+    try {
+      await asRole(
+        "authenticated",
+        { sub: userA, organizationId: orgA },
+        (sql) =>
+          sql`update attendance_records set working_minutes = 999
+               where attendance_id = ${attendanceA}`.then((r) => {
+            // A policy-blocked UPDATE reports zero rows rather than raising.
+            if (r.count === 0) throw new Error("no rows updated");
+            return r;
+          }),
+      );
+    } catch {
+      failed = true;
+    }
+    expect(failed, "a Data API caller was able to write attendance").toBe(true);
+
+    const [row] = await db()`
+      select working_minutes from attendance_records
+      where attendance_id = ${attendanceA}
+    `;
+    expect(row.working_minutes).toBe(480);
   });
 });

@@ -15,6 +15,7 @@ import type { AttendanceStatus } from "../shared/enums";
 import type { ClockContext } from "../shared/types";
 import type {
   AttendanceDetail,
+  AttendanceHistoryRow,
   AttendanceListResult,
   AttendanceMetrics,
   AttendanceTimelineEntry,
@@ -130,6 +131,22 @@ export interface AttendanceRepository {
     organizationId: string,
     filters: AttendanceDirectoryFilters,
   ): Promise<AttendanceListResult>;
+  /**
+   * A-6: one user's STORED attendance days over an inclusive ISO date range,
+   * oldest first. Returns only rows that exist — the ABSENT days a range
+   * implies are derived at read time by `deriveHistoryRows`, because an
+   * absence is not a row and must never be written as one.
+   *
+   * The paired summary is deliberately NOT a repository method: it is a pure
+   * projection over these rows (`projectAttendanceSummary`), keeping counters
+   * query-time as doc 14 §12.7 requires and keeping the arithmetic testable
+   * without a database.
+   */
+  listRange(
+    organizationId: string,
+    userId: string,
+    range: { from: string; to: string },
+  ): Promise<AttendanceHistoryRow[]>;
   findById(
     organizationId: string,
     attendanceId: string,

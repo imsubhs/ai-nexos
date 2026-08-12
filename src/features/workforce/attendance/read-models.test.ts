@@ -37,6 +37,7 @@ function row(p: Partial<AttendanceDirectoryRow>): AttendanceDirectoryRow {
     clockOutAt: "2026-07-10T17:00:00.000Z",
     metrics: metrics(420),
     isArchived: false,
+    isOnBreak: false,
     ...p,
   };
 }

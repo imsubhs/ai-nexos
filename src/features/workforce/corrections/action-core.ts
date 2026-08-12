@@ -43,7 +43,11 @@ import {
   type ReviewCorrectionInput,
   type SubmitCorrectionInput,
 } from "./schemas";
-import type { CorrectionDetail, CorrectionListResult } from "./types";
+import type {
+  CorrectionDetail,
+  CorrectionListResult,
+  ReviewContext,
+} from "./types";
 import { isDemoMode } from "@/lib/env.server";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -355,6 +359,46 @@ export function buildCorrectionActions(
         );
       }
       return detail;
+    },
+
+    /**
+     * The review context for one queued request — the correction plus the
+     * AttendanceDay it would amend, so a reviewer decides against the stored
+     * record rather than against the request alone.
+     *
+     * `attendance.view_team` is required on top of `corrections.review` because
+     * this returns another employee's attendance row; a reviewer without it
+     * still gets the correction, with `day: null`, and the UI says the record
+     * could not be shown instead of pretending there is none.
+     */
+    async getReviewContext(input: GetCorrectionInput): Promise<ReviewContext> {
+      const user = await requireCurrentUser();
+      requirePermission(user.permissions, "corrections", "review");
+      const { correctionId } = getCorrectionSchema.parse(input);
+
+      const correction = await repo.findById(user.organizationId, correctionId);
+      if (!correction) {
+        throw new CorrectionError(
+          "correction/not-found",
+          "Correction not found.",
+        );
+      }
+
+      const dayVisible = hasPermission(
+        user.permissions,
+        "attendance",
+        "view_team",
+      );
+      const day =
+        dayVisible && attendance
+          ? await attendance.findDay(
+              user.organizationId,
+              correction.userId,
+              correction.date,
+            )
+          : null;
+
+      return { correction, day, dayVisible };
     },
 
     /** CO-5 listCorrectionReviewQueue (Q-6) — `corrections.review`. */

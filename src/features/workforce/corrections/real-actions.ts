@@ -16,7 +16,11 @@ import type {
   ReviewCorrectionInput,
   SubmitCorrectionInput,
 } from "./schemas";
-import type { CorrectionDetail, CorrectionListResult } from "./types";
+import type {
+  CorrectionDetail,
+  CorrectionListResult,
+  ReviewContext,
+} from "./types";
 
 const actions = buildCorrectionActions(
   realCorrectionRepository,
@@ -63,4 +67,10 @@ export async function listCorrectionReviewQueueAction(
   input?: ListReviewQueueInput,
 ): Promise<CorrectionListResult> {
   return actions.listQueue(input);
+}
+
+export async function getCorrectionReviewContextAction(
+  input: GetCorrectionInput,
+): Promise<ReviewContext> {
+  return actions.getReviewContext(input);
 }

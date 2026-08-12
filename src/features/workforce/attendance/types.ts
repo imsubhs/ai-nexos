@@ -64,6 +64,12 @@ export interface AttendanceDirectoryRow {
   clockOutAt: string | null;
   metrics: AttendanceMetrics;
   isArchived: boolean;
+  /**
+   * True while an `attendance_breaks` row for this day is still open. ON_BREAK
+   * is a state, not a stored status (§8.1), so the T-1 `onBreak` KPI has no
+   * column to read — it is derived from the break rows by the repository.
+   */
+  isOnBreak: boolean;
 }
 
 export interface AttendanceListResult {
@@ -77,6 +83,81 @@ export interface AttendanceDetail extends AttendanceDirectoryRow {
   clockInContext: ClockContext | null;
   clockOutContext: ClockContext | null;
   notes: string | null;
+}
+
+/**
+ * Doc 14 §12.3 — one row of the history table / month grid (A-6).
+ *
+ * Unlike the directory row this is single-employee and carries no identity
+ * columns: A-6 is self-scoped and never accepts a userId, so repeating the
+ * viewer's own name on every row would be noise.
+ */
+export interface AttendanceHistoryRow {
+  /** Null on a derived ABSENT day — there is no stored record to link to. */
+  attendanceId: string | null;
+  date: string;
+  status: AttendanceStatus;
+  isLate: boolean;
+  clockInAt: string | null;
+  clockOutAt: string | null;
+  metrics: AttendanceMetrics;
+  /** An approved correction has been applied to this day (§12.3 marker). */
+  wasCorrected: boolean;
+  /**
+   * True when this row was derived at read time rather than stored — an ABSENT
+   * working day (§8.1/10.7). Surfaced so the UI never offers actions (detail,
+   * timeline) that need an attendanceId.
+   */
+  isDerived: boolean;
+}
+
+/**
+ * Doc 14 §12.4 — WorkTrack's summary shape kept verbatim, including the
+ * leave/holiday fields that stay 0 until a leave module exists. They are
+ * present rather than omitted so the shape does not change when it lands.
+ */
+export interface AttendanceSummary {
+  totalDays: number;
+  presentDays: number;
+  absentDays: number;
+  lateDays: number;
+  wfhDays: number;
+  halfDays: number;
+  leaveDays: number;
+  holidayDays: number;
+  totalWorkingMinutes: number;
+  totalOvertimeMinutes: number;
+  /** presentDays / totalDays as a whole percent; 0 when the range is empty. */
+  attendancePercentage: number;
+  /** Session hours averaged over present days, one decimal place. */
+  avgWorkingHours: number;
+}
+
+/** A-6 output (doc 15 §1). `summary` covers the whole range, not the page. */
+export interface AttendanceHistoryResult {
+  from: string;
+  to: string;
+  rows: AttendanceHistoryRow[];
+  summary: AttendanceSummary;
+  total: number;
+}
+
+/** T-1 day KPIs (doc 15 §4). */
+export interface TeamAttendanceKpis {
+  present: number;
+  /** Active members with no attendance row for the day (derived, not stored). */
+  absent: number;
+  late: number;
+  onBreak: number;
+  avgEffectiveMinutes: number;
+}
+
+/** T-1 output — the day's directory rows plus its KPIs. */
+export interface TeamAttendanceResult {
+  date: string;
+  rows: AttendanceDirectoryRow[];
+  kpis: TeamAttendanceKpis;
+  total: number;
 }
 
 /**

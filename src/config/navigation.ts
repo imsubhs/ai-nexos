@@ -77,10 +77,14 @@ export const NAV_SECTIONS: NavSection[] = [
         permission: ["timeline", "read"],
       },
       {
+        // A read-only lens over Meetings / Timelines / Tasks — it owns no
+        // records, so it carries no permission of its own. The page composes
+        // the viewer's module read permissions server-side instead
+        // (src/features/calendar/action-core.ts).
         title: "Calendar",
         href: "/calendar",
         icon: CalendarDays,
-        status: "coming-soon",
+        status: "live",
       },
     ],
   },
@@ -111,43 +115,44 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    // Workforce section (merge doc 13 §2) — Employees ships live in WP-105;
-    // remaining items flip live as their WPs land (doc 17 Slices B–D).
+    // Workforce section (merge doc 13 §2). Attendance, History, Corrections,
+    // Review Queue and Team Attendance are live (WP-111/113/122/123/131);
+    // Reports stays coming-soon until WP-132/133 land its aggregates + export.
     label: "Workforce",
     items: [
       {
         title: "My Attendance",
         href: "/workforce/attendance",
         icon: Clock,
-        status: "coming-soon",
+        status: "live",
         permission: ["attendance", "clock"],
       },
       {
         title: "History",
         href: "/workforce/history",
         icon: CalendarDays,
-        status: "coming-soon",
+        status: "live",
         permission: ["attendance", "read"],
       },
       {
         title: "Corrections",
         href: "/workforce/corrections",
         icon: FilePenLine,
-        status: "coming-soon",
+        status: "live",
         permission: ["corrections", "create"],
       },
       {
         title: "Review Queue",
         href: "/workforce/corrections/review",
         icon: ClipboardCheck,
-        status: "coming-soon",
+        status: "live",
         permission: ["corrections", "review"],
       },
       {
         title: "Team Attendance",
         href: "/workforce/team",
         icon: Users,
-        status: "coming-soon",
+        status: "live",
         permission: ["attendance", "view_team"],
       },
       {

@@ -83,6 +83,7 @@ function makePort(over: Partial<TodayAttendanceView> = {}) {
     clockOutAt: day.clockOutAt,
     metrics: day.metrics,
     isArchived: false,
+    isOnBreak: false,
     breaks: [],
     clockInContext: null,
     clockOutContext: null,
