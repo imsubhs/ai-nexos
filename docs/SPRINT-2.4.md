@@ -718,11 +718,78 @@ at its first failing step, so a non-zero gate means `vercel build` and
 `vercel deploy` never execute — but no pipeline run has been watched, because
 there is no deployment target. G2.4-6 is therefore **not declared open**.
 
-### 19.3 G2.4-2 … G2.4-5 and G2.4-7 — blocked on platform access
+### 19.4 G2.4-2 … G2.4-5 — executed
 
-Everything remaining is infrastructure, and none of it can be executed from the
-repository. See §25 for the exact blockers. What was established without touching
-any infrastructure:
+**The application is deployed and serving.**
+`https://ai-nexos.vercel.app` · `https://ai-nexos-portal.vercel.app` ·
+deployment `dpl_8sizC5UiHb2eURyQUFMdAQ5HUQZL`, commit `97c46d1611c7`.
+
+Full detail in [DEPLOYMENT.md](DEPLOYMENT.md). Gate by gate:
+
+| Gate       | State                                                                                                                           |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **G2.4-2** | **Open.** Both signing secrets generated with a CSPRNG, 64 characters, installed encrypted. No value printed or written to disk |
+| **G2.4-3** | **Open**, by a method the specification did not anticipate — see below                                                          |
+| **G2.4-4** | **Open.** READY, healthy, `environment: production` on both hosts; boot `[env]` line present with no unexpected warning         |
+| **G2.4-5** | **Partial.** 8 of 11 machine-checkable smoke tests pass; M-06/M-07/M-08 need a human session                                    |
+| **G2.4-6** | **Not open.** The gate is proven; the GitHub Actions job that wraps it has never run                                            |
+| **G2.4-7** | **Not open.** No Supabase management access                                                                                     |
+
+**G2.4-3 had to be redesigned, and the reason is worth recording.** The five
+Supabase variables are Vercel **Sensitive** variables, which are write-only:
+`vercel pull` returns each key with an 11-character placeholder instead of the
+value, while an `encrypted` variable returns its true 64 characters. So the
+pipeline gate this sprint had already built was validating placeholders.
+
+That is **worse than the variables being absent**, because every presence check
+passes against a placeholder. The gate would have reported success and the
+prebuilt build would have inlined the placeholder into the client bundle as the
+Supabase URL — an application broken in the browser and healthy to a monitor.
+Confirmed by execution: run against the pulled configuration, the gate exited 1
+with `NEXT_PUBLIC_SUPABASE_URL must be a valid URL`.
+
+The gate therefore moved **into the Vercel build**, the only place the real values
+exist, as the project's Build Command
+(`npm run env:check -- --production --verify && npm run build`). Its output from
+the deployed build:
+
+```
+✓ database    aws-0-ap-northeast-1.pooler.supabase.com:5432
+              PostgreSQL 17.6
+✓ storage     1 bucket(s): documents
+✓ Valid for production.
+```
+
+All twelve required and production variables `set`, `DEMO_MODE` off, and only the
+two accepted warnings (`REDIS_URL`, `EGRESS_ALLOWED_HOSTS`). This is a **stronger**
+guarantee than §15 specified: a non-zero exit fails the build, and a failed build
+creates no deployment, so a misconfigured deployment cannot exist rather than
+merely being caught before it is served.
+
+**M-14 and P-07, executed against production.** `DEMO_MODE=true` was injected as
+a build-only override — no project variable created, modified or restored. The
+gate refused it, the build ended `BUILD_ERROR` / readyState `ERROR`, no
+deployment was created, and both hostnames continued serving build
+`97c46d1611c7` throughout.
+
+**Smoke results:** health 200/`healthy`/`production` on both hosts · production
+redaction active · boot `[env]` present · unsigned storage reads, bucket list and
+object list all refused (400) · HTTP→HTTPS 308 on both hosts · full security
+header set with a **per-request CSP nonce that differs between requests** · dual
+host routing correct (app `/`→`/login`, portal `/`→200, app `/portal` refused,
+unauthenticated API→401).
+
+### 19.3 What was established before any infrastructure existed
+
+| Fact                                                  | How it was verified                                                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Supabase project reachable on the production topology | `env:check -- --verify` → `aws-0-ap-northeast-1.pooler.supabase.com:5432`, PostgreSQL 17.6 |
+| Storage state                                         | **exactly one bucket, `documents`**. `nexos-assets` does not exist and was not created     |
+| Schema shape unchanged                                | 202 public base tables · 52 with RLS · 74 policies · 14 applied migrations                 |
+| Migration tree untouched                              | `0000`–`0013` present, no `0014`                                                           |
+| Candidate hostnames unclaimed                         | `ai-nexos.vercel.app`, `ai-nexos-portal.vercel.app` both answer `DEPLOYMENT_NOT_FOUND`     |
+| Auth callback path                                    | `/auth/callback` — read from `src/app/auth/callback/route.ts`, not assumed                 |
+| Existing tenant                                       | 1 organisation, 1 user, 7 roles, 0 clients/projects/files                                  |
 
 | Fact                                                  | How it was verified                                                                        |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -882,20 +949,40 @@ These block implementation and are **not** decided by this document.
 Every remaining gate depends on external platform access the build machine does
 not have. Recorded rather than worked around.
 
-| Blocker                                            | Evidence                                                                                                                                                                                                  | Consequence                                                                             |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **No Vercel credential of any kind**               | No `vercel` CLI installed; no `~/.local/share/com.vercel.cli`; no `~/.vercel`; no `.vercel/` in the repository; no `VERCEL_*` variable in the environment; `api.vercel.com` answers `403` unauthenticated | G2.4-2, G2.4-3, G2.4-4 and G2.4-5 cannot be executed                                    |
-| **No Supabase dashboard or management-API access** | Only `~/.supabase/telemetry.json` exists — there is no CLI login                                                                                                                                          | Auth URL configuration and D-6 backup posture are unreadable; G2.4-7 cannot be executed |
-| **No credential for a real user**                  | One `auth.users` row exists and its password is stored as a hash                                                                                                                                          | A-01 / M-06 cannot be executed                                                          |
+| Blocker                                            | Evidence                                                                                                               | Consequence                                                                                            |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **No Supabase dashboard or management-API access** | `~/.nexos-supabase-token` was never created; only `~/.supabase/telemetry.json` exists                                  | **B-08 Auth URL configuration and B-09/B-10 backup posture are unverified. G2.4-7 cannot be executed** |
+| **No credential for a real user**                  | One `auth.users` row exists and its password is stored as a hash                                                       | **A-01 / M-06 / M-07 / M-08 cannot be executed**                                                       |
+| **CI deploy job never exercised**                  | `PRODUCTION_DEPLOY_ENABLED` is unset and `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` are not GitHub secrets | **G2.4-6 cannot be declared open** — the gate is proven, the job around it is not                      |
 
-**No secret was generated.** K-01 and K-02 are deliberately deferred until a
-production environment exists to receive the values, so that a live signing
-secret never sits unused on a developer machine.
+The Vercel blocker recorded here previously is **resolved**: a project-scoped
+token was supplied, and G2.4-2 through G2.4-5 were executed with it (§19.4).
+
+**Note on B-08.** Supabase Auth's Site URL and redirect allow-list have **not**
+been configured for the production origin. The application is deployed and its
+`/login` page serves, but a real sign-in has not been attempted, and it should be
+expected to fail until `https://ai-nexos.vercel.app/auth/callback` is added to
+the redirect allow-list. This is the most likely first obstacle to A-01 and is
+recorded here rather than discovered during the attempt.
+
+### 25.1 Secret-handling incident
+
+During G2.4-5 the Vercel API token was passed to the CLI as `--token=…`. npm's
+run notice echoed the full command, including the token value, into captured
+output. The token was disclosed, then **revoked and replaced** by the operator.
+
+Two changes followed: the token is now supplied only through the `VERCEL_TOKEN`
+environment variable, never as a command-line argument, in both the runbook and
+`.github/workflows/ci.yml`; and the replacement is **project-scoped**, so it
+cannot see any project other than `ai-nexos` — `narratix-lab` answers
+`404 not_found` and the project list contains one entry. The blast radius of the
+next such mistake is correspondingly smaller.
 
 ---
 
-_G2.4-1 complete and verified. G2.4-6 built, and its gate proven by execution;
-the pipeline run itself is pending a deployment target. G2.4-2 through G2.4-5 and
-G2.4-7 are blocked per §25. No migration was created, no schema, grant, policy or
-privilege was changed, no Supabase configuration was altered, no secret was
-generated, and no deployment exists._
+_G2.4-1 through G2.4-4 are open. G2.4-5 is partial: everything checkable without a
+human session passes. G2.4-6 and G2.4-7 are not open, per §25. The application is
+deployed and serving on both hostnames. No migration was created, no schema,
+grant, policy or privilege was changed, no Supabase configuration was altered,
+and the five Sensitive production variables were never read, modified,
+downgraded or exposed._
