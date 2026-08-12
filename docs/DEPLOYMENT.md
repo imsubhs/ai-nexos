@@ -15,24 +15,32 @@ non-secret setting, or an instruction for obtaining one.
 This section is the honest state of the deployment. It is updated by execution,
 never by intent.
 
-| Item                                                    | State                                                                   |
-| ------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Configuration enforcement (G2.4-1)                      | **Done and verified** — see [SPRINT-2.4.md](SPRINT-2.4.md) §19.1        |
-| Deploy gate implemented in CI                           | **Done** — `.github/workflows/ci.yml`, job `deploy`                     |
-| Deploy gate observed rejecting a bad configuration      | **Done at the gate step** — §4.1. Not yet observed in a pipeline run    |
-| Local quality gate                                      | **Green** — 489 unit tests · lint 0 errors · typecheck · format · build |
-| Supabase project reachable with the production topology | **Verified** — Session Pooler, PostgreSQL 17.6, `documents` bucket      |
-| Vercel project                                          | **Created** — `ai-nexos`, unlinked from Git by design (§2.1)            |
-| Production hostnames                                    | **Assigned** — both attached to the one project (§2.2)                  |
-| Production secrets (`JWT_SECRET`, `SHARE_JWT_SECRET`)   | **Generated and installed**, encrypted, 64 chars each (§6)              |
-| Supabase variables in Vercel                            | **Operator-supplied** — set directly in the dashboard, not by tooling   |
-| First deployment                                        | **Not yet made**                                                        |
-| Real user sign-in against a deployed URL (A-01)         | **Not executed**                                                        |
-| Byte-identical upload/download in production (M-08)     | **Not executed**                                                        |
-| Backup restore rehearsal (B-10)                         | **Not executed**                                                        |
+**The application is deployed and serving.**
 
-**Do not read this runbook as evidence of a deployment.** §0 is the only place
-that says whether one exists.
+| App             | https://ai-nexos.vercel.app                                |
+| --------------- | ---------------------------------------------------------- |
+| **Portal**      | https://ai-nexos-portal.vercel.app                         |
+| **Deployment**  | `dpl_8sizC5UiHb2eURyQUFMdAQ5HUQZL` · commit `97c46d1611c7` |
+| **Deployed at** | 2026-08-12T13:43:30Z                                       |
+
+| Item                                                  | State                                                                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Configuration enforcement (G2.4-1)                    | **Done and verified** — see [SPRINT-2.4.md](SPRINT-2.4.md) §19.1                                  |
+| Local quality gate                                    | **Green** — 489 unit tests · lint 0 errors · typecheck · format · build · `audit:authz`           |
+| Production configuration verified (G2.4-3)            | **PASS, in-build** against the real Sensitive values — PostgreSQL 17.6, bucket `documents` (§2.7) |
+| Deployed and serving (G2.4-4)                         | **PASS** — READY, healthy and `production` on both hosts                                          |
+| Smoke tests (G2.4-5)                                  | **8 of 11 PASS** — see §4. M-06/M-07/M-08 require a real session                                  |
+| Deploy gate observed rejecting a bad configuration    | **PASS, by execution** — `BUILD_ERROR`, no promotion (§4.1)                                       |
+| Failed deploy leaves previous version serving (P-07)  | **PASS, by execution** — production unchanged after the failed build (§4.1)                       |
+| CI deploy job                                         | **Written, not yet exercised** — gated off by `PRODUCTION_DEPLOY_ENABLED` (§2.6)                  |
+| Production secrets (`JWT_SECRET`, `SHARE_JWT_SECRET`) | **Generated and installed**, encrypted, 64 chars each (§6)                                        |
+| Supabase variables in Vercel                          | **Operator-supplied, Sensitive** — never read, modified or downgraded by tooling (§2.7)           |
+| Real user sign-in against a deployed URL (A-01)       | **Not executed** — requires a human session                                                       |
+| Byte-identical upload/download in production (M-08)   | **Not executed** — depends on A-01                                                                |
+| Backup restore rehearsal (B-10)                       | **Not executed** — no Supabase management access                                                  |
+
+**§0 is the only place that says what is actually true.** Every row above was
+moved by an executed command, not by intent.
 
 ---
 
@@ -66,32 +74,42 @@ building, so this cannot reach production silently.
 
 **As provisioned.** These are the live values, read back from the Vercel API.
 
-| Setting         | Value                                                 |
-| --------------- | ----------------------------------------------------- |
-| Team            | `riansaha321-4968s-projects`                          |
-| Team ID         | `team_rd4VxH3wAWO6l3IfywaeCgkW`                       |
-| Project         | `ai-nexos`                                            |
-| Project ID      | `prj_d86pnPSjmbBvyutWaVCL6OVmW78z`                    |
-| Plan            | Hobby                                                 |
-| Framework       | Next.js                                               |
-| Root directory  | `.`                                                   |
-| Node version    | 24.x — matches `.github/workflows/ci.yml`             |
-| Install command | `npm ci`                                              |
-| Build command   | `npm run build`                                       |
-| Region          | `hnd1` (Tokyo) — nearest to Supabase `ap-northeast-1` |
-| Git repository  | **deliberately not linked** — see below               |
+| Setting         | Value                                                                               |
+| --------------- | ----------------------------------------------------------------------------------- |
+| Team            | `riansaha321-4968s-projects`                                                        |
+| Team ID         | `team_rd4VxH3wAWO6l3IfywaeCgkW`                                                     |
+| Project         | `ai-nexos`                                                                          |
+| Project ID      | `prj_d86pnPSjmbBvyutWaVCL6OVmW78z`                                                  |
+| Plan            | Hobby                                                                               |
+| Framework       | Next.js                                                                             |
+| Root directory  | `.`                                                                                 |
+| Node version    | 24.x — matches `.github/workflows/ci.yml`                                           |
+| Install command | `npm ci`                                                                            |
+| Build command   | `npm run env:check -- --production --verify && npm run build` — the gate (§2.7, §3) |
+| Region          | `hnd1` (Tokyo) — nearest to Supabase `ap-northeast-1`                               |
+| Git repository  | linked to `imsubhs/ai-nexos`, **auto-deploy disabled** — see below                  |
 
 `hnd1` was accepted on the Hobby plan. That was not assumed: the region was
 applied as a separate API call precisely so a plan restriction would surface as
 its own refusal rather than silently reverting the whole project to defaults.
 
-**The project is deliberately unlinked from Git.** A linked project auto-builds
-and promotes on every push to the production branch using **Vercel's own build**,
-which never runs `env:check --production --verify`. That would leave the deploy
-gate decorative — the exact failure this sprint exists to prevent. With no link,
-the only route to production is the gated pipeline in
-`.github/workflows/ci.yml`, which checks out the code itself and uploads a
-prebuilt deployment. The cost is the loss of Vercel's automatic PR previews.
+**Git is linked, but automatic deployment is disabled**
+(`gitProviderOptions.createDeployments = "disabled"`). The link was added in the
+dashboard; the auto-deploy was switched off afterwards, deliberately, and it must
+stay off.
+
+The reason is not tidiness. A Git-linked project with auto-deploy enabled builds
+and promotes on **every push to its production branch** — and its production
+branch is recorded as `main`, which does not contain the Sprint 2.3 or 2.4 work.
+So an enabled auto-deploy would ship stale code, on a trigger nobody chose, and
+in doing so would bypass nothing less than the gate itself.
+
+That last point deserves care, because it changed. With the gate now living in
+the **Build Command** (§2.7), a Vercel-side build _does_ run it, so auto-deploy
+would no longer be ungated. What it would still do is deploy the wrong commit
+without anyone asking. Keeping `createDeployments` disabled means every
+deployment is deliberate and originates from the pipeline or an explicit CLI
+invocation. The cost is the loss of Vercel's automatic PR previews.
 
 **A separate Vercel project, `narratix-lab`
 (`prj_bzGzDEDTyJmGq2ZZERH0ekDhMxjC`), exists in the same team and is unrelated
@@ -257,10 +275,64 @@ The deploy job needs three, and only three:
 | `VERCEL_ORG_ID`     | `.vercel/project.json` after `vercel link`, or the dashboard |
 | `VERCEL_PROJECT_ID` | Same                                                         |
 
-Production application values are **not** duplicated into GitHub. The pipeline
-runs `vercel pull --environment=production` and gates on that, so the
-configuration checked and the configuration deployed are the same object. A
-second copy in a second store is a second thing to drift.
+Production application values are **not** duplicated into GitHub. A second copy
+in a second store is a second thing to drift.
+
+The deploy job is additionally gated on a repository **variable**,
+`PRODUCTION_DEPLOY_ENABLED`. While it is unset the job is **skipped**, so the
+pipeline is not permanently red before the three secrets exist. Set it to `true`
+only once they do. A skipped job is visibly not a passed job; if it were made to
+pass vacuously, the pipeline would report success while deploying nothing.
+
+Use a **project-scoped** token. The one in use cannot see any other project in
+the team — `narratix-lab` returns `404 not_found` and the project list contains
+only `ai-nexos`. That makes the unrelated project structurally unreachable
+rather than merely out of scope by convention.
+
+### 2.7 Sensitive variables, and what they cost
+
+The five Supabase variables are Vercel **Sensitive** variables and are to stay
+that way. Sensitive means write-only: the value cannot be read back by the API,
+the CLI, or the dashboard, only replaced.
+
+Two consequences follow, and both are load-bearing.
+
+**1. `vercel pull` cannot see them.** It returns the keys with a redacted
+placeholder. Measured, not assumed:
+
+| Variable                        | Type      | Length returned by `vercel pull` |
+| ------------------------------- | --------- | -------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | sensitive | 11 — placeholder                 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | sensitive | 11 — placeholder                 |
+| `SUPABASE_SERVICE_ROLE_KEY`     | sensitive | 11 — placeholder                 |
+| `DATABASE_URL`                  | sensitive | 11 — placeholder                 |
+| `DIRECT_DATABASE_URL`           | sensitive | 11 — placeholder                 |
+| `JWT_SECRET`                    | encrypted | 64 — the real value              |
+| `NEXT_PUBLIC_APP_URL`           | plain     | 27 — the real value              |
+
+A real anon key is a ~200-character JWT and a pooler URL is ~120 characters, so
+an 11-character uniform result is unambiguous.
+
+**This is worse than the variables being absent**, and that is the whole reason
+the gate had to move. Every _presence_ check passes against a placeholder. A
+presence-only gate would go green and deploy an application carrying the literal
+placeholder as its Supabase URL — broken in the browser, healthy to a monitor.
+
+**2. The gate must run where the values are.** Hence the Build Command (§3), and
+hence `vercel deploy` **without** `--prebuilt`: a locally built bundle would
+have the placeholders baked in.
+
+**Their type cannot be changed in place.** Vercel answers
+`You cannot change the type of a Sensitive Environment Variable`, so the only
+route to a readable type is delete-and-recreate, which needs the values. Do not
+attempt it as a convenience.
+
+**One caveat worth knowing.** `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` are `NEXT_PUBLIC_*`, so Next inlines them into
+the client bundle and any visitor can read them from the browser regardless of
+the flag. Marking them Sensitive protects them from dashboard and API readback
+only. That is harmless — the anon key is designed to be public and RLS-enforced
+— but the confidentiality benefit is real only for the other three.
 
 ---
 
@@ -277,27 +349,46 @@ git push origin phase-2-production-readiness
 The pipeline then runs, in order:
 
 ```
-lint → format:check → typecheck → test → build → audit:deps      (job: quality)
+GitHub Actions ── job: quality
+  lint → format:check → typecheck → test → build → audit:deps
         ↓  all must pass
-vercel pull  →  env:check --production --verify  →  storage:setup
-        ↓  the gate
-vercel build --prod  →  vercel deploy --prebuilt --prod
+GitHub Actions ── job: deploy
+  vercel deploy --prod          (remote build; NOT --prebuilt)
         ↓
-post-deploy health check on both hosts
+Vercel build ──────────────────────────────────── THE GATE
+  npm run env:check -- --production --verify
+        ↓  non-zero  →  build fails  →  NO deployment exists
+  npm run build
+        ↓
+  promote to both hostnames
+        ↓
+GitHub Actions
+  post-deploy health check on both hosts
 ```
 
-Three properties of that order are deliberate:
+Four properties of that order are deliberate:
 
-- **The gate runs before the build.** A misconfigured deployment fails the
-  pipeline, not the users. The boot gate in `src/instrumentation.ts` also catches
-  it, but that fires at process start — on Vercel, after the deployment is live.
+- **The gate runs inside the Vercel build, not in CI.** That is not a weakening;
+  it is the only place the Sensitive values exist (§2.7). A gate in CI would be
+  validating redacted placeholders and reporting success.
+- **The deploy is not `--prebuilt`.** A locally built bundle would carry the
+  placeholders instead of the real Supabase URL.
 - **`--verify` opens real connections.** A syntactically perfect connection
   string pointing at a project that does not exist passes every presence check,
   and `next build` passes too, because no route is prerendered against the
   database. That combination reads as a fully configured environment while
   nothing is reachable.
-- **Promotion is last.** A failed gate, build or upload leaves the previous
-  production deployment serving, untouched.
+- **Promotion is last, and conditional.** A failed gate means the build fails,
+  which means no deployment is ever created — so there is nothing to promote and
+  the previous deployment keeps serving. The guarantee is structural rather than
+  sequential: a misconfigured deployment cannot exist, not merely cannot be
+  reached.
+
+**The trade against the earlier design.** Moving the gate into the build means CI
+cannot refuse to _upload_ a misconfigured commit — it finds out one step later,
+when the build fails. Nothing reaches users either way. This is the cost of
+keeping the five variables Sensitive, and it is a fair price: the gate now checks
+the real configuration instead of a copy of it.
 
 ### 3.1 First deployment only
 
@@ -368,11 +459,53 @@ The removal case reports
 `http://` case reports `must use https:// in production — it is the base of a
 redirect that carries a secure cookie.`
 
-**Still outstanding:** observing the _pipeline_ stop. GitHub Actions fails a job
-at the first failing step, so a non-zero gate means `vercel build` and
-`vercel deploy` never run — but that has not yet been watched happen, because no
-Vercel project exists to deploy to. It is recorded as unverified in §0 rather
-than assumed.
+**Executed against production infrastructure — the real thing.** `DEMO_MODE=true`
+was injected as a **build-only** environment override, so no project variable was
+created, modified or restored:
+
+```bash
+vercel deploy --prod --yes --build-env DEMO_MODE=true
+```
+
+Result:
+
+```
+Running "npm run env:check -- --production --verify && npm run build"
+Invalid environment configuration:
+· DEMO_MODE: DEMO_MODE must not be "true" in production — it serves the
+  in-memory demo dataset instead of the database. Unset it or set it to "false".
+✖ Invalid. The server would refuse to start with this configuration.
+Error: Command "..." exited with 1
+```
+
+```json
+{
+  "id": "dpl_Y9iezVvHBbbQhjyWpbAZgPkhhsbD",
+  "readyState": "ERROR",
+  "error": { "name": "BUILD_ERROR" }
+}
+```
+
+And the half that matters more, **P-07**, checked immediately afterwards:
+
+| Check after the failed deploy | Result                                                |
+| ----------------------------- | ----------------------------------------------------- |
+| App `/api/health`             | 200 · `healthy` · `production` · build `97c46d1611c7` |
+| Portal `/api/health`          | 200 · `healthy` · `production` · build `97c46d1611c7` |
+| Deployment history            | `ERROR` alongside the earlier `READY`; no replacement |
+| Both hostnames still attached | yes                                                   |
+
+So the gate rejected a genuinely invalid production configuration, no deployment
+was created, and the previously good deployment continued serving throughout.
+`DEMO_MODE=true` was chosen deliberately: it is an authentication bypass rather
+than a cosmetic misconfiguration, so it is the rule whose enforcement matters
+most, and being build-only it left nothing to restore afterwards.
+
+**Still outstanding:** the same rejection observed through a _GitHub Actions_
+run. The deploy job is written but has never executed, because
+`PRODUCTION_DEPLOY_ENABLED` is unset and the three Vercel secrets are not in
+GitHub. The gate itself is proven; the CI wiring around it is not. Recorded as
+such in §0 rather than assumed.
 
 ---
 

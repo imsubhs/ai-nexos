@@ -61,116 +61,133 @@ jobs:
         run: npm run audit:deps
 
   # ───────────────────────────────────────────────────────────────────────────
-  # Sprint 2.4 — production deploy, gated on configuration (P-01…P-07).
+  # Sprint 2.4 — production deploy (P-01…P-07).
   #
   # `needs: quality` is the whole of P-01: lint, format, typecheck, test, build
   # and audit:deps must pass before anything reaches production, and a pull
   # request runs `quality` alone, so it validates without deploying (P-03).
   #
-  # The configuration gate is the reason this job exists. `next build` succeeds
-  # with no runtime secrets at all — every route is dynamic, so nothing is
-  # prerendered against the database — which means a green build says nothing
-  # about whether the deployment is configured. The boot gate in
-  # src/instrumentation.ts does catch it, but it fires at process start, which on
-  # Vercel is *after* the deployment is live. Checking here moves the failure
-  # from "users see errors" to "the deploy stops" (P-02).
+  # WHY THERE IS NO `env:check` STEP IN THIS JOB.
   #
-  # The gate validates the configuration pulled from Vercel rather than a copy of
-  # it held in GitHub secrets. Duplicating every production value into a second
-  # store would mean the pipeline could pass against values the build never sees;
-  # `vercel pull` gives us the actual production environment, so the thing
-  # checked and the thing deployed are the same thing.
+  # The five Supabase variables are Vercel **Sensitive** variables. A sensitive
+  # value is write-only: `vercel pull` returns the key with a redacted
+  # placeholder instead of the value. Measured, not assumed — every one came
+  # back as an 11-character placeholder while `JWT_SECRET` (encrypted) came back
+  # at its true length. A gate running here would therefore validate
+  # placeholders and pass, which is strictly worse than having no gate at all,
+  # because it would look green while nothing real had been checked. Presence
+  # checks are exactly what a placeholder satisfies.
+  #
+  # So the gate runs INSIDE the Vercel build, where the real values exist. It is
+  # the project's Build Command:
+  #
+  #     npm run env:check -- --production --verify && npm run build
+  #
+  # That is the same script this repository has always used. It asserts every
+  # production-required variable, rejects http:// and loopback origins, opens a
+  # real Postgres connection through the pooler and a real Storage request, and
+  # prints names and states only. A non-zero exit fails the build, and a failed
+  # build produces no deployment — so a misconfigured deployment cannot be
+  # promoted, rather than merely being caught before it is.
+  #
+  # This is why the deploy below is NOT `--prebuilt`. Building locally and
+  # uploading the output would bake the redacted placeholders into the client
+  # bundle as the Supabase URL, and skip the gate entirely.
+  #
+  # Verified by execution, not by reading: injecting `DEMO_MODE=true` as a
+  # build-only env produced `BUILD_ERROR`, readyState `ERROR`, and no promotion,
+  # while production continued serving the previous deployment (M-14, P-07).
   # ───────────────────────────────────────────────────────────────────────────
   deploy:
     name: Production deploy
     needs: quality
-    # Push-only, and only from the production branch. The literal is repeated
-    # rather than read from `env:` because the `env` context is not available in
-    # a job-level `if`. When Phase 2 merges to `main`, change it here.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/phase-2-production-readiness'
+    # Push-only, production branch only, and explicitly switched on. The
+    # repository variable is the switch: until PRODUCTION_DEPLOY_ENABLED is
+    # "true" this job is skipped rather than failed, so the pipeline is not
+    # permanently red while the Vercel secrets are still being provisioned. A
+    # skipped job is visibly not a passed job, which is the point — see
+    # docs/DEPLOYMENT.md §0 for what is actually wired.
+    #
+    # The branch literal is repeated rather than read from `env:` because the
+    # `env` context is not available in a job-level `if`. When Phase 2 merges to
+    # `main`, change it here and in Vercel's Production Branch together.
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/phase-2-production-readiness' &&
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
-    # Lets a required reviewer or a deployment protection rule be attached
-    # without touching this file.
     environment: production
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # Read by the Vercel CLI from the environment, deliberately never passed
+      # as `--token=…`. A command-line argument is visible to anything that
+      # echoes the command — npm's run notice does exactly that — and that is
+      # how a token ends up in a build log.
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      # Fail loudly rather than letting the CLI report something obscure.
+      - name: Require deployment credentials
+        run: |
+          missing=""
+          [ -n "$VERCEL_TOKEN" ] || missing="$missing VERCEL_TOKEN"
+          [ -n "$VERCEL_ORG_ID" ] || missing="$missing VERCEL_ORG_ID"
+          [ -n "$VERCEL_PROJECT_ID" ] || missing="$missing VERCEL_PROJECT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::production deploy is enabled but these secrets are unset:$missing"
+            exit 1
+          fi
+          echo "all three deployment credentials are present"
 
+      # Pinned rather than @latest: a deploy pipeline should not change
+      # behaviour because an upstream release happened overnight.
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@58.9.5
 
-      # Writes .vercel/.env.production.local. `.env*` is gitignored, so nothing
-      # pulled here can be committed by a later step.
-      - name: Pull production environment from Vercel
-        run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
-
-      # check-env.ts reads .env.local (docs/ENVIRONMENT.md §1), so the pulled
-      # production environment is put where it looks. Values are never printed —
-      # the script reports names and states only (P-04, K-06).
-      - name: Stage pulled environment for the gate
-        run: cp .vercel/.env.production.local .env.local
-
-      # THE GATE. `--production` applies the stricter rules; `--verify` opens a
-      # real Postgres connection and a real Storage request, because a
-      # syntactically perfect connection string pointing at a project that does
-      # not exist passes every presence check. A deployment that cannot reach its
-      # own database must not be promoted (M-15, G2.4-3).
-      - name: Production configuration gate
-        run: npm run env:check -- --production --verify
-
-      # Idempotent, and re-privatises the bucket if it has drifted. Placed after
-      # the gate so it runs only against a configuration already proven valid
-      # (T-05, T-06).
-      - name: Verify production storage bucket
-        run: npm run storage:setup
-
-      # Public values only — these are baked into the client bundle by design.
+      # Only the two public origins are wanted here, for the post-deploy check.
+      # They are `plain` variables, so they survive the pull intact. The pulled
+      # file is NOT used as gate input — see the note above — and is removed
+      # immediately because it also contains readable encrypted values.
+      # Parsed with grep rather than dotenv so this job needs no npm install.
       - name: Resolve production origins
         id: origins
         run: |
-          node -e '
-            require("dotenv").config({ path: ".env.local" });
-            const fs = require("node:fs");
-            const app = process.env.NEXT_PUBLIC_APP_URL;
-            const portal = process.env.NEXT_PUBLIC_PORTAL_URL;
-            if (!app || !portal) throw new Error("app/portal URL missing after the gate passed");
-            if (app === portal) throw new Error("APP_URL and PORTAL_URL must be different origins");
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, `app=${app}\nportal=${portal}\n`);
-          '
+          set -euo pipefail
+          vercel pull --yes --environment=production >/dev/null
+          f=.vercel/.env.production.local
+          app="$(grep -E '^NEXT_PUBLIC_APP_URL=' "$f" | head -1 | cut -d= -f2- | tr -d '"')"
+          portal="$(grep -E '^NEXT_PUBLIC_PORTAL_URL=' "$f" | head -1 | cut -d= -f2- | tr -d '"')"
+          rm -f "$f"
+          [ -n "$app" ] || { echo "::error::NEXT_PUBLIC_APP_URL is not set in production"; exit 1; }
+          [ -n "$portal" ] || { echo "::error::NEXT_PUBLIC_PORTAL_URL is not set in production"; exit 1; }
+          # The proxy routes on the Host header alone, so one hostname for both
+          # would make the portal branch swallow /login and /auth/callback.
+          [ "$app" != "$portal" ] || { echo "::error::app and portal origins must differ"; exit 1; }
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+          echo "portal=$portal" >> "$GITHUB_OUTPUT"
+          echo "app=$app portal=$portal"
 
-      # C-13: /api/health should report a real build identity, not "local-dev".
-      # Appended to the pulled environment rather than stored as a project
-      # variable, because it changes on every deploy and NEXT_PUBLIC_* values
-      # are substituted at build time — a stored variable would have to be
-      # edited before each build to mean anything.
-      - name: Stamp the build identity
-        run: printf '\nNEXT_PUBLIC_BUILD_NUMBER="%s"\n' "${GITHUB_SHA::12}" >> .vercel/.env.production.local
-
-      # Builds with the pulled production environment, so every NEXT_PUBLIC_*
-      # value is substituted at build time rather than expected at runtime
-      # (C-06, C-07 — this is why a changed public value needs a rebuild).
-      - name: Build for production
-        run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
-
-      # Promotion happens only if this step succeeds. A failed gate, build or
-      # upload leaves the previous production deployment serving untouched
-      # (P-07).
+      # Remote build. Vercel runs the Build Command, which runs the gate against
+      # the real Sensitive values, then builds. Promotion happens only if both
+      # succeed, so a failed gate leaves the previous deployment serving (P-07).
+      #
+      # NEXT_PUBLIC_BUILD_NUMBER is passed as a build env rather than stored as a
+      # project variable because it changes every deploy and NEXT_PUBLIC_* is
+      # substituted at build time (C-13).
       - name: Deploy to production
         id: deploy
         run: |
-          url="$(vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}")"
+          set -euo pipefail
+          url="$(vercel deploy --prod --yes \
+            --build-env NEXT_PUBLIC_BUILD_NUMBER="${GITHUB_SHA::12}")"
           echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Deployed $GITHUB_SHA to $url"
+          echo "deployed $GITHUB_SHA -> $url"
 
       # P-06: the deployed commit is discoverable from the pipeline output.
       - name: Record deployed revision
@@ -192,6 +209,7 @@ jobs:
           set -euo pipefail
           for origin in "${{ steps.origins.outputs.app }}" "${{ steps.origins.outputs.portal }}"; do
             echo "checking $origin/api/health"
+            code=""
             for attempt in 1 2 3 4 5; do
               code="$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "$origin/api/health" || true)"
               if [ "$code" = "200" ]; then break; fi
