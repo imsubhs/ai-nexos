@@ -958,12 +958,22 @@ not have. Recorded rather than worked around.
 The Vercel blocker recorded here previously is **resolved**: a project-scoped
 token was supplied, and G2.4-2 through G2.4-5 were executed with it (§19.4).
 
-**Note on B-08.** Supabase Auth's Site URL and redirect allow-list have **not**
-been configured for the production origin. The application is deployed and its
-`/login` page serves, but a real sign-in has not been attempted, and it should be
-expected to fail until `https://ai-nexos.vercel.app/auth/callback` is added to
-the redirect allow-list. This is the most likely first obstacle to A-01 and is
-recorded here rather than discovered during the attempt.
+**Note on B-08, corrected against the source.** Supabase Auth's Site URL and
+redirect allow-list have **not** been configured for the production origin. The
+first draft of this note asserted that would block A-01. Reading
+`src/features/auth/real-actions.ts` shows it does not:
+
+| Flow                            | Uses a redirect URL?                             | Blocked by B-08?         |
+| ------------------------------- | ------------------------------------------------ | ------------------------ |
+| Password (`signInWithPassword`) | No — server-side grant that sets session cookies | **No. A-01 can proceed** |
+| Magic link (`signInWithOtp`)    | Yes — `emailRedirectTo ${APP_URL}/auth/callback` | **Yes**                  |
+| OAuth (`signInWithOAuth`)       | Yes — `redirectTo ${APP_URL}/auth/callback`      | **Yes**                  |
+
+So A-01 by email and password requires no Supabase change. Magic link and OAuth
+remain **unverified**, which is what A-07 permits: verified if configured,
+recorded as unverified if not. Configuring them means adding
+`https://ai-nexos.vercel.app/auth/callback` to the redirect allow-list and setting
+the Site URL to `https://ai-nexos.vercel.app`.
 
 ### 25.1 Secret-handling incident
 
