@@ -4,23 +4,42 @@
  * after a command, and a helper that read the browser locale would produce two
  * different strings for the same value and trip hydration.
  */
+import { wallClockTimeIn } from "./business-day";
 
-/** Minutes → "7h 30m" / "45m" / "—" for nothing. */
-export function formatMinutes(minutes: number): string {
-  if (!Number.isFinite(minutes) || minutes <= 0) return "—";
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
+/**
+ * Minutes → "7h 30m" / "45m" / "0m", and "—" only when there is no number.
+ *
+ * Zero and unknown are different facts and were rendered identically. A
+ * completed session shorter than a minute — the engine rounds to whole minutes,
+ * so a 17-second day is genuinely 0 — reported "—" across all six metric cards,
+ * which reads as "we failed to calculate this" rather than "this day was that
+ * short". The metric cards' own contract is that "showing 0m is the truth,
+ * whereas inferring a value would not be"; this is that contract applied one
+ * layer down, where the conflation actually was.
+ */
+export function formatMinutes(minutes: number | null | undefined): string {
+  if (minutes == null || !Number.isFinite(minutes)) return "—";
+  const total = Math.max(0, Math.trunc(minutes));
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
   if (hours === 0) return `${rest}m`;
   if (rest === 0) return `${hours}h`;
   return `${hours}h ${rest}m`;
 }
 
-/** ISO instant → "09:04" in UTC, or "—". */
-export function formatTime(iso: string | null): string {
+/**
+ * ISO instant → "09:04" on the given clock, or "—".
+ *
+ * `timeZone` is the organization's policy zone: the screens quote the same
+ * clock the attendance day is filed under. Rendering UTC while the row's date
+ * came from the organization's zone put the two a day apart on the same card —
+ * "Wed 12 Aug, clock in 19:16" for a session that started at 00:46 on the 13th.
+ */
+export function formatTime(iso: string | null, timeZone: string): string {
   if (!iso) return "—";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toISOString().slice(11, 16);
+  return wallClockTimeIn(date, timeZone);
 }
 
 const MONTHS = [

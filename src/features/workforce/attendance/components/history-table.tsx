@@ -22,7 +22,8 @@ import type { AttendanceHistoryRow } from "../types";
  */
 export function HistoryTable({
   rows,
-}: Readonly<{ rows: AttendanceHistoryRow[] }>) {
+  timeZone,
+}: Readonly<{ rows: AttendanceHistoryRow[]; timeZone: string }>) {
   return (
     <div className="bg-card overflow-x-auto rounded-xl border">
       <Table aria-label="My attendance history">
@@ -66,10 +67,10 @@ export function HistoryTable({
                 ) : null}
               </TableCell>
               <TableCell className="tabular-nums">
-                {formatTime(row.clockInAt)}
+                {formatTime(row.clockInAt, timeZone)}
               </TableCell>
               <TableCell className="tabular-nums">
-                {formatTime(row.clockOutAt)}
+                {formatTime(row.clockOutAt, timeZone)}
               </TableCell>
               <TableCell className="tabular-nums">
                 {formatMinutes(row.metrics.workingMinutes)}

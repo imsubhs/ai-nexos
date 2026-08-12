@@ -13,6 +13,10 @@ import { HistoryMonthGrid } from "@/features/workforce/attendance/components/his
 import { HistorySummary } from "@/features/workforce/attendance/components/history-summary";
 import { HistoryTable } from "@/features/workforce/attendance/components/history-table";
 import { MonthNav } from "@/features/workforce/attendance/components/month-nav";
+import {
+  currentBusinessDay,
+  timeZoneLabel,
+} from "@/features/workforce/shared/business-day";
 
 export const metadata: Metadata = { title: "Attendance History" };
 
@@ -42,7 +46,10 @@ export default async function AttendanceHistoryPage({
   // the same complete set of rows (the WP-113 parity criterion).
   const history = await getAttendanceHistoryAction({ month, pageSize: 100 });
   const resolvedMonth = history.from.slice(0, 7);
-  const today = new Date().toISOString().slice(0, 10);
+  // The same attendance business day A-6 derived these rows against; a UTC
+  // "today" here would highlight a different cell than the one the rows were
+  // filed under.
+  const today = currentBusinessDay(user.organizationTimezone);
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,7 +57,8 @@ export default async function AttendanceHistoryPage({
         <h1 className="text-2xl font-semibold tracking-tight">History</h1>
         <p className="text-muted-foreground text-sm">
           Your own attendance record. Absences on working days are derived, not
-          stored. Times are UTC.
+          stored. Times are shown in {user.organizationTimezone} (
+          {timeZoneLabel(user.organizationTimezone)}).
         </p>
       </div>
 
@@ -81,7 +89,10 @@ export default async function AttendanceHistoryPage({
           })}
         />
       ) : (
-        <HistoryTable rows={history.rows} />
+        <HistoryTable
+          rows={history.rows}
+          timeZone={user.organizationTimezone}
+        />
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { hasPermission } from "@/features/permissions/engine";
 import { getTodayAttendanceAction } from "@/features/workforce/attendance/actions";
 import { MetricsGrid } from "@/features/workforce/attendance/components/metrics-grid";
 import { TodayCard } from "@/features/workforce/attendance/components/today-card";
+import { timeZoneLabel } from "@/features/workforce/shared/business-day";
 import { DEFAULT_WORKFORCE_POLICY } from "@/features/workforce/shared/types";
 
 export const metadata: Metadata = { title: "My Attendance" };
@@ -33,7 +34,8 @@ export default async function MyAttendancePage() {
             My Attendance
           </h1>
           <p className="text-muted-foreground text-sm">
-            Your own day. Times are shown in UTC.
+            Your own day. Times are shown in {user.organizationTimezone} (
+            {timeZoneLabel(user.organizationTimezone)}).
           </p>
         </div>
         <Link
@@ -44,7 +46,11 @@ export default async function MyAttendancePage() {
         </Link>
       </div>
 
-      <TodayCard view={view} allowWfh={DEFAULT_WORKFORCE_POLICY.allowWFH} />
+      <TodayCard
+        view={view}
+        allowWfh={DEFAULT_WORKFORCE_POLICY.allowWFH}
+        timeZone={user.organizationTimezone}
+      />
       <MetricsGrid metrics={view.metrics} isOngoing={view.isOngoing} />
     </div>
   );

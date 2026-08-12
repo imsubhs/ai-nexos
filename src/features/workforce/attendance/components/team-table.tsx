@@ -23,7 +23,8 @@ import type { AttendanceDirectoryRow } from "../types";
  */
 export function TeamTable({
   rows,
-}: Readonly<{ rows: AttendanceDirectoryRow[] }>) {
+  timeZone,
+}: Readonly<{ rows: AttendanceDirectoryRow[]; timeZone: string }>) {
   return (
     <div className="bg-card overflow-x-auto rounded-xl border">
       <Table aria-label="Team attendance">
@@ -65,10 +66,10 @@ export function TeamTable({
                 </span>
               </TableCell>
               <TableCell className="tabular-nums">
-                {formatTime(row.clockInAt)}
+                {formatTime(row.clockInAt, timeZone)}
               </TableCell>
               <TableCell className="tabular-nums">
-                {formatTime(row.clockOutAt)}
+                {formatTime(row.clockOutAt, timeZone)}
               </TableCell>
               <TableCell className="tabular-nums">
                 {formatMinutes(row.metrics.workingMinutes)}

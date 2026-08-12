@@ -34,7 +34,13 @@ const STATE_COPY: Record<string, { label: string; hint: string }> = {
 export function TodayCard({
   view,
   allowWfh,
-}: Readonly<{ view: TodayAttendanceView; allowWfh: boolean }>) {
+  timeZone,
+}: Readonly<{
+  view: TodayAttendanceView;
+  allowWfh: boolean;
+  /** The organization's policy zone — the clock this card quotes. */
+  timeZone: string;
+}>) {
   const copy = STATE_COPY[view.state] ?? STATE_COPY.NOT_STARTED;
   const stripe =
     view.state === "WORKING"
@@ -84,11 +90,15 @@ export function TodayCard({
         <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
           <div>
             <dt className="text-muted-foreground">Clock in</dt>
-            <dd className="tabular-nums">{formatTime(view.clockInAt)}</dd>
+            <dd className="tabular-nums">
+              {formatTime(view.clockInAt, timeZone)}
+            </dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Clock out</dt>
-            <dd className="tabular-nums">{formatTime(view.clockOutAt)}</dd>
+            <dd className="tabular-nums">
+              {formatTime(view.clockOutAt, timeZone)}
+            </dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Shift starts</dt>

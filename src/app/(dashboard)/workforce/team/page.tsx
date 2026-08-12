@@ -8,6 +8,7 @@ import { getTeamAttendanceAction } from "@/features/workforce/attendance/actions
 import { DayNav } from "@/features/workforce/attendance/components/day-nav";
 import { TeamKpis } from "@/features/workforce/attendance/components/team-kpis";
 import { TeamTable } from "@/features/workforce/attendance/components/team-table";
+import { timeZoneLabel } from "@/features/workforce/shared/business-day";
 
 export const metadata: Metadata = { title: "Team Attendance" };
 
@@ -60,7 +61,9 @@ export default async function TeamAttendancePage({
             Team Attendance
           </h1>
           <p className="text-muted-foreground text-sm">
-            Everyone in {user.organizationName} for one day. Times are UTC.
+            Everyone in {user.organizationName} for one day. Times are shown in{" "}
+            {user.organizationTimezone} (
+            {timeZoneLabel(user.organizationTimezone)}).
           </p>
         </div>
         <DayNav
@@ -79,7 +82,7 @@ export default async function TeamAttendancePage({
           description="Nobody has clocked in on this date. Pick another day, or check back once the team starts their sessions."
         />
       ) : (
-        <TeamTable rows={team.rows} />
+        <TeamTable rows={team.rows} timeZone={user.organizationTimezone} />
       )}
     </div>
   );
