@@ -13,10 +13,14 @@
  * super_admin/hr are org-wide anyway, doc 14 §10.2).
  */
 import { revalidatePath } from "next/cache";
-import { requireCurrentUser } from "@/features/auth/current-user";
+import {
+  requireCurrentUser,
+  type CurrentUser,
+} from "@/features/auth/current-user";
 import { hasPermission, requirePermission } from "@/features/permissions";
 import { publishDomainEvent } from "@/features/events/domain-publisher";
 import { getDemoStore } from "@/lib/demo/store";
+import { currentBusinessDay } from "../shared/business-day";
 import { resolveWorkforcePolicy } from "../shared/policy-resolver";
 import { ensureWorkforceHandlersRegistered } from "../events/handlers";
 import {
@@ -52,8 +56,14 @@ import { isDemoMode } from "@/lib/env.server";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
+/**
+ * The correction window is measured in attendance business days, on the same
+ * clock the attendance slice files those days under (policy 10.4). Reading
+ * "today" from server UTC here would, for an organization ahead of UTC, treat
+ * the day an employee is still working as already past and correctable.
+ */
+function today(user: Pick<CurrentUser, "organizationTimezone">): string {
+  return currentBusinessDay(user.organizationTimezone);
 }
 function nowIso(): string {
   return new Date().toISOString();
@@ -119,7 +129,7 @@ export function buildCorrectionActions(
       // Window policy 10.5: past date only, within correctionWindowDays.
       const policy = resolveWorkforcePolicy();
       const target = new Date(`${data.date}T00:00:00.000Z`).getTime();
-      const todayMs = new Date(`${today()}T00:00:00.000Z`).getTime();
+      const todayMs = new Date(`${today(user)}T00:00:00.000Z`).getTime();
       if (target >= todayMs) {
         throw new CorrectionError(
           "correction/date-not-past",
@@ -300,6 +310,7 @@ export function buildCorrectionActions(
           actorId: user.userId,
           correction: detail,
           attendance,
+          timeZone: user.organizationTimezone,
         });
         if (result.applied && result.appliedAt) {
           detail = await repo.markApplied(

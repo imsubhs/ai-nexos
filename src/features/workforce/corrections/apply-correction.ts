@@ -56,6 +56,13 @@ export interface ApplyCorrectionParams {
   actorId: string;
   correction: CorrectionDetail;
   attendance: AttendanceAmendPort;
+  /**
+   * The organization's policy timezone. An amended day must re-derive lateness
+   * against the same shift clock a live clock-in uses, or approving a
+   * correction would silently re-stamp a day the attendance pipeline had
+   * already judged correctly.
+   */
+  timeZone: string;
 }
 
 export interface ApplyCorrectionResult {
@@ -84,7 +91,7 @@ function toPeriods(
 export async function applyApprovedCorrection(
   params: ApplyCorrectionParams,
 ): Promise<ApplyCorrectionResult> {
-  const { organizationId, actorId, correction, attendance } = params;
+  const { organizationId, actorId, correction, attendance, timeZone } = params;
   const policy = DEFAULT_WORKFORCE_POLICY;
 
   const day = await attendance.findDay(
@@ -117,7 +124,7 @@ export async function applyApprovedCorrection(
     return { applied: false, appliedAt: null, reason: "day-not-finalized" };
   }
 
-  const isLate = deriveIsLate(clockInIso, policy);
+  const isLate = deriveIsLate(clockInIso, policy, timeZone);
   const {
     metrics,
     status: derivedStatus,

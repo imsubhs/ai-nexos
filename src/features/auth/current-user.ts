@@ -5,6 +5,7 @@ import type { PermissionMap } from "@/features/permissions";
 import { cookies } from "next/headers";
 import { SYSTEM_ROLES } from "@/features/permissions/constants";
 import { isDemoMode } from "@/lib/env.server";
+import { resolveTimeZone } from "@/features/workforce/shared/business-day";
 import { DEMO_SESSION_COOKIE, isDemoSessionValue } from "./demo-session";
 
 export const DEMO_ADMIN_USER: CurrentUser = {
@@ -24,6 +25,9 @@ export const DEMO_ADMIN_USER: CurrentUser = {
   organizationName: "AI NEX OS Demo",
   organizationSlug: "demo-workspace",
   organizationLogoUrl: null,
+  // The demo store's organization is UTC (src/lib/demo/store.ts), so the demo
+  // attendance day stays the UTC day — unchanged by the policy-timezone fix.
+  organizationTimezone: "UTC",
 };
 
 export type CurrentUser = {
@@ -42,6 +46,15 @@ export type CurrentUser = {
   organizationName: string;
   organizationSlug: string;
   organizationLogoUrl: string | null;
+  /**
+   * The organization's IANA policy timezone (`organizations.timezone`). It
+   * travels with the identity because it is what decides which attendance
+   * business day a command or a query is about, and every one of those paths
+   * already resolves CurrentUser — carrying it here is what keeps writes and
+   * reads on one answer instead of each re-deriving a date. Always a zone the
+   * platform accepts; see `resolveTimeZone`.
+   */
+  organizationTimezone: string;
 };
 
 /**
@@ -73,7 +86,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       `user_id, organization_id, email, first_name, last_name, avatar_url,
        designation, department_id, role_id,
        roles ( role_key, role_name, permissions ),
-       organizations ( organization_name, slug, logo_url )`,
+       organizations ( organization_name, slug, logo_url, timezone )`,
     )
     .eq("user_id", user.id)
     .eq("status", "active")
@@ -104,6 +117,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     organizationName: org.organization_name,
     organizationSlug: org.slug,
     organizationLogoUrl: org.logo_url,
+    organizationTimezone: resolveTimeZone(org.timezone),
   };
 });
 

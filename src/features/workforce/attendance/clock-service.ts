@@ -21,27 +21,37 @@
  * called through the `validateWorkDay` public entry point.
  */
 import { validateWorkDay, type ValidationResult } from "../work-validation";
+import { businessDayIn, instantAtWallClock } from "../shared/business-day";
 import type { AttendanceStatus } from "../shared/enums";
 import type { TimePeriod, WorkforcePolicy } from "../shared/types";
 import type { AttendanceMetrics } from "./types";
 
 const MINUTE_MS = 60_000;
 
-/** "HH:mm" on the same calendar day as `referenceIso`, as epoch ms (UTC). */
-function timeOnDay(referenceIso: string, hhmm: string): number {
-  const day = referenceIso.slice(0, 10);
-  return new Date(`${day}T${hhmm}:00.000Z`).getTime();
-}
-
-/** True when clock-in is later than workStart + lateThreshold (policy 10.1). */
+/**
+ * True when clock-in is later than workStart + lateThreshold (policy 10.1).
+ *
+ * `workStartTime` is documented as "HH:mm in the resolved timezone", and this
+ * measured it on the UTC clock instead: on a UTC host an Asia/Kolkata employee
+ * arriving at 00:46 IST was compared against 09:00 UTC — 14:30 IST — and
+ * stamped LATE for being eight hours early. Both the day the shift falls on and
+ * the instant it starts are now read in the organization's zone, so lateness is
+ * decided on the same clock the employee reads.
+ */
 export function deriveIsLate(
   clockInIso: string,
   policy: WorkforcePolicy,
+  timeZone: string,
 ): boolean {
-  const threshold =
-    timeOnDay(clockInIso, policy.workStartTime) +
-    policy.lateThresholdMinutes * MINUTE_MS;
-  return new Date(clockInIso).getTime() > threshold;
+  const clockIn = new Date(clockInIso);
+  const shiftStart = instantAtWallClock(
+    businessDayIn(clockIn, timeZone),
+    policy.workStartTime,
+    timeZone,
+  );
+  return (
+    clockIn.getTime() > shiftStart + policy.lateThresholdMinutes * MINUTE_MS
+  );
 }
 
 /**

@@ -12,8 +12,12 @@
  * DEMO_MODE selects the demo repositories; the real path uses the Drizzle
  * adapters (compile-safe until Phase 7), mirroring the slice's actions.ts.
  */
-import { requireCurrentUser } from "@/features/auth/current-user";
+import {
+  requireCurrentUser,
+  type CurrentUser,
+} from "@/features/auth/current-user";
 import { hasPermission, requirePermission } from "@/features/permissions";
+import { currentBusinessDay } from "../shared/business-day";
 import { mockAttendanceRepository } from "./mock-repository";
 import { realAttendanceRepository } from "./real-repository";
 import { mockCorrectionRepository } from "../corrections/mock-repository";
@@ -38,8 +42,14 @@ function correctionRepo(): CorrectionRepository {
   return isDemoMode() ? mockCorrectionRepository : realCorrectionRepository;
 }
 
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+/**
+ * The dashboard's default day is the organization's attendance business day —
+ * the same one clock-in files rows under. Taken from server UTC, this asked for
+ * a different date than the rows carry for any organization whose own clock has
+ * already turned the day over.
+ */
+function todayIso(user: Pick<CurrentUser, "organizationTimezone">): string {
+  return currentBusinessDay(user.organizationTimezone);
 }
 
 /** Fetch every directory row matching the filters (projections need them all). */
@@ -66,7 +76,7 @@ export async function getWorkforceDashboardMetricsAction(input?: {
 }): Promise<WorkforceDashboardMetrics> {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "attendance", "view_team");
-  const date = input?.date ?? todayIso();
+  const date = input?.date ?? todayIso(user);
 
   const rows = await fetchRows(user.organizationId, {
     date,

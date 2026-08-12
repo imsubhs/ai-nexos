@@ -15,9 +15,13 @@
  */
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { requireCurrentUser } from "@/features/auth/current-user";
+import {
+  requireCurrentUser,
+  type CurrentUser,
+} from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
 import { publishDomainEvent } from "@/features/events/domain-publisher";
+import { currentBusinessDay } from "../shared/business-day";
 import type { ClockContext, TimePeriod } from "../shared/types";
 import { DEFAULT_WORKFORCE_POLICY } from "../shared/types";
 import { deriveIsLate, recomputeDay } from "./clock-service";
@@ -55,10 +59,19 @@ import type {
   TodayAttendanceView,
 } from "./types";
 
-/** Server day/instant — policy-timezone resolution is a Phase 4 helper (10.4). */
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
+/**
+ * The attendance business day for an actor, in their organization's policy
+ * timezone (10.4). This replaces the server-UTC `today()` that stood here:
+ * every command and every query in this pipeline now asks the same function
+ * for the same date, so a clock-in, the day it is filed under, the history it
+ * appears in and the corrections window it ages into can no longer disagree.
+ */
+function attendanceDay(
+  user: Pick<CurrentUser, "organizationTimezone">,
+): string {
+  return currentBusinessDay(user.organizationTimezone);
 }
+
 function nowIso(): string {
   return new Date().toISOString();
 }
@@ -102,15 +115,18 @@ const ALL_ROWS_PAGE_SIZE = 10_000;
  * would resolve the month's last day in the server's local zone, which is a
  * different day for anyone east of UTC on the 1st.
  */
-function resolveHistoryRange(filters: {
-  month?: string;
-  from?: string;
-  to?: string;
-}): { from: string; to: string } {
+function resolveHistoryRange(
+  filters: {
+    month?: string;
+    from?: string;
+    to?: string;
+  },
+  today: string,
+): { from: string; to: string } {
   if (filters.from && filters.to) {
     return { from: filters.from, to: filters.to };
   }
-  const month = filters.month ?? today().slice(0, 7);
+  const month = filters.month ?? today.slice(0, 7);
   const [year, mon] = month.split("-").map(Number);
   // Day 0 of the following month is the last day of this one.
   const lastDay = new Date(Date.UTC(year, mon, 0)).getUTCDate();
@@ -153,7 +169,7 @@ export function buildAttendanceActions(
           "Work-from-home is not permitted by your organization policy.",
         );
       }
-      const date = today();
+      const date = attendanceDay(user);
       const existing = await repo.findDay(
         user.organizationId,
         user.userId,
@@ -180,7 +196,11 @@ export function buildAttendanceActions(
         date,
         clockInAt,
         status: "WORKING",
-        isLate: deriveIsLate(clockInAt, DEFAULT_WORKFORCE_POLICY),
+        isLate: deriveIsLate(
+          clockInAt,
+          DEFAULT_WORKFORCE_POLICY,
+          user.organizationTimezone,
+        ),
         wfh: data.wfh ?? false,
         clockInContext,
       });
@@ -349,16 +369,13 @@ export function buildAttendanceActions(
     async getTodayAttendance(): Promise<TodayAttendanceView> {
       const user = await requireCurrentUser();
       requirePermission(user.permissions, "attendance", "clock");
-      const view = await repo.findDay(
-        user.organizationId,
-        user.userId,
-        today(),
-      );
+      const date = attendanceDay(user);
+      const view = await repo.findDay(user.organizationId, user.userId, date);
       if (view) return view;
       return {
         state: "NOT_STARTED",
         attendanceId: null,
-        date: today(),
+        date,
         status: null,
         isLate: false,
         clockInAt: null,
@@ -397,7 +414,8 @@ export function buildAttendanceActions(
       const user = await requireCurrentUser();
       requirePermission(user.permissions, "attendance", "read");
       const filters = getAttendanceHistorySchema.parse(input);
-      const { from, to } = resolveHistoryRange(filters);
+      const today = attendanceDay(user);
+      const { from, to } = resolveHistoryRange(filters, today);
 
       const stored = await repo.listRange(user.organizationId, user.userId, {
         from,
@@ -406,7 +424,7 @@ export function buildAttendanceActions(
       const rows = deriveHistoryRows(stored, {
         from,
         to,
-        today: today(),
+        today,
         policy: DEFAULT_WORKFORCE_POLICY,
       });
 
@@ -437,7 +455,7 @@ export function buildAttendanceActions(
       const user = await requireCurrentUser();
       requirePermission(user.permissions, "attendance", "view_team");
       const filters = getTeamAttendanceSchema.parse(input);
-      const date = filters.date ?? today();
+      const date = filters.date ?? attendanceDay(user);
 
       // The KPI row describes the whole day, not the visible page — reading it
       // off `rows` would make the numbers change as the user paginates. Fetched

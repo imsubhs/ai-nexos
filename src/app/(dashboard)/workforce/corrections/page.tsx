@@ -15,16 +15,25 @@ import {
   StatusFilterTabs,
   parseStatusParam,
 } from "@/features/workforce/corrections/components/status-filter-tabs";
+import { currentBusinessDay } from "@/features/workforce/shared/business-day";
 import { resolveWorkforcePolicy } from "@/features/workforce/shared/policy-resolver";
 import type { CorrectionStatus } from "@/features/workforce/shared/enums";
 
 export const metadata: Metadata = { title: "Corrections" };
 
-/** The correction window, shifted back one day: today is never correctable. */
-function correctionRange(windowDays: number): { from: string; to: string } {
-  const todayMs = Date.parse(
-    `${new Date().toISOString().slice(0, 10)}T00:00:00Z`,
-  );
+/**
+ * The correction window, shifted back one day: today is never correctable.
+ *
+ * `today` is the organization's attendance business day, passed in rather than
+ * read off the server clock — the days offered here must be exactly the days
+ * the submit action will accept as past (policy 10.5), and server UTC is not
+ * that date for most of the world.
+ */
+function correctionRange(
+  today: string,
+  windowDays: number,
+): { from: string; to: string } {
+  const todayMs = Date.parse(`${today}T00:00:00Z`);
   const day = 86_400_000;
   return {
     from: new Date(todayMs - windowDays * day).toISOString().slice(0, 10),
@@ -50,7 +59,10 @@ export default async function CorrectionsPage({
   const params = await searchParams;
   const status = parseStatusParam(params.status);
   const policy = resolveWorkforcePolicy();
-  const range = correctionRange(policy.correctionWindowDays);
+  const range = correctionRange(
+    currentBusinessDay(user.organizationTimezone),
+    policy.correctionWindowDays,
+  );
 
   const [mine, history] = await Promise.all([
     listMyCorrectionsAction({

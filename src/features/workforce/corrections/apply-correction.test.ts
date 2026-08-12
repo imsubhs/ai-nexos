@@ -120,6 +120,7 @@ describe("applyApprovedCorrection (C-9)", () => {
       actorId: "mgr",
       correction: baseCorrection(),
       attendance: port,
+      timeZone: "UTC",
     });
 
     expect(result.applied).toBe(true);
@@ -158,6 +159,7 @@ describe("applyApprovedCorrection (C-9)", () => {
         requestedStatus: "WFH",
       }),
       attendance: port,
+      timeZone: "UTC",
     });
     expect(getAmended()!.status).toBe("WFH");
   });
@@ -169,6 +171,7 @@ describe("applyApprovedCorrection (C-9)", () => {
       actorId: "mgr",
       correction: baseCorrection(),
       attendance: port,
+      timeZone: "UTC",
     });
     expect(result.applied).toBe(false);
     expect(result.reason).toBe("no-attendance-day");

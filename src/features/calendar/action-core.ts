@@ -9,8 +9,12 @@
  * before the query runs, so an unpermitted source is never fetched rather than
  * fetched and hidden.
  */
-import { requireCurrentUser } from "@/features/auth/current-user";
+import {
+  requireCurrentUser,
+  type CurrentUser,
+} from "@/features/auth/current-user";
 import { hasPermission } from "@/features/permissions";
+import { currentBusinessDay } from "@/features/workforce/shared/business-day";
 import { buildCalendarMonth, gridRange } from "./aggregate";
 import type { CalendarRepository } from "./repository";
 import { getCalendarMonthSchema, type GetCalendarMonthInput } from "./schemas";
@@ -21,8 +25,17 @@ import {
   type CalendarSource,
 } from "./types";
 
-function currentMonth(): string {
-  return new Date().toISOString().slice(0, 7);
+/**
+ * Which month and which day the viewer's organization is currently on.
+ *
+ * The calendar owns no records and decides no business rule, but it does have
+ * to answer "what is today" to open the right month and mark the right cell —
+ * and that answer must be the organization's, the same one the attendance slice
+ * files its days under. Read from server UTC, an organization ahead of UTC was
+ * shown the previous day highlighted, and on the 1st the previous month opened.
+ */
+function todayFor(user: Pick<CurrentUser, "organizationTimezone">): string {
+  return currentBusinessDay(user.organizationTimezone);
 }
 
 export function buildCalendarActions(repo: CalendarRepository) {
@@ -36,7 +49,8 @@ export function buildCalendarActions(repo: CalendarRepository) {
     async getMonth(input: GetCalendarMonthInput = {}): Promise<CalendarMonth> {
       const user = await requireCurrentUser();
       const { month: requested } = getCalendarMonthSchema.parse(input);
-      const month = requested ?? currentMonth();
+      const today = todayFor(user);
+      const month = requested ?? today.slice(0, 7);
 
       const sources: CalendarSource[] = CALENDAR_SOURCES.filter((source) =>
         hasPermission(
@@ -55,11 +69,7 @@ export function buildCalendarActions(repo: CalendarRepository) {
         sources,
       );
 
-      return buildCalendarMonth(entries, {
-        month,
-        today: new Date().toISOString().slice(0, 10),
-        sources,
-      });
+      return buildCalendarMonth(entries, { month, today, sources });
     },
   };
 }
