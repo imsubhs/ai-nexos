@@ -73,10 +73,11 @@ export function AppHeader({
         {/* P2-05: the bell had an aria-label and no handler, no panel and no
             unread count. It now reads and writes through the notifications
             public gateway. */}
-        <NotificationBell
-          userId={user.userId}
-          organizationId={user.organizationId}
-        />
+        {/* CRIT-2: the bell used to be handed `userId` and `organizationId`.
+            Routing identity out to the browser and back in through a server
+            action gives the browser a turn with it — the actions derive it
+            from the session instead. */}
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger

@@ -54,10 +54,14 @@ const PRIORITY_VARIANT: Record<string, "default" | "outline"> = {
   high: "default",
 };
 
-export function NotificationBell({
-  userId,
-  organizationId,
-}: Readonly<{ userId: string; organizationId: string }>) {
+/**
+ * CRIT-2: this component used to receive `userId` and `organizationId` as
+ * props and pass them to every notification action. Those props were the
+ * vulnerability's delivery mechanism — the browser decided whose notifications
+ * the server read. The actions now derive identity from the session, so the
+ * component needs no identity and takes no props.
+ */
+export function NotificationBell() {
   const [rows, setRows] = useState<NotificationFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -67,9 +71,9 @@ export function NotificationBell({
   const [now, setNow] = useState<number | null>(null);
 
   const load = useCallback(async () => {
-    const result = await getNotificationFeedAction(userId, organizationId);
+    const result = await getNotificationFeedAction();
     setRows(result ?? []);
-  }, [userId, organizationId]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,7 +86,7 @@ export function NotificationBell({
     markNow();
     async function initialLoad() {
       try {
-        const result = await getNotificationFeedAction(userId, organizationId);
+        const result = await getNotificationFeedAction();
         if (!cancelled) setRows(result ?? []);
       } catch {
         // A failing notifications read must never break the app shell.
@@ -95,7 +99,7 @@ export function NotificationBell({
     return () => {
       cancelled = true;
     };
-  }, [userId, organizationId]);
+  }, []);
 
   const unread = rows.filter((row) => !row.readAt).length;
   const visible = unreadOnly ? rows.filter((row) => !row.readAt) : rows;
@@ -112,18 +116,10 @@ export function NotificationBell({
     setPendingId(row.notificationId);
     try {
       if (row.readAt) {
-        await markNotificationUnreadAction(
-          row.notificationId,
-          userId,
-          organizationId,
-        );
+        await markNotificationUnreadAction(row.notificationId);
         toast.success("Marked as unread");
       } else {
-        await markNotificationReadAction(
-          row.notificationId,
-          userId,
-          organizationId,
-        );
+        await markNotificationReadAction(row.notificationId);
         toast.success("Marked as read");
       }
       await load();
@@ -141,7 +137,7 @@ export function NotificationBell({
   const markAll = async () => {
     setPendingId("all");
     try {
-      await markAllNotificationsReadAction(userId, organizationId);
+      await markAllNotificationsReadAction();
       await load();
       toast.success("All notifications marked as read");
     } catch (error) {

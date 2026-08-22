@@ -13,8 +13,8 @@ import {
   nextDemoId,
 } from "@/lib/demo/store";
 import { DEFAULT_PROJECT_PHASES } from "./constants";
+import type { createTimelineSnapshot as real_createTimelineSnapshot } from "./snapshot";
 import type {
-  createTimelineSnapshot as real_createTimelineSnapshot,
   createTimeline as real_createTimeline,
   getProjectTimeline as real_getProjectTimeline,
   getTimelineMilestones as real_getTimelineMilestones,

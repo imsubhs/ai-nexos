@@ -4,12 +4,12 @@ import * as real from "./real-actions";
 import * as mock from "./mock-actions";
 import { isDemoMode } from "@/lib/env.server";
 
-export async function createTimelineSnapshot(
-  ...args: Parameters<typeof real.createTimelineSnapshot>
-): Promise<Awaited<ReturnType<typeof real.createTimelineSnapshot>>> {
-  if (isDemoMode()) return (mock as any).createTimelineSnapshot(...args);
-  return (real as any).createTimelineSnapshot(...args);
-}
+// createTimelineSnapshot is deliberately not re-exported here (H-4).
+//
+// This file is the client-facing action surface, and the snapshot helper takes
+// a live Drizzle transaction — it is called from inside an already-authorised
+// action, never from a browser. Publishing it put an internal helper with no
+// authorization of its own onto a public endpoint. It now lives in ./snapshot.
 
 export async function createTimeline(
   ...args: Parameters<typeof real.createTimeline>

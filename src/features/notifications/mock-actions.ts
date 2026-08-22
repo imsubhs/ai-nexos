@@ -1,7 +1,18 @@
+/**
+ * Demo adapter for notifications.
+ *
+ * CRIT-2: these functions took `(userId, organizationId)` from the caller to
+ * mirror the real adapter's signature. That signature is gone, so the demo
+ * identity is now read from the demo store's own constants — which are the
+ * same two ids `DEMO_ADMIN_USER` carries in
+ * `src/features/auth/current-user.ts`, so the real and demo paths agree on who
+ * the caller is rather than one of them being told.
+ */
 import {
   getDemoStore,
   logDemoActivity,
   nextDemoId,
+  DEMO_ORG_ID,
   DEMO_USER_ID,
 } from "@/lib/demo/store";
 import type {
@@ -19,14 +30,13 @@ import { revalidatePath } from "next/cache";
  * Sprint 12B — same composition as the real adapter, over the DemoStore's
  * `domainEvents` and `notificationTemplates` collections.
  */
-export async function getNotificationFeedAction(
-  userId: string,
-  organizationId: string,
-): Promise<Awaited<ReturnType<typeof real_getNotificationFeedAction>>> {
+export async function getNotificationFeedAction(): Promise<
+  Awaited<ReturnType<typeof real_getNotificationFeedAction>>
+> {
   const store = getDemoStore();
 
   const rows = store.notifications.filter(
-    (n: any) => n.userId === userId && n.organizationId === organizationId,
+    (n: any) => n.userId === DEMO_USER_ID && n.organizationId === DEMO_ORG_ID,
   );
 
   const eventById = new Map(
@@ -36,7 +46,7 @@ export async function getNotificationFeedAction(
     (store.notificationTemplates ?? [])
       .filter(
         (template: any) =>
-          template.organizationId === organizationId &&
+          template.organizationId === DEMO_ORG_ID &&
           template.channel === "in_app",
       )
       .map((template: any) => [
@@ -62,15 +72,13 @@ export async function getNotificationFeedAction(
 
 export async function markNotificationUnreadAction(
   notificationId: string,
-  userId: string,
-  organizationId: string,
 ): Promise<Awaited<ReturnType<typeof real_markNotificationUnreadAction>>> {
   const store = getDemoStore();
   const notification = store.notifications.find(
     (n: any) =>
       n.notificationId === notificationId &&
-      n.userId === userId &&
-      n.organizationId === organizationId,
+      n.userId === DEMO_USER_ID &&
+      n.organizationId === DEMO_ORG_ID,
   );
 
   if (notification) {
@@ -89,17 +97,16 @@ export async function markNotificationUnreadAction(
   revalidatePath("/");
 }
 
-export async function markAllNotificationsReadAction(
-  userId: string,
-  organizationId: string,
-): Promise<Awaited<ReturnType<typeof real_markAllNotificationsReadAction>>> {
+export async function markAllNotificationsReadAction(): Promise<
+  Awaited<ReturnType<typeof real_markAllNotificationsReadAction>>
+> {
   const store = getDemoStore();
   let cleared = 0;
 
   for (const notification of store.notifications) {
     if (
-      notification.userId === userId &&
-      notification.organizationId === organizationId &&
+      notification.userId === DEMO_USER_ID &&
+      notification.organizationId === DEMO_ORG_ID &&
       !notification.readAt
     ) {
       notification.status = "read";
@@ -114,7 +121,7 @@ export async function markAllNotificationsReadAction(
       "notifications",
       "update",
       "notification",
-      userId,
+      DEMO_USER_ID,
       `Marked ${cleared} notifications as read`,
     );
   }
@@ -122,13 +129,12 @@ export async function markAllNotificationsReadAction(
   revalidatePath("/");
 }
 
-export async function getNotificationsAction(
-  userId: string,
-  organizationId: string,
-): Promise<Awaited<ReturnType<typeof real_getNotificationsAction>>> {
+export async function getNotificationsAction(): Promise<
+  Awaited<ReturnType<typeof real_getNotificationsAction>>
+> {
   const store = getDemoStore();
   const orgNotifications = store.notifications.filter(
-    (n) => n.userId === userId && n.organizationId === organizationId,
+    (n) => n.userId === DEMO_USER_ID && n.organizationId === DEMO_ORG_ID,
   );
 
   return orgNotifications.sort((a, b) => {
@@ -138,15 +144,13 @@ export async function getNotificationsAction(
 
 export async function markNotificationReadAction(
   notificationId: string,
-  userId: string,
-  organizationId: string,
 ): Promise<Awaited<ReturnType<typeof real_markNotificationReadAction>>> {
   const store = getDemoStore();
   const notification = store.notifications.find(
     (n) =>
       n.notificationId === notificationId &&
-      n.userId === userId &&
-      n.organizationId === organizationId,
+      n.userId === DEMO_USER_ID &&
+      n.organizationId === DEMO_ORG_ID,
   );
 
   if (notification) {
@@ -167,15 +171,13 @@ export async function markNotificationReadAction(
 }
 
 export async function updateNotificationPreferencesAction(
-  userId: string,
-  organizationId: string,
   input: any,
 ): Promise<
   Awaited<ReturnType<typeof real_updateNotificationPreferencesAction>>
 > {
   const store = getDemoStore();
   const existing = store.notificationPreferences.find(
-    (p) => p.userId === userId && p.organizationId === organizationId,
+    (p) => p.userId === DEMO_USER_ID && p.organizationId === DEMO_ORG_ID,
   );
 
   if (existing) {
@@ -196,8 +198,8 @@ export async function updateNotificationPreferencesAction(
     const newId = nextDemoId(store);
     store.notificationPreferences.push({
       preferenceId: newId,
-      organizationId,
-      userId,
+      organizationId: DEMO_ORG_ID,
+      userId: DEMO_USER_ID,
       level: input.level || "org_default",
       eventTypePreferences: input.eventTypePreferences || {},
       quietHoursStart: input.quietHoursStart || null,

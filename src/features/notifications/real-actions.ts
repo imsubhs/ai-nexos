@@ -1,5 +1,26 @@
 "use server";
 
+/**
+ * Notification writes.
+ *
+ * CRIT-2. Every export in this file previously took `(userId, organizationId)`
+ * — or `(notificationId, userId, organizationId)` — from the caller and used
+ * them as the WHERE clause. The organisation predicate looked like tenant
+ * scoping but was supplied by the requester, so it constrained nothing. The
+ * file is `"use server"`, and `NotificationBell` (a client component in the app
+ * header, rendered on every authenticated page) imports these, so the action
+ * ids were registered and reachable: any signed-in user could read, mark and
+ * rewrite the notification state of any user in any organisation.
+ *
+ * The fix is architectural rather than a validation: identity is derived from
+ * the session and the parameters are removed, so the malicious request is no
+ * longer expressible. Comparing a caller-supplied `organizationId` against the
+ * session's would have left `userId` manipulable within a tenant, which is
+ * still a cross-user read.
+ *
+ * `revalidatePath("/")` is retained — the bell lives in the shell.
+ */
+
 import { db } from "@/db";
 import {
   notifications,
@@ -8,6 +29,7 @@ import {
 } from "@/db/schema/notifications";
 import { events } from "@/db/schema/events";
 import { eq, and, inArray } from "drizzle-orm";
+import { requireCurrentUser } from "@/features/auth/current-user";
 import {
   UpdateNotificationPreferencesInput,
   updateNotificationPreferencesSchema,
@@ -15,15 +37,12 @@ import {
 import {
   getNotificationPreferencesQuery,
   getNotificationsQuery,
-} from "./queries";
+} from "./real-queries";
 import { composeNotification, type NotificationFeedItem } from "./templates";
 import { revalidatePath } from "next/cache";
 
-export const getNotificationsAction = async (
-  userId: string,
-  organizationId: string,
-) => {
-  return await getNotificationsQuery(userId, organizationId);
+export const getNotificationsAction = async () => {
+  return await getNotificationsQuery();
 };
 
 /**
@@ -39,17 +58,18 @@ export const getNotificationsAction = async (
  * (eventType, channel) with no FK from notifications; composing in code keeps
  * the read honest about that and lets a missing template degrade gracefully.
  */
-export const getNotificationFeedAction = async (
-  userId: string,
-  organizationId: string,
-): Promise<NotificationFeedItem[]> => {
+export const getNotificationFeedAction = async (): Promise<
+  NotificationFeedItem[]
+> => {
+  const user = await requireCurrentUser();
+
   const rows = await db
     .select()
     .from(notifications)
     .where(
       and(
-        eq(notifications.userId, userId),
-        eq(notifications.organizationId, organizationId),
+        eq(notifications.userId, user.userId),
+        eq(notifications.organizationId, user.organizationId),
       ),
     );
 
@@ -76,7 +96,7 @@ export const getNotificationFeedAction = async (
     .from(notificationTemplates)
     .where(
       and(
-        eq(notificationTemplates.organizationId, organizationId),
+        eq(notificationTemplates.organizationId, user.organizationId),
         eq(notificationTemplates.channel, "in_app"),
       ),
     );
@@ -98,11 +118,9 @@ export const getNotificationFeedAction = async (
     );
 };
 
-export const markNotificationReadAction = async (
-  notificationId: string,
-  userId: string,
-  organizationId: string,
-) => {
+export const markNotificationReadAction = async (notificationId: string) => {
+  const user = await requireCurrentUser();
+
   await db
     .update(notifications)
     .set({
@@ -112,8 +130,8 @@ export const markNotificationReadAction = async (
     .where(
       and(
         eq(notifications.notificationId, notificationId),
-        eq(notifications.userId, userId),
-        eq(notifications.organizationId, organizationId),
+        eq(notifications.userId, user.userId),
+        eq(notifications.organizationId, user.organizationId),
       ),
     );
 
@@ -127,11 +145,9 @@ export const markNotificationReadAction = async (
  * notification is in before anyone opens it. `queued` would be a lie: it has
  * already been delivered.
  */
-export const markNotificationUnreadAction = async (
-  notificationId: string,
-  userId: string,
-  organizationId: string,
-) => {
+export const markNotificationUnreadAction = async (notificationId: string) => {
+  const user = await requireCurrentUser();
+
   await db
     .update(notifications)
     .set({
@@ -141,8 +157,8 @@ export const markNotificationUnreadAction = async (
     .where(
       and(
         eq(notifications.notificationId, notificationId),
-        eq(notifications.userId, userId),
-        eq(notifications.organizationId, organizationId),
+        eq(notifications.userId, user.userId),
+        eq(notifications.organizationId, user.organizationId),
       ),
     );
 
@@ -150,17 +166,16 @@ export const markNotificationUnreadAction = async (
 };
 
 /** Sprint 12B — bulk clear, so a full bell is not a per-row chore. */
-export const markAllNotificationsReadAction = async (
-  userId: string,
-  organizationId: string,
-) => {
+export const markAllNotificationsReadAction = async () => {
+  const user = await requireCurrentUser();
+
   await db
     .update(notifications)
     .set({ status: "read", readAt: new Date() })
     .where(
       and(
-        eq(notifications.userId, userId),
-        eq(notifications.organizationId, organizationId),
+        eq(notifications.userId, user.userId),
+        eq(notifications.organizationId, user.organizationId),
         inArray(notifications.status, ["queued", "processing", "delivered"]),
       ),
     );
@@ -169,16 +184,12 @@ export const markAllNotificationsReadAction = async (
 };
 
 export const updateNotificationPreferencesAction = async (
-  userId: string,
-  organizationId: string,
   input: UpdateNotificationPreferencesInput,
 ) => {
+  const user = await requireCurrentUser();
   const validated = updateNotificationPreferencesSchema.parse(input);
 
-  const existingPrefs = await getNotificationPreferencesQuery(
-    userId,
-    organizationId,
-  );
+  const existingPrefs = await getNotificationPreferencesQuery();
 
   if (existingPrefs.length > 0) {
     await db
@@ -193,14 +204,14 @@ export const updateNotificationPreferencesAction = async (
       })
       .where(
         and(
-          eq(notificationPreferences.userId, userId),
-          eq(notificationPreferences.organizationId, organizationId),
+          eq(notificationPreferences.userId, user.userId),
+          eq(notificationPreferences.organizationId, user.organizationId),
         ),
       );
   } else {
     await db.insert(notificationPreferences).values({
-      organizationId,
-      userId,
+      organizationId: user.organizationId,
+      userId: user.userId,
       level: validated.level,
       eventTypePreferences: validated.eventTypePreferences,
       quietHoursStart: validated.quietHoursStart,

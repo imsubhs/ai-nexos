@@ -11,6 +11,7 @@ import {
   meetingActivity,
 } from "@/db/schema/meetings";
 import { tasks } from "@/db/schema/tasks";
+import { projects } from "@/db/schema/projects";
 import { and, eq, sql } from "drizzle-orm";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
@@ -35,8 +36,15 @@ import {
 
 export async function createMeeting(input: CreateMeetingInput) {
   const user = await requireCurrentUser();
+  requirePermission(user.permissions, "meetings", "create");
 
   const validatedData = createMeetingSchema.parse(input);
+
+  // The project is a caller-supplied foreign key into a tenant-scoped table.
+  await requireProjectInOrganization(
+    validatedData.projectId,
+    user.organizationId,
+  );
 
   const [newMeeting] = await db
     .insert(meetings)
@@ -88,6 +96,62 @@ async function loadMeetingForWrite(meetingId: string, organizationId: string) {
   });
   if (!meeting) throw new Error("Meeting not found");
   return meeting;
+}
+
+/**
+ * H-2. `createDecision`, `createActionItem` and `promoteActionItemToTask`
+ * resolved their meeting / action item by primary key with no organisation
+ * predicate, then stamped the resulting row with the *caller's* organisation.
+ * That is both a cross-tenant read — another organisation's meeting title,
+ * description and `projectId` were returned and copied — and a write that
+ * grafts one tenant's record onto another's project.
+ *
+ * `loadMeetingForWrite` already had the right shape; those three simply did not
+ * use it. The two helpers below extend the same pattern to the remaining entry
+ * points, so every id a caller supplies is resolved inside the caller's tenant
+ * or not at all.
+ */
+async function requireProjectInOrganization(
+  projectId: string,
+  organizationId: string,
+) {
+  const project = await db.query.projects.findFirst({
+    where: and(
+      eq(projects.projectId, projectId),
+      eq(projects.organizationId, organizationId),
+    ),
+    columns: { projectId: true },
+  });
+  if (!project) throw new Error("Project not found");
+  return project;
+}
+
+/** Action item → outcome, resolved within the caller's tenant. */
+async function loadActionItemForWrite(
+  actionItemId: string,
+  organizationId: string,
+) {
+  const [row] = await db
+    .select({
+      actionItem: meetingActionItems,
+      outcome: meetingOutcomes,
+    })
+    .from(meetingActionItems)
+    .innerJoin(
+      meetingOutcomes,
+      eq(meetingActionItems.outcomeId, meetingOutcomes.outcomeId),
+    )
+    .where(
+      and(
+        eq(meetingActionItems.actionItemId, actionItemId),
+        eq(meetingActionItems.organizationId, organizationId),
+        eq(meetingOutcomes.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+
+  if (!row) throw new Error("Action item not found");
+  return row;
 }
 
 export async function updateMeeting(
@@ -411,13 +475,14 @@ export async function removeAgendaItem(agendaItemId: string) {
 
 export async function createDecision(input: CreateDecisionInput) {
   const user = await requireCurrentUser();
+  requirePermission(user.permissions, "meetings", "update");
 
   const validatedData = createDecisionSchema.parse(input);
 
-  const meeting = await db.query.meetings.findFirst({
-    where: eq(meetings.meetingId, validatedData.meetingId),
-  });
-  if (!meeting) throw new Error("Meeting not found");
+  const meeting = await loadMeetingForWrite(
+    validatedData.meetingId,
+    user.organizationId,
+  );
 
   const [outcome] = await db
     .insert(meetingOutcomes)
@@ -454,13 +519,14 @@ export async function createDecision(input: CreateDecisionInput) {
 
 export async function createActionItem(input: CreateActionItemInput) {
   const user = await requireCurrentUser();
+  requirePermission(user.permissions, "meetings", "update");
 
   const validatedData = createActionItemSchema.parse(input);
 
-  const meeting = await db.query.meetings.findFirst({
-    where: eq(meetings.meetingId, validatedData.meetingId),
-  });
-  if (!meeting) throw new Error("Meeting not found");
+  const meeting = await loadMeetingForWrite(
+    validatedData.meetingId,
+    user.organizationId,
+  );
 
   const [outcome] = await db
     .insert(meetingOutcomes)
@@ -497,25 +563,22 @@ export async function promoteActionItemToTask(
   input: z.infer<typeof promoteActionItemSchema>,
 ) {
   const user = await requireCurrentUser();
+  requirePermission(user.permissions, "tasks", "create");
+
   const validatedData = promoteActionItemSchema.parse(input);
 
-  const result = await db
-    .select()
-    .from(meetingActionItems)
-    .innerJoin(
-      meetingOutcomes,
-      eq(meetingActionItems.outcomeId, meetingOutcomes.outcomeId),
-    )
-    .where(eq(meetingActionItems.actionItemId, validatedData.actionItemId))
-    .limit(1);
+  const { actionItem, outcome } = await loadActionItemForWrite(
+    validatedData.actionItemId,
+    user.organizationId,
+  );
 
-  if (!result || result.length === 0) {
-    throw new Error("Action item not found");
-  }
-
-  const actionItemData = result[0];
-  const actionItem = actionItemData.meeting_action_items;
-  const outcome = actionItemData.meeting_outcomes;
+  // The task's destination is caller-supplied and lands in the caller's own
+  // organisation, so it has to be resolved there too — otherwise a promotion
+  // can file a task against a project the caller cannot see.
+  await requireProjectInOrganization(
+    validatedData.projectId,
+    user.organizationId,
+  );
 
   if (actionItem.promotedToTaskId)
     throw new Error("Action item already promoted");
@@ -549,7 +612,12 @@ export async function promoteActionItemToTask(
       updatedBy: user.userId,
       updatedAt: new Date(),
     })
-    .where(eq(meetingActionItems.actionItemId, actionItem.actionItemId));
+    .where(
+      and(
+        eq(meetingActionItems.actionItemId, actionItem.actionItemId),
+        eq(meetingActionItems.organizationId, user.organizationId),
+      ),
+    );
 
   return task;
 }

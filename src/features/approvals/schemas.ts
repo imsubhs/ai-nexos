@@ -1,7 +1,15 @@
 import { z } from "zod";
 
+/**
+ * `organizationId` is deliberately absent.
+ *
+ * It was declared here and never read — the action has always stamped the
+ * cycle with `user.organizationId`. A field that must always equal a derived
+ * value is a trap: it reads as though the caller chooses the tenant, and the
+ * first call site that starts trusting it reintroduces the whole class of bug.
+ * The tenant is never a parameter (docs/SECURITY.md §3).
+ */
 export const createApprovalCycleSchema = z.object({
-  organizationId: z.string().uuid(),
   entityType: z.enum([
     "deliverable",
     "file",

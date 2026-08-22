@@ -11,6 +11,7 @@ import {
 import { deliverables } from "@/db/schema/deliverables";
 import { projectMembers } from "@/db/schema/projects";
 import { CurrentUser, requireCurrentUser } from "@/features/auth/current-user";
+import { requirePermission } from "@/features/permissions";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -47,6 +48,71 @@ async function logRevisionActivity(
 }
 
 /**
+ * Project-membership check, shared by every access helper below.
+ *
+ * The role short-circuit reads `super_admin`, not `admin`. `"admin"` is not one
+ * of the seven keys in `SYSTEM_ROLES` — the administrative key is
+ * `super_admin` — so the original comparison never matched and super admins
+ * fell through to the membership lookup. Owners were unaffected.
+ */
+async function validateProjectMembership(
+  projectId: string,
+  user: CurrentUser,
+  tx: typeof db | DbTransaction = db,
+) {
+  if (user.roleKey === "owner" || user.roleKey === "super_admin") return;
+
+  const member = await tx.query.projectMembers.findFirst({
+    where: and(
+      eq(projectMembers.projectId, projectId),
+      eq(projectMembers.userId, user.userId),
+    ),
+  });
+  if (!member) {
+    throw new Error("Access denied: You are not a member of this project.");
+  }
+}
+
+/**
+ * H-3. The two create paths took `projectId` and `deliverableId` straight from
+ * the caller and wrote them into a row stamped with the caller's own
+ * organisation. Nothing checked that either id belonged to that organisation,
+ * so a revision could be attached to another tenant's deliverable — and the
+ * version-number probe in `createRevision` counted that deliverable's existing
+ * revisions, which is a cross-tenant read on its own.
+ *
+ * `validateRevisionAccess` covers every *existing* revision. This is its
+ * counterpart for the ids naming a revision's parents before one exists: same
+ * organisation predicate, same membership rule, so creating is authorised as
+ * strictly as updating.
+ */
+async function validateDeliverableAccess(
+  deliverableId: string,
+  projectId: string,
+  user: CurrentUser,
+  tx: typeof db | DbTransaction = db,
+) {
+  const deliverable = await tx.query.deliverables.findFirst({
+    where: and(
+      eq(deliverables.deliverableId, deliverableId),
+      eq(deliverables.organizationId, user.organizationId),
+    ),
+  });
+
+  if (!deliverable) throw new Error("Deliverable not found or access denied.");
+
+  // The caller supplies both ids independently; if they disagree the new row
+  // would claim a parent it does not have.
+  if (deliverable.projectId !== projectId) {
+    throw new Error("Deliverable not found or access denied.");
+  }
+
+  await validateProjectMembership(deliverable.projectId, user, tx);
+
+  return deliverable;
+}
+
+/**
  * Validates access explicitly by checking organization and project matching.
  */
 async function validateRevisionAccess(
@@ -63,17 +129,7 @@ async function validateRevisionAccess(
 
   if (!revision) throw new Error("Revision not found or access denied.");
 
-  if (user.roleKey !== "admin" && user.roleKey !== "owner") {
-    const member = await tx.query.projectMembers.findFirst({
-      where: and(
-        eq(projectMembers.projectId, revision.projectId),
-        eq(projectMembers.userId, user.userId),
-      ),
-    });
-    if (!member) {
-      throw new Error("Access denied: You are not a member of this project.");
-    }
-  }
+  await validateProjectMembership(revision.projectId, user, tx);
 
   return revision;
 }
@@ -82,8 +138,16 @@ export async function createRevisionRequest(
   data: z.infer<typeof insertRevisionRequestSchema>,
 ) {
   const user = await requireCurrentUser();
+  requirePermission(user.permissions, "revisions", "create");
 
   const request = await db.transaction(async (tx) => {
+    await validateDeliverableAccess(
+      data.deliverableId,
+      data.projectId,
+      user,
+      tx,
+    );
+
     const [newRequest] = await tx
       .insert(revisionRequests)
       .values({
@@ -108,11 +172,24 @@ export async function createRevision(
   data: z.infer<typeof insertRevisionSchema>,
 ) {
   const user = await requireCurrentUser();
+  requirePermission(user.permissions, "revisions", "create");
 
   const revision = await db.transaction(async (tx) => {
+    // Authorised before the version probe below, which would otherwise count
+    // another tenant's revisions on the way to a number.
+    await validateDeliverableAccess(
+      data.deliverableId,
+      data.projectId,
+      user,
+      tx,
+    );
+
     // Calculate next version number
     const existingRevisions = await tx.query.revisions.findMany({
-      where: eq(revisions.deliverableId, data.deliverableId),
+      where: and(
+        eq(revisions.deliverableId, data.deliverableId),
+        eq(revisions.organizationId, user.organizationId),
+      ),
       columns: { versionNumber: true },
       orderBy: (r, { desc }) => [desc(r.versionNumber)],
       limit: 1,

@@ -21,6 +21,7 @@ import {
   insertTimelineSchema,
 } from "./schemas";
 import { DEFAULT_PROJECT_PHASES } from "./constants";
+import { createTimelineSnapshot } from "./snapshot";
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -47,59 +48,16 @@ async function logActivity(
   });
 }
 
-/**
- * Create a timeline snapshot version. Called on structural changes.
- */
-export async function createTimelineSnapshot(
-  timelineId: string,
-  changeSummary: string,
-  reason: string | null = null,
-  tx: DbTransaction,
-) {
-  const user = await requireCurrentUser();
-
-  const [currentTimeline] = await tx
-    .select()
-    .from(timelines)
-    .where(eq(timelines.timelineId, timelineId));
-  if (!currentTimeline) throw new Error("Timeline not found for versioning");
-
-  const timelineData = await tx.query.timelines.findFirst({
-    where: eq(timelines.timelineId, timelineId),
-    with: {
-      phases: {
-        with: {
-          milestones: {
-            with: {
-              successors: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  const nextVersion = currentTimeline.currentVersion + 1;
-
-  await tx.insert(timelineVersions).values({
-    timelineId,
-    organizationId: user.organizationId,
-    versionNumber: nextVersion,
-    userId: user.userId,
-    changeSummary,
-    reason,
-    snapshotData: timelineData,
-  });
-
-  await tx
-    .update(timelines)
-    .set({
-      currentVersion: nextVersion,
-      updatedAt: new Date(),
-      updatedBy: user.userId,
-    })
-    .where(eq(timelines.timelineId, timelineId));
-}
+// createTimelineSnapshot moved to ./snapshot (H-4).
+//
+// Same reasoning as recalculateTimelineProgress at the foot of this file: it
+// takes a Drizzle transaction and is meant to be called from inside an
+// already-authorised action, but it was exported from this "use server" module,
+// which makes every export a public HTTP endpoint. Unlike that one it also
+// resolved its timeline by primary key with no organisation predicate, and its
+// only guard was requireCurrentUser() — authentication, not authorization. It
+// now lives in a plain module, takes the already-validated CurrentUser instead
+// of fetching its own, and scopes every statement by that user's organisation.
 
 /**
  * Ensure the project belongs to the org, and the user can edit it.
@@ -304,11 +262,21 @@ function checkTimelineCycle(
 export async function createMilestone(
   data: z.infer<typeof insertMilestoneSchema>,
 ) {
-  // First lookup timeline to authorize against its project
+  // Resolve the timeline inside the caller's own tenant before it is used to
+  // pick a project to authorise against. `authorizeTimelineEdit` would refuse a
+  // foreign project anyway, but reading the row first still discloses that the
+  // id exists, and an id-existence oracle is the reconnaissance step for every
+  // finding in this hotfix.
+  const currentUser = await requireCurrentUser();
   const [timeline] = await db
     .select()
     .from(timelines)
-    .where(eq(timelines.timelineId, data.timelineId));
+    .where(
+      and(
+        eq(timelines.timelineId, data.timelineId),
+        eq(timelines.organizationId, currentUser.organizationId),
+      ),
+    );
   if (!timeline) throw new Error("Timeline not found");
 
   const { user } = await authorizeTimelineEdit(timeline.projectId);
@@ -329,6 +297,7 @@ export async function createMilestone(
       `Added milestone: ${data.name}`,
       null,
       tx,
+      user,
     );
     await logActivity(
       "milestone_created",
@@ -349,10 +318,17 @@ export async function createMilestone(
 export async function addTimelineDependency(
   data: z.infer<typeof insertTimelineDependencySchema>,
 ) {
+  // Tenant-scoped for the same reason as createMilestone above.
+  const currentUser = await requireCurrentUser();
   const [timeline] = await db
     .select()
     .from(timelines)
-    .where(eq(timelines.timelineId, data.timelineId));
+    .where(
+      and(
+        eq(timelines.timelineId, data.timelineId),
+        eq(timelines.organizationId, currentUser.organizationId),
+      ),
+    );
   if (!timeline) throw new Error("Timeline not found");
 
   const { user } = await authorizeTimelineEdit(timeline.projectId);
@@ -391,6 +367,7 @@ export async function addTimelineDependency(
       `Added dependency from ${data.predecessorId} to ${data.successorId}`,
       null,
       tx,
+      user,
     );
     await logActivity(
       "dependency_added",

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { activityLogs, projectMembers, projects } from "@/db/schema";
+import { activityLogs, projectMembers, projects, users } from "@/db/schema";
 import { organizationSequences } from "@/db/schema/organizations";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
@@ -319,6 +319,22 @@ export async function addProjectMember(
   });
 
   if (!project) throw new Error("Project not found");
+
+  // `userId` names the person being added, not the caller — but it is still a
+  // caller-supplied id, and nothing confirmed it belonged to this organisation.
+  // Project membership is an authorization input elsewhere (see
+  // `validateProjectMembership` in features/revisions), so an unchecked id here
+  // writes a foreign identity into a table other checks read.
+  const target = await db.query.users.findFirst({
+    where: and(
+      eq(users.userId, userId),
+      eq(users.organizationId, user.organizationId),
+      eq(users.status, "active"),
+      isNull(users.deletedAt),
+    ),
+    columns: { userId: true },
+  });
+  if (!target) throw new Error("User not found");
 
   const [member] = await db
     .insert(projectMembers)
