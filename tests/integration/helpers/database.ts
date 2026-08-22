@@ -1,5 +1,7 @@
 import postgres, { type Sql } from "postgres";
 
+import { DEFAULT_INTEGRATION_ENV_FILE } from "../env";
+
 /**
  * Connection helpers for the integration suite.
  *
@@ -7,6 +9,10 @@ import postgres, { type Sql } from "postgres";
  * unreachable the suite FAILS — it does not skip. A silently skipped
  * integration suite reports green while verifying nothing, which is the
  * failure mode this harness exists to eliminate.
+ *
+ * Which database they reach is decided before any of this runs, by the guard in
+ * `tests/integration/global-setup.ts`. Nothing here selects a project; it only
+ * consumes the connection string the guard has already vetted.
  */
 
 let pooled: Sql | undefined;
@@ -14,9 +20,14 @@ let pooled: Sql | undefined;
 function connectionString(): string {
   const url = process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL;
   if (!url) {
+    // Deliberately names the integration environment file. This message used to
+    // say ".env.local", which pointed whoever read it straight at the
+    // production project — the one place this suite must never be aimed.
     throw new Error(
       "No database connection string. Set DIRECT_DATABASE_URL (preferred) or " +
-        "DATABASE_URL in .env.local before running the integration suite.",
+        `DATABASE_URL in ${DEFAULT_INTEGRATION_ENV_FILE}, describing the ` +
+        "STAGING project, before running the integration suite. .env.local is " +
+        "the application's own configuration and is never used here.",
     );
   }
   return url;
@@ -99,7 +110,10 @@ export async function assertDatabaseReachable(): Promise<void> {
     throw new Error(
       `Integration suite cannot reach the database at ${url.hostname}:${url.port} ` +
         `as user "${url.username}".\n\n${detail}\n\n` +
-        `Verify with: npm run env:check -- --verify`,
+        `Check the connection values in ${DEFAULT_INTEGRATION_ENV_FILE} (the ` +
+        `STAGING project). Note that \`npm run env:check -- --verify\` reads ` +
+        `.env.local — the application's own configuration — so it verifies a ` +
+        `different project from the one this suite targets.`,
     );
   }
 }
