@@ -395,12 +395,36 @@ the real configuration instead of a copy of it.
 Run once, after §2 and before trusting the pipeline:
 
 ```bash
-npm run storage:setup            # idempotent; asserts `documents` exists and is private
+npm run storage:setup -- --environment=production   # idempotent; asserts `documents` exists and is private
 npm run env:check -- --production --verify
 ```
 
 Migrations are **not** part of deployment. Migrations `0000`–`0013` are already
 applied and immutable; Sprint 2.4 adds none.
+
+#### 3.2 Why these commands now name their target
+
+Phase 2.5.1A.2-B removed the implicit `.env.local` load from `migrate.ts`,
+`seed.ts`, `storage-setup.ts`, `check-env.ts` and `drizzle.config.ts`. Each of
+those made **production the silent default** for a command that writes: nothing
+distinguished "I meant production" from "I forgot to say". They now refuse to
+run until the environment is named:
+
+```bash
+npm run db:migrate    -- --environment=production
+npm run storage:setup -- --environment=production
+npm run db:seed       -- --environment=production --confirm-production
+TOOL_ENV=production npm run db:migrate:kit
+```
+
+`--environment=staging` selects `.env.test.local` instead, and a staging
+selection can never resolve to `.env.local` — see `scripts/lib/environment.ts`.
+
+**The Vercel Build Command is unchanged and needs no edit.** It runs
+`npm run env:check -- --production --verify && npm run build`, and `--production`
+is honoured as an explicit production selection precisely so that this gate
+keeps working. What did change: `env:check --verify` **without** a named
+environment now fails closed rather than verifying production by default.
 
 ---
 

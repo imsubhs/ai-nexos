@@ -11,10 +11,26 @@
  * with drizzle-kit — and adds the reporting the CLI omits: which connection was
  * selected and why, a preflight that fails fast with a named cause, per-
  * statement tracing, and a post-run inventory of what was applied.
+ *
+ * The target is named explicitly and never inferred:
+ *
+ *   npm run db:migrate -- --environment=staging      → .env.test.local
+ *   npm run db:migrate -- --environment=production   → .env.local
+ *
+ * This replaced an unconditional `loadEnv([".env.local", ".env"])`, which made
+ * PRODUCTION the silent default for a command that alters schema.
  */
-import { config as loadEnv } from "dotenv";
+import {
+  describeTarget,
+  prepareToolingTarget,
+  type ToolingTarget,
+} from "./lib/environment";
+import { redactRef } from "./lib/project-ref";
 
-loadEnv({ path: [".env.local", ".env"], quiet: true });
+// Resolved at module load, before anything can read process.env. A staging
+// selection is additionally guarded: allow-listed project, production refused,
+// API and database references required to match.
+const target: ToolingTarget = prepareToolingTarget("db:migrate");
 
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -61,7 +77,8 @@ function selectConnection(): { url: string; reason: string } {
   }
   throw new Error(
     "No database connection string: set DIRECT_DATABASE_URL (preferred for " +
-      "migrations) or DATABASE_URL in .env.local",
+      `migrations) or DATABASE_URL in the ${target.environment} environment ` +
+      `(${target.file ?? "process environment"})`,
   );
 }
 
@@ -74,7 +91,11 @@ function describe(url: string): void {
     `  port        ${u.port}${u.port === "6543" ? "  (transaction mode)" : u.port === "5432" ? "  (session mode)" : ""}`,
   );
   console.log(`  database    ${u.pathname.slice(1)}`);
-  console.log(`  user        ${decodeURIComponent(u.username)}`);
+  // The pooler username embeds the project reference; print it truncated so an
+  // operator log names the shape of the target without reproducing it in full.
+  console.log(
+    `  user        ${decodeURIComponent(u.username).replace(/^postgres\.(.+)$/, (_, ref: string) => `postgres.${redactRef(ref)}`)}`,
+  );
   console.log(
     `  password    <redacted, ${decodeURIComponent(u.password).length} chars>`,
   );
@@ -112,10 +133,11 @@ async function preflight(url: string): Promise<void> {
     const code = (error as { code?: string }).code;
     const cause =
       code === "28P01"
-        ? `PostgreSQL rejected the credentials for user "${decodeURIComponent(u.username)}". ` +
-          `Everything beneath authentication succeeded, so the password in .env.local ` +
-          `does not match the one this project holds. Note it is a different secret ` +
-          `from the service-role API key.`
+        ? `PostgreSQL rejected the credentials for the configured user. ` +
+          `Everything beneath authentication succeeded, so the password in ` +
+          `${target.file ?? "the process environment"} does not match the one ` +
+          `this project holds. Note it is a different secret from the ` +
+          `service-role API key.`
         : code === "ENOTFOUND"
           ? `The host ${u.hostname} does not resolve — check the project ref.`
           : code === "ECONNREFUSED"
@@ -132,6 +154,8 @@ async function main(): Promise<void> {
   const { url, reason } = selectConnection();
 
   console.log("\nAI NEX OS — database migration\n");
+  console.log(describeTarget(target));
+  console.log("");
   console.log(
     `  selected    ${process.env.DIRECT_DATABASE_URL ? "DIRECT_DATABASE_URL" : "DATABASE_URL"}`,
   );

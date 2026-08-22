@@ -1,24 +1,68 @@
 /**
- * `npm run env:check` — validate the local environment without starting the app.
+ * `npm run env:check` — validate an environment without starting the app.
  *
  * Same validation the server runs at boot (src/instrumentation.ts), reachable
  * before `npm run dev` and usable in a deploy pipeline as a pre-flight step.
  * Prints names and states, never values.
+ *
+ *   npm run env:check                                    presence only, local
+ *   npm run env:check -- --environment=staging --verify  staging, connects
+ *   npm run env:check -- --production --verify           production, connects
+ *
+ * `--verify` opens REAL connections, so it requires the target to be named.
+ * Without that rule a developer checking staging would have verified
+ * production instead, reported it green, and learned nothing about staging —
+ * the class of failure this phase exists to remove.
+ *
+ * `--production` predates the `--environment` flag and is what the Vercel Build
+ * Command runs (`env:check -- --production --verify && next build`,
+ * docs/SPRINT-2.4.md §19). It is already an explicit statement of intent, so it
+ * is honoured as one: it selects the production environment AND applies the
+ * stricter production rules. The deploy gate keeps working unchanged.
  *
  * Exit codes: 0 valid · 1 invalid.
  */
 
 import { config as loadEnv } from "dotenv";
 
-// Next loads .env.local natively; a standalone script does not.
-// First file wins for duplicate keys, so .env.local takes precedence.
-loadEnv({ path: [".env.local", ".env"], quiet: true });
+import {
+  ENVIRONMENT_FILES,
+  describeTarget,
+  prepareToolingTarget,
+  selectEnvironment,
+  type ToolingTarget,
+} from "./lib/environment";
+import { EnvironmentGuardError } from "./lib/project-ref";
 
-// `--production` checks the stricter rules without needing a production shell.
-// NODE_ENV is typed read-only, so assign through the record rather than the
-// declared property.
-if (process.argv.includes("--production")) {
-  (process.env as Record<string, string>).NODE_ENV = "production";
+const wantsVerify = process.argv.includes("--verify");
+const selection = selectEnvironment();
+
+let target: ToolingTarget | undefined;
+
+if (selection) {
+  // A named environment: load it, and guard it when it is staging.
+  target = prepareToolingTarget("env:check");
+  if (selection.environment === "production") {
+    // Checking production configuration under development rules would call a
+    // configuration valid that the server would refuse to boot with. NODE_ENV
+    // is typed read-only, so assign through the record.
+    (process.env as Record<string, string>).NODE_ENV = "production";
+  }
+} else if (wantsVerify) {
+  throw new EnvironmentGuardError(
+    `env:check --verify opens real database and storage connections, so it ` +
+      `requires the environment to be named. It will not choose one, because ` +
+      `the only available default is production.\n\n` +
+      `  npm run env:check -- --environment=staging --verify     ` +
+      `→ ${ENVIRONMENT_FILES.staging}\n` +
+      `  npm run env:check -- --environment=production --verify  ` +
+      `→ ${ENVIRONMENT_FILES.production}\n`,
+  );
+} else {
+  // Presence only, opening nothing: the everyday local check. Next loads
+  // .env.local natively; a standalone script does not. First file wins for
+  // duplicate keys.
+  loadEnv({ path: [ENVIRONMENT_FILES.production, ".env"], quiet: true });
 }
 
 async function main(): Promise<number> {
@@ -27,6 +71,13 @@ async function main(): Promise<number> {
 
   const mode = process.env.NODE_ENV ?? "development";
   console.log(`\nAI NEX OS — environment check (${mode})\n`);
+  console.log(
+    target
+      ? `${describeTarget(target)}\n`
+      : `  Environment       local presence check (no --environment given)\n` +
+          `  Config source     ${ENVIRONMENT_FILES.production}\n` +
+          `                    --verify requires an explicit --environment\n`,
+  );
 
   try {
     assertProductionConfig();

@@ -8,17 +8,50 @@
  *   4. The Owner auth account (Supabase Auth) + internal user profile
  *
  * Usage:
- *   npm run db:seed
+ *   npm run db:seed -- --environment=staging
+ *   npm run db:seed -- --environment=production --confirm-production
  *
  * Required env (see .env.example):
  *   DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
  *   SEED_ORG_NAME, SEED_ORG_SLUG, SEED_OWNER_EMAIL, SEED_OWNER_PASSWORD,
  *   SEED_OWNER_FIRST_NAME [, SEED_OWNER_LAST_NAME, SEED_ORG_TIMEZONE,
  *   SEED_ORG_CURRENCY]
+ *
+ * TARGET SELECTION — this is the most dangerous command in the repository. It
+ * creates an organization, the system roles, the default departments and a
+ * Supabase Auth account whose password comes from SEED_OWNER_PASSWORD. Run
+ * against production by accident, it does all of that to the live tenant.
+ *
+ * Production therefore takes TWO independent statements of intent, and the
+ * second exists for a specific reason: `--environment=production` is a phrase
+ * an operator may type from muscle memory while working down a runbook, and
+ * `--confirm-production` is not. There is no interactive prompt, because a
+ * prompt is answered by whoever is already committed to pressing enter, and it
+ * protects a non-interactive shell not at all.
  */
-import { config as loadEnv } from "dotenv";
+import {
+  describeTarget,
+  prepareToolingTarget,
+  type ToolingTarget,
+} from "./lib/environment";
+import { EnvironmentGuardError } from "./lib/project-ref";
 
-loadEnv({ path: [".env.local", ".env"] });
+const target: ToolingTarget = prepareToolingTarget("db:seed");
+
+if (
+  target.environment === "production" &&
+  !process.argv.includes("--confirm-production")
+) {
+  throw new EnvironmentGuardError(
+    `REFUSING TO SEED PRODUCTION.\n\n` +
+      `db:seed creates an organization, the system roles, the default ` +
+      `departments and an Auth owner account with a known password. Against ` +
+      `production those are a real tenant and a real credentialed account.\n\n` +
+      `If that is genuinely the intent, say so a second time:\n\n` +
+      `  npm run db:seed -- --environment=production --confirm-production\n`,
+  );
+}
+
 import { createClient } from "@supabase/supabase-js";
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -62,6 +95,9 @@ async function main() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
+  console.log("\nAI NEX OS — bootstrap seed\n");
+  console.log(describeTarget(target));
+  console.log("");
   console.log(`Seeding organization "${orgName}" (${orgSlug})…`);
 
   // 1–3. Organization, system roles, departments — one atomic unit
