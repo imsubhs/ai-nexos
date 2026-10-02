@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Employee slice server actions — DEMO_MODE adapter.
  * Identical contract to real-actions.ts (auth preamble, validation, org

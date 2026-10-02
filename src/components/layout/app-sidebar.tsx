@@ -18,10 +18,22 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_NAME } from "@/config/app";
 
+import {
+  OrganizationSwitcher,
+  type OrgMembershipOption,
+} from "./organization-switcher";
+
 export function AppSidebar({
   organizationName,
   permittedHrefs,
-}: Readonly<{ organizationName: string; permittedHrefs: string[] }>) {
+  activeOrgId,
+  memberships = [],
+}: Readonly<{
+  organizationName: string;
+  permittedHrefs: string[];
+  activeOrgId?: string;
+  memberships?: OrgMembershipOption[];
+}>) {
   const pathname = usePathname();
 
   const navSections = NAV_SECTIONS.map((section) => ({
@@ -34,17 +46,25 @@ export function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
-              <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg text-xs font-bold">
-                NX
-              </div>
-              <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate font-semibold">{APP_NAME}</span>
-                <span className="text-muted-foreground truncate text-xs">
-                  {organizationName}
-                </span>
-              </div>
-            </SidebarMenuButton>
+            {activeOrgId ? (
+              <OrganizationSwitcher
+                activeOrgId={activeOrgId}
+                activeOrgName={organizationName}
+                memberships={memberships}
+              />
+            ) : (
+              <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
+                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg text-xs font-bold">
+                  NX
+                </div>
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="truncate font-semibold">{APP_NAME}</span>
+                  <span className="text-muted-foreground truncate text-xs">
+                    {organizationName}
+                  </span>
+                </div>
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

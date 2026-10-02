@@ -1,6 +1,6 @@
 /**
  * Application configuration (TRD §9: configuration is never hardcoded).
- * The product is AI NEX OS; the tenant (AI Collective) is data, not code —
+ * The product is AI NEX OS; the tenant is data, not code —
  * organization identity always comes from the database.
  */
 import { publicEnv } from "@/lib/env";
@@ -8,10 +8,10 @@ import { publicEnv } from "@/lib/env";
 export const APP_NAME = "AI NEX OS";
 export const APP_TAGLINE = "The Operating System for Creative Execution.";
 
-/** Internal dashboard host, e.g. app.aicollective.agency */
+/** Internal dashboard host, e.g. app.example.com */
 export const APP_DOMAIN = publicEnv.NEXT_PUBLIC_APP_DOMAIN ?? "localhost:3000";
 
-/** Client portal host, e.g. portal.aicollective.agency */
+/** Client portal host, e.g. portal.example.com */
 export const PORTAL_DOMAIN =
   publicEnv.NEXT_PUBLIC_PORTAL_DOMAIN ?? "portal.localhost:3000";
 

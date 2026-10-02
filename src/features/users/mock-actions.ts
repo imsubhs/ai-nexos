@@ -1,5 +1,3 @@
-"use server";
-
 import { DEMO_ADMIN_USER } from "@/features/auth/current-user";
 import { z } from "zod";
 import { updateProfileSchema } from "./schemas";

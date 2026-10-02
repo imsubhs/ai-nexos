@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Corrections server actions (Sprint 3B) — real path. Thin binding of the
  * shared pipeline to the Drizzle repository; live runtime wired in Phase 7.

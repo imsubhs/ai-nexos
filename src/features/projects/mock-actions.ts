@@ -42,9 +42,14 @@ export async function createProject(
   const store = getDemoStore();
 
   const now = new Date();
+  const org = store.organizations.find(
+    (o: { organizationId: string }) => o.organizationId === DEMO_ORG_ID,
+  );
+  const codePrefix = org?.codePrefix ?? "NEX";
+
   const project = {
     projectId: nextDemoId(store),
-    projectCode: nextDemoCode(store, `AIC-${now.getFullYear()}`),
+    projectCode: nextDemoCode(store, `${codePrefix}-${now.getFullYear()}`),
     organizationId: DEMO_ORG_ID,
     description: null,
     clientId: null,

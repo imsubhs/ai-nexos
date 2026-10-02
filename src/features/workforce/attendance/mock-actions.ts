@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Attendance server actions (Sprint 3A) — DEMO_MODE adapter. Same pipeline as
  * real-actions.ts bound to the DemoStore repository, so demo parity is

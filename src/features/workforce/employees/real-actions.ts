@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Employee slice server actions — real (Drizzle) adapter.
  * Contracts E-1/E-2 (merge doc 15 §3): read-only over platform users;

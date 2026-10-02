@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Attendance server actions (Sprint 3A) — real path. Thin binding of the
  * shared pipeline to the Drizzle repository; the live runtime path is wired

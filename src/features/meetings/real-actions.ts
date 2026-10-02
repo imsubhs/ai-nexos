@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/db";
 import {
   meetings,
@@ -12,6 +10,7 @@ import {
 } from "@/db/schema/meetings";
 import { tasks } from "@/db/schema/tasks";
 import { projects } from "@/db/schema/projects";
+import { generateTaskCode } from "@/features/organizations/code-generation";
 import { and, eq, sql } from "drizzle-orm";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
@@ -583,7 +582,7 @@ export async function promoteActionItemToTask(
   if (actionItem.promotedToTaskId)
     throw new Error("Action item already promoted");
 
-  const taskCode = `AIC-T-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`;
+  const taskCode = await generateTaskCode(user.organizationId, db);
 
   const [task] = await db
     .insert(tasks)

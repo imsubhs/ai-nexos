@@ -1,5 +1,3 @@
-"use server";
-
 /** Calendar server actions — real path (Drizzle repository). */
 import { buildCalendarActions } from "./action-core";
 import { realCalendarRepository } from "./real-repository";

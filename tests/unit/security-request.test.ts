@@ -73,6 +73,40 @@ describe("getClientIp", () => {
   it("reports a single unknown bucket when no address is available", () => {
     expect(getClientIp(headers({}))).toBe("unknown");
   });
+
+  describe("S6.6 required test cases (Case A through Case F)", () => {
+    it("Case A: hops=1, single entry is parsed as client", () => {
+      process.env.TRUSTED_PROXY_HOPS = "1";
+      expect(getClientIp(headers({ "x-forwarded-for": "attacker" }))).toBe("attacker");
+    });
+
+    it("Case B: hops=1, ignores attacker entry ahead of proxy", () => {
+      process.env.TRUSTED_PROXY_HOPS = "1";
+      expect(getClientIp(headers({ "x-forwarded-for": "attacker, 198.51.100.1" }))).toBe("198.51.100.1");
+    });
+
+    it("Case C: hops=2, extracts real client ahead of two proxies", () => {
+      process.env.TRUSTED_PROXY_HOPS = "2";
+      expect(
+        getClientIp(headers({ "x-forwarded-for": "attacker, 203.0.113.50, 198.51.100.1" })),
+      ).toBe("203.0.113.50");
+    });
+
+    it("Case D: malformed empty/comma-only header falls back to unknown", () => {
+      process.env.TRUSTED_PROXY_HOPS = "1";
+      expect(getClientIp(headers({ "x-forwarded-for": ",,," }))).toBe("unknown");
+    });
+
+    it("Case E: no forwarding header yields unknown", () => {
+      process.env.TRUSTED_PROXY_HOPS = "1";
+      expect(getClientIp(headers({}))).toBe("unknown");
+    });
+
+    it("Case F: x-real-ip fallback when X-Forwarded-For is absent", () => {
+      process.env.TRUSTED_PROXY_HOPS = "1";
+      expect(getClientIp(headers({ "x-real-ip": "198.51.100.5" }))).toBe("198.51.100.5");
+    });
+  });
 });
 
 describe("assertSameOrigin", () => {

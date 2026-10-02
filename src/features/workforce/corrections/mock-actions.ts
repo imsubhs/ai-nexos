@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Corrections server actions (Sprint 3B) — DEMO_MODE adapter. Thin binding of the
  * shared pipeline to the DemoStore repository; demo parity is behavioral (doc 15 §0).

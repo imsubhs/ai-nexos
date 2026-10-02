@@ -6,7 +6,11 @@ export const insertTaskSchema = z.object({
   phaseId: z.string().uuid(),
   milestoneId: z.string().uuid(),
   parentTaskId: z.string().uuid().optional().nullable(),
-  name: z.string().min(1, "Task name is required"),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Task name is required")
+    .max(300, "Task name cannot exceed 300 characters"),
   description: z.any().optional().nullable(),
   status: z
     .enum([
@@ -49,7 +53,7 @@ export const insertTaskSchema = z.object({
   actualDurationMins: z.number().int().min(0).default(0),
   progress: z.number().int().min(0).max(100).default(0),
   isTemplate: z.boolean().default(false),
-  recurrenceRule: z.string().optional().nullable(),
+  recurrenceRule: z.string().max(255).optional().nullable(),
   isPrivate: z.boolean().default(false),
 });
 

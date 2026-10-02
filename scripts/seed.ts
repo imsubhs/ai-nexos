@@ -114,6 +114,9 @@ async function main() {
         .values({
           organizationName: orgName,
           slug: orgSlug,
+          codePrefix:
+            process.env.SEED_ORG_CODE_PREFIX ??
+            (orgSlug === "ai-collective" ? "AIC" : "NEX"),
           timezone: process.env.SEED_ORG_TIMEZONE ?? "Asia/Kolkata",
           currency: process.env.SEED_ORG_CURRENCY ?? "INR",
           contactEmail: ownerEmail,
@@ -229,6 +232,31 @@ async function main() {
     console.log(`  ✓ owner profile created`);
   } else {
     console.log(`  ✓ owner profile exists`);
+  }
+
+  // Ensure active organization membership for owner (Phase 3 multi-membership foundation)
+  const [existingMembership] = await db
+    .select()
+    .from(schema.organizationMemberships)
+    .where(
+      and(
+        eq(schema.organizationMemberships.userId, authUserId),
+        eq(schema.organizationMemberships.organizationId, org.organizationId),
+      ),
+    );
+
+  if (!existingMembership) {
+    await db.insert(schema.organizationMemberships).values({
+      userId: authUserId,
+      organizationId: org.organizationId,
+      roleId: ownerRoleId,
+      designation: "Owner",
+      status: "active",
+      isDefault: true,
+    });
+    console.log(`  ✓ owner organization membership created`);
+  } else {
+    console.log(`  ✓ owner organization membership exists`);
   }
 
   await client.end();

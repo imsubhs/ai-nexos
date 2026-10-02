@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use server";
-
 import { db } from "@/db";
 import crypto from "crypto";
 import {
@@ -13,6 +11,7 @@ import {
   deliverableShareLinks,
   deliverableActivity,
 } from "@/db/schema/deliverables";
+import { clients, projects, tasks } from "@/db/schema";
 import { CurrentUser, requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
 import { and, desc, eq, ilike, isNull, sql } from "drizzle-orm";
@@ -55,6 +54,57 @@ export async function createDeliverable(data: {
   requirePermission(user.permissions, "projects", "update"); // Or "deliverables.create" if implemented in roles
 
   const result = await db.transaction(async (tx) => {
+    // Verify project belongs to caller's organization
+    const [project] = await tx
+      .select({ projectId: projects.projectId })
+      .from(projects)
+      .where(
+        and(
+          eq(projects.projectId, data.projectId),
+          eq(projects.organizationId, user.organizationId),
+          isNull(projects.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!project) {
+      throw new Error("Project not found or does not belong to active organization.");
+    }
+
+    if (data.clientId) {
+      const [client] = await tx
+        .select({ clientId: clients.clientId })
+        .from(clients)
+        .where(
+          and(
+            eq(clients.clientId, data.clientId),
+            eq(clients.organizationId, user.organizationId),
+            isNull(clients.deletedAt),
+          ),
+        )
+        .limit(1);
+      if (!client) {
+        throw new Error("Client not found or does not belong to active organization.");
+      }
+    }
+
+    if (data.taskId) {
+      const [task] = await tx
+        .select({ taskId: tasks.taskId })
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.taskId, data.taskId),
+            eq(tasks.organizationId, user.organizationId),
+            isNull(tasks.deletedAt),
+          ),
+        )
+        .limit(1);
+      if (!task) {
+        throw new Error("Task not found or does not belong to active organization.");
+      }
+    }
+
     // 1. Create Core Deliverable
     const [deliverable] = await tx
       .insert(deliverables)

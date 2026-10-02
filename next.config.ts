@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
   // version range to anyone scanning. It buys nothing.
   poweredByHeader: false,
 
+  // S6.2 / S6.3: Framework-level request body cap for Server Actions
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "1mb",
+    },
+  },
+
   // Static security headers on every response, both domains. The policy lives
   // in src/lib/security/headers.ts so it can be tested.
   //

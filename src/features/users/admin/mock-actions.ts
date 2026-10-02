@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Employee admin server actions (Sprint 2 / WP-105B) — DEMO_MODE adapter.
  * Same pipeline as real-actions.ts bound to the DemoStore repository, so

@@ -28,6 +28,11 @@ export const users = pgTable(
   "users",
   {
     userId: uuid("user_id").primaryKey(),
+    /**
+     * LEGACY COMPATIBILITY FIELD.
+     * In target multi-tenant SaaS architecture (Phase 3+), tenancy moves to
+     * `organization_memberships`. Kept for backward compatibility during migration.
+     */
     organizationId: uuid("organization_id")
       .notNull()
       .references(() => organizations.organizationId, { onDelete: "restrict" }),
@@ -35,6 +40,11 @@ export const users = pgTable(
       () => departments.departmentId,
       { onDelete: "set null" },
     ),
+    /**
+     * LEGACY COMPATIBILITY FIELD.
+     * In target multi-tenant SaaS architecture (Phase 3+), role authority moves
+     * to `organization_memberships.role_id`. Kept for backward compatibility during migration.
+     */
     roleId: uuid("role_id")
       .notNull()
       .references(() => roles.roleId, { onDelete: "restrict" }),

@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/db";
 import { aiAgents, aiAgentExecutionRuns, aiAgentSessions } from "@/db/schema";
 import { and, eq } from "drizzle-orm";

@@ -18,6 +18,7 @@ import { getTableColumns } from "drizzle-orm";
 import type { PgTableWithColumns, PgEnumColumn } from "drizzle-orm/pg-core";
 import { getDemoStore } from "@/lib/demo/store";
 import { organizations } from "@/db/schema/organizations";
+import { organizationMemberships } from "@/db/schema/organization-memberships";
 import { tasks } from "@/db/schema/tasks";
 import { taskAssignees, taskComments, taskActivity } from "@/db/schema/tasks";
 import { deliverables, deliverableRevisions } from "@/db/schema/deliverables";
@@ -56,6 +57,11 @@ const COVERED: Array<
   [string, AnyTable, keyof ReturnType<typeof getDemoStore>]
 > = [
   ["organizations", organizations, "organizations"],
+  [
+    "organization_memberships",
+    organizationMemberships,
+    "organizationMemberships",
+  ],
   ["tasks", tasks, "tasks"],
   ["deliverables", deliverables, "deliverables"],
   ["deliverable_revisions", deliverableRevisions, "deliverableRevisions"],

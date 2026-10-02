@@ -74,9 +74,14 @@ export async function createTask(
   const store = getDemoStore();
 
   const now = new Date();
+  const org = store.organizations.find(
+    (o: { organizationId: string }) => o.organizationId === DEMO_ORG_ID,
+  );
+  const codePrefix = org?.codePrefix ?? "NEX";
+
   const task = {
     taskId: nextDemoId(store),
-    taskCode: nextDemoCode(store, `AIC-T-${now.getFullYear()}`),
+    taskCode: nextDemoCode(store, `${codePrefix}-T-${now.getFullYear()}`),
     organizationId: DEMO_ORG_ID,
     description: null,
     assignees: [],

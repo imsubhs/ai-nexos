@@ -38,6 +38,8 @@ const PUBLIC_INTERNAL_PATHS = [
   "/login",
   "/auth",
   "/unprovisioned",
+  "/onboarding",
+  "/invite",
   "/api/health",
 ];
 

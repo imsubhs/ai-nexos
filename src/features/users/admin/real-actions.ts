@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Employee admin server actions (Sprint 2 / WP-105B) — real path.
  * Thin binding of the shared pipeline to the Drizzle repository.

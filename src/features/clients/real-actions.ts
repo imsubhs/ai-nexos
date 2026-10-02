@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/db";
 import { activityLogs, clientContacts, clients } from "@/db/schema";
 import { requireCurrentUser } from "@/features/auth/current-user";
@@ -270,6 +268,21 @@ export async function createContact(data: z.infer<typeof insertContactSchema>) {
 
   const parsed = insertContactSchema.parse(data);
 
+  // Verify target client exists, belongs to caller's organization, and is not archived
+  const [client] = await db
+    .select({ clientId: clients.clientId })
+    .from(clients)
+    .where(
+      and(
+        eq(clients.clientId, parsed.clientId),
+        eq(clients.organizationId, user.organizationId),
+        isNull(clients.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!client) throw new Error("Client not found");
+
   const [contact] = await db
     .insert(clientContacts)
     .values({
@@ -308,6 +321,27 @@ export async function updateContact(
 
   const parsed = updateContactSchema.parse(data);
 
+  // Verify contact exists, belongs to parent client, and parent client belongs to caller's organization
+  const [existing] = await db
+    .select({
+      contactId: clientContacts.contactId,
+      clientId: clientContacts.clientId,
+    })
+    .from(clientContacts)
+    .innerJoin(clients, eq(clientContacts.clientId, clients.clientId))
+    .where(
+      and(
+        eq(clientContacts.contactId, contactId),
+        eq(clientContacts.clientId, clientId),
+        eq(clients.organizationId, user.organizationId),
+        isNull(clients.deletedAt),
+        isNull(clientContacts.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!existing) throw new Error("Contact not found");
+
   const [contact] = await db
     .update(clientContacts)
     .set({
@@ -315,7 +349,13 @@ export async function updateContact(
       updatedBy: user.userId,
       updatedAt: new Date(),
     })
-    .where(eq(clientContacts.contactId, contactId))
+    .where(
+      and(
+        eq(clientContacts.contactId, contactId),
+        eq(clientContacts.clientId, existing.clientId),
+        isNull(clientContacts.deletedAt),
+      ),
+    )
     .returning({
       contactId: clientContacts.contactId,
       name: clientContacts.name,
@@ -346,6 +386,27 @@ export async function archiveContact(contactId: string, clientId: string) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "clients", "update"); // Updating a client by deleting a contact
 
+  // Verify contact exists, belongs to parent client, and parent client belongs to caller's organization
+  const [existing] = await db
+    .select({
+      contactId: clientContacts.contactId,
+      clientId: clientContacts.clientId,
+    })
+    .from(clientContacts)
+    .innerJoin(clients, eq(clientContacts.clientId, clients.clientId))
+    .where(
+      and(
+        eq(clientContacts.contactId, contactId),
+        eq(clientContacts.clientId, clientId),
+        eq(clients.organizationId, user.organizationId),
+        isNull(clients.deletedAt),
+        isNull(clientContacts.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!existing) throw new Error("Contact not found");
+
   const [contact] = await db
     .update(clientContacts)
     .set({
@@ -356,7 +417,13 @@ export async function archiveContact(contactId: string, clientId: string) {
       updatedAt: new Date(),
       updatedBy: user.userId,
     })
-    .where(eq(clientContacts.contactId, contactId))
+    .where(
+      and(
+        eq(clientContacts.contactId, contactId),
+        eq(clientContacts.clientId, existing.clientId),
+        isNull(clientContacts.deletedAt),
+      ),
+    )
     .returning({
       contactId: clientContacts.contactId,
       name: clientContacts.name,

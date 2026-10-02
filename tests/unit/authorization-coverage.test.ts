@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   UNAUTHENTICATED_BY_DESIGN,
   auditAuthorization,
+  auditTenantIsolation,
 } from "../../scripts/audit-authorization";
 
 /**
@@ -51,5 +52,11 @@ describe("authorization coverage", () => {
     for (const action of Object.keys(UNAUTHENTICATED_BY_DESIGN)) {
       expect(action).toMatch(/^features\/auth\//);
     }
+  });
+
+  it("every exported server action obeys tenant isolation without trusting client organizationId", () => {
+    const findings = auditTenantIsolation();
+    const violations = findings.map((f) => `${f.file}::${f.action}`);
+    expect(violations).toEqual([]);
   });
 });

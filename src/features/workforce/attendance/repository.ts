@@ -71,6 +71,8 @@ export interface AmendDayData {
 
 export interface AttendanceDirectoryFilters {
   date?: string;
+  from?: string;
+  to?: string;
   departmentId?: string;
   userId?: string;
   status?: AttendanceStatus;

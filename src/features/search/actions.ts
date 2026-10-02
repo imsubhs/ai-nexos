@@ -57,9 +57,24 @@ async function tolerate<T>(work: Promise<T>, fallback: T): Promise<T> {
   }
 }
 
+import { RATE_LIMITS, consumeRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
+import { resolveGuardContext, KeyResolvers } from "@/lib/security/action-guard";
+import { ApiError } from "@/lib/security/errors";
+
 export async function globalSearch(term: string): Promise<SearchGroup[]> {
-  const query = term.trim();
-  if (query.length < 2) return [];
+  const query = (term || "").trim();
+  if (query.length < 2 || query.length > 64) return [];
+
+  const context = await resolveGuardContext();
+  const identifier = KeyResolvers.userAndOrg([], context);
+  const decision = await consumeRateLimit(RATE_LIMITS.searchExpensive, identifier);
+  if (!decision.allowed) {
+    throw new ApiError(
+      "rate_limited",
+      `Too many search requests. Please try again in ${decision.retryAfterSeconds}s.`,
+      { headers: rateLimitHeaders(decision) },
+    );
+  }
 
   const [projects, clients, people, deliverables, files, taskRows] =
     await Promise.all([

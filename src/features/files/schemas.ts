@@ -1,7 +1,8 @@
 import { z } from "zod";
 
+// organizationId is optional in client schemas; server action always derives tenant from session
 export const createFolderSchema = z.object({
-  organizationId: z.string().uuid(),
+  organizationId: z.string().uuid().optional(),
   projectId: z.string().uuid(),
   parentId: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(255),
@@ -32,11 +33,11 @@ export const updateFileSchema = z.object({
 });
 
 export const initializeUploadSchema = z.object({
-  organizationId: z.string().uuid(),
+  organizationId: z.string().uuid().optional(),
   projectId: z.string().uuid(),
   folderId: z.string().uuid().nullable().optional(),
-  title: z.string().min(1).max(500),
-  description: z.string().optional(),
+  title: z.string().trim().min(1).max(500),
+  description: z.string().max(5000).optional(),
   fileType: z.enum([
     "image",
     "video",
@@ -48,11 +49,11 @@ export const initializeUploadSchema = z.object({
     "code",
     "other",
   ]),
-  originalFilename: z.string().min(1),
-  mimeType: z.string().min(1),
+  originalFilename: z.string().trim().min(1).max(255),
+  mimeType: z.string().trim().min(1).max(127),
   sizeBytes: z.number().positive(),
-  extension: z.string().min(1),
-  clientHash: z.string().min(1).optional(), // Preliminary hash for deduplication
+  extension: z.string().trim().min(1).max(32),
+  clientHash: z.string().trim().min(1).max(128).optional(), // Preliminary hash for deduplication
 });
 
 export const finalizeUploadSchema = z.object({

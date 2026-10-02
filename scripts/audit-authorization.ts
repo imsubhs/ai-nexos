@@ -266,21 +266,77 @@ export function auditAuthorization(): AuditFinding[] {
   return findings;
 }
 
+export function auditTenantIsolation(): AuditFinding[] {
+  const files = collectActionModules(SRC);
+  const findings: AuditFinding[] = [];
+
+  for (const file of files.sort()) {
+    const source = read(file);
+    const relative = file.slice(resolve(process.cwd(), "src").length + 1);
+
+    for (const match of source.matchAll(
+      /export\s+async\s+function\s+(\w+)\s*[(<]/g,
+    )) {
+      const action = match[1];
+      const key = `${relative}::${action}`;
+      if (key in UNAUTHENTICATED_BY_DESIGN) continue;
+
+      const body = extractBody(source, match.index ?? 0);
+
+      // Check if action parameter declaration trusts client organizationId
+      const paramsMatch = source.slice(match.index ?? 0).match(/\(([^)]*)\)/);
+      const params = paramsMatch ? paramsMatch[1] : "";
+      if (
+        params.includes("organizationId") &&
+        !body.includes("user.organizationId") &&
+        !body.includes("currentUser.organizationId") &&
+        !body.includes("resolved.organizationId") &&
+        !body.includes("context.organizationId")
+      ) {
+        findings.push({
+          file: relative,
+          action: `${action} (untrusted client organizationId parameter)`,
+        });
+      }
+    }
+  }
+
+  return findings;
+}
+
 // Report when run directly.
 if (process.argv[1] && import.meta.filename === resolve(process.argv[1])) {
   const findings = auditAuthorization();
-  if (findings.length === 0) {
+  const tenantFindings = auditTenantIsolation();
+
+  if (findings.length === 0 && tenantFindings.length === 0) {
     console.log(
-      "\n✓ Every exported server action reaches an authorization guard.\n",
+      "\n✓ Every exported server action reaches an authorization guard.",
+    );
+    console.log(
+      "✓ Static tenant isolation gate verified: No untrusted client organizationId parameters.\n",
     );
     process.exit(0);
   }
-  console.error(
-    `\n✖ ${findings.length} action(s) reach no authorization guard:\n`,
-  );
-  for (const finding of findings) {
-    console.error(`  ${finding.file}  ::  ${finding.action}`);
+
+  if (findings.length > 0) {
+    console.error(
+      `\n✖ ${findings.length} action(s) reach no authorization guard:\n`,
+    );
+    for (const finding of findings) {
+      console.error(`  ${finding.file}  ::  ${finding.action}`);
+    }
   }
+
+  if (tenantFindings.length > 0) {
+    console.error(
+      `\n✖ ${tenantFindings.length} action(s) violate tenant isolation boundaries:\n`,
+    );
+    for (const finding of tenantFindings) {
+      console.error(`  ${finding.file}  ::  ${finding.action}`);
+    }
+  }
+
   console.error("");
   process.exit(1);
 }

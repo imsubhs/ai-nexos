@@ -1,0 +1,2668 @@
+{
+  "tables": [
+    {
+      "table_name": "activity_logs",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_capabilities",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_checkpoint_ledger",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_context",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_costs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_execution_runs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_execution_steps",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_explainability_ledger",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_goals",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_human_approvals",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_limits",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_memory",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_observations",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_permissions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_plan_steps",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_plans",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_reflections",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_sessions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_skills",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_statistics",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_tool_usage",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agent_versions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_agents",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_budgets",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_context_sources",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_contexts",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_conversations",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_cost_tracking",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_execution_logs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_feedback",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_guardrails",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_memory",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_messages",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_model_limits",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_model_profiles",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_model_providers",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_model_usage",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_prompt_templates",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_prompt_versions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_ratings",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_sessions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_skills",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_token_usage",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_tool_calls",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_tools",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_workspace_preferences",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "ai_workspaces",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "approval_conditions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "approval_cycles",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "approval_events",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "approval_stages",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "approval_workflows",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "attendance_breaks",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "attendance_corrections",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "attendance_records",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_action_queue",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_actions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_api_keys",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_audit",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_capabilities",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_condition_groups",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_conditions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_dead_letter_queue",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_execution_logs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_execution_runs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_execution_state",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_execution_steps",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_permissions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_rate_limits",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_retry_policy",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_schedules",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_statistics",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_templates",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_triggers",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_variables",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_webhooks",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_workflow_versions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "automation_workflows",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "background_jobs",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_contacts",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_activity",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_dashboard_layout",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_devices",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_favorites",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_notifications",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_preferences",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_security",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "client_portal_sessions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "clients",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "decision_dependencies",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_activity",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_approvals",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_files",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_labels",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_reference_attachments",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_review_comments",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_review_sessions",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_review_threads",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_revisions",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_share_links",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverable_tags",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "deliverables",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "departments",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "external_identities",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_activity",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_collection_items",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_collections",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_comments",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_folders",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_labels",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_metrics",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_relations",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_shares",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_tags",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "file_versions",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "files",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "labels",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_action_items",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_activity",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_agenda",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_attendees",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_decision_approvals",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_decision_deliverables",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_decision_revisions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_decision_tasks",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_decisions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_followups",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_labels",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_outcomes",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_recordings",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_tags",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_templates",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meeting_transcripts",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "meetings",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "milestones",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_activity",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_channels",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_deliveries",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_digest",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_failures",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_logs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_preferences",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_queue",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_templates",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notification_webhooks",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "notifications",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "organization_invitations",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "organization_memberships",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "organization_sequences",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "organizations",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "project_members",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "project_phases",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "projects",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "reviews",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_activity",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_assignments",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_changes",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_checklists",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_comments",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_history",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_items",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_labels",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_merge_previews",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_requests",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_tags",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revision_threads",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "revisions",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "roles",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_access_logs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_activity",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_annotations",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_comments",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_download_logs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_events",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_expiration",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_labels",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_notifications",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_passwords",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_permissions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_policies",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_recipients",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_security_logs",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_session_items",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_sessions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_tags",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_token_nonces",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_versions",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "share_watermarks",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_activity",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_assignees",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_attachments",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_checklist_items",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_checklists",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_comments",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_dependencies",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_labels",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_tags",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_time_entries",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "task_watchers",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "tasks",
+      "rls_enabled": false,
+      "rls_forced": false
+    },
+    {
+      "table_name": "timeline_dependencies",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "timeline_versions",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "timelines",
+      "rls_enabled": true,
+      "rls_forced": false
+    },
+    {
+      "table_name": "users",
+      "rls_enabled": true,
+      "rls_forced": false
+    }
+  ],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "activity_logs",
+      "policyname": "activity_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(app.is_org_member(organization_id) AND (user_id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "activity_logs",
+      "policyname": "activity_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "app.is_org_member(organization_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "attendance_breaks",
+      "policyname": "attendance_breaks_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM attendance_records r\n  WHERE ((r.attendance_id = attendance_breaks.attendance_id) AND (r.organization_id = attendance_breaks.organization_id) AND (((r.user_id = auth.uid()) AND app.has_permission('attendance'::text, 'read'::text)) OR app.has_permission('attendance'::text, 'view_team'::text))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "attendance_corrections",
+      "policyname": "attendance_corrections_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (((user_id = auth.uid()) AND app.has_permission('corrections'::text, 'read'::text)) OR app.has_permission('corrections'::text, 'review'::text)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "attendance_records",
+      "policyname": "attendance_records_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (((user_id = auth.uid()) AND app.has_permission('attendance'::text, 'read'::text)) OR app.has_permission('attendance'::text, 'view_team'::text)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "background_jobs",
+      "policyname": "jobs_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "app.is_org_member(organization_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "client_contacts",
+      "policyname": "client_contacts_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'delete'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "client_contacts",
+      "policyname": "client_contacts_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'create'::text))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "client_contacts",
+      "policyname": "client_contacts_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'read'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "client_contacts",
+      "policyname": "client_contacts_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'update'::text))",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "clients",
+      "policyname": "clients_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'delete'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "clients",
+      "policyname": "clients_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'create'::text))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "clients",
+      "policyname": "clients_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'read'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "clients",
+      "policyname": "clients_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'update'::text))",
+      "with_check": "app.is_org_member(organization_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_activity",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_approvals",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_files",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_labels",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_reference_attachments",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_review_comments",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_review_sessions",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_review_threads",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_revisions",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_share_links",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverable_tags",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "deliverables",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "departments",
+      "policyname": "dept_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('departments'::text, 'delete'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "departments",
+      "policyname": "dept_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(app.is_org_member(organization_id) AND app.has_permission('departments'::text, 'create'::text))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "departments",
+      "policyname": "dept_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "app.is_org_member(organization_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "departments",
+      "policyname": "dept_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('departments'::text, 'update'::text))",
+      "with_check": "app.is_org_member(organization_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_activity",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_collection_items",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_collections",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_comments",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_folders",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_labels",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_metrics",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_relations",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_shares",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_tags",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "file_versions",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "files",
+      "policyname": "org_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "milestones",
+      "policyname": "milestones_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = milestones.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "organizations",
+      "policyname": "org_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "app.is_org_member(organization_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "organizations",
+      "policyname": "org_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('organization'::text, 'update'::text))",
+      "with_check": "app.is_org_member(organization_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "project_members",
+      "policyname": "project_members_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'update'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "project_members",
+      "policyname": "project_members_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'update'::text))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "project_members",
+      "policyname": "project_members_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'read'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "project_members",
+      "policyname": "project_members_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'update'::text))",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "project_phases",
+      "policyname": "project_phases_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = project_phases.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "projects",
+      "policyname": "projects_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'delete'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "projects",
+      "policyname": "projects_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'create'::text))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "projects",
+      "policyname": "projects_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'read'::text) AND ((visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR app.is_project_member(project_id)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "projects",
+      "policyname": "projects_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'update'::text))",
+      "with_check": "app.is_org_member(organization_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_activity",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_assignments",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_changes",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_checklists",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_comments",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_history",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_items",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_labels",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_merge_previews",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_requests",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_tags",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revision_threads",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "revisions",
+      "policyname": "project_isolation_policy",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "roles",
+      "policyname": "roles_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('roles'::text, 'delete'::text) AND (is_system = false))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "roles",
+      "policyname": "roles_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(app.is_org_member(organization_id) AND app.has_permission('roles'::text, 'create'::text) AND (is_system = false))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "roles",
+      "policyname": "roles_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "app.is_org_member(organization_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "roles",
+      "policyname": "roles_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(app.is_org_member(organization_id) AND app.has_permission('roles'::text, 'update'::text) AND (is_system = false))",
+      "with_check": "(app.is_org_member(organization_id) AND (is_system = false))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "timeline_dependencies",
+      "policyname": "timeline_dependencies_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = timeline_dependencies.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "timeline_versions",
+      "policyname": "timeline_versions_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = timeline_versions.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "timelines",
+      "policyname": "timelines_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = timelines.project_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "users",
+      "policyname": "users_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(app.is_org_member(organization_id) AND app.has_permission('users'::text, 'create'::text))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "users",
+      "policyname": "users_select",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "app.is_org_member(organization_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "users",
+      "policyname": "users_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(app.is_org_member(organization_id) AND ((user_id = auth.uid()) OR app.has_permission('users'::text, 'update'::text)))",
+      "with_check": "app.is_org_member(organization_id)"
+    }
+  ],
+  "secDefFunctions": [
+    {
+      "schema_name": "app",
+      "function_name": "current_user_organization_id",
+      "arguments": "",
+      "result_type": "uuid",
+      "is_security_definer": true,
+      "volatility": "s",
+      "config_settings": [
+        "search_path=public"
+      ],
+      "owner": "postgres",
+      "definition": "CREATE OR REPLACE FUNCTION app.current_user_organization_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT organization_id\n  FROM public.users\n  WHERE user_id = auth.uid()\n    AND status = 'active'\n    AND deleted_at IS NULL\n  LIMIT 1;\n$function$\n"
+    },
+    {
+      "schema_name": "app",
+      "function_name": "has_permission",
+      "arguments": "p_module text, p_action text",
+      "result_type": "boolean",
+      "is_security_definer": true,
+      "volatility": "s",
+      "config_settings": [
+        "search_path=public"
+      ],
+      "owner": "postgres",
+      "definition": "CREATE OR REPLACE FUNCTION app.has_permission(p_module text, p_action text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.users u\n    JOIN public.roles r ON r.role_id = u.role_id\n    WHERE u.user_id = auth.uid()\n      AND u.status = 'active'\n      AND u.deleted_at IS NULL\n      AND r.deleted_at IS NULL\n      AND (\n        r.permissions -> '*' ? '*'\n        OR r.permissions -> p_module ? '*'\n        OR r.permissions -> p_module ? p_action\n      )\n  );\n$function$\n"
+    },
+    {
+      "schema_name": "app",
+      "function_name": "is_org_member",
+      "arguments": "p_organization_id uuid",
+      "result_type": "boolean",
+      "is_security_definer": true,
+      "volatility": "s",
+      "config_settings": [
+        "search_path=public"
+      ],
+      "owner": "postgres",
+      "definition": "CREATE OR REPLACE FUNCTION app.is_org_member(p_organization_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT app.current_user_organization_id() = p_organization_id;\n$function$\n"
+    },
+    {
+      "schema_name": "app",
+      "function_name": "is_project_member",
+      "arguments": "p_project_id uuid",
+      "result_type": "boolean",
+      "is_security_definer": true,
+      "volatility": "s",
+      "config_settings": [
+        "search_path=public"
+      ],
+      "owner": "postgres",
+      "definition": "CREATE OR REPLACE FUNCTION app.is_project_member(p_project_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.project_members\n    WHERE project_id = p_project_id\n      AND user_id = auth.uid()\n  );\n$function$\n"
+    },
+    {
+      "schema_name": "app",
+      "function_name": "protect_privileged_user_fields",
+      "arguments": "",
+      "result_type": "trigger",
+      "is_security_definer": true,
+      "volatility": "v",
+      "config_settings": [
+        "search_path=public"
+      ],
+      "owner": "postgres",
+      "definition": "CREATE OR REPLACE FUNCTION app.protect_privileged_user_fields()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  -- The service role (workers, seeding) bypasses RLS and skips this guard.\n  IF current_setting('request.jwt.claims', true) IS NULL THEN\n    RETURN NEW;\n  END IF;\n\n  IF (\n    NEW.role_id IS DISTINCT FROM OLD.role_id\n    OR NEW.organization_id IS DISTINCT FROM OLD.organization_id\n    OR NEW.user_id IS DISTINCT FROM OLD.user_id\n    OR NEW.status IS DISTINCT FROM OLD.status\n    OR NEW.employment_type IS DISTINCT FROM OLD.employment_type\n    OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at\n    OR NEW.deleted_by IS DISTINCT FROM OLD.deleted_by\n  ) AND NOT app.has_permission('users', 'update') THEN\n    RAISE EXCEPTION 'insufficient_privilege: privileged user fields require users.update permission'\n      USING ERRCODE = '42501';\n  END IF;\n\n  RETURN NEW;\nEND;\n$function$\n"
+    }
+  ],
+  "appFunctions": [
+    {
+      "function_name": "current_user_organization_id",
+      "arguments": "",
+      "result_type": "uuid",
+      "is_security_definer": true,
+      "config_settings": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION app.current_user_organization_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT organization_id\n  FROM public.users\n  WHERE user_id = auth.uid()\n    AND status = 'active'\n    AND deleted_at IS NULL\n  LIMIT 1;\n$function$\n"
+    },
+    {
+      "function_name": "has_permission",
+      "arguments": "p_module text, p_action text",
+      "result_type": "boolean",
+      "is_security_definer": true,
+      "config_settings": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION app.has_permission(p_module text, p_action text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.users u\n    JOIN public.roles r ON r.role_id = u.role_id\n    WHERE u.user_id = auth.uid()\n      AND u.status = 'active'\n      AND u.deleted_at IS NULL\n      AND r.deleted_at IS NULL\n      AND (\n        r.permissions -> '*' ? '*'\n        OR r.permissions -> p_module ? '*'\n        OR r.permissions -> p_module ? p_action\n      )\n  );\n$function$\n"
+    },
+    {
+      "function_name": "is_org_member",
+      "arguments": "p_organization_id uuid",
+      "result_type": "boolean",
+      "is_security_definer": true,
+      "config_settings": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION app.is_org_member(p_organization_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT app.current_user_organization_id() = p_organization_id;\n$function$\n"
+    },
+    {
+      "function_name": "is_project_member",
+      "arguments": "p_project_id uuid",
+      "result_type": "boolean",
+      "is_security_definer": true,
+      "config_settings": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION app.is_project_member(p_project_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.project_members\n    WHERE project_id = p_project_id\n      AND user_id = auth.uid()\n  );\n$function$\n"
+    },
+    {
+      "function_name": "protect_privileged_user_fields",
+      "arguments": "",
+      "result_type": "trigger",
+      "is_security_definer": true,
+      "config_settings": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION app.protect_privileged_user_fields()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  -- The service role (workers, seeding) bypasses RLS and skips this guard.\n  IF current_setting('request.jwt.claims', true) IS NULL THEN\n    RETURN NEW;\n  END IF;\n\n  IF (\n    NEW.role_id IS DISTINCT FROM OLD.role_id\n    OR NEW.organization_id IS DISTINCT FROM OLD.organization_id\n    OR NEW.user_id IS DISTINCT FROM OLD.user_id\n    OR NEW.status IS DISTINCT FROM OLD.status\n    OR NEW.employment_type IS DISTINCT FROM OLD.employment_type\n    OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at\n    OR NEW.deleted_by IS DISTINCT FROM OLD.deleted_by\n  ) AND NOT app.has_permission('users', 'update') THEN\n    RAISE EXCEPTION 'insufficient_privilege: privileged user fields require users.update permission'\n      USING ERRCODE = '42501';\n  END IF;\n\n  RETURN NEW;\nEND;\n$function$\n"
+    },
+    {
+      "function_name": "touch_audit_fields",
+      "arguments": "",
+      "result_type": "trigger",
+      "is_security_definer": false,
+      "config_settings": null,
+      "definition": "CREATE OR REPLACE FUNCTION app.touch_audit_fields()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  NEW.updated_at := now();\n  NEW.version := COALESCE(OLD.version, 0) + 1;\n  RETURN NEW;\nEND;\n$function$\n"
+    }
+  ],
+  "tableGrants": [
+    {
+      "table_name": "activity_logs",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attendance_breaks",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attendance_corrections",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attendance_records",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "background_jobs",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "client_contacts",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "clients",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_activity",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_approvals",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_files",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_labels",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_reference_attachments",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_review_comments",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_review_sessions",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_review_threads",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_revisions",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_share_links",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverable_tags",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "deliverables",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "departments",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_activity",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_collection_items",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_collections",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_comments",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_folders",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_labels",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_metrics",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_relations",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_shares",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_tags",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "file_versions",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "files",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "milestones",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "project_members",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "project_phases",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "projects",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_activity",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_assignments",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_changes",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_checklists",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_comments",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_history",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_items",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_labels",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_merge_previews",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_requests",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_tags",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revision_threads",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "revisions",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "roles",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "timeline_dependencies",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "timeline_versions",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "timelines",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "users",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    }
+  ],
+  "routineGrants": [
+    {
+      "routine_schema": "app",
+      "routine_name": "current_user_organization_id",
+      "grantee": "authenticated",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "app",
+      "routine_name": "has_permission",
+      "grantee": "authenticated",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "app",
+      "routine_name": "is_org_member",
+      "grantee": "authenticated",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "app",
+      "routine_name": "is_project_member",
+      "grantee": "authenticated",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "app",
+      "routine_name": "protect_privileged_user_fields",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "app",
+      "routine_name": "touch_audit_fields",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "armor",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "armor",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "crypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "dearmor",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "decrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "decrypt_iv",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "digest",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "digest",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "encrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "encrypt_iv",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "gen_random_bytes",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "gen_random_uuid",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "gen_salt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "gen_salt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "hmac",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "hmac",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_armor_headers",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_key_id",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_decrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_decrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_decrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_decrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_decrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_decrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_encrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_encrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_encrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_pub_encrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_decrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_decrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_decrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_decrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_encrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_encrypt",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_encrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "pgp_sym_encrypt_bytea",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_generate_v1",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_generate_v1mc",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_generate_v3",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_generate_v4",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_generate_v5",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_nil",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_ns_dns",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_ns_oid",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_ns_url",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    },
+    {
+      "routine_schema": "public",
+      "routine_name": "uuid_ns_x500",
+      "grantee": "PUBLIC",
+      "privilege_type": "EXECUTE"
+    }
+  ]
+}

@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/db";
 import {
   tasks,
@@ -10,7 +8,9 @@ import {
   taskAssignees,
 } from "@/db/schema/tasks";
 import { users } from "@/db/schema/users";
-import { organizationSequences } from "@/db/schema/organizations";
+import { projects } from "@/db/schema/projects";
+import { organizationMemberships } from "@/db/schema/organization-memberships";
+import { generateTaskCode } from "@/features/organizations/code-generation";
 import { CurrentUser, requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
 import {
@@ -61,35 +61,6 @@ async function logTaskActivity(
 }
 
 /**
- * Generate a sequential task code format: AIC-T-YYYY-XXXX
- */
-async function generateTaskCode(
-  organizationId: string,
-  tx: typeof db | DbTransaction = db,
-): Promise<string> {
-  const currentYear = new Date().getFullYear().toString();
-
-  const [sequence] = await tx
-    .insert(organizationSequences)
-    .values({
-      organizationId,
-      entityType: "task_code",
-      nextValue: 1,
-    })
-    .onConflictDoUpdate({
-      target: [
-        organizationSequences.organizationId,
-        organizationSequences.entityType,
-      ],
-      set: { nextValue: sql`${organizationSequences.nextValue} + 1` },
-    })
-    .returning();
-
-  const nextSequence = sequence.nextValue.toString().padStart(4, "0");
-  return `AIC-T-${currentYear}-${nextSequence}`;
-}
-
-/**
  * Validates RLS: user can access the task.
  * Rules:
  * - Admin/Owner/ProjectManager automatically have access if they have read permissions.
@@ -135,6 +106,20 @@ async function validateTaskAccess(
 export async function createTask(data: z.infer<typeof insertTaskSchema>) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "create"); // Borrow project permissions for now
+
+  // Validate that the project belongs to the caller's organization
+  const [project] = await db
+    .select({ projectId: projects.projectId })
+    .from(projects)
+    .where(
+      and(
+        eq(projects.projectId, data.projectId),
+        eq(projects.organizationId, user.organizationId),
+        isNull(projects.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!project) throw new Error("Project not found");
 
   const task = await db.transaction(async (tx) => {
     const taskCode = await generateTaskCode(user.organizationId, tx);
@@ -267,6 +252,36 @@ export async function assignTask(taskId: string, assigneeUserId: string) {
 
   return await db.transaction(async (tx) => {
     const task = await validateTaskAccess(taskId, user, tx);
+
+    // Verify assignee belongs to caller's organization
+    const [targetMember] = await tx
+      .select({ userId: organizationMemberships.userId })
+      .from(organizationMemberships)
+      .where(
+        and(
+          eq(organizationMemberships.userId, assigneeUserId),
+          eq(organizationMemberships.organizationId, user.organizationId),
+          eq(organizationMemberships.status, "active"),
+          isNull(organizationMemberships.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!targetMember) {
+      const [targetUser] = await tx
+        .select({ userId: users.userId })
+        .from(users)
+        .where(
+          and(
+            eq(users.userId, assigneeUserId),
+            eq(users.organizationId, user.organizationId),
+            eq(users.status, "active"),
+            isNull(users.deletedAt),
+          ),
+        )
+        .limit(1);
+      if (!targetUser) throw new Error("Assignee not found in this organization");
+    }
 
     const [assignee] = await tx
       .insert(taskAssignees)
@@ -569,6 +584,7 @@ export async function stopTaskTimer(
       and(
         eq(taskTimeEntries.timeEntryId, timeEntryId),
         eq(taskTimeEntries.userId, user.userId),
+        eq(taskTimeEntries.organizationId, user.organizationId),
       ),
     )
     .returning();
@@ -643,6 +659,7 @@ export async function addTaskDependency(
 
   await db.transaction(async (tx) => {
     const task = await validateTaskAccess(predecessorId, user, tx);
+    await validateTaskAccess(successorId, user, tx);
 
     const isCycle = await checkTaskCycle(predecessorId, successorId, tx);
     if (isCycle) {

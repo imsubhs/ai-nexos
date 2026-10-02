@@ -182,4 +182,53 @@ describe("rate limiter", () => {
 
     __setRateLimitRedisClient(null);
   });
+
+  it("exports explicit REDIS_CLIENT_OPTIONS matching SLA requirements", async () => {
+    const { REDIS_CLIENT_OPTIONS } = await import("@/lib/security/rate-limit");
+    expect(REDIS_CLIENT_OPTIONS.connectTimeout).toBe(1500);
+    expect(REDIS_CLIENT_OPTIONS.commandTimeout).toBe(500);
+    expect(REDIS_CLIENT_OPTIONS.maxRetriesPerRequest).toBe(1);
+    expect(REDIS_CLIENT_OPTIONS.enableOfflineQueue).toBe(false);
+    expect(REDIS_CLIENT_OPTIONS.lazyConnect).toBe(false);
+  });
+
+  it("handles Redis command timeout by degrading to MemoryStore for standard policies", async () => {
+    const { __setRateLimitRedisClient } = await import("@/lib/security/rate-limit");
+
+    __setRateLimitRedisClient({
+      async eval() {
+        throw new Error("Command timed out after 500ms");
+      },
+    });
+
+    const result = await consumeRateLimit(policy, "timed-out-caller", WINDOW_START);
+    expect(result.storeMode).toBe("degraded");
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(2);
+
+    __setRateLimitRedisClient(null);
+  });
+
+  it("handles Redis command timeout by failing closed for orgCreation", async () => {
+    const { __setRateLimitRedisClient, RATE_LIMITS } = await import("@/lib/security/rate-limit");
+
+    __setRateLimitRedisClient({
+      async eval() {
+        throw new Error("Command timed out after 500ms");
+      },
+    });
+
+    const result = await consumeRateLimit(RATE_LIMITS.orgCreation, "timed-out-org", WINDOW_START);
+    expect(result.storeMode).toBe("degraded");
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toBe("storage_unavailable_fail_closed");
+
+    __setRateLimitRedisClient(null);
+  });
+
+  it("operates in clean memory storeMode when REDIS_URL is unconfigured", async () => {
+    const result = await consumeRateLimit(policy, "clean-memory-user", WINDOW_START);
+    expect(result.allowed).toBe(true);
+    expect(result.storeMode).toBe("memory");
+  });
 });

@@ -1,5 +1,3 @@
-"use server";
-
 import { getDemoStore, logDemoActivity } from "@/lib/demo/store";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";

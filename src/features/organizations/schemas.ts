@@ -16,7 +16,84 @@ const currencySchema = z
   .string()
   .regex(/^[A-Z]{3}$/, "Invalid ISO 4217 currency code");
 
+export const RESERVED_CODE_PREFIXES = new Set([
+  "SYS",
+  "ADMIN",
+  "NEXOS",
+  "API",
+  "ROOT",
+  "TEST",
+  "DEMO",
+]);
+
+export const codePrefixSchema = z
+  .string()
+  .trim()
+  .transform((val) => val.toUpperCase())
+  .refine(
+    (val) => /^[A-Z0-9]{2,8}$/.test(val),
+    "Code prefix must be 2-8 uppercase alphanumeric characters",
+  )
+  .refine(
+    (val) => !RESERVED_CODE_PREFIXES.has(val),
+    "This code prefix is reserved by the system",
+  );
+
+export function validateCodePrefix(raw: string): {
+  valid: boolean;
+  normalized: string;
+  error?: string;
+} {
+  const normalized = (raw || "").trim().toUpperCase();
+  if (normalized.length < 2 || normalized.length > 8) {
+    return {
+      valid: false,
+      normalized,
+      error: "Code prefix must be between 2 and 8 characters",
+    };
+  }
+  if (!/^[A-Z0-9]+$/.test(normalized)) {
+    return {
+      valid: false,
+      normalized,
+      error: "Code prefix must contain only alphanumeric characters",
+    };
+  }
+  if (RESERVED_CODE_PREFIXES.has(normalized)) {
+    return {
+      valid: false,
+      normalized,
+      error: `Code prefix "${normalized}" is reserved by the system`,
+    };
+  }
+  return { valid: true, normalized };
+}
+
+
+export function slugify(name: string): string {
+  const base = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return base.slice(0, 50) || "workspace";
+}
+
+export function deriveCodePrefixFromName(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  let prefix = "";
+  if (words.length >= 2) {
+    prefix = words.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
+  } else if (words.length === 1 && words[0].length >= 3) {
+    prefix = words[0].slice(0, 3).toUpperCase();
+  }
+  const validated = validateCodePrefix(prefix);
+  if (validated.valid) return validated.normalized;
+  return "NEX";
+}
+
 export const updateOrganizationSchema = z.object({
+
   organizationName: z
     .string()
     .min(2, "Organization name is required")
@@ -91,4 +168,46 @@ export const updateUserRoleSchema = z.object({
 
 export const userActionSchema = z.object({
   userId: z.string().uuid("Invalid user ID"),
+});
+
+export const createOrganizationSchema = z.object({
+  organizationName: z
+    .string()
+    .trim()
+    .min(2, "Organization name must be at least 2 characters")
+    .max(100, "Organization name must be at most 100 characters"),
+  slug: z
+    .string()
+    .trim()
+    .min(2, "Slug must be at least 2 characters")
+    .max(50, "Slug must be at most 50 characters")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase alphanumeric characters and hyphens")
+    .optional(),
+  codePrefix: z.string().trim().optional(),
+});
+
+export const acceptInvitationSchema = z.object({
+  rawToken: z
+    .string()
+    .trim()
+    .min(10, "Invitation token is required")
+    .max(256, "Invalid token length"),
+});
+
+export const previewInvitationSchema = z.object({
+  rawToken: z
+    .string()
+    .trim()
+    .min(10, "Invitation token is required")
+    .max(256, "Invalid token length"),
+});
+
+export const switchOrganizationSchema = z.object({
+  targetOrgId: z.string().uuid("Invalid organization ID"),
+});
+
+export const createInvitationSchema = z.object({
+  email: z.string().trim().email("Invalid email address"),
+  roleId: z.string().uuid("Invalid role ID"),
+  departmentId: z.string().uuid("Invalid department ID").optional(),
 });

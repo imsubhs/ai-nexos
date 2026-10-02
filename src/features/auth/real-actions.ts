@@ -1,5 +1,3 @@
-"use server";
-
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { APP_URL } from "@/config/app";

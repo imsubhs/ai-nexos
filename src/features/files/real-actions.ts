@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/db";
 import {
   files,
@@ -17,6 +15,8 @@ import {
   PermissionDeniedError,
 } from "@/features/permissions";
 import { storageService } from "@/lib/storage/SupabaseStorageProvider";
+import { RATE_LIMITS, consumeRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
+import { ApiError } from "@/lib/security/errors";
 import { eq, and, sql, desc, ilike, isNull } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { z } from "zod";
@@ -162,7 +162,7 @@ export async function createFolder(data: z.infer<typeof createFolderSchema>) {
     const [folder] = await tx
       .insert(fileFolders)
       .values({
-        organizationId: validData.organizationId,
+        organizationId: user.organizationId,
         projectId: validData.projectId,
         parentId: validData.parentId,
         name: validData.name,
@@ -176,7 +176,7 @@ export async function createFolder(data: z.infer<typeof createFolderSchema>) {
       "Folder Created",
       null,
       validData.projectId,
-      validData.organizationId,
+      user.organizationId,
       user,
       { folderId: folder.folderId, name: folder.name },
       tx,
@@ -416,6 +416,17 @@ export async function initializeFileUpload(
 ) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "files", "upload");
+
+  const identifier = `${user.organizationId}:${user.userId}`;
+  const decision = await consumeRateLimit(RATE_LIMITS.resourceMutation, identifier);
+  if (!decision.allowed) {
+    throw new ApiError(
+      "rate_limited",
+      `Too many upload initialization requests. Please wait ${decision.retryAfterSeconds}s before starting another upload.`,
+      { headers: rateLimitHeaders(decision) },
+    );
+  }
+
   const validData = initializeUploadSchema.parse(data);
 
   await validateProjectAccess(validData.projectId, user);
@@ -429,9 +440,9 @@ export async function initializeFileUpload(
   }
 
   const quotaResult = await db.execute(sql`
-    SELECT SUM(total_size_bytes) as total_used 
-    FROM files 
-    WHERE organization_id = ${validData.organizationId} 
+    SELECT SUM(total_size_bytes) as total_used
+    FROM files
+    WHERE organization_id = ${user.organizationId}
       AND status != 'deleted'
   `);
   const totalUsed = Number(quotaResult[0]?.total_used || 0);
@@ -463,7 +474,7 @@ export async function initializeFileUpload(
 
   if (!deduplicated) {
     storagePath = storageService.getStoragePath(
-      validData.organizationId,
+      user.organizationId,
       validData.projectId,
       fileId,
       versionId,
@@ -475,7 +486,7 @@ export async function initializeFileUpload(
     // 1. Create canonical File record
     await tx.insert(files).values({
       fileId,
-      organizationId: validData.organizationId,
+      organizationId: user.organizationId,
       projectId: validData.projectId,
       folderId: validData.folderId,
       title: validData.title,
@@ -490,7 +501,7 @@ export async function initializeFileUpload(
     // 2. Create File Version record
     await tx.insert(fileVersions).values({
       versionId,
-      organizationId: validData.organizationId,
+      organizationId: user.organizationId,
       projectId: validData.projectId,
       fileId,
       versionNumber: 1,
@@ -514,7 +525,7 @@ export async function initializeFileUpload(
       "File Upload Initialized",
       fileId,
       validData.projectId,
-      validData.organizationId,
+      user.organizationId,
       user,
       { versionId, deduplicated },
       tx,
@@ -526,7 +537,7 @@ export async function initializeFileUpload(
 
     // 4. Generate Pre-signed URL via Provider
     const uploadUrlData = await storageService.createPreSignedUploadUrl({
-      organizationId: validData.organizationId,
+      organizationId: user.organizationId,
       projectId: validData.projectId,
       fileId,
       versionId,

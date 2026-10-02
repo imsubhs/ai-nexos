@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use server";
-
 import { db } from "@/db";
 import { and, eq } from "drizzle-orm";
 import {

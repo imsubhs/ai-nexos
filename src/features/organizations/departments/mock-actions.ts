@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Department slice server actions (Sprint 2 / WP-105A) — DEMO_MODE adapter.
  * Identical contract to real-actions.ts (auth preamble, validation, org

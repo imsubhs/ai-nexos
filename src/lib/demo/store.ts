@@ -114,6 +114,7 @@ export type DemoStore = {
   /** Monotonic counter backing generated ids and entity codes. */
   nextId: number;
   organizations: any[];
+  organizationMemberships: any[];
   departments: any[];
   users: any[];
   clients: any[];
@@ -216,6 +217,7 @@ function createSeedData(): DemoStore {
       organizationName: "AI NEX OS Demo",
       legalName: "AI NEX OS LLC",
       slug: "demo-workspace",
+      codePrefix: "NEX",
       logoUrl: null,
       website: "https://demo.ainexos.com",
       industry: "Technology",
@@ -413,6 +415,25 @@ function createSeedData(): DemoStore {
       isArchived: true,
     },
   ];
+
+  const organizationMemberships = users.map((u, idx) => ({
+    membershipId: sequentialUuid(900 + idx),
+    userId: u.userId,
+    organizationId: u.organizationId,
+    roleId: u.roleId,
+    departmentId: u.departmentId ?? null,
+    designation: u.designation ?? null,
+    employmentType: u.employmentType ?? "full_time",
+    workingHours: null,
+    status: u.status === "archived" ? "suspended" : "active",
+    isDefault: true,
+    joinedAt: seedDate(-60),
+    invitedAt: null,
+    acceptedAt: seedDate(-60),
+    suspendedAt: u.status === "archived" ? seedDate(-10) : null,
+    removedAt: null,
+    ...auditFields(-60),
+  }));
 
   const clients = [
     {
@@ -1571,6 +1592,7 @@ function createSeedData(): DemoStore {
   return {
     nextId: 1000,
     organizations,
+    organizationMemberships,
     departments,
     users,
     clients,

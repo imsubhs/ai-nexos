@@ -1,11 +1,9 @@
-"use server";
-
 import { db } from "@/db";
-import { activityLogs, projectMembers, projects, users } from "@/db/schema";
-import { organizationSequences } from "@/db/schema/organizations";
+import { activityLogs, clients, projectMembers, projects, users } from "@/db/schema";
+import { generateProjectCode } from "@/features/organizations/code-generation";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, eq, ilike, isNull, sql, count, not, inArray } from "drizzle-orm";
+import { and, eq, ilike, isNull, count, not, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { insertProjectSchema, updateProjectSchema } from "./schemas";
@@ -36,32 +34,54 @@ async function logActivity(
 }
 
 /**
- * Generate a sequential project code format: AIC-YYYY-XXXX
+ * Assert that a client exists, belongs to the organization, and is not archived.
  */
-async function generateProjectCode(
+async function assertActiveTenantClient(
+  clientId: string,
   organizationId: string,
   tx: typeof db | DbTransaction = db,
-): Promise<string> {
-  const currentYear = new Date().getFullYear().toString();
+) {
+  const [client] = await tx
+    .select({ clientId: clients.clientId })
+    .from(clients)
+    .where(
+      and(
+        eq(clients.clientId, clientId),
+        eq(clients.organizationId, organizationId),
+        isNull(clients.deletedAt),
+      ),
+    )
+    .limit(1);
 
-  const [sequence] = await tx
-    .insert(organizationSequences)
-    .values({
-      organizationId,
-      entityType: "project_code",
-      nextValue: 1,
-    })
-    .onConflictDoUpdate({
-      target: [
-        organizationSequences.organizationId,
-        organizationSequences.entityType,
-      ],
-      set: { nextValue: sql`${organizationSequences.nextValue} + 1` },
-    })
-    .returning();
+  if (!client) {
+    throw new Error("Client not found");
+  }
+}
 
-  const nextSequence = sequence.nextValue.toString().padStart(4, "0");
-  return `AIC-${currentYear}-${nextSequence}`;
+/**
+ * Assert that a user exists, belongs to the organization, is active, and is not archived.
+ */
+async function assertActiveTenantUser(
+  userId: string,
+  organizationId: string,
+  tx: typeof db | DbTransaction = db,
+) {
+  const [targetUser] = await tx
+    .select({ userId: users.userId })
+    .from(users)
+    .where(
+      and(
+        eq(users.userId, userId),
+        eq(users.organizationId, organizationId),
+        eq(users.status, "active"),
+        isNull(users.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!targetUser) {
+    throw new Error("User not found");
+  }
 }
 
 /**
@@ -72,6 +92,21 @@ export async function createProject(data: z.infer<typeof insertProjectSchema>) {
   requirePermission(user.permissions, "projects", "create");
 
   const project = await db.transaction(async (tx) => {
+    // If a client is specified, verify it exists, is not deleted, and belongs to caller's organization
+    if (data.clientId) {
+      await assertActiveTenantClient(data.clientId, user.organizationId, tx);
+    }
+
+    // Verify projectManager belongs to active organization and is active
+    if (data.projectManager) {
+      await assertActiveTenantUser(data.projectManager, user.organizationId, tx);
+    }
+
+    // Verify creativeDirector belongs to active organization and is active
+    if (data.creativeDirector) {
+      await assertActiveTenantUser(data.creativeDirector, user.organizationId, tx);
+    }
+
     const projectCode = await generateProjectCode(user.organizationId, tx);
 
     const [newProject] = await tx
@@ -114,23 +149,74 @@ export async function updateProject(
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "update");
 
-  const [project] = await db
-    .update(projects)
-    .set({
-      ...data,
+  const project = await db.transaction(async (tx) => {
+    // If a client is specified, verify it exists, is not deleted, and belongs to caller's organization
+    if (data.clientId) {
+      await assertActiveTenantClient(data.clientId, user.organizationId, tx);
+    }
+
+    // If projectManager is specified, verify it exists, is active, is not deleted, and belongs to caller's organization
+    if (data.projectManager) {
+      await assertActiveTenantUser(data.projectManager, user.organizationId, tx);
+    }
+
+    // If creativeDirector is specified, verify it exists, is active, is not deleted, and belongs to caller's organization
+    if (data.creativeDirector) {
+      await assertActiveTenantUser(data.creativeDirector, user.organizationId, tx);
+    }
+
+    // Whitelist only legitimate editable fields to prevent mass-assignment (OWASP API3:2023)
+    const updatePayload: Record<string, unknown> = {
       updatedAt: new Date(),
       updatedBy: user.userId,
-    })
-    .where(
-      and(
-        eq(projects.projectId, projectId),
-        eq(projects.organizationId, user.organizationId),
-      ),
-    )
-    .returning();
+      organizationId: user.organizationId,
+    };
 
-  await logActivity("updated", projectId, user.userId, user.organizationId, {
-    updatedFields: Object.keys(data),
+    if (data.projectName !== undefined) updatePayload.projectName = data.projectName;
+    if (data.description !== undefined) updatePayload.description = data.description;
+    if (data.clientId !== undefined) updatePayload.clientId = data.clientId;
+    if (data.projectManager !== undefined) updatePayload.projectManager = data.projectManager;
+    if (data.creativeDirector !== undefined) updatePayload.creativeDirector = data.creativeDirector;
+    if (data.departmentId !== undefined) updatePayload.departmentId = data.departmentId;
+    if (data.priority !== undefined) updatePayload.priority = data.priority;
+    if (data.status !== undefined) updatePayload.status = data.status;
+    if (data.startDate !== undefined) updatePayload.startDate = data.startDate;
+    if (data.estimatedEndDate !== undefined) updatePayload.estimatedEndDate = data.estimatedEndDate;
+    if (data.actualEndDate !== undefined) updatePayload.actualEndDate = data.actualEndDate;
+    if (data.completionPercentage !== undefined) updatePayload.completionPercentage = data.completionPercentage;
+    if (data.budget !== undefined) updatePayload.budget = data.budget;
+    if (data.healthStatus !== undefined) updatePayload.healthStatus = data.healthStatus;
+    if (data.visibility !== undefined) updatePayload.visibility = data.visibility;
+    if (data.tags !== undefined) updatePayload.tags = data.tags;
+
+    const [updated] = await tx
+      .update(projects)
+      .set(updatePayload)
+      .where(
+        and(
+          eq(projects.projectId, projectId),
+          eq(projects.organizationId, user.organizationId),
+          isNull(projects.deletedAt),
+        ),
+      )
+      .returning();
+
+    if (!updated) {
+      throw new Error("Project not found");
+    }
+
+    await logActivity(
+      "updated",
+      projectId,
+      user.userId,
+      user.organizationId,
+      {
+        updatedFields: Object.keys(data),
+      },
+      tx,
+    );
+
+    return updated;
   });
 
   revalidatePath("/projects");
@@ -367,6 +453,14 @@ export async function updateProjectMemberRole(memberId: string, role: string) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "update");
 
+  const existing = await db.query.projectMembers.findFirst({
+    where: eq(projectMembers.memberId, memberId),
+    with: { project: true },
+  });
+  if (!existing || existing.project.organizationId !== user.organizationId) {
+    throw new Error("Project member not found");
+  }
+
   const [member] = await db
     .update(projectMembers)
     .set({ role })
@@ -396,6 +490,14 @@ export async function updateProjectMemberRole(memberId: string, role: string) {
 export async function removeProjectMember(memberId: string) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "update");
+
+  const existing = await db.query.projectMembers.findFirst({
+    where: eq(projectMembers.memberId, memberId),
+    with: { project: true },
+  });
+  if (!existing || existing.project.organizationId !== user.organizationId) {
+    throw new Error("Project member not found");
+  }
 
   const [member] = await db
     .delete(projectMembers)

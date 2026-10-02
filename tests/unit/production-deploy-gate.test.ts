@@ -52,6 +52,7 @@ const VALID_PRODUCTION_ENV: Readonly<Record<string, string>> = {
   NEXT_PUBLIC_APP_URL: "https://app.example.com",
   NEXT_PUBLIC_PORTAL_URL: "https://portal.example.com",
   NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: "documents",
+  REDIS_URL: "rediss://:mock-pass@redis.example.com:6379",
 };
 
 let emptyCwd: string;
@@ -117,6 +118,18 @@ describe("production deploy gate (npm run env:check -- --production)", () => {
     const { status, output } = runGate({});
     expect(status, output).toBe(0);
     expect(output).toContain("Valid for production");
+  });
+
+  it("exits 0 for single-instance production when REDIS_URL is absent", () => {
+    const { status, output } = runGate({ REDIS_URL: undefined });
+    expect(status, output).toBe(0);
+    expect(output).toContain("Valid for production");
+  });
+
+  it("exits non-zero when REDIS_URL uses cleartext redis:// in production", () => {
+    const { status, output } = runGate({ REDIS_URL: "redis://localhost:6379" });
+    expect(status, output).not.toBe(0);
+    expect(output).toContain("REDIS_URL: must use rediss:// (TLS) in production.");
   });
 
   // Table-driven rather than one case each: the point is that *no* required

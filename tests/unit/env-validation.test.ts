@@ -17,6 +17,7 @@ const BASE_ENV = {
   NEXT_PUBLIC_APP_URL: "https://app.example.com",
   NEXT_PUBLIC_PORTAL_URL: "https://portal.example.com",
   NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: "documents",
+  REDIS_URL: "rediss://:mock-pass@redis.example.com:6379",
 };
 
 let originalEnv: NodeJS.ProcessEnv;
@@ -99,13 +100,20 @@ describe("server env validation", () => {
   });
 
   it("treats optional integrations as genuinely optional", async () => {
-    // The storage bucket was removed from this list in Sprint 2.4: it is
-    // production-required now, because its development default names the only
-    // bucket that exists rather than a safe placeholder.
     const { getServerEnv } = await loadEnv({
       ...BASE_ENV,
-      REDIS_URL: undefined,
       NEXT_PUBLIC_BUILD_NUMBER: undefined,
+      TRUSTED_PROXY_HOPS: undefined,
+      EGRESS_ALLOWED_HOSTS: undefined,
+    });
+    expect(() => getServerEnv()).not.toThrow();
+  });
+
+  it("treats REDIS_URL as optional outside production", async () => {
+    const { getServerEnv } = await loadEnv({
+      ...BASE_ENV,
+      NODE_ENV: "development",
+      REDIS_URL: undefined,
     });
     expect(() => getServerEnv()).not.toThrow();
   });
@@ -304,8 +312,25 @@ describe("assertProductionConfig", () => {
       NEXT_PUBLIC_APP_URL: undefined,
       NEXT_PUBLIC_PORTAL_URL: undefined,
       NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET: undefined,
+      REDIS_URL: undefined,
     });
     expect(() => assertProductionConfig()).not.toThrow();
+  });
+
+  it("passes when REDIS_URL is absent in production (single-instance MemoryStore)", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      REDIS_URL: undefined,
+    });
+    expect(() => assertProductionConfig()).not.toThrow();
+  });
+
+  it("fails when REDIS_URL uses cleartext redis:// in production", async () => {
+    const { assertProductionConfig } = await loadEnv({
+      ...BASE_ENV,
+      REDIS_URL: "redis://localhost:6379",
+    });
+    expect(() => assertProductionConfig()).toThrow(/must use rediss:\/\/ \(TLS\) in production/);
   });
 });
 
@@ -446,6 +471,7 @@ describe("getEnvDiagnostics", () => {
   it("lists absent optional variables as fallbacks, not failures", async () => {
     const { getEnvDiagnostics } = await loadEnv({
       ...BASE_ENV,
+      NODE_ENV: "development",
       REDIS_URL: undefined,
     });
     const diagnostics = getEnvDiagnostics();

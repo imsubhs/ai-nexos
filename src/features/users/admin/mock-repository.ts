@@ -150,7 +150,12 @@ export const mockEmployeeAdminRepository: EmployeeAdminRepository = {
       // stays in Settings ▸ Members — new employees start as team members.
       roleId: "demo-role-team_member",
       departmentId: data.departmentId ?? null,
-      employeeCode: nextDemoCode(store, "AIC"),
+      employeeCode: nextDemoCode(
+        store,
+        store.organizations.find(
+          (o: { organizationId: string }) => o.organizationId === organizationId,
+        )?.codePrefix ?? "NEX",
+      ),
       managerId: data.managerId ?? null,
       location: data.location ?? null,
       employmentType: data.employmentType ?? "full_time",

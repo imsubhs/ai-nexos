@@ -1,10 +1,14 @@
-"use server";
-
 import { db } from "@/db";
-import { activityLogs, organizations, roles, users } from "@/db/schema";
+import {
+  activityLogs,
+  organizationMemberships,
+  organizations,
+  roles,
+  users,
+} from "@/db/schema";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
@@ -102,6 +106,37 @@ export async function getOrganizationMembers() {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "users", "read");
 
+  const memberships = await db.query.organizationMemberships.findMany({
+    where: and(
+      eq(organizationMemberships.organizationId, user.organizationId),
+      isNull(organizationMemberships.deletedAt),
+    ),
+    with: {
+      user: true,
+      role: true,
+      department: true,
+    },
+    orderBy: (m, { asc }) => [asc(m.createdAt)],
+  });
+
+  if (memberships.length > 0) {
+    return memberships.map((m) => ({
+      userId: m.userId,
+      organizationId: m.organizationId,
+      email: m.user.email,
+      firstName: m.user.firstName,
+      lastName: m.user.lastName,
+      avatarUrl: m.user.avatarUrl,
+      status: m.status,
+      roleId: m.roleId,
+      departmentId: m.departmentId,
+      designation: m.designation,
+      createdAt: m.createdAt,
+      role: m.role,
+      department: m.department,
+    }));
+  }
+
   const members = await db.query.users.findMany({
     where: eq(users.organizationId, user.organizationId),
     with: {
@@ -163,7 +198,12 @@ export async function updateUserRole(
   const [newRole] = await db
     .select()
     .from(roles)
-    .where(eq(roles.roleId, parsed.roleId));
+    .where(
+      and(
+        eq(roles.roleId, parsed.roleId),
+        eq(roles.organizationId, user.organizationId),
+      ),
+    );
   if (!newRole) throw new Error("Role not found");
 
   const isRemovingOwner = newRole.roleKey !== "owner";
@@ -172,6 +212,19 @@ export async function updateUserRole(
     parsed.userId,
     isRemovingOwner,
   );
+
+  await db
+    .update(organizationMemberships)
+    .set({
+      roleId: parsed.roleId,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(organizationMemberships.userId, parsed.userId),
+        eq(organizationMemberships.organizationId, user.organizationId),
+      ),
+    );
 
   const [updatedUser] = await db
     .update(users)
@@ -216,6 +269,19 @@ export async function deactivateUser(data: z.infer<typeof userActionSchema>) {
 
   await checkOwnerProtection(user.organizationId, parsed.userId, true);
 
+  await db
+    .update(organizationMemberships)
+    .set({
+      status: "suspended",
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(organizationMemberships.userId, parsed.userId),
+        eq(organizationMemberships.organizationId, user.organizationId),
+      ),
+    );
+
   const [updatedUser] = await db
     .update(users)
     .set({
@@ -251,6 +317,19 @@ export async function reactivateUser(data: z.infer<typeof userActionSchema>) {
   requirePermission(user.permissions, "users", "update");
 
   const parsed = userActionSchema.parse(data);
+
+  await db
+    .update(organizationMemberships)
+    .set({
+      status: "active",
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(organizationMemberships.userId, parsed.userId),
+        eq(organizationMemberships.organizationId, user.organizationId),
+      ),
+    );
 
   const [updatedUser] = await db
     .update(users)

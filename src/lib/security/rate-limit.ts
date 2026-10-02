@@ -1,30 +1,37 @@
 /**
  * Rate limiting and brute-force control.
  *
- * The algorithm is a weighted sliding window: each request counts against the
- * current fixed window plus the fraction of the previous window still inside
- * the lookback. A plain fixed window lets an attacker send `2 × limit` requests
- * across a window boundary in a fraction of a second, which for a login
- * endpoint is the whole attack. A precise sliding log would be exact but stores
- * one entry per request; the weighted approximation costs two counters and is
- * wrong only at the margins, in the conservative direction.
+ * The algorithm is a weighted sliding window approximation (O(1) time and space):
+ * each request counts against the current fixed window plus the fraction of the
+ * previous window still inside the lookback. Unlike an unbounded sliding log
+ * (which requires O(N) memory per request), this two-counter weighted approximation
+ * provides a bounded estimation of request frequency across sliding time windows.
+ * While it bounds boundary burst potential significantly compared to naive fixed
+ * windows, it is documented as a bounded/weighted approximation rather than a strict
+ * mathematical guarantee against sub-window boundary bursts.
  *
- * Two stores, same semantics:
+ * Two stores, explicitly distinguished operational modes:
  *
- *   - Redis, when REDIS_URL is configured. Correct across instances, which is
- *     the only configuration in which a limit means anything behind more than
- *     one server.
- *   - Process memory otherwise. Honest about its weakness: a limit enforced
- *     per-instance is weaker by exactly the instance count, and
- *     `assertProductionConfig()` warns when production runs this way.
+ *   - NORMAL (Distributed Redis):
+ *     When REDIS_URL is configured, enforcement uses an atomic Redis Lua script (EVAL).
+ *     This provides a globally shared distributed budget across all server instances.
  *
- * Failure is *open* for infrastructure faults and *closed* for nothing: if
- * Redis is unreachable the limiter falls back to the in-memory store rather
- * than rejecting traffic. A limiter outage must not become an outage.
+ *   - DEGRADED (Per-Process MemoryStore):
+ *     When Redis is unconfigured or unreachable, the limiter falls back to an in-memory
+ *     store. This provides emergency local protection ONLY and does NOT preserve global
+ *     distributed rate-limit guarantees across multiple instances.
+ *
+ * Fail-closed vs Degrade-to-memory:
+ *   - orgCreation: enforces fail-closed on Redis failure in production (preventing mass
+ *     tenant creation during infrastructure outages).
+ *   - authentication / reads / mutations: degrade to local memory with an emergency cap,
+ *     ensuring an infrastructure glitch does not cause total service lockout.
  */
 
 import { hasRedis } from "@/lib/env.server";
 import { log } from "./logger";
+
+export type DegradedBehavior = "degrade_to_memory" | "fail_closed";
 
 export type RateLimitPolicy = {
   /** Stable name; forms part of the storage key and appears in logs. */
@@ -33,6 +40,14 @@ export type RateLimitPolicy = {
   readonly limit: number;
   /** Window length in seconds. */
   readonly windowSeconds: number;
+  /**
+   * Behavior when distributed storage (Redis) is unavailable:
+   * - "degrade_to_memory": emergency local memory protection per process.
+   * - "fail_closed": reject requests when distributed coordination fails.
+   */
+  readonly degradedBehavior?: DegradedBehavior;
+  /** Emergency per-process limit when operating in degraded mode. */
+  readonly degradedLimit?: number;
 };
 
 export type RateLimitResult = {
@@ -44,7 +59,28 @@ export type RateLimitResult = {
   readonly resetAt: number;
   /** Seconds a client should wait before retrying. Zero when allowed. */
   readonly retryAfterSeconds: number;
+  /**
+   * Operational mode:
+   * - "normal": backed by globally shared distributed Redis budget
+   * - "memory": backed by single-instance in-memory store (standard when REDIS_URL is unconfigured)
+   * - "degraded": backed by per-process emergency memory protection (or fail-closed)
+   */
+  readonly storeMode: "normal" | "memory" | "degraded";
+  /** Reason for rejection if allowed is false */
+  readonly reason?: "limit_exceeded" | "storage_unavailable_fail_closed";
 };
+
+/**
+ * Extracts the first 8 hex characters (32 bits) of a 256-bit token SHA-256 hash.
+ * This is used solely as a COARSE abuse-correlation bucket for rate-limiting
+ * unauthenticated invitation token previews, preventing brute-force token enumeration.
+ * It is NOT a unique token identifier — the full 256-bit token entropy is preserved
+ * for database lookups and authentication.
+ */
+export function tokenPrefixBucket(tokenHash: string): string {
+  const clean = tokenHash.trim().toLowerCase();
+  return clean.slice(0, 8);
+}
 
 /**
  * The policies in force.
@@ -54,42 +90,96 @@ export type RateLimitResult = {
  * route handlers.
  */
 export const RATE_LIMITS = {
-  /** Password sign-in, per client IP. The blunt instrument against spraying. */
+  // ── S6.2 Canonical Policy Taxonomy ──
+  authMutation: {
+    name: "auth:mutation",
+    limit: 5,
+    windowSeconds: 900, // 5 / 15m
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 3,
+  },
+  authRead: {
+    name: "auth:read",
+    limit: 30,
+    windowSeconds: 300, // 30 / 5m
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 15,
+  },
+  orgCreation: {
+    name: "org:creation",
+    limit: 3,
+    windowSeconds: 86400, // 3 / 24h
+    degradedBehavior: "fail_closed",
+    degradedLimit: 1,
+  },
+  invitationIssuance: {
+    name: "invitation:issuance",
+    limit: 10,
+    windowSeconds: 3600, // 10 / 1h
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 5,
+  },
+  invitationPreview: {
+    name: "invitation:preview",
+    limit: 20,
+    windowSeconds: 300, // 20 / 5m
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 10,
+  },
+  resourceMutation: {
+    name: "resource:mutation",
+    limit: 60,
+    windowSeconds: 60, // 60 / 1m
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 30,
+  },
+  resourceRead: {
+    name: "resource:read",
+    limit: 120,
+    windowSeconds: 60, // 120 / 1m
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 60,
+  },
+  searchExpensive: {
+    name: "search:expensive",
+    limit: 20,
+    windowSeconds: 60, // 20 / 1m
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 10,
+  },
+  reportExpensive: {
+    name: "report:expensive",
+    limit: 5,
+    windowSeconds: 300, // 5 / 5m
+    degradedBehavior: "degrade_to_memory",
+    degradedLimit: 2,
+  },
+
+  // ── Route & Legacy Policies (Preserved for compatibility) ──
   loginByIp: { name: "login:ip", limit: 10, windowSeconds: 300 },
-  /**
-   * Password sign-in, per account. Stops a distributed attack from getting
-   * more attempts against one victim than a single host would.
-   */
   loginByAccount: { name: "login:account", limit: 5, windowSeconds: 900 },
-  /** Magic-link requests, per account. Also an outbound-email abuse control. */
   magicLinkByAccount: {
     name: "magiclink:account",
     limit: 3,
     windowSeconds: 900,
   },
-  /** Magic-link requests, per IP. */
   magicLinkByIp: { name: "magiclink:ip", limit: 10, windowSeconds: 900 },
-  /** OAuth/magic-link callback processing, per IP. */
   authCallbackByIp: { name: "authcallback:ip", limit: 30, windowSeconds: 300 },
-  /** External approval-token verification — an unauthenticated guessing surface. */
   approvalVerifyByIp: {
     name: "approval:verify:ip",
     limit: 20,
     windowSeconds: 300,
   },
-  /** Share-token exchange on the portal, per IP. */
   portalSessionByIp: {
     name: "portal:session:ip",
     limit: 20,
     windowSeconds: 300,
   },
-  /** Authenticated portal reads, per session. */
   portalReadBySession: {
     name: "portal:read:session",
     limit: 120,
     windowSeconds: 60,
   },
-  /** Share-link password attempts, per session. Brute-force control. */
   sharePasswordBySession: {
     name: "share:password:session",
     limit: 5,
@@ -116,7 +206,7 @@ interface RateLimitStore {
 }
 
 /**
- * Per-process store.
+ * Per-process store (DEGRADED mode).
  *
  * Bounded: an attacker rotating the identifier (a spoofed IP, a generated
  * email) would otherwise grow this map without limit, turning the defence into
@@ -178,13 +268,29 @@ class MemoryStore implements RateLimitStore {
 const memoryStore = new MemoryStore();
 
 /**
- * Redis-backed store.
+ * Atomic Lua script for Redis sliding-window hit:
+ * KEYS[1]: currentKey (rl:${key}:${windowStart})
+ * KEYS[2]: previousKey (rl:${key}:${windowStart - windowMs})
+ * ARGV[1]: expireSeconds (windowSeconds * 2)
  *
- * `INCR` + `EXPIRE` in one pipeline is atomic enough for this purpose: the
- * increment cannot be lost, and a lost `EXPIRE` (only possible if the
- * connection dies between the two) leaves a key that the next window's
- * `EXPIRE` re-arms. The TTL is two windows so the previous window is still
- * readable when the current one is weighted against it.
+ * Atomicity guarantee:
+ * Executing as a single Lua script guarantees that INCR, the conditional EXPIRE on creation,
+ * and GET of the previous window execute atomically on the Redis server without interleaving
+ * commands from concurrent clients, preventing lost TTLs or race conditions.
+ */
+export const REDIS_HIT_LUA_SCRIPT = `
+local current = redis.call('INCR', KEYS[1])
+if current == 1 then
+  redis.call('EXPIRE', KEYS[1], tonumber(ARGV[1]))
+end
+local previous = redis.call('GET', KEYS[2])
+return { current, previous }
+`;
+
+/**
+ * Redis-backed store (NORMAL mode).
+ *
+ * Employs atomic Lua script execution to prevent race conditions across concurrent clients.
  */
 class RedisStore implements RateLimitStore {
   constructor(private readonly client: RedisLikeClient) {}
@@ -197,23 +303,45 @@ class RedisStore implements RateLimitStore {
     const windowMs = windowSeconds * 1000;
     const currentKey = `rl:${key}:${windowStart}`;
     const previousKey = `rl:${key}:${windowStart - windowMs}`;
+    const ttlSeconds = windowSeconds * 2;
 
-    const results = await this.client
-      .pipeline()
-      .incr(currentKey)
-      .expire(currentKey, windowSeconds * 2)
-      .get(previousKey)
-      .exec();
+    if (typeof this.client.eval === "function") {
+      const result = await this.client.eval(
+        REDIS_HIT_LUA_SCRIPT,
+        2,
+        currentKey,
+        previousKey,
+        ttlSeconds,
+      );
+      if (!result || !Array.isArray(result)) {
+        throw new Error("Redis Lua script returned unexpected result shape");
+      }
+      return {
+        current: Number(result[0] ?? 0),
+        previous: Number(result[1] ?? 0) || 0,
+      };
+    }
 
-    if (!results) throw new Error("Redis pipeline returned no result");
+    if (typeof this.client.pipeline === "function") {
+      const results = await this.client
+        .pipeline()
+        .incr(currentKey)
+        .expire(currentKey, ttlSeconds)
+        .get(previousKey)
+        .exec();
 
-    const [incr, , previous] = results;
-    if (incr?.[0]) throw incr[0];
+      if (!results) throw new Error("Redis pipeline returned no result");
 
-    return {
-      current: Number(incr?.[1] ?? 0),
-      previous: Number(previous?.[1] ?? 0) || 0,
-    };
+      const [incr, , previous] = results;
+      if (incr?.[0]) throw incr[0];
+
+      return {
+        current: Number(incr?.[1] ?? 0),
+        previous: Number(previous?.[1] ?? 0) || 0,
+      };
+    }
+
+    throw new Error("Redis client must support eval() or pipeline()");
   }
 }
 
@@ -227,7 +355,12 @@ export interface RedisLikePipeline {
 
 /** The slice of ioredis this module uses. Declared so tests can substitute it. */
 export interface RedisLikeClient {
-  pipeline(): RedisLikePipeline;
+  eval?(
+    script: string,
+    numkeys: number,
+    ...args: (string | number)[]
+  ): Promise<unknown>;
+  pipeline?(): RedisLikePipeline;
 }
 
 let redisStore: RedisStore | undefined;
@@ -240,6 +373,14 @@ let redisUnavailable = false;
  * construction — never loads in a build, a test, or a deployment that has no
  * REDIS_URL.
  */
+export const REDIS_CLIENT_OPTIONS = {
+  connectTimeout: 1500,
+  commandTimeout: 500,
+  maxRetriesPerRequest: 1,
+  enableOfflineQueue: false,
+  lazyConnect: false,
+} as const;
+
 async function getRedisStore(): Promise<RateLimitStore | undefined> {
   if (redisStore) return redisStore;
   if (redisUnavailable || !hasRedis()) return undefined;
@@ -247,10 +388,7 @@ async function getRedisStore(): Promise<RateLimitStore | undefined> {
   try {
     const { default: Redis } = await import("ioredis");
     const client = new Redis(process.env.REDIS_URL as string, {
-      // A limiter must not queue behind a dead Redis; fall through to memory.
-      maxRetriesPerRequest: 1,
-      enableOfflineQueue: false,
-      lazyConnect: false,
+      ...REDIS_CLIENT_OPTIONS,
     });
     client.on("error", (error: Error) => {
       log.warn("ratelimit.redis_error", { error: error.message });
@@ -273,6 +411,12 @@ export function __setRateLimitRedisClient(
 ): void {
   redisStore = client ? new RedisStore(client) : undefined;
   redisUnavailable = false;
+}
+
+/** Test-only: simulate Redis failure. */
+export function __simulateRedisFailure(): void {
+  redisStore = undefined;
+  redisUnavailable = true;
 }
 
 /** Test-only: forgets every counter. */
@@ -303,35 +447,76 @@ export async function consumeRateLimit(
   const key = `${policy.name}:${identifier}`;
 
   let counts: WindowCounts;
-  try {
-    const store = (await getRedisStore()) ?? memoryStore;
-    counts = await store.hit(key, windowStart, policy.windowSeconds);
-  } catch (error) {
-    // Redis fell over mid-request. Degrade to the local counter rather than
-    // either rejecting the caller or waving them through uncounted.
-    log.warn("ratelimit.store_failed", {
-      policy: policy.name,
-      error: error instanceof Error ? error.message : String(error),
-    });
+  let storeMode: "normal" | "memory" | "degraded" = "normal";
+
+  const store = await getRedisStore();
+  if (store) {
+    try {
+      counts = await store.hit(key, windowStart, policy.windowSeconds);
+      storeMode = "normal";
+    } catch (error) {
+      log.warn("ratelimit.store_failed", {
+        policy: policy.name,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      storeMode = "degraded";
+      if (policy.degradedBehavior === "fail_closed") {
+        return {
+          allowed: false,
+          limit: policy.limit,
+          remaining: 0,
+          resetAt: windowStart + windowMs,
+          retryAfterSeconds: Math.max(1, Math.ceil((windowStart + windowMs - now) / 1000)),
+          storeMode: "degraded",
+          reason: "storage_unavailable_fail_closed",
+        };
+      }
+      counts = await memoryStore.hit(key, windowStart, policy.windowSeconds);
+    }
+  } else {
+    if (redisUnavailable) {
+      storeMode = "degraded";
+      if (policy.degradedBehavior === "fail_closed") {
+        return {
+          allowed: false,
+          limit: policy.limit,
+          remaining: 0,
+          resetAt: windowStart + windowMs,
+          retryAfterSeconds: Math.max(1, Math.ceil((windowStart + windowMs - now) / 1000)),
+          storeMode: "degraded",
+          reason: "storage_unavailable_fail_closed",
+        };
+      }
+    } else {
+      storeMode = "memory";
+    }
     counts = await memoryStore.hit(key, windowStart, policy.windowSeconds);
   }
 
   // Weight the previous window by how much of it is still inside the lookback.
+  // Note: bounded weighted approximation, not an exact sliding log guarantee.
   const elapsedInWindow = now - windowStart;
   const previousWeight = Math.max(0, 1 - elapsedInWindow / windowMs);
   const weighted = counts.current + counts.previous * previousWeight;
 
   const resetAt = windowStart + windowMs;
-  const allowed = weighted <= policy.limit;
+  const effectiveLimit =
+    (storeMode === "degraded" || storeMode === "memory") &&
+    policy.degradedLimit !== undefined
+      ? policy.degradedLimit
+      : policy.limit;
+  const allowed = weighted <= effectiveLimit;
 
   return {
     allowed,
-    limit: policy.limit,
-    remaining: Math.max(0, Math.floor(policy.limit - weighted)),
+    limit: effectiveLimit,
+    remaining: Math.max(0, Math.floor(effectiveLimit - weighted)),
     resetAt,
     retryAfterSeconds: allowed
       ? 0
       : Math.max(1, Math.ceil((resetAt - now) / 1000)),
+    storeMode,
+    reason: allowed ? undefined : "limit_exceeded",
   };
 }
 
@@ -339,10 +524,15 @@ export async function consumeRateLimit(
 export function rateLimitHeaders(
   result: RateLimitResult,
 ): Record<string, string> {
+  const resetSeconds =
+    typeof result.resetAt === "number"
+      ? Math.max(0, Math.ceil((result.resetAt - Date.now()) / 1000))
+      : (result.retryAfterSeconds ?? 0);
+
   const headers: Record<string, string> = {
     "RateLimit-Limit": String(result.limit),
     "RateLimit-Remaining": String(result.remaining),
-    "RateLimit-Reset": String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+    "RateLimit-Reset": String(resetSeconds),
   };
   if (!result.allowed)
     headers["Retry-After"] = String(result.retryAfterSeconds);

@@ -23,6 +23,8 @@ export const organizations = pgTable(
     legalName: text("legal_name"),
     /** URL-safe unique identifier — future custom domains / tenant routing. */
     slug: text("slug").notNull(),
+    /** Tenant code prefix used for generating human-readable entity identifiers (e.g., AIC, ACME). */
+    codePrefix: text("code_prefix").notNull().default("NEX"),
     logoUrl: text("logo_url"),
     website: text("website"),
     industry: text("industry"),
@@ -39,6 +41,7 @@ export const organizations = pgTable(
   },
   (table) => [
     uniqueIndex("uq_organizations_slug").on(table.slug),
+    uniqueIndex("uq_organizations_code_prefix").on(table.codePrefix),
     index("idx_organizations_status").on(table.status),
   ],
 );

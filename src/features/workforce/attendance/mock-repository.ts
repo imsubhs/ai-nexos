@@ -344,6 +344,8 @@ export const mockAttendanceRepository: AttendanceRepository = {
 
     let rows = records().filter((r) => r.organizationId === organizationId);
     if (filters.date) rows = rows.filter((r) => r.date === filters.date);
+    if (filters.from) rows = rows.filter((r) => r.date >= filters.from!);
+    if (filters.to) rows = rows.filter((r) => r.date <= filters.to!);
     if (filters.userId) rows = rows.filter((r) => r.userId === filters.userId);
     if (filters.status) rows = rows.filter((r) => r.status === filters.status);
     if (filters.departmentId) {

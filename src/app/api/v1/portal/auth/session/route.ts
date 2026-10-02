@@ -109,6 +109,9 @@ export async function DELETE(request: Request) {
 
   try {
     assertSameOrigin(request);
+    await assertWithinRateLimit(RATE_LIMITS.portalSessionByIp, ip, {
+      route: "portal.session.delete",
+    });
 
     const store = await cookies();
     const token = store.get(PORTAL_SESSION_COOKIE)?.value;

@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/db";
 import { departments, organizations, roles, users } from "@/db/schema";
 import { requireCurrentUser } from "@/features/auth/current-user";

@@ -106,6 +106,48 @@
       "when": 1786259505880,
       "tag": "0014_workforce_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790365740070,
+      "tag": "0015_organization_code_prefix",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790452140000,
+      "tag": "0016_organization_memberships",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790538540000,
+      "tag": "0017_organization_invitations",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790624940000,
+      "tag": "0018_remediate_projects_rls_recursion",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790711340000,
+      "tag": "0019_rls_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1790797740000,
+      "tag": "0020_harden_security_definer_search_paths",
+      "breakpoints": true
     }
   ]
 }

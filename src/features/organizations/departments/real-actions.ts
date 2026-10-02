@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Department slice server actions (Sprint 2 / WP-105A) — real path.
  * Permission gate: departments.read (merge doc 14 §9 vocabulary).

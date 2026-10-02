@@ -492,7 +492,11 @@ export async function promoteActionItemToTask(
   if (actionItem.promotedToTaskId)
     throw new Error("Action item already promoted");
 
-  const taskCode = nextDemoCode(store, `AIC-T-${new Date().getFullYear()}`);
+  const org = store.organizations.find(
+    (o: { organizationId: string }) => o.organizationId === DEMO_ORG_ID,
+  );
+  const codePrefix = org?.codePrefix ?? "NEX";
+  const taskCode = nextDemoCode(store, `${codePrefix}-T-${new Date().getFullYear()}`);
 
   const task = {
     taskId: nextDemoId(store),

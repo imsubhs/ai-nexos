@@ -153,8 +153,10 @@ export const ENV_MANIFEST: readonly EnvSpec[] = [
     name: "REDIS_URL",
     requirement: "optional",
     exposure: "server",
-    purpose: "Redis connection for the portal cache.",
-    fallback: "Falls back to the in-memory cache (per-instance, not shared).",
+    purpose:
+      "Redis connection for distributed rate-limiting and cache. Optional in single-instance deployments (falls back to MemoryStore); required before horizontal scaling.",
+    fallback:
+      "Falls back to MemoryStore (per-process in-memory rate-limiting, suitable for single-instance Antideploy).",
   },
   {
     name: "NEXT_PUBLIC_BUILD_NUMBER",
@@ -380,6 +382,12 @@ function productionIssues(env: NodeJS.ProcessEnv): string[] {
     }
   }
 
+  if (env.REDIS_URL && !env.REDIS_URL.startsWith("rediss://")) {
+    issues.push(
+      "REDIS_URL: must use rediss:// (TLS) in production.",
+    );
+  }
+
   // Demo mode serves fabricated data and bypasses the database entirely.
   // Reaching production with it enabled would silently replace real records.
   if (env.DEMO_MODE === "true") {
@@ -566,18 +574,9 @@ export function getEnvDiagnostics(): EnvDiagnostics {
     }
     if (!isSet("REDIS_URL")) {
       warnings.push(
-        "REDIS_URL is unset — the portal cache is in-memory and not shared between instances.",
+        "REDIS_URL is unset — rate-limiting runs on the in-memory store (MemoryStore). This is standard for single-instance Antideploy; distributed Redis is required if horizontal scaling is enabled.",
       );
     }
-  }
-
-  // In production the same missing variable is a security note, not a
-  // performance one: rate limits enforced per instance are weaker by exactly
-  // the instance count, so a login limit of 5 becomes 5 × N across a fleet.
-  if (env.NODE_ENV === "production" && !isSet("REDIS_URL")) {
-    warnings.push(
-      "REDIS_URL is unset — rate limits and brute-force counters are per-instance. Behind more than one instance the effective limit is multiplied by the instance count.",
-    );
   }
 
   if (env.NODE_ENV === "production" && !isSet("EGRESS_ALLOWED_HOSTS")) {
