@@ -81,7 +81,13 @@ export function AppHeader({
 
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="ghost" className="h-9 gap-2 px-1.5" />}
+            render={
+              <Button
+                variant="ghost"
+                className="h-9 gap-2 px-1.5"
+                aria-label={`User account menu for ${fullName}`}
+              />
+            }
           >
             <Avatar className="size-7">
               <AvatarImage src={user.avatarUrl ?? undefined} alt={fullName} />

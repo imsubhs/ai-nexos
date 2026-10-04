@@ -106,7 +106,14 @@ export function ExecutiveHealthSection({ health }: ExecutiveHealthSectionProps) 
               <div className="text-[10px] text-right font-mono text-muted-foreground">
                 SLA Confidence
               </div>
-              <div className="h-2 w-full rounded-full bg-surface-3 overflow-hidden">
+              <div
+                role="progressbar"
+                aria-valuenow={health.overallScore}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Overall operational health index: ${health.overallScore} out of 100`}
+                className="h-2 w-full rounded-full bg-surface-3 overflow-hidden"
+              >
                 <div
                   className={`h-full rounded-full ${
                     health.overallScore >= 75
@@ -153,7 +160,14 @@ export function ExecutiveHealthSection({ health }: ExecutiveHealthSectionProps) 
                   <span className="text-2xl font-bold font-mono tabular-nums text-foreground-heading">
                     {score}%
                   </span>
-                  <div className="w-20 h-1.5 rounded-full bg-surface-3 overflow-hidden">
+                  <div
+                    role="progressbar"
+                    aria-valuenow={score}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${dim.title}: ${score} percent (${dim.data.statusText})`}
+                    className="w-20 h-1.5 rounded-full bg-surface-3 overflow-hidden"
+                  >
                     <div
                       className={`h-full rounded-full ${
                         score >= 75

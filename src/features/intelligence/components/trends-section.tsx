@@ -34,12 +34,14 @@ export function TrendsSection({
 
         {/* Time Window Switcher */}
         {onTimeWindowChange && (
-          <div className="flex items-center gap-1 bg-surface-2 p-0.5 rounded border border-border-subtle">
+          <div role="group" aria-label="Select trend time window" className="flex items-center gap-1 bg-surface-2 p-0.5 rounded border border-border-subtle">
             {(["7d", "30d", "90d"] as const).map((tw) => (
               <button
                 key={tw}
+                type="button"
+                aria-pressed={timeWindow === tw}
                 onClick={() => onTimeWindowChange(tw)}
-                className={`px-2.5 py-0.5 rounded text-xs font-mono font-medium transition-colors ${
+                className={`px-2.5 py-0.5 rounded text-xs font-mono font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
                   timeWindow === tw
                     ? "bg-brand-primary text-white"
                     : "text-muted-foreground hover:text-foreground"
@@ -75,7 +77,7 @@ export function TrendsSection({
               <CardContent className="p-3.5 pt-2 border-t border-border-subtle/50">
                 {!data.hasSufficientData || data.points.length === 0 ? (
                   <div className="py-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5 font-mono">
-                    <Info className="size-3.5 text-muted-foreground" />
+                    <Info className="size-3.5 text-muted-foreground" aria-hidden="true" />
                     <span>Insufficient historical data for {timeWindow}</span>
                   </div>
                 ) : (
@@ -86,18 +88,21 @@ export function TrendsSection({
                         return (
                           <div
                             key={idx}
-                            className="flex-1 flex flex-col items-center gap-1 group relative"
+                            tabIndex={0}
+                            role="img"
+                            aria-label={`${p.label}: ${p.value} items`}
+                            className="flex-1 flex flex-col items-center gap-1 group relative focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm"
                           >
                             <div
-                              className="w-full bg-brand-primary/40 rounded-t transition-all group-hover:bg-brand-primary"
+                              className="w-full bg-brand-primary/40 rounded-t transition-all group-hover:bg-brand-primary group-focus-visible:bg-brand-primary"
                               style={{ height: `${heightPct}%` }}
                             />
                             <span className="text-[9px] font-mono text-muted-foreground truncate w-full text-center">
                               {p.label}
                             </span>
 
-                            {/* Hover tooltip */}
-                            <div className="absolute -top-7 px-1.5 py-0.5 rounded bg-surface-3 border border-border text-[10px] font-mono text-foreground opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                            {/* Hover / focus tooltip */}
+                            <div className="absolute -top-7 px-1.5 py-0.5 rounded bg-surface-3 border border-border text-[10px] font-mono text-foreground opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
                               {p.value} items
                             </div>
                           </div>

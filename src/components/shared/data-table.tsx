@@ -106,7 +106,10 @@ export function DataTable<Row>({
         </Table>
       </div>
 
-      <div className="text-muted-foreground flex items-center justify-between text-sm">
+      <nav
+        aria-label="Pagination navigation"
+        className="text-muted-foreground flex items-center justify-between text-sm"
+      >
         <span>
           Showing {from}–{to} of {total}
         </span>
@@ -116,11 +119,12 @@ export function DataTable<Row>({
             size="sm"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
+            aria-label="Go to previous page"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             Previous
           </Button>
-          <span>
+          <span aria-current="page">
             Page {page} of {pageCount}
           </span>
           <Button
@@ -128,12 +132,13 @@ export function DataTable<Row>({
             size="sm"
             disabled={page >= pageCount}
             onClick={() => onPageChange(page + 1)}
+            aria-label="Go to next page"
           >
             Next
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
-      </div>
+      </nav>
     </div>
   );
 }

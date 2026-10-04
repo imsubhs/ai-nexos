@@ -70,6 +70,9 @@ export async function AppShell({
 
   return (
     <SidebarProvider>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <AppSidebar
         organizationName={user.organizationName}
         permittedHrefs={permittedHrefs}
@@ -93,7 +96,11 @@ export async function AppShell({
         {/* The page's single <main> landmark. `min-w-0` keeps wide content
             (data tables) scrolling inside its own container rather than
             widening the shell past the viewport. */}
-        <main className="flex min-w-0 flex-1 flex-col gap-6 p-6">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex min-w-0 flex-1 flex-col gap-6 p-6 outline-none"
+        >
           {children}
         </main>
       </SidebarInset>

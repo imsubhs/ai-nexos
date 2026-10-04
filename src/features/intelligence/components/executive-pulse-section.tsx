@@ -143,6 +143,7 @@ export function ExecutivePulseSection({ pulse }: ExecutivePulseSectionProps) {
             <Link
               key={c.title}
               href={c.href}
+              aria-label={`${c.title}: ${c.value} (${c.description})`}
               className="group block focus-visible:outline-none"
             >
               <Card

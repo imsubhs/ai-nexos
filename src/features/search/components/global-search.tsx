@@ -185,7 +185,7 @@ export function GlobalSearch() {
       <button
         type="button"
         onClick={() => handleOpenChange(true)}
-        className="bg-surface-2/60 hover:bg-surface-3 text-muted-foreground hover:text-foreground border border-border relative hidden h-9 w-full max-w-md items-center justify-between rounded-md px-3 text-sm transition-colors md:flex shadow-xs"
+        className="bg-surface-2/60 hover:bg-surface-3 text-muted-foreground hover:text-foreground border border-border relative hidden h-9 w-full max-w-md items-center justify-between rounded-md px-3 text-sm transition-colors md:flex shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         aria-label="Search projects, clients, deliverables (Press ⌘K to open)"
       >
         <div className="flex items-center gap-2 overflow-hidden">

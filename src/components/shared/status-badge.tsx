@@ -80,7 +80,10 @@ export function StatusBadge({
         className,
       )}
     >
-      <span className={cn("size-1.5 rounded-full shrink-0", dotClasses)} />
+      <span
+        className={cn("size-1.5 rounded-full shrink-0", dotClasses)}
+        aria-hidden="true"
+      />
       {humanize(status)}
     </span>
   );

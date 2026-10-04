@@ -54,7 +54,15 @@ export function OrganizationSwitcher({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="w-full justify-between" />}>
+      <DropdownMenuTrigger
+        render={
+          <SidebarMenuButton
+            size="lg"
+            className="w-full justify-between"
+            aria-label={`Switch workspace. Active workspace: ${activeOrgName}`}
+          />
+        }
+      >
         <div className="flex items-center gap-2 overflow-hidden text-left">
           <div className="bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold">
             {isPending ? (

@@ -84,13 +84,18 @@ export function ExecutiveIntelligenceDashboard({
         {/* Global Controls */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Time Window Selector */}
-          <div className="flex items-center gap-1 bg-surface-2 p-1 rounded-lg border border-border-subtle">
+          <div
+            role="group"
+            aria-label="Trend time window selector"
+            className="flex items-center gap-1 bg-surface-2 p-1 rounded-lg border border-border-subtle"
+          >
             {(["7d", "30d", "90d"] as const).map((tw) => (
               <button
                 key={tw}
                 onClick={() => handleTimeWindowChange(tw)}
                 disabled={isPending}
-                className={`px-2.5 py-1 rounded text-xs font-mono font-medium transition-all ${
+                aria-pressed={timeWindow === tw}
+                className={`px-2.5 py-1 rounded text-xs font-mono font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                   timeWindow === tw
                     ? "bg-brand-primary text-white shadow-xs"
                     : "text-muted-foreground hover:text-foreground"

@@ -144,10 +144,11 @@ export function ClientIntelligenceSection({
                       render={<Link href={`/clients/${client.clientId}`} />}
                       variant="ghost"
                       size="sm"
+                      aria-label={`View CRM profile for ${client.clientName}`}
                       className="h-6 text-xs px-2 gap-1 text-brand-primary"
                     >
                       <span>Account CRM</span>
-                      <ArrowRight className="size-3" />
+                      <ArrowRight className="size-3" aria-hidden="true" />
                     </Button>
                   </div>
                 </CardContent>

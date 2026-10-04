@@ -283,6 +283,9 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
 
   return (
     <div className="min-h-screen bg-[#06141B] text-[#F5F7F8] selection:bg-[#0EA5E9]/30">
+      <a href="#portal-review-main" className="skip-link">
+        Skip to review content
+      </a>
       {/* Top Client Header */}
       <header className="sticky top-0 z-30 border-b border-[#253745] bg-[#0E1820]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
@@ -407,7 +410,11 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
       </div>
 
       {/* Main Review Workspace */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <main
+        id="portal-review-main"
+        tabIndex={-1}
+        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 outline-none"
+      >
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Left Column: Creative Assets & Revision Details */}
           <div className="space-y-6 lg:col-span-2">
@@ -498,9 +505,10 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                             variant="ghost"
                             onClick={() => handleDownload(file.fileId, file.title)}
                             disabled={downloadingFileId === file.fileId}
+                            aria-label={`Download ${file.title} (${file.fileType}, ${formatFileSize(file.totalSizeBytes)})`}
                             className="h-8 gap-1.5 text-xs text-[#0EA5E9] hover:bg-[#0EA5E9]/10 hover:text-[#38BDF8]"
                           >
-                            <Download className="size-3.5" />
+                            <Download className="size-3.5" aria-hidden="true" />
                             {downloadingFileId === file.fileId ? "Generating..." : "Download"}
                           </Button>
                         </div>
@@ -667,7 +675,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                       placeholder="Add a comment or question..."
                       value={commentContent}
                       onChange={(e) => setCommentContent(e.target.value)}
-                      className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2.5 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none"
+                      className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2.5 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0EA5E9]"
                     />
                   </div>
                   <Button
@@ -676,7 +684,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                     disabled={isSubmittingComment || !commentContent.trim()}
                     className="w-full bg-[#0EA5E9] text-xs font-semibold text-white hover:bg-[#0284C7]"
                   >
-                    <Send className="mr-1.5 size-3.5" />
+                    <Send className="mr-1.5 size-3.5" aria-hidden="true" />
                     {isSubmittingComment ? "Posting..." : "Send Feedback"}
                   </Button>
                 </form>
@@ -684,7 +692,12 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                 <Separator className="bg-[#253745]" />
 
                 {/* Comment list */}
-                <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                <div
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Feedback and comments list"
+                  className="max-h-80 space-y-3 overflow-y-auto pr-1 outline-none focus-visible:ring-1 focus-visible:ring-[#0EA5E9]/50 rounded"
+                >
                   {data.comments.length === 0 ? (
                     <p className="text-center text-xs text-[#647783]">
                       No comments posted yet.
@@ -773,7 +786,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="e.g. Approved with gratitude for the quick turnaround!"
                   value={approvalNotes}
                   onChange={(e) => setApprovalNotes(e.target.value)}
-                  className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none"
+                  className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                 />
               </div>
 
@@ -783,7 +796,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   id="approve-confirm"
                   checked={approvalConfirmed}
                   onChange={(e) => setApprovalConfirmed(e.target.checked)}
-                  className="mt-0.5 size-4 rounded border-[#253745] bg-[#11212D] text-[#0EA5E9] focus:ring-0"
+                  className="mt-0.5 size-4 rounded border-[#253745] bg-[#11212D] text-[#0EA5E9] focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0E1820]"
                 />
                 <Label htmlFor="approve-confirm" className="text-xs text-[#CCD0CF] leading-snug cursor-pointer">
                   I confirm that I have reviewed the creative assets for Revision {data.deliverable.currentRevision.versionNumber} and grant formal client approval.
@@ -867,7 +880,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="Please describe what needs to be changed in the next iteration..."
                   value={changeNotes}
                   onChange={(e) => setChangeNotes(e.target.value)}
-                  className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none"
+                  className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                 />
               </div>
             </div>

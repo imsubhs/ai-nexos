@@ -67,9 +67,13 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
         </div>
 
         {/* Severity Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div
+          role="group"
+          aria-label="Filter risks by severity"
+          className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0"
+        >
           <span className="text-[11px] text-muted-foreground mr-1 flex items-center gap-1">
-            <Filter className="size-3" />
+            <Filter className="size-3" aria-hidden="true" />
             Filter:
           </span>
           {["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"].map((level) => {
@@ -83,7 +87,8 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
               <button
                 key={level}
                 onClick={() => setSeverityFilter(level)}
-                className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors border ${
+                aria-pressed={isSelected}
+                className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors border outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                   isSelected
                     ? "bg-brand-primary/20 text-brand-primary border-brand-primary/40 font-semibold"
                     : "bg-surface-2 text-muted-foreground border-border-subtle hover:text-foreground"
@@ -159,10 +164,11 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
                       render={<Link href={risk.navigationTarget} />}
                       size="sm"
                       variant="outline"
+                      aria-label={`Investigate ${risk.entityTitle} (${risk.severity} risk)`}
                       className="h-7 text-xs px-2.5 gap-1.5 border-border-subtle hover:border-brand-primary/50"
                     >
                       <span>Investigate</span>
-                      <ArrowRight className="size-3 text-brand-primary" />
+                      <ArrowRight className="size-3 text-brand-primary" aria-hidden="true" />
                     </Button>
                   </div>
                 </CardContent>

@@ -63,9 +63,9 @@ export function WorkloadIntelligenceSection({
         <CardContent className="p-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             {isConcentrated ? (
-              <AlertTriangle className="size-4 text-amber-400 shrink-0" />
+              <AlertTriangle className="size-4 text-amber-400 shrink-0" aria-hidden="true" />
             ) : (
-              <ShieldCheck className="size-4 text-emerald-400 shrink-0" />
+              <ShieldCheck className="size-4 text-emerald-400 shrink-0" aria-hidden="true" />
             )}
             <div>
               <div className="text-xs font-semibold text-foreground-heading">
@@ -81,7 +81,7 @@ export function WorkloadIntelligenceSection({
 
           {unassignedTasksCount > 0 && (
             <div className="flex items-center gap-1.5 shrink-0 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono">
-              <UserX className="size-3.5" />
+              <UserX className="size-3.5" aria-hidden="true" />
               <span>{unassignedTasksCount} tasks need owner</span>
             </div>
           )}
@@ -113,7 +113,14 @@ export function WorkloadIntelligenceSection({
               </div>
 
               {/* Share visual bar */}
-              <div className="h-1 w-full rounded-full bg-surface-3 overflow-hidden">
+              <div
+                className="h-1 w-full rounded-full bg-surface-3 overflow-hidden"
+                role="progressbar"
+                aria-valuenow={member.taskSharePercentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Task share for ${member.name}: ${member.taskSharePercentage}%`}
+              >
                 <div
                   className={`h-full rounded-full ${
                     member.taskSharePercentage > 30

@@ -122,7 +122,7 @@ export function LoginForm({ next }: Readonly<{ next?: string }>) {
       <button
         type="button"
         onClick={() => setMode(mode === "password" ? "magic-link" : "password")}
-        className="text-muted-foreground hover:text-foreground mx-auto inline-flex items-center gap-1.5 text-sm transition-colors"
+        className="text-muted-foreground hover:text-foreground mx-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Mail className="size-3.5" />
         {mode === "password"

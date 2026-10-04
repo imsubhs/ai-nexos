@@ -120,10 +120,11 @@ export function ActionQueueSection({ actionQueue }: ActionQueueSectionProps) {
                     render={<Link href={item.navigationTarget} />}
                     size="sm"
                     variant={isCritical ? "default" : "outline"}
+                    aria-label={`${item.recommendedAction}: ${item.title}`}
                     className="h-7 text-xs px-2.5 gap-1.5 font-medium"
                   >
                     <span>{item.recommendedAction}</span>
-                    <ArrowRight className="size-3" />
+                    <ArrowRight className="size-3" aria-hidden="true" />
                   </Button>
                 </div>
               </CardContent>

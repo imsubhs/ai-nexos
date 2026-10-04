@@ -56,7 +56,10 @@ export function ProjectIntelligenceSection({
       <Card className="bg-surface-1/60 border-border-subtle overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table
+              aria-label="Project portfolio intelligence"
+              className="w-full text-left border-collapse text-xs"
+            >
               <thead>
                 <tr className="border-b border-border-subtle bg-surface-2/70 text-foreground-muted font-mono uppercase text-[10px] tracking-wider">
                   <th className="py-2.5 px-3">Project / Client</th>
@@ -123,7 +126,14 @@ export function ProjectIntelligenceSection({
                               <span>Progress</span>
                               <span>{proj.completionPercentage}%</span>
                             </div>
-                            <div className="h-1.5 w-full rounded-full bg-surface-3 overflow-hidden">
+                            <div
+                              role="progressbar"
+                              aria-valuenow={proj.completionPercentage}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-label={`${proj.projectName} completion progress: ${proj.completionPercentage} percent`}
+                              className="h-1.5 w-full rounded-full bg-surface-3 overflow-hidden"
+                            >
                               <div
                                 className="h-full bg-brand-primary rounded-full"
                                 style={{ width: `${Math.min(100, Math.max(0, proj.completionPercentage))}%` }}
@@ -199,10 +209,11 @@ export function ProjectIntelligenceSection({
                             render={<Link href={`/projects/${proj.projectId}`} />}
                             variant="ghost"
                             size="sm"
+                            aria-label={`Inspect ${proj.projectName} details`}
                             className="h-7 text-xs px-2 gap-1 text-brand-primary"
                           >
                             <span>Inspect</span>
-                            <ArrowRight className="size-3" />
+                            <ArrowRight className="size-3" aria-hidden="true" />
                           </Button>
                         </td>
                       </tr>
