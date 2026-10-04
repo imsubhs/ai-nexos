@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Mail, ShieldAlert } from "lucide-react";
+import { Users, Mail } from "lucide-react";
 import { MembersTable, type Member } from "./members-table";
 import { PendingInvitationsTable } from "./pending-invitations-table";
 import { InviteMemberDialog } from "./invite-member-dialog";

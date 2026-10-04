@@ -9,7 +9,7 @@ import {
 } from "@/db/schema";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
