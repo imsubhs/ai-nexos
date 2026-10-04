@@ -143,7 +143,7 @@ describe("Phase 4I: Accessibility + Polish", () => {
 
     it("comment textarea has focus ring and accessible placeholder", () => {
       expect(content).toContain("focus-visible:ring-2");
-      expect(content).toContain("focus-visible:ring-[#0EA5E9]");
+      expect(content).toContain("focus-visible:ring-[#D6D6D6]");
     });
 
     it("approval checkbox and change request form inputs provide clear focus-visible outlines", () => {

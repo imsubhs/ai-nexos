@@ -103,63 +103,64 @@
 }
 
 :root {
-  /* Light Mode Fallback Tokens */
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --foreground-heading: #020617;
-  --foreground-secondary: #475569;
-  --foreground-muted: #64748b;
-  --foreground-subtle: #94a3b8;
+  /* Light Mode Tokens (Canonical 5-Color Hierarchy) */
+  --background: #ffffff;
+  --foreground: #545a5b;
+  --foreground-heading: #06151e;
+  --foreground-secondary: #545a5b;
+  --foreground-muted: #898a8c;
+  --foreground-subtle: #898a8c;
 
-  --surface-0: #f8fafc;
+  --surface-0: #ffffff;
   --surface-1: #ffffff;
   --surface-2: #ffffff;
-  --surface-3: #f1f5f9;
+  --surface-3: #d6d6d6;
   --surface-4: #ffffff;
-  --steel-slate: #94a3b8;
-  --soft-silver: #e2e8f0;
+  --steel-slate: #545a5b;
+  --soft-silver: #d6d6d6;
 
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #545a5b;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0284c7;
+  --popover-foreground: #545a5b;
+  --primary: #06151e;
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0284c7;
+  --primary-hover: #545a5b;
+  --secondary: #d6d6d6;
+  --secondary-foreground: #06151e;
+  --muted: #d6d6d6;
+  --muted-foreground: #545a5b;
+  --accent: #d6d6d6;
+  --accent-foreground: #06151e;
   --destructive: #e11d48;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
-  --border-subtle: rgba(0, 0, 0, 0.04);
-  --border-strong: rgba(0, 0, 0, 0.16);
-  --input: rgba(0, 0, 0, 0.12);
-  --ring: rgba(2, 132, 199, 0.4);
+  --border: #d6d6d6;
+  --border-subtle: rgba(214, 214, 214, 0.5);
+  --border-strong: #545a5b;
+  --input: #d6d6d6;
+  --ring: #06151e;
 
-  --chart-1: #0284c7;
-  --chart-2: #0ea5e9;
-  --chart-3: #38bdf8;
+  --chart-1: #06151e;
+  --chart-2: #545a5b;
+  --chart-3: #898a8c;
   --chart-4: #059669;
   --chart-5: #d97706;
 
   --radius: 0.25rem;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #0284c7;
+  --sidebar-foreground: #545a5b;
+  --sidebar-primary: #06151e;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #0284c7;
-  --sidebar-border: rgba(0, 0, 0, 0.08);
-  --sidebar-ring: rgba(2, 132, 199, 0.4);
+  --sidebar-accent: #d6d6d6;
+  --sidebar-accent-foreground: #06151e;
+  --sidebar-border: #d6d6d6;
+  --sidebar-ring: #06151e;
 
-  --brand-primary: #0284c7;
-  --brand-primary-hover: #0369a1;
-  --brand-primary-soft: #0ea5e9;
-  --brand-primary-tint: #e0f2fe;
+  --brand-primary: #06151e;
+  --brand-primary-hover: #545a5b;
+  --brand-primary-soft: #898a8c;
+  --brand-primary-tint: #d6d6d6;
 
   --success: #10b981;
   --success-foreground: #ffffff;
@@ -167,16 +168,16 @@
   --warning: #f59e0b;
   --warning-foreground: #ffffff;
   --warning-bg: rgba(245, 158, 11, 0.12);
-  --info: #0284c7;
+  --info: #06151e;
   --info-foreground: #ffffff;
-  --info-bg: rgba(2, 132, 199, 0.12);
-  --neutral-status: #64748b;
-  --neutral-status-bg: rgba(100, 116, 139, 0.12);
+  --info-bg: rgba(6, 21, 30, 0.12);
+  --neutral-status: #898a8c;
+  --neutral-status-bg: rgba(137, 138, 140, 0.12);
 
   --priority-critical: #e11d48;
   --priority-high: #f97316;
   --priority-medium: #f59e0b;
-  --priority-low: #0284c7;
+  --priority-low: #06151e;
 
   --health-on-track: #10b981;
   --health-at-risk: #f59e0b;
@@ -186,87 +187,87 @@
 
 .dark {
   /* ==========================================================================
-     AI NEX OS — Master Deep Navy / Obsidian + Electric Sky Foundation
+     AI NEX OS — Master Canonical 5-Color Foundation
      ========================================================================== */
 
   /* 1. Tonal Stratification */
-  --background: #06141b;              /* Surface 0: Application Viewport Canvas Floor */
-  --surface-0: #06141b;               /* Deep Navy Ground */
-  --surface-1: #0e1820;               /* Surface 1: Navigation Chrome, Sidebar, Table Wells */
-  --surface-2: #11212d;               /* Surface 2: Primary Workstation Cards, Tables, Inspectors */
-  --surface-3: #253745;               /* Surface 3: Hover Surfaces, Active Tabs, Drop Targets */
-  --surface-4: #304554;               /* Surface 4: Command Center ⌘K, Elevated Dialogs */
+  --background: #06151e;              /* Surface 0: Deep Navy Canvas Floor */
+  --surface-0: #06151e;               /* Deep Navy Ground */
+  --surface-1: #06151e;               /* Surface 1: Navigation Chrome, Sidebar, Table Wells */
+  --surface-2: #06151e;               /* Surface 2: Primary Workstation Cards, Tables, Inspectors */
+  --surface-3: #545a5b;               /* Surface 3: Dark Secondary Surfaces, Hover, Active Tabs */
+  --surface-4: #545a5b;               /* Surface 4: Elevated Dialogs, Command Center ⌘K */
 
-  --steel-slate: #4a5c6a;
-  --soft-silver: #ccd0cf;
+  --steel-slate: #545a5b;
+  --soft-silver: #d6d6d6;
 
   /* 2. Typographic Luminance Hierarchy */
-  --foreground: #f5f7f8;              /* Primary text (high contrast, comfortable) */
+  --foreground: #ffffff;              /* Primary text (high contrast, WCAG AAA 19.3:1) */
   --foreground-heading: #ffffff;      /* Display headings & critical metric numbers */
-  --foreground-secondary: #ccd0cf;    /* Secondary text, column headers, timestamps */
-  --foreground-muted: #9ba8ab;        /* Muted narrative, helper labels */
-  --foreground-subtle: #647783;       /* Subtitle/metadata, shortcut pills (⌘K) */
+  --foreground-secondary: #d6d6d6;    /* Secondary text, column headers, timestamps */
+  --foreground-muted: #898a8c;        /* Muted narrative, helper labels */
+  --foreground-subtle: #898a8c;       /* Subtitle/metadata, shortcut pills (⌘K) */
 
   /* 3. shadcn/ui Standard Compatibility Mappings */
-  --card: #11212d;                    /* Matches Surface 2 */
-  --card-foreground: #f5f7f8;
-  --popover: #304554;                 /* Matches Surface 4 */
-  --popover-foreground: #f5f7f8;
+  --card: #06151e;                    /* Matches Surface 2 / Primary dark surfaces */
+  --card-foreground: #ffffff;
+  --popover: #545a5b;                 /* Matches Surface 4 / Elevated secondary surfaces */
+  --popover-foreground: #ffffff;
 
-  /* 4. AI NEX OS Brand Accent (Electric Sky) */
-  --brand-primary: #0ea5e9;
-  --brand-primary-hover: #0284c7;
-  --brand-primary-soft: #38bdf8;
-  --brand-primary-tint: #89ceff;
+  /* 4. Brand Accent & Primary Controls */
+  --brand-primary: #ffffff;
+  --brand-primary-hover: #d6d6d6;
+  --brand-primary-soft: #d6d6d6;
+  --brand-primary-tint: #898a8c;
 
-  --primary: #0ea5e9;
-  --primary-hover: #0284c7;
-  --primary-foreground: #ffffff;
-  --secondary: #253745;
-  --secondary-foreground: #f5f7f8;
-  --muted: #253745;
-  --muted-foreground: #9ba8ab;
-  --accent: #253745;
-  --accent-foreground: #38bdf8;
+  --primary: #ffffff;
+  --primary-hover: #d6d6d6;
+  --primary-foreground: #06151e;
+  --secondary: #545a5b;
+  --secondary-foreground: #ffffff;
+  --muted: #545a5b;
+  --muted-foreground: #d6d6d6;
+  --accent: #545a5b;
+  --accent-foreground: #ffffff;
 
   /* 5. Hairline Micro-Borders & Optical Outlines */
-  --border-subtle: rgba(255, 255, 255, 0.06);   /* Structural grid lines & table dividers */
-  --border: rgba(255, 255, 255, 0.09);          /* Default card outlines & control groups */
-  --border-strong: rgba(255, 255, 255, 0.14);   /* Elevated controls, hovered cards, dialogs */
-  --input: rgba(255, 255, 255, 0.12);           /* Form inputs */
-  --ring: rgba(14, 165, 233, 0.45);             /* Electric Sky focus ring & scrubber needles */
+  --border-subtle: rgba(214, 214, 214, 0.08);   /* Structural grid lines & table dividers */
+  --border: #545a5b;                             /* Default card outlines & control groups */
+  --border-strong: #d6d6d6;                      /* Elevated controls, hovered cards, dialogs */
+  --input: #545a5b;                              /* Form inputs */
+  --ring: #d6d6d6;                               /* High-contrast focus ring (13.1:1 ratio) */
 
   /* 6. Sidebar Navigation System */
-  --sidebar: #0e1820;
-  --sidebar-foreground: #f5f7f8;
-  --sidebar-primary: #0ea5e9;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #253745;
-  --sidebar-accent-foreground: #38bdf8;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-ring: rgba(14, 165, 233, 0.45);
+  --sidebar: #06151e;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #06151e;
+  --sidebar-accent: #545a5b;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #545a5b;
+  --sidebar-ring: #d6d6d6;
 
   /* 7. Functional Semantic Tokens (Translucent Chips + Solid Text) */
   --success: #34d399;                            /* Emerald (Approved, Completed) */
-  --success-foreground: #06141b;
+  --success-foreground: #06151e;
   --success-bg: rgba(52, 211, 153, 0.12);
   --warning: #fbbf24;                            /* Amber (In Review, At Risk) */
-  --warning-foreground: #06141b;
+  --warning-foreground: #06151e;
   --warning-bg: rgba(251, 191, 36, 0.12);
   --destructive: #f43f5e;                        /* Rose (Critical, Blocked, Delete) */
   --destructive-foreground: #ffffff;
   --destructive-bg: rgba(244, 63, 94, 0.12);
-  --info: #38bdf8;                               /* Sky/Cyan (Active, In Progress) */
-  --info-foreground: #06141b;
-  --info-bg: rgba(56, 189, 248, 0.12);
-  --neutral-status: #64748b;                    /* Slate (Planning, Backlog) */
-  --neutral-status-bg: rgba(100, 116, 139, 0.12);
+  --info: #898a8c;                               /* Neutral Info (Active, In Progress) */
+  --info-foreground: #06151e;
+  --info-bg: rgba(137, 138, 140, 0.12);
+  --neutral-status: #898a8c;                    /* Slate (Planning, Backlog) */
+  --neutral-status-bg: rgba(137, 138, 140, 0.12);
 
   /* 8. Priority Scale */
   --priority-critical: #f43f5e;
   --priority-high: #fb923c;
   --priority-medium: #fbbf24;
-  --priority-low: #38bdf8;
+  --priority-low: #898a8c;
 
   /* 9. Project Health Scale */
   --health-on-track: #34d399;
@@ -275,10 +276,10 @@
   --health-blocked: #f43f5e;
 
   /* 10. Charts Telemetry Palette */
-  --chart-1: #0ea5e9;
+  --chart-1: #ffffff;
   --chart-2: #34d399;
   --chart-3: #fbbf24;
-  --chart-4: #38bdf8;
+  --chart-4: #898a8c;
   --chart-5: #a78bfa;
 
   /* 11. Geometry */
@@ -312,7 +313,7 @@
 }
 
 .electric-glow {
-  box-shadow: 0 0 14px rgba(14, 165, 233, 0.35);
+  box-shadow: 0 0 14px rgba(214, 214, 214, 0.35);
 }
 
 /* Accessibility: High-contrast focus indicators */

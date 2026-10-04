@@ -272,38 +272,38 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
   const getFileIcon = (fileType: string) => {
     switch (fileType) {
       case "image":
-        return <FileImage className="size-5 text-[#0EA5E9]" />;
+        return <FileImage className="size-5 text-[#FFFFFF]" />;
       case "video":
-        return <FileVideo className="size-5 text-[#38BDF8]" />;
+        return <FileVideo className="size-5 text-[#D6D6D6]" />;
       case "document":
       default:
-        return <FileText className="size-5 text-[#9BA8AB]" />;
+        return <FileText className="size-5 text-[#898A8C]" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#06141B] text-[#F5F7F8] selection:bg-[#0EA5E9]/30">
+    <div className="min-h-screen bg-[#06151E] text-[#FFFFFF] selection:bg-[#FFFFFF]/30">
       <a href="#portal-review-main" className="skip-link">
         Skip to review content
       </a>
       {/* Top Client Header */}
-      <header className="sticky top-0 z-30 border-b border-[#253745] bg-[#0E1820]/95 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-[#545A5B] bg-[#06151E]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-[#0EA5E9] font-bold text-white shadow-sm">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-[#FFFFFF] font-bold text-[#06151E] shadow-sm">
               NX
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold tracking-tight text-[#F5F7F8]">
+                <span className="text-sm font-semibold tracking-tight text-[#FFFFFF]">
                   AI NEX OS
                 </span>
-                <span className="text-xs text-[#647783]">•</span>
-                <span className="text-xs font-medium text-[#0EA5E9]">
+                <span className="text-xs text-[#898A8C]">•</span>
+                <span className="text-xs font-medium text-[#D6D6D6]">
                   Client Review Portal
                 </span>
               </div>
-              <p className="text-xs text-[#9BA8AB]">
+              <p className="text-xs text-[#898A8C]">
                 {data.project.name} {data.project.code ? `(${data.project.code})` : ""}
               </p>
             </div>
@@ -312,9 +312,9 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="border-[#253745] bg-[#11212D] text-xs font-medium text-[#CCD0CF]"
+              className="border-[#545A5B] bg-[#06151E] text-xs font-medium text-[#D6D6D6]"
             >
-              <ShieldCheck className="mr-1 size-3.5 text-[#0EA5E9]" />
+              <ShieldCheck className="mr-1 size-3.5 text-[#D6D6D6]" />
               {data.accessLevel === "approver"
                 ? "Full Approval Access"
                 : data.accessLevel === "full_access"
@@ -328,7 +328,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
       </header>
 
       {/* Review Banner */}
-      <div className="border-b border-[#253745] bg-[#11212D]/60 py-4">
+      <div className="border-b border-[#545A5B] bg-[#06151E]/60 py-4">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-start gap-3">
             {data.reviewStatus.currentStatus === "approved" ? (
@@ -340,13 +340,13 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                 <AlertCircle className="size-6" />
               </div>
             ) : (
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#0EA5E9]/20 text-[#0EA5E9]">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#545A5B]/30 text-[#D6D6D6]">
                 <Clock className="size-6" />
               </div>
             )}
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-[#F5F7F8]">
+                <h1 className="text-xl font-bold tracking-tight text-[#FFFFFF]">
                   {data.deliverable.title}
                 </h1>
                 <Badge
@@ -355,7 +355,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                       ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
                       : data.reviewStatus.currentStatus === "changes_requested"
                         ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                        : "bg-[#0EA5E9]/20 text-[#38BDF8] border-[#0EA5E9]/30"
+                        : "bg-[#545A5B]/30 text-[#D6D6D6] border-[#545A5B]"
                   }
                 >
                   {data.reviewStatus.currentStatus === "approved"
@@ -366,13 +366,13 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="border-[#253745] bg-[#0E1820] text-xs text-[#CCD0CF]"
+                  className="border-[#545A5B] bg-[#06151E] text-xs text-[#D6D6D6]"
                 >
-                  <Layers className="mr-1 size-3 text-[#0EA5E9]" />
+                  <Layers className="mr-1 size-3 text-[#D6D6D6]" />
                   Revision {data.deliverable.currentRevision.versionNumber}
                 </Badge>
               </div>
-              <p className="mt-1 text-xs text-[#9BA8AB]">
+              <p className="mt-1 text-xs text-[#898A8C]">
                 {data.reviewStatus.currentStatus === "approved"
                   ? `Approved on ${new Date(data.reviewStatus.approvedAt || "").toLocaleDateString()} by ${data.reviewStatus.approvedBy || "Client Reviewer"}`
                   : data.reviewStatus.currentStatus === "changes_requested"
@@ -399,7 +399,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                 id="portal-request-changes-btn"
                 variant="outline"
                 onClick={() => setIsChangeRequestOpen(true)}
-                className="border-[#253745] bg-[#0E1820] text-[#CCD0CF] hover:bg-[#11212D] hover:text-white"
+                className="border-[#545A5B] bg-[#06151E] text-[#D6D6D6] hover:bg-[#545A5B] hover:text-white"
               >
                 <AlertCircle className="mr-1.5 size-4 text-amber-400" />
                 Request Changes
@@ -419,17 +419,17 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
           {/* Left Column: Creative Assets & Revision Details */}
           <div className="space-y-6 lg:col-span-2">
             {/* Deliverable Overview Card */}
-            <Card className="border-[#253745] bg-[#0E1820] text-[#F5F7F8]">
+            <Card className="border-[#545A5B] bg-[#06151E] text-[#FFFFFF]">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold text-[#F5F7F8]">
+                <CardTitle className="text-base font-semibold text-[#FFFFFF]">
                   Deliverable Scope & Brief
                 </CardTitle>
-                <CardDescription className="text-xs text-[#9BA8AB]">
+                <CardDescription className="text-xs text-[#898A8C]">
                   Type: {data.deliverable.type.toUpperCase()} • Revision {data.deliverable.currentRevision.versionNumber}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm leading-relaxed text-[#CCD0CF]">
+                <p className="text-sm leading-relaxed text-[#D6D6D6]">
                   {data.deliverable.description || "No specific client brief provided."}
                 </p>
                 {data.deliverable.currentRevision.reason && (
@@ -446,14 +446,14 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
             </Card>
 
             {/* Attached Creative Assets Card */}
-            <Card className="border-[#253745] bg-[#0E1820] text-[#F5F7F8]">
+            <Card className="border-[#545A5B] bg-[#06151E] text-[#FFFFFF]">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-semibold text-[#F5F7F8]">
+                    <CardTitle className="text-base font-semibold text-[#FFFFFF]">
                       Creative Assets ({data.deliverable.files.length})
                     </CardTitle>
-                    <CardDescription className="text-xs text-[#9BA8AB]">
+                    <CardDescription className="text-xs text-[#898A8C]">
                       Assets linked to Revision {data.deliverable.currentRevision.versionNumber} for client evaluation
                     </CardDescription>
                   </div>
@@ -461,12 +461,12 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
               </CardHeader>
               <CardContent>
                 {data.deliverable.files.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[#253745] p-8 text-center">
-                    <FileIcon className="size-8 text-[#647783]" />
-                    <p className="mt-2 text-sm font-medium text-[#9BA8AB]">
+                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[#545A5B] p-8 text-center">
+                    <FileIcon className="size-8 text-[#898A8C]" />
+                    <p className="mt-2 text-sm font-medium text-[#898A8C]">
                       No files attached to this revision
                     </p>
-                    <p className="text-xs text-[#647783]">
+                    <p className="text-xs text-[#898A8C]">
                       Assets will appear here once uploaded by the creative team.
                     </p>
                   </div>
@@ -475,38 +475,38 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                     {data.deliverable.files.map((file) => (
                       <div
                         key={file.fileId}
-                        className="group flex flex-col justify-between rounded-lg border border-[#253745] bg-[#11212D]/80 p-4 transition-colors hover:border-[#0EA5E9]/50"
+                        className="group flex flex-col justify-between rounded-lg border border-[#545A5B] bg-[#06151E]/80 p-4 transition-colors hover:border-[#D6D6D6]/50"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#0E1820] border border-[#253745]">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#06151E] border border-[#545A5B]">
                             {getFileIcon(file.fileType)}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-[#F5F7F8]" title={file.title}>
+                            <p className="truncate text-sm font-medium text-[#FFFFFF]" title={file.title}>
                               {file.title}
                             </p>
                             <div className="mt-1 flex items-center gap-2">
                               <Badge
                                 variant="outline"
-                                className="border-[#253745] bg-[#0E1820] px-1.5 py-0 text-[10px] uppercase text-[#CCD0CF]"
+                                className="border-[#545A5B] bg-[#06151E] px-1.5 py-0 text-[10px] uppercase text-[#D6D6D6]"
                               >
                                 {file.fileType}
                               </Badge>
-                              <span className="text-[11px] text-[#647783]">
+                              <span className="text-[11px] text-[#898A8C]">
                                 {formatFileSize(file.totalSizeBytes)}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="mt-4 pt-3 border-t border-[#253745]/60 flex items-center justify-end">
+                        <div className="mt-4 pt-3 border-t border-[#545A5B]/60 flex items-center justify-end">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => handleDownload(file.fileId, file.title)}
                             disabled={downloadingFileId === file.fileId}
                             aria-label={`Download ${file.title} (${file.fileType}, ${formatFileSize(file.totalSizeBytes)})`}
-                            className="h-8 gap-1.5 text-xs text-[#0EA5E9] hover:bg-[#0EA5E9]/10 hover:text-[#38BDF8]"
+                            className="h-8 gap-1.5 text-xs text-[#D6D6D6] hover:bg-[#545A5B]/30 hover:text-white"
                           >
                             <Download className="size-3.5" aria-hidden="true" />
                             {downloadingFileId === file.fileId ? "Generating..." : "Download"}
@@ -520,19 +520,19 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
             </Card>
 
             {/* Approval History & Audit Trail */}
-            <Card className="border-[#253745] bg-[#0E1820] text-[#F5F7F8]">
+            <Card className="border-[#545A5B] bg-[#06151E] text-[#FFFFFF]">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold text-[#F5F7F8]">
-                  <History className="size-4 text-[#0EA5E9]" />
+                <CardTitle className="flex items-center gap-2 text-base font-semibold text-[#FFFFFF]">
+                  <History className="size-4 text-[#D6D6D6]" />
                   Approval Chain & Audit Trail ({data.approvalHistory.length})
                 </CardTitle>
-                <CardDescription className="text-xs text-[#9BA8AB]">
+                <CardDescription className="text-xs text-[#898A8C]">
                   Recorded client signatures and revision milestones
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {data.approvalHistory.length === 0 ? (
-                  <p className="text-xs text-[#647783]">
+                  <p className="text-xs text-[#898A8C]">
                     No approval actions recorded yet.
                   </p>
                 ) : (
@@ -540,7 +540,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                     {data.approvalHistory.map((item) => (
                       <div
                         key={item.approvalId}
-                        className="flex flex-col gap-1 rounded-lg border border-[#253745] bg-[#11212D]/40 p-3"
+                        className="flex flex-col gap-1 rounded-lg border border-[#545A5B] bg-[#06151E]/40 p-3"
                       >
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
@@ -553,21 +553,21 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                                 Changes Requested
                               </Badge>
                             )}
-                            <span className="font-medium text-[#F5F7F8]">
+                            <span className="font-medium text-[#FFFFFF]">
                               {item.approverName || "Reviewer"}
                             </span>
                             {item.approverEmail && (
-                              <span className="text-[#647783]">
+                              <span className="text-[#898A8C]">
                                 &lt;{item.approverEmail}&gt;
                               </span>
                             )}
                           </div>
-                          <span className="text-[#647783]">
+                          <span className="text-[#898A8C]">
                             {new Date(item.createdAt).toLocaleString()}
                           </span>
                         </div>
                         {item.notes && (
-                          <p className="mt-1 text-xs text-[#CCD0CF]">
+                          <p className="mt-1 text-xs text-[#D6D6D6]">
                             {item.notes}
                           </p>
                         )}
@@ -582,12 +582,12 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
           {/* Right Column: Approval Action Center & Comments */}
           <div className="space-y-6">
             {/* Primary Action Card */}
-            <Card className="border-[#253745] bg-[#0E1820] text-[#F5F7F8] shadow-md">
+            <Card className="border-[#545A5B] bg-[#06151E] text-[#FFFFFF] shadow-md">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold text-[#F5F7F8]">
+                <CardTitle className="text-base font-semibold text-[#FFFFFF]">
                   Review Action Center
                 </CardTitle>
-                <CardDescription className="text-xs text-[#9BA8AB]">
+                <CardDescription className="text-xs text-[#898A8C]">
                   Official client decision on Revision {data.deliverable.currentRevision.versionNumber}
                 </CardDescription>
               </CardHeader>
@@ -600,7 +600,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                     <p className="mt-2 text-sm font-semibold text-emerald-300">
                       Deliverable Approved & Locked
                     </p>
-                    <p className="mt-1 text-xs text-[#CCD0CF]">
+                    <p className="mt-1 text-xs text-[#D6D6D6]">
                       This revision has been approved by{" "}
                       <span className="font-medium text-white">
                         {data.reviewStatus.approvedBy || "Client Reviewer"}
@@ -625,13 +625,13 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                         id="portal-changes-card-btn"
                         variant="outline"
                         onClick={() => setIsChangeRequestOpen(true)}
-                        className="w-full border-[#253745] bg-[#11212D] text-[#CCD0CF] hover:bg-[#11212D]/80 hover:text-white"
+                        className="w-full border-[#545A5B] bg-[#545A5B] text-[#D6D6D6] hover:bg-[#545A5B]/80 hover:text-white"
                       >
                         <AlertCircle className="mr-2 size-4 text-amber-400" />
                         Request Changes
                       </Button>
                     )}
-                    <p className="text-[11px] text-center text-[#647783]">
+                    <p className="text-[11px] text-center text-[#898A8C]">
                       Action will be timestamped and permanently attributed to your contact profile.
                     </p>
                   </div>
@@ -640,13 +640,13 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
             </Card>
 
             {/* Comments & Communication Feed */}
-            <Card className="border-[#253745] bg-[#0E1820] text-[#F5F7F8]">
+            <Card className="border-[#545A5B] bg-[#06151E] text-[#FFFFFF]">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold text-[#F5F7F8]">
-                  <MessageSquare className="size-4 text-[#0EA5E9]" />
+                <CardTitle className="flex items-center gap-2 text-base font-semibold text-[#FFFFFF]">
+                  <MessageSquare className="size-4 text-[#D6D6D6]" />
                   Feedback & Comments ({data.comments.length})
                 </CardTitle>
-                <CardDescription className="text-xs text-[#9BA8AB]">
+                <CardDescription className="text-xs text-[#898A8C]">
                   Direct exchange between client reviewer and production team
                 </CardDescription>
               </CardHeader>
@@ -654,7 +654,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                 {/* Comment composer */}
                 <form onSubmit={handleCommentSubmit} className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="author-input" className="text-xs text-[#CCD0CF]">
+                    <Label htmlFor="author-input" className="text-xs text-[#D6D6D6]">
                       Your Name
                     </Label>
                     <Input
@@ -662,11 +662,11 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                       placeholder="e.g. Jane Doe"
                       value={commentAuthor}
                       onChange={(e) => setCommentAuthor(e.target.value)}
-                      className="h-8 border-[#253745] bg-[#11212D] text-xs text-[#F5F7F8]"
+                      className="h-8 border-[#545A5B] bg-[#06151E] text-xs text-[#FFFFFF]"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="comment-input" className="text-xs text-[#CCD0CF]">
+                    <Label htmlFor="comment-input" className="text-xs text-[#D6D6D6]">
                       Comment / Feedback
                     </Label>
                     <textarea
@@ -675,51 +675,51 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                       placeholder="Add a comment or question..."
                       value={commentContent}
                       onChange={(e) => setCommentContent(e.target.value)}
-                      className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2.5 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0EA5E9]"
+                      className="w-full rounded-md border border-[#545A5B] bg-[#06151E] p-2.5 text-xs text-[#FFFFFF] placeholder-[#898A8C] focus:border-[#D6D6D6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D6D6D6]"
                     />
                   </div>
                   <Button
                     type="submit"
                     size="sm"
                     disabled={isSubmittingComment || !commentContent.trim()}
-                    className="w-full bg-[#0EA5E9] text-xs font-semibold text-white hover:bg-[#0284C7]"
+                    className="w-full bg-[#FFFFFF] text-xs font-semibold text-[#06151E] hover:bg-[#D6D6D6]"
                   >
                     <Send className="mr-1.5 size-3.5" aria-hidden="true" />
                     {isSubmittingComment ? "Posting..." : "Send Feedback"}
                   </Button>
                 </form>
 
-                <Separator className="bg-[#253745]" />
+                <Separator className="bg-[#545A5B]" />
 
                 {/* Comment list */}
                 <div
                   tabIndex={0}
                   role="region"
                   aria-label="Feedback and comments list"
-                  className="max-h-80 space-y-3 overflow-y-auto pr-1 outline-none focus-visible:ring-1 focus-visible:ring-[#0EA5E9]/50 rounded"
+                  className="max-h-80 space-y-3 overflow-y-auto pr-1 outline-none focus-visible:ring-1 focus-visible:ring-[#D6D6D6]/50 rounded"
                 >
                   {data.comments.length === 0 ? (
-                    <p className="text-center text-xs text-[#647783]">
+                    <p className="text-center text-xs text-[#898A8C]">
                       No comments posted yet.
                     </p>
                   ) : (
                     data.comments.map((c) => (
                       <div
                         key={c.commentId}
-                        className="rounded-lg border border-[#253745] bg-[#11212D]/60 p-3"
+                        className="rounded-lg border border-[#545A5B] bg-[#06151E]/60 p-3"
                       >
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-[#F5F7F8]">
+                          <span className="font-semibold text-[#FFFFFF]">
                             {c.authorName}
                           </span>
-                          <span className="text-[11px] text-[#647783]">
+                          <span className="text-[11px] text-[#898A8C]">
                             {new Date(c.createdAt).toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-[#CCD0CF] leading-relaxed">
+                        <p className="mt-1 text-xs text-[#D6D6D6] leading-relaxed">
                           {c.content}
                         </p>
                       </div>
@@ -734,21 +734,21 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
 
       {/* Approve Modal */}
       <Dialog open={isApproveOpen} onOpenChange={setIsApproveOpen}>
-        <DialogContent className="border-[#253745] bg-[#0E1820] text-[#F5F7F8] sm:max-w-md">
+        <DialogContent className="border-[#545A5B] bg-[#06151E] text-[#FFFFFF] sm:max-w-md">
           <form onSubmit={handleApproveSubmit}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-lg text-emerald-400">
                 <CheckCircle2 className="size-5" />
                 Approve Deliverable
               </DialogTitle>
-              <DialogDescription className="text-xs text-[#9BA8AB]">
+              <DialogDescription className="text-xs text-[#898A8C]">
                 You are approving Revision {data.deliverable.currentRevision.versionNumber} of &quot;{data.deliverable.title}&quot;. Once confirmed, this deliverable will be locked for production.
               </DialogDescription>
             </DialogHeader>
 
             <div className="mt-4 space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="approve-name" className="text-xs text-[#CCD0CF]">
+                <Label htmlFor="approve-name" className="text-xs text-[#D6D6D6]">
                   Full Name (Signature) *
                 </Label>
                 <Input
@@ -757,12 +757,12 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="e.g. Sarah Connor"
                   value={approverName}
                   onChange={(e) => setApproverName(e.target.value)}
-                  className="border-[#253745] bg-[#11212D] text-xs text-[#F5F7F8]"
+                  className="border-[#545A5B] bg-[#06151E] text-xs text-[#FFFFFF]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="approve-email" className="text-xs text-[#CCD0CF]">
+                <Label htmlFor="approve-email" className="text-xs text-[#D6D6D6]">
                   Email Address *
                 </Label>
                 <Input
@@ -772,12 +772,12 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="s.connor@clientcorp.com"
                   value={approverEmail}
                   onChange={(e) => setApproverEmail(e.target.value)}
-                  className="border-[#253745] bg-[#11212D] text-xs text-[#F5F7F8]"
+                  className="border-[#545A5B] bg-[#06151E] text-xs text-[#FFFFFF]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="approve-notes" className="text-xs text-[#CCD0CF]">
+                <Label htmlFor="approve-notes" className="text-xs text-[#D6D6D6]">
                   Approval Notes (Optional)
                 </Label>
                 <textarea
@@ -786,7 +786,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="e.g. Approved with gratitude for the quick turnaround!"
                   value={approvalNotes}
                   onChange={(e) => setApprovalNotes(e.target.value)}
-                  className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="w-full rounded-md border border-[#545A5B] bg-[#06151E] p-2 text-xs text-[#FFFFFF] placeholder-[#898A8C] focus:border-[#D6D6D6] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                 />
               </div>
 
@@ -796,9 +796,9 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   id="approve-confirm"
                   checked={approvalConfirmed}
                   onChange={(e) => setApprovalConfirmed(e.target.checked)}
-                  className="mt-0.5 size-4 rounded border-[#253745] bg-[#11212D] text-[#0EA5E9] focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0E1820]"
+                  className="mt-0.5 size-4 rounded border-[#545A5B] bg-[#06151E] text-[#D6D6D6] focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 focus-visible:ring-offset-[#06151E]"
                 />
-                <Label htmlFor="approve-confirm" className="text-xs text-[#CCD0CF] leading-snug cursor-pointer">
+                <Label htmlFor="approve-confirm" className="text-xs text-[#D6D6D6] leading-snug cursor-pointer">
                   I confirm that I have reviewed the creative assets for Revision {data.deliverable.currentRevision.versionNumber} and grant formal client approval.
                 </Label>
               </div>
@@ -809,7 +809,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                 type="button"
                 variant="ghost"
                 onClick={() => setIsApproveOpen(false)}
-                className="text-xs text-[#9BA8AB] hover:bg-[#11212D] hover:text-white"
+                className="text-xs text-[#898A8C] hover:bg-[#545A5B] hover:text-white"
               >
                 Cancel
               </Button>
@@ -827,21 +827,21 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
 
       {/* Request Changes Modal */}
       <Dialog open={isChangeRequestOpen} onOpenChange={setIsChangeRequestOpen}>
-        <DialogContent className="border-[#253745] bg-[#0E1820] text-[#F5F7F8] sm:max-w-md">
+        <DialogContent className="border-[#545A5B] bg-[#06151E] text-[#FFFFFF] sm:max-w-md">
           <form onSubmit={handleChangeRequestSubmit}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-lg text-amber-400">
                 <AlertCircle className="size-5" />
                 Request Changes
               </DialogTitle>
-              <DialogDescription className="text-xs text-[#9BA8AB]">
+              <DialogDescription className="text-xs text-[#898A8C]">
                 Specify revision notes for the creative team. A new revision iteration will be initiated.
               </DialogDescription>
             </DialogHeader>
 
             <div className="mt-4 space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="request-name" className="text-xs text-[#CCD0CF]">
+                <Label htmlFor="request-name" className="text-xs text-[#D6D6D6]">
                   Your Name *
                 </Label>
                 <Input
@@ -850,12 +850,12 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="e.g. Sarah Connor"
                   value={requesterName}
                   onChange={(e) => setRequesterName(e.target.value)}
-                  className="border-[#253745] bg-[#11212D] text-xs text-[#F5F7F8]"
+                  className="border-[#545A5B] bg-[#06151E] text-xs text-[#FFFFFF]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="request-email" className="text-xs text-[#CCD0CF]">
+                <Label htmlFor="request-email" className="text-xs text-[#D6D6D6]">
                   Your Email *
                 </Label>
                 <Input
@@ -865,12 +865,12 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="s.connor@clientcorp.com"
                   value={requesterEmail}
                   onChange={(e) => setRequesterEmail(e.target.value)}
-                  className="border-[#253745] bg-[#11212D] text-xs text-[#F5F7F8]"
+                  className="border-[#545A5B] bg-[#06151E] text-xs text-[#FFFFFF]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="request-notes" className="text-xs text-[#CCD0CF]">
+                <Label htmlFor="request-notes" className="text-xs text-[#D6D6D6]">
                   Required Changes & Feedback *
                 </Label>
                 <textarea
@@ -880,7 +880,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                   placeholder="Please describe what needs to be changed in the next iteration..."
                   value={changeNotes}
                   onChange={(e) => setChangeNotes(e.target.value)}
-                  className="w-full rounded-md border border-[#253745] bg-[#11212D] p-2 text-xs text-[#F5F7F8] placeholder-[#647783] focus:border-[#0EA5E9] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                  className="w-full rounded-md border border-[#545A5B] bg-[#06151E] p-2 text-xs text-[#FFFFFF] placeholder-[#898A8C] focus:border-[#D6D6D6] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                 />
               </div>
             </div>
@@ -890,7 +890,7 @@ export function PortalReviewWorkspace({ initialData }: PortalReviewWorkspaceProp
                 type="button"
                 variant="ghost"
                 onClick={() => setIsChangeRequestOpen(false)}
-                className="text-xs text-[#9BA8AB] hover:bg-[#11212D] hover:text-white"
+                className="text-xs text-[#898A8C] hover:bg-[#545A5B] hover:text-white"
               >
                 Cancel
               </Button>

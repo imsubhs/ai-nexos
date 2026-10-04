@@ -48,7 +48,7 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
     if (!trimmed) return;
     const formatted = trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
     if (!/^#[0-9a-fA-F]{6}$/i.test(formatted)) {
-      toast.error("Please enter a valid 6-character hex color (e.g. #0EA5E9)");
+      toast.error("Please enter a valid 6-character hex color (e.g. #06151E)");
       return;
     }
     if (brandColors.includes(formatted)) {
@@ -227,7 +227,7 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Input
-                placeholder="#0EA5E9"
+                placeholder="#06151E"
                 value={colorInput}
                 onChange={(e) => setColorInput(e.target.value)}
                 onKeyDown={(e) => {
