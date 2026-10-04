@@ -60,3 +60,12 @@ export async function reactivateUser(
   if (isDemoMode()) return (mock as any).reactivateUser(...args);
   return (real as any).reactivateUser(...args);
 }
+
+export type { PendingInvitation } from "./real-actions";
+
+export async function getPendingInvitations(
+  ...args: Parameters<typeof real.getPendingInvitations>
+): Promise<Awaited<ReturnType<typeof real.getPendingInvitations>>> {
+  if (isDemoMode()) return (mock as any).getPendingInvitations(...args);
+  return (real as any).getPendingInvitations(...args);
+}

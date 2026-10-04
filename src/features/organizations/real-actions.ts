@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import {
   activityLogs,
+  organizationInvitations,
   organizationMemberships,
   organizations,
   roles,
@@ -8,7 +9,7 @@ import {
 } from "@/db/schema";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
@@ -359,4 +360,52 @@ export async function reactivateUser(data: z.infer<typeof userActionSchema>) {
 
   revalidatePath("/settings/organization");
   return updatedUser;
+}
+
+export type PendingInvitation = {
+  invitationId: string;
+  organizationId: string;
+  email: string;
+  roleId: string;
+  roleName: string;
+  roleKey: string;
+  departmentId: string | null;
+  status: string;
+  expiresAt: Date;
+  createdAt: Date;
+  invitedByName?: string | null;
+};
+
+export async function getPendingInvitations(): Promise<PendingInvitation[]> {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "users", "read");
+
+  const pending = await db.query.organizationInvitations.findMany({
+    where: and(
+      eq(organizationInvitations.organizationId, user.organizationId),
+      eq(organizationInvitations.status, "pending"),
+    ),
+    with: {
+      role: true,
+      department: true,
+      invitedByUser: true,
+    },
+    orderBy: (invites, { desc }) => [desc(invites.createdAt)],
+  });
+
+  return pending.map((inv) => ({
+    invitationId: inv.invitationId,
+    organizationId: inv.organizationId,
+    email: inv.email,
+    roleId: inv.roleId,
+    roleName: inv.role?.roleName ?? "Member",
+    roleKey: inv.role?.roleKey ?? "member",
+    departmentId: inv.departmentId,
+    status: inv.status,
+    expiresAt: inv.expiresAt,
+    createdAt: inv.createdAt,
+    invitedByName: inv.invitedByUser
+      ? `${inv.invitedByUser.firstName ?? ""} ${inv.invitedByUser.lastName ?? ""}`.trim() || inv.invitedByUser.email
+      : null,
+  }));
 }

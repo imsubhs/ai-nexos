@@ -250,3 +250,9 @@ export async function reactivateUser(data: z.infer<typeof userActionSchema>) {
   revalidatePath("/settings/organization");
   return store.users[targetIndex];
 }
+
+export async function getPendingInvitations() {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "users", "read");
+  return [];
+}

@@ -738,6 +738,14 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "pagination page >= 1, pageSize <= 100",
     authorization: "requireCurrentUser + requirePermission",
   },
+  "src/features/organizations/actions.ts::getPendingInvitations": {
+    actionName: "getPendingInvitations",
+    modulePath: "src/features/organizations/actions.ts",
+    policy: RATE_LIMITS.resourceRead,
+    keyResolver: "userAndOrg",
+    resourceBounds: "pagination page >= 1, pageSize <= 100",
+    authorization: "requireCurrentUser + requirePermission",
+  },
   "src/features/organizations/actions.ts::updateUserRole": {
     actionName: "updateUserRole",
     modulePath: "src/features/organizations/actions.ts",
