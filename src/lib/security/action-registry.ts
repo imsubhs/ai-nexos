@@ -1042,6 +1042,14 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "pagination page >= 1, pageSize <= 100",
     authorization: "requireCurrentUser + requirePermission",
   },
+  "src/features/tasks/actions.ts::getTasksByProject": {
+    actionName: "getTasksByProject",
+    modulePath: "src/features/tasks/actions.ts",
+    policy: RATE_LIMITS.resourceRead,
+    keyResolver: "userAndOrg",
+    resourceBounds: "pagination page >= 1, pageSize <= 200",
+    authorization: "requireCurrentUser + requirePermission",
+  },
   "src/features/tasks/actions.ts::startTaskTimer": {
     actionName: "startTaskTimer",
     modulePath: "src/features/tasks/actions.ts",

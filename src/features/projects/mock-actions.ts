@@ -129,17 +129,29 @@ export async function updateProject(
 export async function getProjects(
   ...args: Parameters<typeof real_getProjects>
 ): Promise<Awaited<ReturnType<typeof real_getProjects>>> {
-  const [query, limit = 50, offset = 0] = args;
+  const [query, limit = 50, offset = 0, status, healthStatus] = args;
   const store = getDemoStore();
+  const q = query?.trim().toLowerCase();
 
   return store.projects
     .filter((p) => p.deletedAt === null)
+    .filter((p) => {
+      if (!q) return true;
+      return (
+        p.projectName.toLowerCase().includes(q) ||
+        (p.projectCode && p.projectCode.toLowerCase().includes(q))
+      );
+    })
+    .filter((p) => (status && status !== "all" ? p.status === status : true))
     .filter((p) =>
-      query ? p.projectName.toLowerCase().includes(query.toLowerCase()) : true,
+      healthStatus && healthStatus !== "all"
+        ? p.healthStatus === healthStatus
+        : true,
     )
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(offset, offset + limit) as any;
 }
+
 
 export async function getProjectById(
   ...args: Parameters<typeof real_getProjectById>

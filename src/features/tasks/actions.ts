@@ -25,6 +25,13 @@ export async function getTasks(
   return (real as any).getTasks(...args);
 }
 
+export async function getTasksByProject(
+  ...args: Parameters<typeof real.getTasksByProject>
+): Promise<Awaited<ReturnType<typeof real.getTasksByProject>>> {
+  if (isDemoMode()) return (mock as any).getTasksByProject(...args);
+  return (real as any).getTasksByProject(...args);
+}
+
 export async function startTaskTimer(
   ...args: Parameters<typeof real.startTaskTimer>
 ): Promise<Awaited<ReturnType<typeof real.startTaskTimer>>> {

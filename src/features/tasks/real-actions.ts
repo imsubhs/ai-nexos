@@ -499,6 +499,26 @@ export async function getTasks(
   });
 }
 
+export async function getTasksByProject(
+  projectId: string,
+  cursorOffset: number = 0,
+  limit: number = 200,
+) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "projects", "read");
+
+  return db.query.tasks.findMany({
+    where: and(
+      eq(tasks.projectId, projectId),
+      eq(tasks.organizationId, user.organizationId),
+      isNull(tasks.deletedAt),
+    ),
+    offset: cursorOffset,
+    limit,
+    orderBy: (t, { asc }) => [asc(t.createdAt)],
+  });
+}
+
 /**
  * TIME TRACKING
  */

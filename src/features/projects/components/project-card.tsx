@@ -40,14 +40,18 @@ export function ProjectCard({
     priority: string;
     estimatedEndDate?: Date | string | null;
     completionPercentage: number;
-    client?: { companyName: string } | null;
+    clientId?: string | null;
+    client?: { clientId?: string; companyName: string } | null;
+    manager?: { name?: string | null } | null;
   };
 }) {
   const router = useRouter();
   const [archiveOpen, setArchiveOpen] = useState(false);
 
+  const clientTargetId = project.client?.clientId || project.clientId;
+
   return (
-    <Card className="hover:border-primary/50 transition-colors">
+    <Card className="rounded-xl border border-border bg-surface-1 shadow-xs transition hover:border-brand-primary/40">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div>
           <div className="text-muted-foreground mb-1 flex items-center space-x-2 text-sm">
@@ -57,7 +61,17 @@ export function ProjectCard({
             {project.client?.companyName && (
               <>
                 <span>•</span>
-                <span className="text-foreground-secondary">{project.client.companyName}</span>
+                {clientTargetId ? (
+                  <Link
+                    href={`/clients/${clientTargetId}`}
+                    className="text-foreground-secondary hover:text-brand-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {project.client.companyName}
+                  </Link>
+                ) : (
+                  <span className="text-foreground-secondary">{project.client.companyName}</span>
+                )}
               </>
             )}
           </div>
@@ -109,25 +123,36 @@ export function ProjectCard({
         </div>
 
         <div className="text-muted-foreground flex items-center justify-between border-t border-border-subtle pt-3 text-xs">
-          <div className="flex items-center space-x-1">
-            <CalendarIcon className="h-3.5 w-3.5" />
-            <span>
-              {project.estimatedEndDate
-                ? new Date(project.estimatedEndDate).toLocaleDateString()
-                : "No deadline"}
-            </span>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
+              <CalendarIcon className="h-3.5 w-3.5" />
+              <span>
+                {project.estimatedEndDate
+                  ? new Date(project.estimatedEndDate).toLocaleDateString()
+                  : "No deadline"}
+              </span>
+            </div>
+            {project.manager?.name && (
+              <>
+                <span>•</span>
+                <span className="truncate max-w-[100px] text-foreground-secondary">
+                  {project.manager.name}
+                </span>
+              </>
+            )}
           </div>
-          <div className="flex items-center space-x-1">
-            <span className="font-mono">{project.completionPercentage}%</span>
+          <div className="flex items-center space-x-1.5">
+            <span className="font-mono text-foreground">{project.completionPercentage}%</span>
             <div className="bg-surface-3 h-1.5 w-16 overflow-hidden rounded-full">
               <div
-                className="bg-brand-primary h-full rounded-full"
-                style={{ width: `${project.completionPercentage}%` }}
+                className="bg-brand-primary h-full rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.max(0, project.completionPercentage))}%` }}
               />
             </div>
           </div>
         </div>
       </CardContent>
+
 
       <ConfirmDialog
         open={archiveOpen}

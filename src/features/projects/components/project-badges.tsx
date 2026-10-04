@@ -16,16 +16,23 @@ export function ProjectStatusBadge({ status }: { status: string }) {
     archived: "Archived",
   };
 
-  return <Badge variant="outline">{labelMap[status] || status}</Badge>;
+  return (
+    <Badge
+      variant="outline"
+      className="bg-surface-2/80 text-foreground-secondary border-border/80 text-xs font-normal"
+    >
+      {labelMap[status] || status.replace("_", " ")}
+    </Badge>
+  );
 }
 
 export function ProjectHealthBadge({ health }: { health: string }) {
   const colorMap: Record<string, string> = {
-    on_track: "bg-green-100 text-green-800",
-    at_risk: "bg-yellow-100 text-yellow-800",
-    delayed: "bg-orange-100 text-orange-800",
-    blocked: "bg-red-100 text-red-800",
-    completed: "bg-gray-100 text-gray-800",
+    on_track: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    at_risk: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    delayed: "bg-orange-500/10 text-orange-400 border-orange-500/30",
+    blocked: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+    completed: "bg-surface-3 text-muted-foreground border-border",
   };
 
   const labelMap: Record<string, string> = {
@@ -37,23 +44,30 @@ export function ProjectHealthBadge({ health }: { health: string }) {
   };
 
   return (
-    <Badge variant="outline" className={colorMap[health] || ""}>
-      {labelMap[health] || health}
+    <Badge
+      variant="outline"
+      className={`text-xs font-normal ${colorMap[health] || "bg-surface-2 text-muted-foreground border-border"}`}
+    >
+      {labelMap[health] || health.replace("_", " ")}
     </Badge>
   );
 }
 
 export function ProjectPriorityBadge({ priority }: { priority: string }) {
   const colorMap: Record<string, string> = {
-    critical: "bg-red-100 text-red-800 border-red-200",
-    high: "bg-orange-100 text-orange-800 border-orange-200",
-    medium: "bg-blue-100 text-blue-800 border-blue-200",
-    low: "bg-gray-100 text-gray-800 border-gray-200",
+    critical: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+    high: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    medium: "bg-brand-primary/10 text-brand-primary border-brand-primary/30",
+    low: "bg-surface-3 text-muted-foreground border-border",
   };
 
   return (
-    <Badge variant="outline" className={colorMap[priority] || ""}>
-      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+    <Badge
+      variant="outline"
+      className={`text-xs font-normal capitalize ${colorMap[priority] || "bg-surface-2 text-muted-foreground border-border"}`}
+    >
+      {priority}
     </Badge>
   );
 }
+

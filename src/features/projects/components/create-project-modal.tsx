@@ -12,8 +12,16 @@ import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { ProjectForm } from "./project-form";
 
-export function CreateProjectModal() {
-  const [open, setOpen] = useState(false);
+export function CreateProjectModal({
+  defaultOpen = false,
+  initialClientId,
+  clientOptions = [],
+}: {
+  defaultOpen?: boolean;
+  initialClientId?: string;
+  clientOptions?: { clientId: string; companyName: string }[];
+} = {}) {
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -25,12 +33,17 @@ export function CreateProjectModal() {
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
         </DialogHeader>
-        <ProjectForm onSuccess={() => setOpen(false)} />
+        <ProjectForm
+          initialClientId={initialClientId}
+          clientOptions={clientOptions}
+          onSuccess={() => setOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
 }
+

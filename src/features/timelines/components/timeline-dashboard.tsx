@@ -58,17 +58,13 @@ export function TimelineDashboard({
 
   if (!initialTimeline) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white p-12">
-        <h3 className="mb-2 text-lg font-semibold text-gray-900">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-2/40 p-12 text-center">
+        <h3 className="mb-2 text-base font-semibold text-foreground-heading">
           No Timeline Created
         </h3>
-        <p className="max-w-sm text-center text-gray-500">
-          This project does not have a timeline yet. Get started by initializing
-          the schedule.
+        <p className="max-w-sm text-center text-xs text-foreground-muted">
+          This project does not have a timeline yet. Work with milestones and phases to track delivery schedules.
         </p>
-        <button className="mt-6 rounded-md bg-black px-4 py-2 font-medium text-white transition-colors hover:bg-gray-800">
-          Initialize Timeline
-        </button>
       </div>
     );
   }
@@ -85,50 +81,46 @@ export function TimelineDashboard({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header & Controls */}
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Project Timeline</h2>
-          <p className="text-sm text-gray-500">
-            Overall Progress: {timeline.overallProgress}% | Status:{" "}
-            <span className="capitalize">
+          <h2 className="text-lg font-bold tracking-tight text-foreground-heading">Project Timeline</h2>
+          <p className="text-xs text-foreground-muted">
+            Overall Progress: <span className="font-mono font-medium text-foreground">{timeline.overallProgress}%</span> · Status:{" "}
+            <span className="capitalize text-foreground-secondary">
               {timeline.status.replace("_", " ")}
             </span>
           </p>
         </div>
 
-        <div className="flex items-center rounded-lg bg-gray-100 p-1">
-          <button
-            onClick={() => setView("gantt")}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${view === "gantt" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"}`}
-          >
-            Gantt
-          </button>
-          <button
-            onClick={() => setView("list")}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${view === "list" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"}`}
-          >
-            List
-          </button>
-          <button
-            onClick={() => setView("roadmap")}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${view === "roadmap" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"}`}
-          >
-            Roadmap
-          </button>
-          <button
-            onClick={() => setView("calendar")}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${view === "calendar" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"}`}
-          >
-            Calendar
-          </button>
+        <div className="flex items-center rounded-lg bg-surface-1 border border-border-subtle p-1 gap-1">
+          {(
+            [
+              ["gantt", "Gantt"],
+              ["list", "List"],
+              ["roadmap", "Roadmap"],
+              ["calendar", "Calendar"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setView(key)}
+              className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                view === key
+                  ? "bg-surface-3 text-foreground font-semibold shadow-xs"
+                  : "text-foreground-muted hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
       {isLoading && milestones.length === 0 ? (
-        <div className="p-12 text-center text-gray-400">
-          Loading milestones...
+        <div className="p-12 text-center text-xs text-foreground-muted animate-pulse">
+          Loading milestones…
         </div>
       ) : view === "gantt" ? (
         <GanttChart timeline={timeline} />
@@ -137,42 +129,42 @@ export function TimelineDashboard({
       ) : view === "calendar" ? (
         <CalendarView timeline={timeline} />
       ) : (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h3 className="mb-4 text-lg font-medium text-gray-900">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs">
+          <h3 className="mb-4 text-sm font-semibold text-foreground-heading uppercase tracking-wide">
             Milestone List
           </h3>
-          <div className="space-y-8">
+          <div className="space-y-6">
             {timeline.phases.map((phase: PhaseData) => (
-              <div key={phase.phaseId}>
-                <h4 className="mb-3 text-sm font-bold tracking-wider text-gray-500 uppercase">
+              <div key={phase.phaseId} className="space-y-2">
+                <h4 className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
                   {phase.name.replace("_", " ")}
                 </h4>
-                <div className="grid gap-3">
+                <div className="grid gap-2">
                   {phase.milestones.length === 0 ? (
-                    <div className="py-2 text-sm text-gray-400 italic">
+                    <div className="py-2 text-xs text-foreground-subtle italic">
                       No milestones in this phase.
                     </div>
                   ) : (
                     phase.milestones.map((milestone: MilestoneData) => (
                       <div
                         key={milestone.milestoneId}
-                        className="flex items-center justify-between rounded-lg border border-gray-100 p-4 transition-colors hover:border-gray-200"
+                        className="flex items-center justify-between rounded-lg border border-border-subtle bg-surface-1/40 p-3 transition-colors hover:border-border"
                       >
                         <div>
-                          <div className="font-medium text-gray-900">
+                          <div className="text-sm font-medium text-foreground">
                             {milestone.name}
                           </div>
-                          <div className="mt-1 text-xs text-gray-500">
+                          <div className="mt-0.5 text-xs text-foreground-muted capitalize">
                             Status: {milestone.status.replace("_", " ")}
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-sm font-medium">
+                        <div className="flex items-center gap-3">
+                          <div className="text-xs font-mono text-foreground-secondary">
                             {milestone.progress}%
                           </div>
-                          <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-100">
+                          <div className="h-1.5 w-20 overflow-hidden rounded-full bg-surface-3">
                             <div
-                              className="h-full bg-blue-500"
+                              className="h-full bg-brand-primary transition-all duration-300"
                               style={{ width: `${milestone.progress}%` }}
                             />
                           </div>

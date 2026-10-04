@@ -151,11 +151,12 @@ export async function globalSearch(term: string): Promise<SearchGroup[]> {
         id: row.taskId,
         title: row.name,
         subtitle: row.taskCode ?? null,
-        // There is no per-task route; /tasks is the milestone-scoped workspace,
-        // which is the closest reachable destination.
-        href: "/tasks",
+        href: (row as any).projectId
+          ? `/projects/${(row as any).projectId}?tab=board`
+          : "/tasks",
       })),
     },
+
     {
       key: "files",
       label: "Files",

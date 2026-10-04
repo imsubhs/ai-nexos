@@ -53,8 +53,8 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
 
   if (!timeline.startDate || !timeline.endDate) {
     return (
-      <div className="rounded-lg bg-gray-50 p-8 text-center text-gray-500">
-        Timeline dates not fully defined. Cannot render Gantt Chart.
+      <div className="rounded-xl border border-dashed border-border bg-surface-2/40 p-12 text-center text-foreground-muted">
+        Timeline dates are not fully defined for this project. Configure start and target dates to render the Gantt chart.
       </div>
     );
   }
@@ -82,15 +82,15 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
   };
 
   return (
-    <div className="flex h-[600px] w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="flex h-[600px] w-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       {/* Header (Fixed) */}
-      <div className="z-10 min-w-[800px] flex-none overflow-hidden border-b border-gray-200 bg-gray-50/50">
-        <div className="grid grid-cols-[250px_1fr]">
-          <div className="p-4 text-sm font-semibold text-gray-700">
+      <div className="z-10 min-w-[800px] flex-none overflow-hidden border-b border-border bg-surface-2/80 backdrop-blur-xs">
+        <div className="grid grid-cols-[280px_1fr]">
+          <div className="p-3.5 pl-4 text-xs font-semibold text-foreground tracking-wide uppercase">
             Phases & Milestones
           </div>
-          <div className="relative p-4 text-sm font-semibold text-gray-700">
-            <span className="absolute left-0">
+          <div className="relative p-3.5 text-xs font-mono font-medium text-foreground-muted">
+            <span className="absolute left-2">
               {formatDate(timeline.startDate)}
             </span>
             <span className="absolute right-4">
@@ -103,7 +103,7 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
       {/* Scrollable Virtualized Area */}
       <div
         ref={parentRef}
-        className="relative min-w-[800px] flex-1 overflow-auto"
+        className="relative min-w-[800px] flex-1 overflow-auto bg-surface-0/40"
       >
         <div
           style={{
@@ -119,16 +119,17 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
               return (
                 <div
                   key={virtualRow.index}
-                  className="absolute top-0 left-0 grid h-12 w-full grid-cols-[250px_1fr] border-b border-gray-100 bg-gray-50"
+                  className="absolute top-0 left-0 grid h-12 w-full grid-cols-[280px_1fr] border-b border-border bg-surface-1/70"
                   style={{
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
-                  <div className="flex items-center p-3 pl-4 text-sm font-medium text-gray-900 capitalize">
+                  <div className="flex items-center p-3 pl-4 text-xs font-semibold text-foreground-heading capitalize">
                     {row.phase.name.replace("_", " ")}
                   </div>
                   <div className="relative flex items-center p-3">
-                    {/* Phase Summary Bar (Placeholder) */}
+                    {/* Phase timeline track */}
+                    <div className="h-0.5 w-full bg-border-subtle" />
                   </div>
                 </div>
               );
@@ -144,22 +145,22 @@ export function GanttChart({ timeline }: { timeline: TimelineData }) {
             return (
               <div
                 key={virtualRow.index}
-                className="absolute top-0 left-0 grid h-12 w-full grid-cols-[250px_1fr] border-b border-gray-50 transition-colors hover:bg-gray-50/50"
+                className="absolute top-0 left-0 grid h-12 w-full grid-cols-[280px_1fr] border-b border-border-subtle transition-colors hover:bg-surface-3/30"
                 style={{
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                <div className="flex items-center truncate p-3 pl-8 text-sm text-gray-600">
-                  {row.milestone.name}
+                <div className="flex items-center truncate p-3 pl-8 text-xs text-foreground-secondary">
+                  <span className="truncate">{row.milestone.name}</span>
                 </div>
                 <div className="relative flex items-center p-3">
                   {row.milestone.startDate && row.milestone.endDate && (
                     <div
-                      className="absolute h-6 overflow-hidden rounded-md bg-blue-500 shadow-sm"
+                      className="absolute h-6 overflow-hidden rounded border border-brand-primary/50 bg-brand-primary/25 shadow-xs"
                       style={{ left, width }}
                     >
                       <div
-                        className="h-full bg-blue-600"
+                        className="h-full bg-brand-primary transition-all duration-300"
                         style={{ width: `${row.milestone.progress}%` }}
                       />
                     </div>

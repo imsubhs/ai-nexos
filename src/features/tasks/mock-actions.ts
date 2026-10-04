@@ -28,6 +28,7 @@ import type {
   getTaskActivity as real_getTaskActivity,
   searchTasks as real_searchTasks,
   getActiveTaskTimer as real_getActiveTaskTimer,
+  getTasksByProject as real_getTasksByProject,
 } from "./real-actions";
 
 function auditFields() {
@@ -124,6 +125,18 @@ export async function getTasks(
 
   return store.tasks
     .filter((t) => t.milestoneId === milestoneId && t.deletedAt === null)
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    .slice(cursorOffset, cursorOffset + limit) as any;
+}
+
+export async function getTasksByProject(
+  ...args: Parameters<typeof real_getTasksByProject>
+): Promise<Awaited<ReturnType<typeof real_getTasksByProject>>> {
+  const [projectId, cursorOffset = 0, limit = 200] = args;
+  const store = getDemoStore();
+
+  return store.tasks
+    .filter((t) => t.projectId === projectId && t.deletedAt === null)
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     .slice(cursorOffset, cursorOffset + limit) as any;
 }

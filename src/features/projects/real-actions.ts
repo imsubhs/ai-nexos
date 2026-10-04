@@ -1,9 +1,9 @@
 import { db } from "@/db";
-import { activityLogs, clients, projectMembers, projects, users } from "@/db/schema";
+import { activityLogs, clients, projectMembers, projects, users, tasks } from "@/db/schema";
 import { generateProjectCode } from "@/features/organizations/code-generation";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, eq, ilike, isNull, count, not, inArray } from "drizzle-orm";
+import { and, eq, ilike, isNull, count, not, inArray, or as drizzleOr } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { insertProjectSchema, updateProjectSchema } from "./schemas";
@@ -231,6 +231,8 @@ export async function getProjects(
   query?: string,
   limit: number = 50,
   offset: number = 0,
+  status?: string,
+  healthStatus?: string,
 ) {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "projects", "read");
@@ -239,8 +241,20 @@ export async function getProjects(
     isNull(projects.deletedAt),
     eq(projects.organizationId, user.organizationId),
   ];
-  if (query) {
-    filters.push(ilike(projects.projectName, `%${query}%`));
+  if (query && query.trim().length > 0) {
+    const q = `%${query.trim()}%`;
+    filters.push(
+      drizzleOr(
+        ilike(projects.projectName, q),
+        ilike(projects.projectCode, q),
+      )!,
+    );
+  }
+  if (status && status !== "all") {
+    filters.push(eq(projects.status, status as any));
+  }
+  if (healthStatus && healthStatus !== "all") {
+    filters.push(eq(projects.healthStatus, healthStatus as any));
   }
 
   return db.query.projects.findMany({
@@ -254,6 +268,7 @@ export async function getProjects(
     },
   });
 }
+
 
 /**
  * Get a specific project by ID.
@@ -365,18 +380,44 @@ export async function getProjectDashboardSummary(
 
   if (!project) throw new Error("Project not found");
 
-  // Stub data until remaining modules (Tasks, Deliverables, etc.) are built.
+  const projectTasks = await db.query.tasks.findMany({
+    where: and(
+      eq(tasks.projectId, projectId),
+      eq(tasks.organizationId, user.organizationId),
+      isNull(tasks.deletedAt),
+    ),
+    columns: {
+      status: true,
+      progress: true,
+      dueDate: true,
+    },
+  });
+
+  const totalTasks = projectTasks.length;
+  const completedTasks = projectTasks.filter(
+    (t) => t.status === "completed" || t.status === "approved",
+  ).length;
+  const openTasks = totalTasks - completedTasks;
+  const pendingReviews = projectTasks.filter(
+    (t) => t.status === "review" || t.status === "client_review",
+  ).length;
+
+  const calculatedProgress =
+    totalTasks > 0
+      ? Math.round((completedTasks / totalTasks) * 100)
+      : project.completionPercentage || 0;
+
   return {
-    overallProgress: project.completionPercentage || 0,
+    overallProgress: calculatedProgress,
     currentPhase: project.status,
     currentSprint: "Sprint 1",
     projectHealth: project.healthStatus,
     upcomingDeadline: project.estimatedEndDate?.toISOString() || null,
     pendingApprovals: 0,
-    pendingReviews: 0,
+    pendingReviews,
     openRevisions: 0,
-    openTasks: 0,
-    completedTasks: 0,
+    openTasks,
+    completedTasks,
     recentActivity: [],
     latestDeliverable: "None",
     latestComment: "None",

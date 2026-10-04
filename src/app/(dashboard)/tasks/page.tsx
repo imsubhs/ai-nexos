@@ -19,16 +19,6 @@ export const metadata: Metadata = {
   description: "Manage project tasks, board status, and milestone delivery.",
 };
 
-/**
- * Demo fallback scope used exclusively in DEMO_MODE when no custom projects exist.
- */
-const DEMO_TASK_SCOPE: TaskScope = {
-  projectId: "00000000-0000-4000-8000-000000000201",
-  timelineId: "00000000-0000-4000-8000-000000000301",
-  phaseId: "00000000-0000-4000-8000-000000000312",
-  milestoneId: "00000000-0000-4000-8000-000000000322",
-};
-
 export default async function TasksPage(props: {
   searchParams?: Promise<{ projectId?: string; milestoneId?: string }>;
 }) {
@@ -83,16 +73,16 @@ export default async function TasksPage(props: {
 
           activeMilestoneName = selectedMilestone.name;
           const phaseId =
-            selectedMilestone.phaseId ||
-            timeline.phases?.[0]?.phaseId ||
-            "00000000-0000-4000-8000-000000000312";
+            selectedMilestone.phaseId || timeline.phases?.[0]?.phaseId;
 
-          scope = {
-            projectId: selectedProject.projectId,
-            timelineId: timeline.timelineId,
-            phaseId,
-            milestoneId: selectedMilestone.milestoneId,
-          };
+          if (phaseId) {
+            scope = {
+              projectId: selectedProject.projectId,
+              timelineId: timeline.timelineId,
+              phaseId,
+              milestoneId: selectedMilestone.milestoneId,
+            };
+          }
         }
       }
     }
@@ -100,11 +90,26 @@ export default async function TasksPage(props: {
     // If tenant project resolution fails, scope remains null
   }
 
-  // Fallback to seeded demo scope only in demo mode when no real projects exist
+  // Fallback to dynamic demo store only in demo mode when no real projects exist
   if (!scope && isDemoMode()) {
-    scope = DEMO_TASK_SCOPE;
-    activeProjectName = "Website Redesign";
-    activeMilestoneName = "Wireframes milestone";
+    try {
+      const { getDemoStore } = await import("@/lib/demo/store");
+      const store = getDemoStore();
+      const demoMilestone = store.milestones[0];
+      const demoProject = store.projects[0];
+      if (demoMilestone && demoProject) {
+        scope = {
+          projectId: demoProject.projectId,
+          timelineId: demoMilestone.timelineId,
+          phaseId: demoMilestone.phaseId,
+          milestoneId: demoMilestone.milestoneId,
+        };
+        activeProjectName = demoProject.projectName;
+        activeMilestoneName = demoMilestone.name;
+      }
+    } catch {
+      scope = null;
+    }
   }
 
   return (
