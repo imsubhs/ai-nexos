@@ -20,18 +20,17 @@ export function CreateClientModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Client
+          <Button size="sm" className="gap-1.5 shadow-xs">
+            <Plus className="size-4" />
+            <span>Add Client</span>
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[620px]">
         <DialogHeader>
-          <DialogTitle>Add New Client</DialogTitle>
+          <DialogTitle>Register New Client Account</DialogTitle>
           <DialogDescription>
-            Create a new client profile. You can add contacts and brand assets
-            later.
+            Create an executive client profile. Set company information, communication channels, and brand guidelines.
           </DialogDescription>
         </DialogHeader>
         <ClientForm onSuccess={() => setOpen(false)} />
