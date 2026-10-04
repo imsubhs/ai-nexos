@@ -28,6 +28,9 @@ export async function generateMetadata({
   };
 }
 
+import { getFiles } from "@/features/files/actions";
+import { getDeliverables } from "@/features/deliverables/actions";
+
 export default async function ProjectDashboardPage({
   params,
   searchParams,
@@ -38,7 +41,7 @@ export default async function ProjectDashboardPage({
   const { projectId } = await params;
   const { tab } = await searchParams;
 
-  const [project, summary, timeline, tasks, orgUsers, clients] =
+  const [project, summary, timeline, tasks, orgUsers, clients, files, deliverables] =
     await Promise.all([
       getProjectById(projectId),
       getProjectDashboardSummary(projectId).catch(() => null),
@@ -46,6 +49,8 @@ export default async function ProjectDashboardPage({
       getTasksByProject(projectId, 0, 500).catch(() => []),
       getOrganizationMembers().catch(() => []),
       getClients().catch(() => []),
+      getFiles({ projectId }, 0, 100).catch(() => []),
+      getDeliverables({ projectId }, 0, 100).catch(() => []),
     ]);
 
   if (!project) {
@@ -80,6 +85,8 @@ export default async function ProjectDashboardPage({
       availableUsers={availableUsers}
       clientOptions={clientOptions}
       defaultTab={tab || "overview"}
+      files={files}
+      deliverables={deliverables}
     />
   );
 }

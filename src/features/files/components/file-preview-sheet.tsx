@@ -23,12 +23,23 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
+  Archive,
+  ArchiveRestore,
+  Download,
+  ExternalLink,
+  FileText,
+  Loader2,
+} from "lucide-react";
+import {
+  archiveFile,
   deleteFile,
   generateShareLink,
   getFileActivity,
+  getFileDownloadUrl,
   getFileShares,
   getFileVersions,
   promoteFileVersion,
+  restoreFile,
   updateFile,
 } from "../actions";
 import {
@@ -139,6 +150,9 @@ export function FilePreviewSheet({
   const [shares, setShares] = useState<ShareRow[]>([]);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [restoring, setRestoring] = useState<VersionRow | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const fileId = file?.fileId ?? null;
 
@@ -152,6 +166,27 @@ export function FilePreviewSheet({
     setShares(shareRows as unknown as ShareRow[]);
     setActivity(activityRows as unknown as ActivityRow[]);
   }, []);
+
+  useEffect(() => {
+    if (!fileId) return;
+    let cancelled = false;
+    void (async () => {
+      setPreviewLoading(true);
+      try {
+        const res = await getFileDownloadUrl(fileId);
+        if (!cancelled && res?.downloadUrl) {
+          setPreviewUrl(res.downloadUrl);
+        }
+      } catch {
+        if (!cancelled) setPreviewUrl(null);
+      } finally {
+        if (!cancelled) setPreviewLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fileId]);
 
   useEffect(() => {
     if (!fileId) return;
@@ -181,6 +216,52 @@ export function FilePreviewSheet({
     };
   }, [fileId]);
 
+  const handleDownload = async (versionId?: string) => {
+    if (!file?.fileId) return;
+    setDownloading(true);
+    try {
+      const res = await getFileDownloadUrl(file.fileId, versionId);
+      if (!res?.downloadUrl) throw new Error("Could not generate download URL");
+      const a = document.createElement("a");
+      a.href = res.downloadUrl;
+      a.download = res.filename || file.title;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success("Download started");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to download file");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!file?.fileId) return;
+    try {
+      const updated = await archiveFile(file.fileId);
+      setWritten(updated as FileRow);
+      await afterWrite();
+      toast.success("Asset archived");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to archive asset");
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!file?.fileId) return;
+    try {
+      const updated = await restoreFile(file.fileId);
+      setWritten(updated as FileRow);
+      await afterWrite();
+      toast.success("Asset restored to ready state");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to restore asset");
+    }
+  };
+
   const afterWrite = async () => {
     if (fileId) await loadDetail(fileId);
     await onChanged?.();
@@ -201,7 +282,78 @@ export function FilePreviewSheet({
             </SheetHeader>
 
             <div className="space-y-4 px-4 pb-8">
+              {/* Media Preview Box */}
+              <div className="rounded-xl border border-border/80 bg-surface-2/60 p-3 overflow-hidden">
+                {previewLoading ? (
+                  <div className="h-44 flex flex-col items-center justify-center space-y-2 text-muted-foreground text-xs">
+                    <Loader2 className="size-5 animate-spin text-brand-primary" />
+                    <span>Loading preview…</span>
+                  </div>
+                ) : file.fileType === "image" && previewUrl ? (
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={previewUrl}
+                      alt={file.title}
+                      className="max-h-52 w-auto max-w-full rounded-md object-contain shadow-xs"
+                    />
+                  </div>
+                ) : file.fileType === "video" && previewUrl ? (
+                  <div className="flex flex-col items-center justify-center">
+                    <video
+                      controls
+                      src={previewUrl}
+                      className="max-h-52 w-full rounded-md bg-black/40"
+                    />
+                  </div>
+                ) : file.fileType === "audio" && previewUrl ? (
+                  <div className="py-4 px-2 space-y-2">
+                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                      <FileText className="size-4 text-brand-primary" />
+                      <span>Audio Playback</span>
+                    </div>
+                    <audio controls src={previewUrl} className="w-full" />
+                  </div>
+                ) : (
+                  <div className="h-36 flex flex-col items-center justify-center text-center space-y-2 py-4">
+                    <div className="size-12 rounded-xl bg-surface-3/60 flex items-center justify-center text-brand-primary">
+                      <FileText className="size-6" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground line-clamp-1">{file.title}</span>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground px-2 py-0.5 rounded bg-surface-3/80">
+                      {file.fileType}
+                    </span>
+                    {previewUrl && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-xs h-7 gap-1 text-brand-primary hover:text-brand-primary/80"
+                        onClick={() => window.open(previewUrl, "_blank")}
+                      >
+                        <ExternalLink className="size-3" />
+                        <span>Open raw file</span>
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Ribbon */}
               <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="bg-brand-primary text-brand-contrast hover:bg-brand-hover gap-1.5"
+                  disabled={downloading}
+                  onClick={() => handleDownload()}
+                >
+                  {downloading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Download className="size-3.5" />
+                  )}
+                  <span>Download</span>
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -236,6 +388,27 @@ export function FilePreviewSheet({
                 >
                   Share
                 </Button>
+                {file.status === "archived" ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-emerald-400 gap-1.5"
+                    onClick={handleRestore}
+                  >
+                    <ArchiveRestore className="size-3.5" />
+                    <span>Restore</span>
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-muted-foreground gap-1.5"
+                    onClick={handleArchive}
+                  >
+                    <Archive className="size-3.5" />
+                    <span>Archive</span>
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -329,15 +502,26 @@ export function FilePreviewSheet({
                               {new Date(version.createdAt).toLocaleDateString()}
                             </p>
                           </div>
-                          {!isCurrent && (
+                          <div className="flex items-center gap-1">
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => setRestoring(version)}
+                              className="size-7 p-0 text-muted-foreground hover:text-foreground"
+                              title="Download this version"
+                              onClick={() => handleDownload(version.versionId)}
                             >
-                              Restore
+                              <Download className="size-3.5" />
                             </Button>
-                          )}
+                            {!isCurrent && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setRestoring(version)}
+                              >
+                                Restore
+                              </Button>
+                            )}
+                          </div>
                         </li>
                       );
                     })}
@@ -408,11 +592,7 @@ export function FilePreviewSheet({
                 )}
               </div>
 
-              <p className="text-muted-foreground text-xs">
-                Inline preview and download are unavailable: object storage
-                returns mock signed URLs (TD-02).
-              </p>
-            </div>
+              </div>
 
             <ConfirmDialog
               open={dialog === "rename"}

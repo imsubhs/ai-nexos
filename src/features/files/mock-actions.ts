@@ -17,6 +17,9 @@ import type {
   getFileShares as real_getFileShares,
   getFileActivity as real_getFileActivity,
   getProjectFolders as real_getProjectFolders,
+  getFileDownloadUrl as real_getFileDownloadUrl,
+  archiveFile as real_archiveFile,
+  restoreFile as real_restoreFile,
 } from "./real-actions";
 
 import {
@@ -550,6 +553,12 @@ export async function getFiles(
         filters.folderId === undefined ||
         (f.folderId ?? null) === filters.folderId,
     )
+    .filter(
+      (f: any) => !filters.fileType || f.fileType === filters.fileType,
+    )
+    .filter(
+      (f: any) => !filters.status || f.status === filters.status,
+    )
     .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
@@ -665,3 +674,80 @@ export async function searchFiles(
     .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
+
+export async function getFileDownloadUrl(
+  ...args: Parameters<typeof real_getFileDownloadUrl>
+): Promise<Awaited<ReturnType<typeof real_getFileDownloadUrl>>> {
+  const [fileId, versionId] = args;
+  const store = getDemoStore();
+  const file = (store.files || []).find((f: any) => f.fileId === fileId);
+  if (!file) throw new Error("File not found");
+
+  const versions = (store.fileVersions || []).filter(
+    (v: any) => v.fileId === fileId,
+  );
+  const version = versionId
+    ? versions.find((v: any) => v.versionId === versionId)
+    : (versions.find((v: any) => v.versionId === file.currentVersionId) ||
+       versions[0]);
+
+  return {
+    downloadUrl:
+      file.fileType === "image"
+        ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80"
+        : `data:text/plain;charset=utf-8,Demo%20Content%20for%20${encodeURIComponent(
+            file.title || "asset",
+          )}`,
+    filename: version?.originalFilename || `${file.title}.dat`,
+    mimeType: version?.mimeType || "application/octet-stream",
+    sizeBytes: version?.sizeBytes || file.totalSizeBytes || 1024,
+    versionNumber: version?.versionNumber || 1,
+  };
+}
+
+export async function archiveFile(
+  ...args: Parameters<typeof real_archiveFile>
+): Promise<Awaited<ReturnType<typeof real_archiveFile>>> {
+  const [fileId] = args;
+  const store = getDemoStore();
+  const file = (store.files || []).find((f: any) => f.fileId === fileId);
+  if (!file) throw new Error("File not found");
+
+  file.status = "archived";
+  file.updatedAt = new Date();
+
+  logDemoActivity(
+    store,
+    "files",
+    "File Archived",
+    fileId,
+    `Archived ${file.title}`,
+    file.projectId,
+  );
+
+  return file as any;
+}
+
+export async function restoreFile(
+  ...args: Parameters<typeof real_restoreFile>
+): Promise<Awaited<ReturnType<typeof real_restoreFile>>> {
+  const [fileId] = args;
+  const store = getDemoStore();
+  const file = (store.files || []).find((f: any) => f.fileId === fileId);
+  if (!file) throw new Error("File not found");
+
+  file.status = "ready";
+  file.updatedAt = new Date();
+
+  logDemoActivity(
+    store,
+    "files",
+    "File Restored",
+    fileId,
+    `Restored ${file.title}`,
+    file.projectId,
+  );
+
+  return file as any;
+}
+

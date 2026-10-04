@@ -70,7 +70,19 @@ export function GlobalSearch() {
     function onKeyDown(event: KeyboardEvent) {
       if ((event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
-        setOpen((prev) => !prev);
+        setOpen((prev) => {
+          const next = !prev;
+          if (next) {
+            setActiveIndex(0);
+            setError(null);
+          } else {
+            setTerm("");
+            setGroups([]);
+            setLoading(false);
+            setError(null);
+          }
+          return next;
+        });
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -87,16 +99,23 @@ export function GlobalSearch() {
   // Focus input on dialog open.
   useEffect(() => {
     if (open) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen) {
       setActiveIndex(0);
       setError(null);
-      setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       setTerm("");
       setGroups([]);
       setLoading(false);
       setError(null);
     }
-  }, [open]);
+  };
 
   const allHits: SearchHit[] =
     term.trim().length < MIN_QUERY
@@ -134,9 +153,7 @@ export function GlobalSearch() {
   };
 
   const go = (href: string) => {
-    setOpen(false);
-    setTerm("");
-    setGroups([]);
+    handleOpenChange(false);
     router.push(href);
   };
 
@@ -167,7 +184,7 @@ export function GlobalSearch() {
       {/* Desktop Search Trigger */}
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => handleOpenChange(true)}
         className="bg-surface-2/60 hover:bg-surface-3 text-muted-foreground hover:text-foreground border border-border relative hidden h-9 w-full max-w-md items-center justify-between rounded-md px-3 text-sm transition-colors md:flex shadow-xs"
         aria-label="Search projects, clients, deliverables (Press ⌘K to open)"
       >
@@ -184,7 +201,7 @@ export function GlobalSearch() {
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setOpen(true)}
+        onClick={() => handleOpenChange(true)}
         aria-label="Open search dialog"
         className="md:hidden"
       >
@@ -192,7 +209,7 @@ export function GlobalSearch() {
       </Button>
 
       {/* Accessible Command Palette Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           showCloseButton={false}
           className="top-[18%] translate-y-0 max-w-xl p-0 gap-0 overflow-hidden rounded-xl border border-border-strong bg-surface-4 shadow-2xl backdrop-blur-xl"

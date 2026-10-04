@@ -24,7 +24,13 @@ const PAGE_SIZE = 25;
 export default async function DeliverablesPage({
   searchParams,
 }: Readonly<{
-  searchParams: Promise<{ search?: string; status?: string; page?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    projectId?: string;
+    type?: string;
+    page?: string;
+  }>;
 }>) {
   const user = await requireCurrentUser();
   if (!hasPermission(user.permissions, "deliverables", "read")) {
@@ -43,7 +49,11 @@ export default async function DeliverablesPage({
   const fetched = params.search
     ? await searchDeliverables(params.search, cursorOffset, PAGE_SIZE + 1)
     : await getDeliverables(
-        { status: params.status || undefined },
+        {
+          status: params.status || undefined,
+          projectId: params.projectId || undefined,
+          type: params.type || undefined,
+        },
         cursorOffset,
         PAGE_SIZE + 1,
       );

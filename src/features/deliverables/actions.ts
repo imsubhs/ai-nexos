@@ -87,3 +87,32 @@ export async function searchDeliverables(
   if (isDemoMode()) return (mock as any).searchDeliverables(...args);
   return (real as any).searchDeliverables(...args);
 }
+
+export async function getDeliverableFiles(
+  ...args: Parameters<typeof real.getDeliverableFiles>
+): Promise<Awaited<ReturnType<typeof real.getDeliverableFiles>>> {
+  if (isDemoMode()) return (mock as any).getDeliverableFiles(...args);
+  return (real as any).getDeliverableFiles(...args);
+}
+
+export async function linkFileToDeliverable(
+  ...args: Parameters<typeof real.linkFileToDeliverable>
+): Promise<Awaited<ReturnType<typeof real.linkFileToDeliverable>>> {
+  if (isDemoMode()) return (mock as any).linkFileToDeliverable(...args);
+  return (real as any).linkFileToDeliverable(...args);
+}
+
+export async function unlinkFileFromDeliverable(
+  ...args: Parameters<typeof real.unlinkFileFromDeliverable>
+): Promise<Awaited<ReturnType<typeof real.unlinkFileFromDeliverable>>> {
+  if (isDemoMode()) return (mock as any).unlinkFileFromDeliverable(...args);
+  return (real as any).unlinkFileFromDeliverable(...args);
+}
+
+export async function archiveDeliverable(
+  ...args: Parameters<typeof real.archiveDeliverable>
+): Promise<Awaited<ReturnType<typeof real.archiveDeliverable>>> {
+  if (isDemoMode()) return (mock as any).archiveDeliverable(...args);
+  return (real as any).archiveDeliverable(...args);
+}
+

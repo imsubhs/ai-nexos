@@ -802,6 +802,8 @@ export async function promoteFileVersion(
 export type FileListFilters = {
   projectId?: string;
   folderId?: string | null;
+  fileType?: string;
+  status?: string;
 };
 
 /**
@@ -824,6 +826,18 @@ export async function getFiles(
         ? filters.folderId === null
           ? isNull(files.folderId)
           : eq(files.folderId, filters.folderId)
+        : undefined,
+      filters.fileType
+        ? eq(
+            files.fileType,
+            filters.fileType as (typeof files.fileType.enumValues)[number],
+          )
+        : undefined,
+      filters.status
+        ? eq(
+            files.status,
+            filters.status as (typeof files.status.enumValues)[number],
+          )
         : undefined,
     ),
     offset: cursorOffset,
@@ -974,3 +988,141 @@ export async function searchFiles(
     orderBy: [desc(files.createdAt)],
   });
 }
+
+/**
+ * Generates an authorized, short-lived (15m) pre-signed download URL for a file version.
+ */
+export async function getFileDownloadUrl(fileId: string, versionId?: string) {
+  const user = await requireCurrentUser();
+  const file = await validateFileAccess(fileId, "read", user);
+
+  // Rate limit downloads
+  const identifier = `${user.organizationId}:${user.userId}`;
+  const decision = await consumeRateLimit(RATE_LIMITS.resourceRead, identifier);
+  if (!decision.allowed) {
+    throw new ApiError(
+      "rate_limited",
+      `Too many download requests. Please wait ${decision.retryAfterSeconds}s before trying again.`,
+      { headers: rateLimitHeaders(decision) },
+    );
+  }
+
+  // Find version record
+  let version = null;
+  if (versionId) {
+    version = await db.query.fileVersions.findFirst({
+      where: and(
+        eq(fileVersions.versionId, versionId),
+        eq(fileVersions.fileId, fileId),
+      ),
+    });
+  } else if (file.currentVersionId) {
+    version = await db.query.fileVersions.findFirst({
+      where: and(
+        eq(fileVersions.versionId, file.currentVersionId),
+        eq(fileVersions.fileId, fileId),
+      ),
+    });
+  }
+
+  if (!version) {
+    // Fallback to latest version by versionNumber
+    version = await db.query.fileVersions.findFirst({
+      where: eq(fileVersions.fileId, fileId),
+      orderBy: [desc(fileVersions.versionNumber)],
+    });
+  }
+
+  if (!version) {
+    throw new Error("No version record found for this file.");
+  }
+
+  const downloadUrl = await storageService.createPreSignedDownloadUrl(
+    version.storagePath,
+    900, // 15 minutes
+  );
+
+  await logFileActivity(
+    "File Downloaded",
+    fileId,
+    file.projectId,
+    file.organizationId,
+    user,
+    { versionId: version.versionId, versionNumber: version.versionNumber },
+  );
+
+  return {
+    downloadUrl,
+    filename: version.originalFilename || file.title,
+    mimeType: version.mimeType,
+    sizeBytes: version.sizeBytes,
+    versionNumber: version.versionNumber,
+  };
+}
+
+/**
+ * Moves an asset into archived lifecycle state.
+ */
+export async function archiveFile(fileId: string) {
+  const user = await requireCurrentUser();
+
+  return await db.transaction(async (tx) => {
+    const file = await validateFileAccess(fileId, "update", user, tx);
+
+    const [updated] = await tx
+      .update(files)
+      .set({
+        status: "archived",
+        updatedAt: new Date(),
+        updatedBy: user.userId,
+      })
+      .where(eq(files.fileId, fileId))
+      .returning();
+
+    await logFileActivity(
+      "File Archived",
+      fileId,
+      file.projectId,
+      file.organizationId,
+      user,
+      { previousStatus: file.status },
+      tx,
+    );
+
+    return updated;
+  });
+}
+
+/**
+ * Restores an archived asset back to ready state.
+ */
+export async function restoreFile(fileId: string) {
+  const user = await requireCurrentUser();
+
+  return await db.transaction(async (tx) => {
+    const file = await validateFileAccess(fileId, "update", user, tx);
+
+    const [updated] = await tx
+      .update(files)
+      .set({
+        status: "ready",
+        updatedAt: new Date(),
+        updatedBy: user.userId,
+      })
+      .where(eq(files.fileId, fileId))
+      .returning();
+
+    await logFileActivity(
+      "File Restored",
+      fileId,
+      file.projectId,
+      file.organizationId,
+      user,
+      { previousStatus: file.status },
+      tx,
+    );
+
+    return updated;
+  });
+}
+

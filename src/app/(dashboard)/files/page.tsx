@@ -26,6 +26,9 @@ export default async function FilesPage({
     page?: string;
     projectId?: string;
     folderId?: string;
+    type?: string;
+    status?: string;
+    browse?: string;
   }>;
 }>) {
   const user = await requireCurrentUser();
@@ -35,7 +38,9 @@ export default async function FilesPage({
 
   const params = await searchParams;
 
-  if (params.projectId) {
+  // Folder browser mode is triggered when explicitly browsing folder structure
+  // (via folderId or browse=folder). Plain projectId acts as a project filter in the asset directory.
+  if (params.projectId && (params.folderId || params.browse === "folder")) {
     const folderId =
       !params.folderId || params.folderId === "root" ? null : params.folderId;
     const folder = await getFolder(folderId, params.projectId);
@@ -65,7 +70,15 @@ export default async function FilesPage({
   // another page exists without fabricating a count.
   const fetched = params.search
     ? await searchFiles(params.search, cursorOffset, PAGE_SIZE + 1)
-    : await getFiles({}, cursorOffset, PAGE_SIZE + 1);
+    : await getFiles(
+        {
+          projectId: params.projectId || undefined,
+          fileType: params.type || undefined,
+          status: params.status || undefined,
+        },
+        cursorOffset,
+        PAGE_SIZE + 1,
+      );
   // Permission-tolerant project selector (Phase 4B): callers with files.read but without
   // projects.read receive an empty project list rather than an unhandled 500 crash.
   const projectRows = hasPermission(user.permissions, "projects", "read")
@@ -83,9 +96,9 @@ export default async function FilesPage({
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Files</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Creative Assets &amp; Files</h1>
         <p className="text-muted-foreground text-sm">
-          Every file across all projects.
+          Every asset across all projects. Filter by project, type, and status.
         </p>
       </div>
       <FilesDirectory
@@ -94,6 +107,7 @@ export default async function FilesPage({
         page={page}
         pageSize={PAGE_SIZE}
         projects={projects}
+        organizationId={user.organizationId}
       />
     </div>
   );

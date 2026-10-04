@@ -10,16 +10,25 @@ import {
   ChevronLeft,
   Clock,
   Columns3,
+  Download,
   Edit2,
+  Eye,
+  File as FileIcon,
+  FileText,
+  Film,
   Flag,
   FolderKanban,
+  FolderOpen,
   GitCommit,
+  Image as ImageIcon,
   LayoutDashboard,
   ListTodo,
+  Loader2,
   MoreVertical,
+  Music,
+  Package,
   Plus,
   Shield,
-  Trash2,
   Users,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +63,38 @@ import { archiveProject } from "../actions";
 import { createTimeline } from "@/features/timelines/actions";
 import { toast } from "sonner";
 import type { ProjectDashboardSummary } from "../real-actions";
+import { CreateDeliverableDialog } from "@/features/deliverables/components/create-deliverable-dialog";
+import { DeliverableDetailSheet } from "@/features/deliverables/components/deliverable-detail-sheet";
+import { FilePreviewSheet } from "@/features/files/components/file-preview-sheet";
+import { FileWriteActions } from "@/features/files/components/file-write-actions";
+import { getFileDownloadUrl } from "@/features/files/actions";
+import { EmptyState } from "@/components/shared/empty-state";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { humanizeToken } from "@/features/deliverables/constants";
+
+function getFileTypeIcon(fileType: string) {
+  switch (fileType?.toLowerCase()) {
+    case "image":
+      return ImageIcon;
+    case "video":
+      return Film;
+    case "audio":
+      return Music;
+    case "document":
+      return FileText;
+    case "3d_model":
+      return Package;
+    default:
+      return FileIcon;
+  }
+}
+
+function formatBytes(bytes: number): string {
+  if (!bytes) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+}
 
 import type { TaskMemberOption } from "@/features/tasks/components/task-detail-modal";
 
@@ -87,6 +128,8 @@ interface ProjectCommandCenterProps {
   availableUsers: { userId: string; name?: string | null; email: string }[];
   clientOptions: { clientId: string; companyName: string }[];
   defaultTab?: string;
+  files?: any[];
+  deliverables?: any[];
 }
 
 export function ProjectCommandCenter({
@@ -98,6 +141,8 @@ export function ProjectCommandCenter({
   availableUsers,
   clientOptions,
   defaultTab = "overview",
+  files = [],
+  deliverables = [],
 }: ProjectCommandCenterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -107,6 +152,27 @@ export function ProjectCommandCenter({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const [isInitializingTimeline, setIsInitializingTimeline] = useState(false);
+  const [selectedDeliverableId, setSelectedDeliverableId] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<any | null>(null);
+  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+
+  const handleDownloadFile = async (file: any, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    try {
+      setDownloadingFileId(file.fileId);
+      const res = await getFileDownloadUrl(file.fileId);
+      if (res?.downloadUrl) {
+        window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
+        toast.success(`Download started for ${file.title}`);
+      } else {
+        toast.error("Download URL could not be generated");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Download failed");
+    } finally {
+      setDownloadingFileId(null);
+    }
+  };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -351,6 +417,13 @@ export function ProjectCommandCenter({
             <span>Team</span>
             <span className="ml-1 text-[10px] font-mono text-muted-foreground">
               ({(project.members || []).length})
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="assets" className="gap-1.5 text-xs py-1.5 px-3">
+            <Package className="size-3.5" />
+            <span>Assets &amp; Deliverables</span>
+            <span className="ml-1 text-[10px] font-mono text-muted-foreground">
+              ({(files || []).length + (deliverables || []).length})
             </span>
           </TabsTrigger>
         </TabsList>
@@ -619,7 +692,192 @@ export function ProjectCommandCenter({
 
           <ProjectMembersTable members={project.members || []} />
         </TabsContent>
+
+        {/* 7. ASSETS & DELIVERABLES TAB (Phase 4F DAM) */}
+        <TabsContent value="assets" className="space-y-6">
+          {/* Header Action Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-border bg-surface-1">
+            <div>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Package className="size-4 text-brand-primary" />
+                Creative Deliverables &amp; Assets
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Track creative outputs, files, and deliverables linked directly to this project.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <CreateDeliverableDialog
+                projects={[{ projectId: project.projectId, projectName: project.projectName }]}
+              />
+              <FileWriteActions
+                organizationId={project.organizationId || ""}
+                projectId={project.projectId}
+                folderId={null}
+                onChanged={async () => router.refresh()}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                render={
+                  <Link href={`/files?projectId=${project.projectId}&folderId=root`} />
+                }
+              >
+                <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
+                Folder Hierarchy
+              </Button>
+            </div>
+          </div>
+
+          {/* Section A: Deliverables */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <FileText className="size-4 text-brand-primary" />
+                Deliverables ({ (deliverables || []).length })
+              </h4>
+            </div>
+
+            {(!deliverables || deliverables.length === 0) ? (
+              <div className="rounded-xl border border-border/80 bg-surface-2 p-6">
+                <EmptyState
+                  icon={FileText}
+                  title="No deliverables yet"
+                  description="Define key creative outputs like storyboards, video drafts, or brand packages for this project."
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {deliverables.map((deliv: any) => (
+                  <div
+                    key={deliv.deliverableId}
+                    onClick={() => setSelectedDeliverableId(deliv.deliverableId)}
+                    className="group flex flex-col justify-between rounded-xl border border-border/80 bg-surface-2 p-4 transition-all hover:border-brand-primary/50 hover:bg-surface-2/80 hover:shadow-md cursor-pointer"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                          {humanizeToken(deliv.type || "other")}
+                        </Badge>
+                        <StatusBadge status={deliv.status} />
+                      </div>
+                      <h5 className="font-medium text-foreground text-sm line-clamp-1 group-hover:text-brand-primary transition-colors">
+                        {deliv.title}
+                      </h5>
+                      {deliv.description && (
+                        <p className="text-muted-foreground text-xs line-clamp-2 mt-1">
+                          {deliv.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Created {new Date(deliv.createdAt).toLocaleDateString()}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7 text-muted-foreground hover:text-foreground"
+                        onClick={() => setSelectedDeliverableId(deliv.deliverableId)}
+                        title="View deliverable"
+                      >
+                        <Eye className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section B: Creative Assets & Files */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <FileIcon className="size-4 text-brand-primary" />
+                Creative Assets ({ (files || []).length })
+              </h4>
+            </div>
+
+            {(!files || files.length === 0) ? (
+              <div className="rounded-xl border border-border/80 bg-surface-2 p-6">
+                <EmptyState
+                  icon={FileIcon}
+                  title="No creative assets yet"
+                  description="Upload artwork, video cuts, audio stems, or documentation to store and attach to this project."
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {files.map((file: any) => {
+                  const Icon = getFileTypeIcon(file.fileType);
+                  return (
+                    <div
+                      key={file.fileId}
+                      onClick={() => setSelectedFile(file)}
+                      className="group flex flex-col justify-between rounded-xl border border-border/80 bg-surface-2 p-3.5 transition-all hover:border-brand-primary/50 hover:bg-surface-2/80 hover:shadow-md cursor-pointer"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex size-7 items-center justify-center rounded-lg bg-surface-3 text-brand-primary">
+                            <Icon className="size-3.5" />
+                          </div>
+                          <StatusBadge status={file.status} />
+                        </div>
+                        <h5 className="font-medium text-foreground text-xs line-clamp-1 group-hover:text-brand-primary transition-colors">
+                          {file.title}
+                        </h5>
+                      </div>
+                      <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span className="font-mono">{formatBytes(file.totalSizeBytes)}</span>
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 text-muted-foreground hover:text-foreground"
+                            onClick={(e) => handleDownloadFile(file, e)}
+                            disabled={downloadingFileId === file.fileId}
+                            title="Download asset"
+                          >
+                            {downloadingFileId === file.fileId ? (
+                              <Loader2 className="size-3 animate-spin" />
+                            ) : (
+                              <Download className="size-3" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSelectedFile(file)}
+                            title="Inspect asset"
+                          >
+                            <Eye className="size-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </TabsContent>
       </Tabs>
+
+      {/* Deliverable Detail Sheet */}
+      <DeliverableDetailSheet
+        deliverableId={selectedDeliverableId}
+        onClose={() => setSelectedDeliverableId(null)}
+        onChanged={() => router.refresh()}
+      />
+
+      {/* File Preview Sheet */}
+      <FilePreviewSheet
+        file={selectedFile}
+        folders={[]}
+        onClose={() => setSelectedFile(null)}
+        onChanged={() => router.refresh()}
+      />
 
       {/* Edit Project Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

@@ -4,6 +4,7 @@ import crypto from "crypto";
 import {
   deliverables,
   deliverableRevisions,
+  deliverableFiles,
   deliverableReviewSessions,
   deliverableReviewThreads,
   deliverableReviewComments,
@@ -11,6 +12,7 @@ import {
   deliverableShareLinks,
   deliverableActivity,
 } from "@/db/schema/deliverables";
+import { files, fileVersions, fileRelations } from "@/db/schema/files";
 import { clients, projects, tasks } from "@/db/schema";
 import { CurrentUser, requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
@@ -404,6 +406,7 @@ export type DeliverableListFilters = {
   projectId?: string;
   clientId?: string;
   status?: string;
+  type?: string;
 };
 
 /**
@@ -431,6 +434,12 @@ export async function getDeliverables(
         ? eq(
             deliverables.status,
             filters.status as (typeof deliverables.status.enumValues)[number],
+          )
+        : undefined,
+      filters.type
+        ? eq(
+            deliverables.type,
+            filters.type as (typeof deliverables.type.enumValues)[number],
           )
         : undefined,
     ),
@@ -571,3 +580,312 @@ export async function searchDeliverables(
     orderBy: [desc(deliverables.createdAt)],
   });
 }
+
+/**
+ * Returns all creative assets / files attached to a deliverable (optionally filtered to a specific revision).
+ */
+export async function getDeliverableFiles(
+  deliverableId: string,
+  revisionId?: string,
+) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "read");
+
+  // Validate deliverable exists in tenant
+  const [deliverable] = await db
+    .select({
+      deliverableId: deliverables.deliverableId,
+      projectId: deliverables.projectId,
+      currentRevisionId: deliverables.currentRevisionId,
+    })
+    .from(deliverables)
+    .where(
+      and(
+        eq(deliverables.deliverableId, deliverableId),
+        eq(deliverables.organizationId, user.organizationId),
+        isNull(deliverables.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!deliverable) throw new Error("Deliverable not found.");
+
+  const targetRevisionId = revisionId || deliverable.currentRevisionId;
+
+  return db
+    .select({
+      mappingId: deliverableFiles.mappingId,
+      deliverableId: deliverableFiles.deliverableId,
+      revisionId: deliverableFiles.revisionId,
+      fileId: deliverableFiles.fileId,
+      orderIndex: deliverableFiles.orderIndex,
+      createdAt: deliverableFiles.createdAt,
+      title: files.title,
+      fileType: files.fileType,
+      fileStatus: files.status,
+      totalSizeBytes: files.totalSizeBytes,
+      currentVersionId: files.currentVersionId,
+      originalFilename: fileVersions.originalFilename,
+      mimeType: fileVersions.mimeType,
+      sizeBytes: fileVersions.sizeBytes,
+      versionNumber: fileVersions.versionNumber,
+      storagePath: fileVersions.storagePath,
+    })
+    .from(deliverableFiles)
+    .innerJoin(files, eq(deliverableFiles.fileId, files.fileId))
+    .leftJoin(fileVersions, eq(files.currentVersionId, fileVersions.versionId))
+    .where(
+      and(
+        eq(deliverableFiles.deliverableId, deliverableId),
+        eq(deliverableFiles.organizationId, user.organizationId),
+        targetRevisionId
+          ? eq(deliverableFiles.revisionId, targetRevisionId)
+          : undefined,
+        isNull(files.deletedAt),
+      ),
+    )
+    .orderBy(deliverableFiles.orderIndex, desc(deliverableFiles.createdAt));
+}
+
+/**
+ * Links a creative asset / file to a deliverable revision.
+ * Strict project isolation: Asset and deliverable must belong to the same project.
+ */
+export async function linkFileToDeliverable(
+  deliverableIdOrPayload: string | { deliverableId: string; fileId: string; revisionId?: string },
+  fileIdArg?: string,
+  revisionIdArg?: string,
+) {
+  const deliverableId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.deliverableId : deliverableIdOrPayload;
+  const fileId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.fileId : fileIdArg!;
+  const revisionId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.revisionId : revisionIdArg;
+
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "update");
+
+  return await db.transaction(async (tx) => {
+    // 1. Fetch deliverable and verify tenant
+    const [deliverable] = await tx
+      .select({
+        deliverableId: deliverables.deliverableId,
+        projectId: deliverables.projectId,
+        currentRevisionId: deliverables.currentRevisionId,
+        isLocked: deliverables.isLocked,
+      })
+      .from(deliverables)
+      .where(
+        and(
+          eq(deliverables.deliverableId, deliverableId),
+          eq(deliverables.organizationId, user.organizationId),
+          isNull(deliverables.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!deliverable) throw new Error("Deliverable not found.");
+    if (deliverable.isLocked) throw new Error("Deliverable is locked.");
+
+    // 2. Fetch file and verify tenant and project isolation!
+    const [file] = await tx
+      .select({
+        fileId: files.fileId,
+        projectId: files.projectId,
+        title: files.title,
+      })
+      .from(files)
+      .where(
+        and(
+          eq(files.fileId, fileId),
+          eq(files.organizationId, user.organizationId),
+          isNull(files.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!file) throw new Error("File not found or access denied.");
+
+    // Strict project isolation: asset and deliverable MUST share the same project
+    if (file.projectId !== deliverable.projectId) {
+      throw new Error(
+        "Cross-project asset assignment is prohibited: asset and deliverable must belong to the same project.",
+      );
+    }
+
+    let targetRevisionId = revisionId || deliverable.currentRevisionId;
+    if (!targetRevisionId) {
+      // Find or create revision
+      const existingRev = await tx.query.deliverableRevisions.findFirst({
+        where: eq(deliverableRevisions.deliverableId, deliverableId),
+        orderBy: [desc(deliverableRevisions.versionNumber)],
+      });
+      if (existingRev) {
+        targetRevisionId = existingRev.revisionId;
+      } else {
+        const [newRev] = await tx
+          .insert(deliverableRevisions)
+          .values({
+            organizationId: user.organizationId,
+            projectId: deliverable.projectId,
+            deliverableId,
+            versionNumber: 1,
+            requestedBy: user.userId,
+            status: "draft",
+          })
+          .returning();
+        targetRevisionId = newRev.revisionId;
+        await tx
+          .update(deliverables)
+          .set({ currentRevisionId: newRev.revisionId })
+          .where(eq(deliverables.deliverableId, deliverableId));
+      }
+    }
+
+    // Insert into deliverableFiles (conflict tolerant)
+    const [linked] = await tx
+      .insert(deliverableFiles)
+      .values({
+        organizationId: user.organizationId,
+        projectId: deliverable.projectId,
+        deliverableId,
+        revisionId: targetRevisionId,
+        fileId,
+        orderIndex: 0,
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    // Polymorphic bridge into fileRelations
+    await tx
+      .insert(fileRelations)
+      .values({
+        organizationId: user.organizationId,
+        projectId: deliverable.projectId,
+        fileId,
+        entityType: "deliverable",
+        entityId: deliverableId,
+        createdBy: user.userId,
+        updatedBy: user.userId,
+      })
+      .onConflictDoNothing();
+
+    await logDeliverableActivity(
+      "asset_linked",
+      deliverableId,
+      deliverable.projectId,
+      user.organizationId,
+      { fileId, fileTitle: file.title, revisionId: targetRevisionId },
+      tx,
+    );
+
+    return linked || { success: true, deliverableId, fileId, revisionId: targetRevisionId };
+  });
+}
+
+/**
+ * Unlinks a creative asset / file from a deliverable.
+ */
+export async function unlinkFileFromDeliverable(
+  deliverableIdOrPayload: string | { deliverableId: string; fileId: string; revisionId?: string },
+  fileIdArg?: string,
+  revisionIdArg?: string,
+) {
+  const deliverableId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.deliverableId : deliverableIdOrPayload;
+  const fileId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.fileId : fileIdArg!;
+  const revisionId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.revisionId : revisionIdArg;
+
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "update");
+
+  return await db.transaction(async (tx) => {
+    const [deliverable] = await tx
+      .select({
+        deliverableId: deliverables.deliverableId,
+        projectId: deliverables.projectId,
+        isLocked: deliverables.isLocked,
+      })
+      .from(deliverables)
+      .where(
+        and(
+          eq(deliverables.deliverableId, deliverableId),
+          eq(deliverables.organizationId, user.organizationId),
+          isNull(deliverables.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!deliverable) throw new Error("Deliverable not found.");
+    if (deliverable.isLocked) throw new Error("Deliverable is locked.");
+
+    await tx
+      .delete(deliverableFiles)
+      .where(
+        and(
+          eq(deliverableFiles.deliverableId, deliverableId),
+          eq(deliverableFiles.fileId, fileId),
+          revisionId ? eq(deliverableFiles.revisionId, revisionId) : undefined,
+          eq(deliverableFiles.organizationId, user.organizationId),
+        ),
+      );
+
+    await logDeliverableActivity(
+      "asset_unlinked",
+      deliverableId,
+      deliverable.projectId,
+      user.organizationId,
+      { fileId, revisionId },
+      tx,
+    );
+
+    return { success: true };
+  });
+}
+
+/**
+ * Archives a deliverable.
+ */
+export async function archiveDeliverable(deliverableId: string) {
+  const user = await requireCurrentUser();
+  requirePermission(user.permissions, "deliverables", "update");
+
+  return await db.transaction(async (tx) => {
+    const [deliverable] = await tx
+      .select({
+        deliverableId: deliverables.deliverableId,
+        projectId: deliverables.projectId,
+        status: deliverables.status,
+      })
+      .from(deliverables)
+      .where(
+        and(
+          eq(deliverables.deliverableId, deliverableId),
+          eq(deliverables.organizationId, user.organizationId),
+          isNull(deliverables.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!deliverable) throw new Error("Deliverable not found.");
+
+    const [updated] = await tx
+      .update(deliverables)
+      .set({
+        status: "archived",
+        updatedAt: new Date(),
+        updatedBy: user.userId,
+      })
+      .where(eq(deliverables.deliverableId, deliverableId))
+      .returning();
+
+    await logDeliverableActivity(
+      "archived",
+      deliverableId,
+      deliverable.projectId,
+      user.organizationId,
+      { previousStatus: deliverable.status },
+      tx,
+    );
+
+    return updated;
+  });
+}
+

@@ -122,3 +122,25 @@ export async function searchFiles(
   if (isDemoMode()) return (mock as any).searchFiles(...args);
   return (real as any).searchFiles(...args);
 }
+
+export async function getFileDownloadUrl(
+  ...args: Parameters<typeof real.getFileDownloadUrl>
+): Promise<Awaited<ReturnType<typeof real.getFileDownloadUrl>>> {
+  if (isDemoMode()) return (mock as any).getFileDownloadUrl(...args);
+  return (real as any).getFileDownloadUrl(...args);
+}
+
+export async function archiveFile(
+  ...args: Parameters<typeof real.archiveFile>
+): Promise<Awaited<ReturnType<typeof real.archiveFile>>> {
+  if (isDemoMode()) return (mock as any).archiveFile(...args);
+  return (real as any).archiveFile(...args);
+}
+
+export async function restoreFile(
+  ...args: Parameters<typeof real.restoreFile>
+): Promise<Awaited<ReturnType<typeof real.restoreFile>>> {
+  if (isDemoMode()) return (mock as any).restoreFile(...args);
+  return (real as any).restoreFile(...args);
+}
+

@@ -136,6 +136,7 @@ export type DemoStore = {
   taskComments: any[];
   taskActivity: any[];
   deliverables: any[];
+  deliverableFiles: any[];
   meetings: any[];
   // Meetings sub-collections (Sprint 12B). Previously created lazily by
   // mock-actions on first write, which meant the seeded meeting had no
@@ -1648,6 +1649,7 @@ function createSeedData(): DemoStore {
     approvalConditions: [],
     // Deliverables sub-collections.
     deliverableRevisions,
+    deliverableFiles: [],
     deliverableReviewSessions: [],
     deliverableApprovals: [],
     deliverableShareLinks: [],

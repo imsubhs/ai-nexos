@@ -12,6 +12,10 @@ import type {
   getDeliverableApprovals as real_getDeliverableApprovals,
   getDeliverableShareLinks as real_getDeliverableShareLinks,
   getDeliverableActivity as real_getDeliverableActivity,
+  getDeliverableFiles as real_getDeliverableFiles,
+  linkFileToDeliverable as real_linkFileToDeliverable,
+  unlinkFileFromDeliverable as real_unlinkFileFromDeliverable,
+  archiveDeliverable as real_archiveDeliverable,
 } from "./real-actions";
 import {
   getDemoStore,
@@ -334,6 +338,7 @@ export async function getDeliverables(
     .filter((d: any) => !filters.projectId || d.projectId === filters.projectId)
     .filter((d: any) => !filters.clientId || d.clientId === filters.clientId)
     .filter((d: any) => !filters.status || d.status === filters.status)
+    .filter((d: any) => !filters.type || d.type === filters.type)
     .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
@@ -450,3 +455,176 @@ export async function getDeliverableActivity(
       createdAt: entry.createdAt,
     })) as any;
 }
+
+export async function getDeliverableFiles(
+  ...args: Parameters<typeof real_getDeliverableFiles>
+): Promise<Awaited<ReturnType<typeof real_getDeliverableFiles>>> {
+  const [deliverableId, revisionId] = args;
+  const store = getDemoStore();
+  store.deliverableFiles = store.deliverableFiles || [];
+
+  const deliverable = store.deliverables.find(
+    (d: any) => d.deliverableId === deliverableId,
+  );
+  if (!deliverable) throw new Error("Deliverable not found.");
+
+  const targetRevisionId = revisionId || deliverable.currentRevisionId;
+
+  const matches = store.deliverableFiles.filter(
+    (df: any) =>
+      df.deliverableId === deliverableId &&
+      (!targetRevisionId || df.revisionId === targetRevisionId),
+  );
+
+  return matches.map((df: any) => {
+    const file = (store.files || []).find((f: any) => f.fileId === df.fileId) || {
+      fileId: df.fileId,
+      title: "Demo File",
+      fileType: "document",
+      status: "ready",
+      totalSizeBytes: 1024,
+      currentVersionId: null,
+    };
+    return {
+      mappingId: df.mappingId,
+      deliverableId: df.deliverableId,
+      revisionId: df.revisionId,
+      fileId: df.fileId,
+      orderIndex: df.orderIndex || 0,
+      createdAt: df.createdAt || new Date(),
+      title: file.title,
+      fileType: file.fileType,
+      fileStatus: file.status,
+      totalSizeBytes: file.totalSizeBytes,
+      currentVersionId: file.currentVersionId,
+      originalFilename: file.title,
+      mimeType: "application/octet-stream",
+      sizeBytes: file.totalSizeBytes || 1024,
+      versionNumber: 1,
+      storagePath: `demo/${df.fileId}/v1`,
+    };
+  }) as any;
+}
+
+export async function linkFileToDeliverable(
+  ...args: Parameters<typeof real_linkFileToDeliverable>
+): Promise<Awaited<ReturnType<typeof real_linkFileToDeliverable>>> {
+  const deliverableId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).deliverableId : args[0];
+  const fileId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).fileId : args[1];
+  const revisionId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).revisionId : args[2];
+  const store = getDemoStore();
+  store.deliverableFiles = store.deliverableFiles || [];
+
+  const deliverable = store.deliverables.find(
+    (d: any) => d.deliverableId === deliverableId,
+  );
+  if (!deliverable) throw new Error("Deliverable not found.");
+
+  const file = (store.files || []).find((f: any) => f.fileId === fileId);
+  if (!file) throw new Error("File not found or access denied.");
+
+  if (file.projectId !== deliverable.projectId) {
+    throw new Error(
+      "Cross-project asset assignment is prohibited: asset and deliverable must belong to the same project.",
+    );
+  }
+
+  const targetRevisionId = revisionId || deliverable.currentRevisionId || nextDemoId(store);
+
+  const existing = store.deliverableFiles.find(
+    (df: any) =>
+      df.deliverableId === deliverableId &&
+      df.fileId === fileId &&
+      df.revisionId === targetRevisionId,
+  );
+
+  if (!existing) {
+    const item = {
+      mappingId: nextDemoId(store),
+      organizationId: deliverable.organizationId,
+      projectId: deliverable.projectId,
+      deliverableId,
+      revisionId: targetRevisionId,
+      fileId,
+      orderIndex: store.deliverableFiles.length,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: DEMO_USER_ID,
+      updatedBy: DEMO_USER_ID,
+      deletedAt: null,
+      deletedBy: null,
+      isArchived: false,
+      version: 1,
+    };
+    store.deliverableFiles.push(item);
+  }
+
+  logDemoActivity(
+    store,
+    "deliverables",
+    "asset_linked",
+    "deliverable",
+    deliverableId,
+    `Linked asset ${file.title}`,
+    deliverable.projectId,
+  );
+
+  return { success: true, deliverableId, fileId, revisionId: targetRevisionId } as any;
+}
+
+export async function unlinkFileFromDeliverable(
+  ...args: Parameters<typeof real_unlinkFileFromDeliverable>
+): Promise<Awaited<ReturnType<typeof real_unlinkFileFromDeliverable>>> {
+  const deliverableId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).deliverableId : args[0];
+  const fileId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).fileId : args[1];
+  const revisionId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).revisionId : args[2];
+  const store = getDemoStore();
+  store.deliverableFiles = store.deliverableFiles || [];
+
+  store.deliverableFiles = store.deliverableFiles.filter(
+    (df: any) =>
+      !(
+        df.deliverableId === deliverableId &&
+        df.fileId === fileId &&
+        (!revisionId || df.revisionId === revisionId)
+      ),
+  );
+
+  logDemoActivity(
+    store,
+    "deliverables",
+    "asset_unlinked",
+    "deliverable",
+    deliverableId,
+    `Unlinked asset ${fileId}`,
+  );
+
+  return { success: true } as any;
+}
+
+export async function archiveDeliverable(
+  ...args: Parameters<typeof real_archiveDeliverable>
+): Promise<Awaited<ReturnType<typeof real_archiveDeliverable>>> {
+  const [deliverableId] = args;
+  const store = getDemoStore();
+  const deliverable = store.deliverables.find(
+    (d: any) => d.deliverableId === deliverableId,
+  );
+  if (!deliverable) throw new Error("Deliverable not found.");
+
+  deliverable.status = "archived";
+  deliverable.updatedAt = new Date();
+
+  logDemoActivity(
+    store,
+    "deliverables",
+    "archived",
+    "deliverable",
+    deliverableId,
+    `Archived ${deliverable.title}`,
+    deliverable.projectId,
+  );
+
+  return deliverable as any;
+}
+
