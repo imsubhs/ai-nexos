@@ -7,9 +7,31 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-heading: var(--foreground-heading);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
+
+  /* Deep Navy Surface Strata */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-steel-slate: var(--steel-slate);
+  --color-soft-silver: var(--soft-silver);
+
+  /* Electric Sky Brand Accents */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-primary-soft: var(--brand-primary-soft);
+  --color-brand-primary-tint: var(--brand-primary-tint);
+
+  /* Sidebar Tokens */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -18,15 +40,22 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+
+  /* Charts */
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+
+  /* Core UI Controls */
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -39,135 +68,30 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
-}
-/* ============================================================================
-   AI NEX OS — semantic tokens (Design System §6)
-   Status, priority, and project-health colors are centrally governed here;
-   components must reference tokens, never raw colors.
-   ========================================================================== */
-
-:root {
-  --success: oklch(0.648 0.15 155);
-  --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.795 0.155 85);
-  --warning-foreground: oklch(0.205 0 0);
-  --info: oklch(0.623 0.17 250);
-  --info-foreground: oklch(0.985 0 0);
-
-  /* Priority scale (PRD Module 06) */
-  --priority-critical: oklch(0.577 0.245 27.3);
-  --priority-high: oklch(0.705 0.19 48);
-  --priority-medium: oklch(0.795 0.155 85);
-  --priority-low: oklch(0.623 0.17 250);
-
-  /* Project health (Design System §6) */
-  --health-on-track: oklch(0.648 0.15 155);
-  --health-at-risk: oklch(0.795 0.155 85);
-  --health-delayed: oklch(0.705 0.19 48);
-  --health-blocked: oklch(0.577 0.245 27.3);
-}
-
-.dark {
-  --success: oklch(0.696 0.14 155);
-  --warning: oklch(0.828 0.145 85);
-  --info: oklch(0.685 0.155 250);
-}
-
-@theme inline {
+  /* Semantic Chips & Statuses */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-bg: var(--success-bg);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-bg: var(--warning-bg);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-info-bg: var(--info-bg);
+  --color-neutral-status: var(--neutral-status);
+  --color-neutral-status-bg: var(--neutral-status-bg);
+
+  /* Radii Scale (Architectural Mechanical 4px base) */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Priority Scale */
   --color-priority-critical: var(--priority-critical);
   --color-priority-high: var(--priority-high);
   --color-priority-medium: var(--priority-medium);
@@ -176,4 +100,217 @@
   --color-health-at-risk: var(--health-at-risk);
   --color-health-delayed: var(--health-delayed);
   --color-health-blocked: var(--health-blocked);
+}
+
+:root {
+  /* Light Mode Fallback Tokens */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --foreground-heading: #020617;
+  --foreground-secondary: #475569;
+  --foreground-muted: #64748b;
+  --foreground-subtle: #94a3b8;
+
+  --surface-0: #f8fafc;
+  --surface-1: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #f1f5f9;
+  --surface-4: #ffffff;
+  --steel-slate: #94a3b8;
+  --soft-silver: #e2e8f0;
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0284c7;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0284c7;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-strong: rgba(0, 0, 0, 0.16);
+  --input: rgba(0, 0, 0, 0.12);
+  --ring: rgba(2, 132, 199, 0.4);
+
+  --chart-1: #0284c7;
+  --chart-2: #0ea5e9;
+  --chart-3: #38bdf8;
+  --chart-4: #059669;
+  --chart-5: #d97706;
+
+  --radius: 0.25rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #0284c7;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0284c7;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: rgba(2, 132, 199, 0.4);
+
+  --brand-primary: #0284c7;
+  --brand-primary-hover: #0369a1;
+  --brand-primary-soft: #0ea5e9;
+  --brand-primary-tint: #e0f2fe;
+
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --info: #0284c7;
+  --info-foreground: #ffffff;
+  --info-bg: rgba(2, 132, 199, 0.12);
+  --neutral-status: #64748b;
+  --neutral-status-bg: rgba(100, 116, 139, 0.12);
+
+  --priority-critical: #e11d48;
+  --priority-high: #f97316;
+  --priority-medium: #f59e0b;
+  --priority-low: #0284c7;
+
+  --health-on-track: #10b981;
+  --health-at-risk: #f59e0b;
+  --health-delayed: #f97316;
+  --health-blocked: #e11d48;
+}
+
+.dark {
+  /* ==========================================================================
+     AI NEX OS — Master Deep Navy / Obsidian + Electric Sky Foundation
+     ========================================================================== */
+
+  /* 1. Tonal Stratification */
+  --background: #06141b;              /* Surface 0: Application Viewport Canvas Floor */
+  --surface-0: #06141b;               /* Deep Navy Ground */
+  --surface-1: #0e1820;               /* Surface 1: Navigation Chrome, Sidebar, Table Wells */
+  --surface-2: #11212d;               /* Surface 2: Primary Workstation Cards, Tables, Inspectors */
+  --surface-3: #253745;               /* Surface 3: Hover Surfaces, Active Tabs, Drop Targets */
+  --surface-4: #304554;               /* Surface 4: Command Center ⌘K, Elevated Dialogs */
+
+  --steel-slate: #4a5c6a;
+  --soft-silver: #ccd0cf;
+
+  /* 2. Typographic Luminance Hierarchy */
+  --foreground: #f5f7f8;              /* Primary text (high contrast, comfortable) */
+  --foreground-heading: #ffffff;      /* Display headings & critical metric numbers */
+  --foreground-secondary: #ccd0cf;    /* Secondary text, column headers, timestamps */
+  --foreground-muted: #9ba8ab;        /* Muted narrative, helper labels */
+  --foreground-subtle: #647783;       /* Subtitle/metadata, shortcut pills (⌘K) */
+
+  /* 3. shadcn/ui Standard Compatibility Mappings */
+  --card: #11212d;                    /* Matches Surface 2 */
+  --card-foreground: #f5f7f8;
+  --popover: #304554;                 /* Matches Surface 4 */
+  --popover-foreground: #f5f7f8;
+
+  /* 4. AI NEX OS Brand Accent (Electric Sky) */
+  --brand-primary: #0ea5e9;
+  --brand-primary-hover: #0284c7;
+  --brand-primary-soft: #38bdf8;
+  --brand-primary-tint: #89ceff;
+
+  --primary: #0ea5e9;
+  --primary-hover: #0284c7;
+  --primary-foreground: #ffffff;
+  --secondary: #253745;
+  --secondary-foreground: #f5f7f8;
+  --muted: #253745;
+  --muted-foreground: #9ba8ab;
+  --accent: #253745;
+  --accent-foreground: #38bdf8;
+
+  /* 5. Hairline Micro-Borders & Optical Outlines */
+  --border-subtle: rgba(255, 255, 255, 0.06);   /* Structural grid lines & table dividers */
+  --border: rgba(255, 255, 255, 0.09);          /* Default card outlines & control groups */
+  --border-strong: rgba(255, 255, 255, 0.14);   /* Elevated controls, hovered cards, dialogs */
+  --input: rgba(255, 255, 255, 0.12);           /* Form inputs */
+  --ring: rgba(14, 165, 233, 0.45);             /* Electric Sky focus ring & scrubber needles */
+
+  /* 6. Sidebar Navigation System */
+  --sidebar: #0e1820;
+  --sidebar-foreground: #f5f7f8;
+  --sidebar-primary: #0ea5e9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #253745;
+  --sidebar-accent-foreground: #38bdf8;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: rgba(14, 165, 233, 0.45);
+
+  /* 7. Functional Semantic Tokens (Translucent Chips + Solid Text) */
+  --success: #34d399;                            /* Emerald (Approved, Completed) */
+  --success-foreground: #06141b;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --warning: #fbbf24;                            /* Amber (In Review, At Risk) */
+  --warning-foreground: #06141b;
+  --warning-bg: rgba(251, 191, 36, 0.12);
+  --destructive: #f43f5e;                        /* Rose (Critical, Blocked, Delete) */
+  --destructive-foreground: #ffffff;
+  --destructive-bg: rgba(244, 63, 94, 0.12);
+  --info: #38bdf8;                               /* Sky/Cyan (Active, In Progress) */
+  --info-foreground: #06141b;
+  --info-bg: rgba(56, 189, 248, 0.12);
+  --neutral-status: #64748b;                    /* Slate (Planning, Backlog) */
+  --neutral-status-bg: rgba(100, 116, 139, 0.12);
+
+  /* 8. Priority Scale */
+  --priority-critical: #f43f5e;
+  --priority-high: #fb923c;
+  --priority-medium: #fbbf24;
+  --priority-low: #38bdf8;
+
+  /* 9. Project Health Scale */
+  --health-on-track: #34d399;
+  --health-at-risk: #fbbf24;
+  --health-delayed: #fb923c;
+  --health-blocked: #f43f5e;
+
+  /* 10. Charts Telemetry Palette */
+  --chart-1: #0ea5e9;
+  --chart-2: #34d399;
+  --chart-3: #fbbf24;
+  --chart-4: #38bdf8;
+  --chart-5: #a78bfa;
+
+  /* 11. Geometry */
+  --radius: 0.25rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Precision Utility Helpers */
+.optical-inset {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+.elevation-3 {
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+}
+
+.elevation-4 {
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.electric-glow {
+  box-shadow: 0 0 14px rgba(14, 165, 233, 0.35);
 }

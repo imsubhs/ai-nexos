@@ -1,31 +1,40 @@
 import { Suspense } from "react";
-import { Metadata } from "next";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { CheckSquare, FolderKanban, Plus } from "lucide-react";
 import { TaskDashboard } from "@/features/tasks/components/task-dashboard";
+import type { TaskScope } from "@/features/tasks/components/task-form";
 import { listEmployeesAction } from "@/features/workforce/employees/actions";
+import { getProjects } from "@/features/projects/actions";
+import {
+  getProjectTimeline,
+  getTimelineMilestones,
+} from "@/features/timelines/actions";
+import { isDemoMode } from "@/lib/env.server";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export const metadata: Metadata = {
-  title: "Tasks",
-  description: "Manage your tasks across all projects.",
+  title: "Tasks | AI NEX OS",
+  description: "Manage project tasks, board status, and milestone delivery.",
 };
 
 /**
- * TaskDashboard is milestone-scoped (getTasks(milestoneId, …)), so this
- * workspace pins the seeded demo milestone until a global task read layer
- * exists (see docs/STABILIZATION_REPORT.md). Sprint 12A added timelineId and
- * phaseId because task creation requires the full hierarchy (insertTaskSchema).
- * These must match src/lib/demo/store.ts exactly — sequentialUuid(n) renders
- * as 00000000-0000-4000-8000-<n padded to 12>, i.e. a v4/variant-8 UUID.
+ * Demo fallback scope used exclusively in DEMO_MODE when no custom projects exist.
  */
-const DEMO_TASK_SCOPE = {
-  projectId: "00000000-0000-4000-8000-000000000201", // id.projectWebsite
-  timelineId: "00000000-0000-4000-8000-000000000301", // id.timelineWebsite
-  phaseId: "00000000-0000-4000-8000-000000000312", // id.phasePreProd
-  milestoneId: "00000000-0000-4000-8000-000000000322", // id.milestoneWireframes
-} as const;
+const DEMO_TASK_SCOPE: TaskScope = {
+  projectId: "00000000-0000-4000-8000-000000000201",
+  timelineId: "00000000-0000-4000-8000-000000000301",
+  phaseId: "00000000-0000-4000-8000-000000000312",
+  milestoneId: "00000000-0000-4000-8000-000000000322",
+};
 
-export default async function TasksPage() {
-  // Assignment targets (Sprint 12B). A caller without people-read gets an empty
-  // list and the assign control simply does not render.
+export default async function TasksPage(props: {
+  searchParams?: Promise<{ projectId?: string; milestoneId?: string }>;
+}) {
+  const searchParams = await props.searchParams;
+
+  // 1. Fetch team members for assignment targets (people.read permission tolerant)
   let members: {
     userId: string;
     firstName: string;
@@ -42,26 +51,112 @@ export default async function TasksPage() {
     members = [];
   }
 
+  // 2. Resolve real dynamic task scope from tenant's projects & milestones
+  let scope: TaskScope | null = null;
+  let activeProjectName = "Production Tasks";
+  let activeMilestoneName = "Operations Board";
+
+  try {
+    const projects = await getProjects(undefined, 20, 0);
+    if (projects.length > 0) {
+      const selectedProject =
+        (searchParams?.projectId
+          ? projects.find((p) => p.projectId === searchParams.projectId)
+          : null) || projects[0];
+
+      activeProjectName = selectedProject.projectName;
+
+      const timeline = await getProjectTimeline(selectedProject.projectId);
+      if (timeline) {
+        const milestones = await getTimelineMilestones(
+          timeline.timelineId,
+          50,
+          0,
+        );
+        if (milestones.length > 0) {
+          const selectedMilestone =
+            (searchParams?.milestoneId
+              ? milestones.find(
+                  (m) => m.milestoneId === searchParams.milestoneId,
+                )
+              : null) || milestones[0];
+
+          activeMilestoneName = selectedMilestone.name;
+          const phaseId =
+            selectedMilestone.phaseId ||
+            timeline.phases?.[0]?.phaseId ||
+            "00000000-0000-4000-8000-000000000312";
+
+          scope = {
+            projectId: selectedProject.projectId,
+            timelineId: timeline.timelineId,
+            phaseId,
+            milestoneId: selectedMilestone.milestoneId,
+          };
+        }
+      }
+    }
+  } catch {
+    // If tenant project resolution fails, scope remains null
+  }
+
+  // Fallback to seeded demo scope only in demo mode when no real projects exist
+  if (!scope && isDemoMode()) {
+    scope = DEMO_TASK_SCOPE;
+    activeProjectName = "Website Redesign";
+    activeMilestoneName = "Wireframes milestone";
+  }
+
   return (
-    <div className="flex h-full flex-1 flex-col space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+    <div className="flex h-full flex-1 flex-col space-y-4">
+      {/* Header with real project and milestone scope */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          {/* One heading only — the dashboard used to render a second "Tasks"
-              heading directly beneath this one. The subtitle now states the
-              real scope instead of claiming "across all projects". */}
-          <p className="text-muted-foreground">
-            Wireframes milestone · Website Redesign.
+          <h1 className="text-2xl font-bold tracking-tight text-foreground-heading">
+            Tasks Operations
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {scope
+              ? `${activeMilestoneName} · ${activeProjectName}`
+              : "Operational task management and execution board"}
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button render={<Link href="/projects" />} size="sm" variant="outline">
+            <FolderKanban className="size-3.5" />
+            <span>Projects</span>
+          </Button>
         </div>
       </div>
 
-      <div className="bg-card min-h-0 flex-1 overflow-hidden rounded-xl border">
-        <Suspense
-          fallback={<div className="bg-muted/20 h-full w-full animate-pulse" />}
-        >
-          <TaskDashboard scope={DEMO_TASK_SCOPE} members={members} />
-        </Suspense>
+      {/* Task Workspace or Honest Empty State */}
+      <div className="bg-card min-h-[500px] flex-1 overflow-hidden rounded-lg border border-border shadow-xs dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+        {scope ? (
+          <Suspense
+            fallback={
+              <div className="flex h-full w-full items-center justify-center p-12 text-sm text-muted-foreground animate-pulse">
+                Loading task operations…
+              </div>
+            }
+          >
+            <TaskDashboard scope={scope} members={members} />
+          </Suspense>
+        ) : (
+          <div className="p-8">
+            <EmptyState
+              icon={CheckSquare}
+              title="No Project Milestones Configured"
+              description="Tasks in AI NEX OS are scoped to project timeline milestones. Create a project and configure timeline milestones to begin tracking tasks."
+              action={
+                <Button render={<Link href="/projects" />} size="sm">
+                  <Plus className="size-3.5" />
+                  <span>Create Project</span>
+                </Button>
+              }
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -45,12 +45,12 @@ export function AppHeader({
     .toUpperCase();
 
   return (
-    <header className="bg-background/80 sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b px-4 backdrop-blur-sm">
+    <header className="bg-surface-1/90 border-b border-border-subtle sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 px-4 backdrop-blur-md">
       <SidebarTrigger />
-      <Separator orientation="vertical" className="h-5" />
+      <Separator orientation="vertical" className="h-5 bg-border-subtle" />
 
       {isDemo && (
-        <div className="bg-primary/20 text-primary flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold tracking-wider uppercase">
+        <div className="bg-primary/10 text-primary border border-primary/25 flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wider uppercase">
           Demo Mode
         </div>
       )}

@@ -14,6 +14,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { APP_NAME } from "@/config/app";
@@ -38,7 +41,14 @@ export function AppSidebar({
 
   const navSections = NAV_SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => permittedHrefs.includes(item.href)),
+    items: section.items
+      .filter((item) => permittedHrefs.includes(item.href))
+      .map((item) => ({
+        ...item,
+        children: item.children?.filter((child) =>
+          permittedHrefs.includes(child.href),
+        ),
+      })),
   })).filter((section) => section.items.length > 0);
 
   return (
@@ -79,10 +89,20 @@ export function AppSidebar({
               <SidebarMenu>
                 {section.items.map((item) => {
                   const isComingSoon = item.status === "coming-soon";
-                  const isActive =
+                  const hasPermittedChildren = (item.children?.length ?? 0) > 0;
+                  const isChildActive = Boolean(
+                    item.children?.some(
+                      (child) =>
+                        pathname === child.href ||
+                        pathname.startsWith(`${child.href}/`),
+                    ),
+                  );
+                  const isItemActive =
                     !isComingSoon &&
                     (pathname === item.href ||
-                      pathname.startsWith(`${item.href}/`));
+                      (item.href !== "/dashboard" &&
+                        pathname.startsWith(`${item.href}/`)) ||
+                      isChildActive);
 
                   return (
                     <SidebarMenuItem key={item.href}>
@@ -115,16 +135,60 @@ export function AppSidebar({
                       ) : (
                         <SidebarMenuButton
                           render={<Link href={item.href} />}
-                          isActive={isActive}
+                          isActive={isItemActive && !isChildActive}
                           // isActive only sets data-active (styling). The
                           // current page must also be exposed to assistive
                           // technology.
-                          aria-current={isActive ? "page" : undefined}
+                          aria-current={
+                            pathname === item.href ? "page" : undefined
+                          }
                           tooltip={item.title}
                         >
                           <item.icon />
                           <span>{item.title}</span>
                         </SidebarMenuButton>
+                      )}
+
+                      {/* Render hierarchical sub-navigation for grouped items (Phase 4B Workforce consolidation) */}
+                      {hasPermittedChildren && isItemActive && (
+                        <SidebarMenuSub>
+                          {item.children!.map((child) => {
+                            const isChildComingSoon =
+                              child.status === "coming-soon";
+                            const isThisChildActive =
+                              !isChildComingSoon &&
+                              (pathname === child.href ||
+                                pathname.startsWith(`${child.href}/`));
+
+                            return (
+                              <SidebarMenuSubItem key={child.href}>
+                                {isChildComingSoon ? (
+                                  <SidebarMenuSubButton
+                                    aria-disabled
+                                    tabIndex={-1}
+                                    aria-label={`${child.title} — coming soon`}
+                                    className="pointer-events-none opacity-50"
+                                  >
+                                    <span>{child.title}</span>
+                                    <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[9px] leading-none font-medium">
+                                      Soon
+                                    </span>
+                                  </SidebarMenuSubButton>
+                                ) : (
+                                  <SidebarMenuSubButton
+                                    render={<Link href={child.href} />}
+                                    isActive={isThisChildActive}
+                                    aria-current={
+                                      isThisChildActive ? "page" : undefined
+                                    }
+                                  >
+                                    <span>{child.title}</span>
+                                  </SidebarMenuSubButton>
+                                )}
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
                       )}
                     </SidebarMenuItem>
                   );

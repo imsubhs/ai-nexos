@@ -86,7 +86,7 @@ export function TaskDashboard({
             navigation this control does not implement. */}
         <div
           aria-label="Task view"
-          className="bg-muted flex items-center gap-1 rounded-lg border p-1"
+          className="bg-surface-1/90 border border-border-subtle flex items-center gap-1 rounded-md p-1"
         >
           {(
             [
@@ -99,9 +99,9 @@ export function TaskDashboard({
               type="button"
               aria-pressed={view === key}
               onClick={() => setView(key)}
-              className={`focus-visible:ring-ring rounded-md px-4 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none ${
+              className={`focus-visible:ring-ring rounded px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none ${
                 view === key
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-surface-3 text-foreground shadow-xs border border-border-subtle"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

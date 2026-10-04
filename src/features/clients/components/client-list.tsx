@@ -5,6 +5,8 @@ import { Building2, Globe, MapPin } from "lucide-react";
 import Link from "next/link";
 import { ClientHealthBadge, ClientStatusBadge } from "./client-badges";
 
+import { EmptyState } from "@/components/shared/empty-state";
+
 type Client = typeof clients.$inferSelect;
 
 function getInitials(name: string) {
@@ -14,16 +16,11 @@ function getInitials(name: string) {
 export function ClientList({ clients }: { clients: Client[] }) {
   if (clients.length === 0) {
     return (
-      <div className="bg-card flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
-        <Building2 className="text-muted-foreground/50 mb-4 h-12 w-12" />
-        <h3 className="text-lg font-semibold tracking-tight">
-          No clients found
-        </h3>
-        <p className="text-muted-foreground mt-2 max-w-sm text-sm">
-          Get started by adding your first client to manage their projects,
-          contacts, and assets.
-        </p>
-      </div>
+      <EmptyState
+        icon={Building2}
+        title="No clients found"
+        description="Get started by adding your first client to manage accounts, project assignments, and assets."
+      />
     );
   }
 
@@ -35,15 +32,15 @@ export function ClientList({ clients }: { clients: Client[] }) {
           key={client.clientId}
           className="group block"
         >
-          <Card className="hover:border-primary/20 dark:hover:border-primary/30 h-full transition-all duration-300 group-hover:-translate-y-1 hover:shadow-md">
+          <Card className="hover:border-brand-primary/50 h-full transition-all duration-200 group-hover:-translate-y-0.5 hover:shadow-xs">
             <CardHeader className="flex flex-row items-start justify-between pb-4">
-              <div className="flex items-center space-x-4">
-                <Avatar className="border-border h-12 w-12 border">
+              <div className="flex items-center space-x-3">
+                <Avatar className="border-border h-11 w-11 border">
                   <AvatarImage
                     src={client.logoUrl || undefined}
                     alt={client.companyName}
                   />
-                  <AvatarFallback className="bg-primary/5 text-primary font-semibold">
+                  <AvatarFallback className="bg-surface-3 text-brand-primary font-semibold border border-border">
                     {getInitials(client.companyName)}
                   </AvatarFallback>
                 </Avatar>

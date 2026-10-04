@@ -47,8 +47,11 @@ export default async function DeliverablesPage({
         cursorOffset,
         PAGE_SIZE + 1,
       );
-  // createDeliverable needs a project; the create dialog offers these.
-  const projectRows = await getProjects(undefined, 100, 0);
+  // Permission-tolerant project selector (Phase 4B): callers with deliverables.read but without
+  // projects.read receive an empty project list rather than an unhandled 500 crash.
+  const projectRows = hasPermission(user.permissions, "projects", "read")
+    ? await getProjects(undefined, 100, 0).catch(() => [])
+    : [];
   const projects = projectRows.map((project) => ({
     projectId: project.projectId,
     projectName: project.projectName,

@@ -66,7 +66,11 @@ export default async function FilesPage({
   const fetched = params.search
     ? await searchFiles(params.search, cursorOffset, PAGE_SIZE + 1)
     : await getFiles({}, cursorOffset, PAGE_SIZE + 1);
-  const projectRows = await getProjects(undefined, 100, 0);
+  // Permission-tolerant project selector (Phase 4B): callers with files.read but without
+  // projects.read receive an empty project list rather than an unhandled 500 crash.
+  const projectRows = hasPermission(user.permissions, "projects", "read")
+    ? await getProjects(undefined, 100, 0).catch(() => [])
+    : [];
   const projects = projectRows.map((project) => ({
     projectId: project.projectId,
     projectName: project.projectName,

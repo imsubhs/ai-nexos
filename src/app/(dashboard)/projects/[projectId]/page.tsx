@@ -12,6 +12,14 @@ import { AddMemberModal } from "@/features/projects/components/add-member-modal"
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
@@ -37,6 +45,22 @@ export default async function ProjectDashboardPage({
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
+      <Breadcrumb className="mb-2">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/projects" />}>
+              Projects
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage className="max-w-[200px] truncate sm:max-w-[400px]">
+              {project.projectName}
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="mb-2 flex items-center space-x-4">
         {/* Sprint 12A: icon-only back control with no accessible name — the
             same defect class as P2-03, found by the Phase 8 sweep. */}
@@ -50,11 +74,11 @@ export default async function ProjectDashboardPage({
         </Button>
         <div>
           <div className="text-muted-foreground flex items-center space-x-2 text-sm">
-            <span className="bg-muted rounded px-1.5 font-mono">
+            <span className="bg-surface-3 border border-border text-brand-primary rounded px-2 py-0.5 font-mono text-xs font-semibold">
               {project.projectCode}
             </span>
             <span>•</span>
-            <span>{project.client?.companyName || "Internal Project"}</span>
+            <span className="text-foreground-secondary">{project.client?.companyName || "Internal Project"}</span>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">

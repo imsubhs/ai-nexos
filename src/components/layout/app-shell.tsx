@@ -43,16 +43,29 @@ export async function AppShell({
         ];
 
   const permittedHrefs = NAV_SECTIONS.flatMap((section) =>
-    section.items
-      .filter((item) => {
-        if (!item.permission) return true;
+    section.items.flatMap((item) => {
+      const allowedHrefs: string[] = [];
+      const itemPermitted =
+        !item.permission ||
+        hasPermission(user.permissions, item.permission[0], item.permission[1]);
+
+      const allowedChildren = (item.children ?? []).filter((child) => {
+        if (!child.permission) return true;
         return hasPermission(
           user.permissions,
-          item.permission[0],
-          item.permission[1],
+          child.permission[0],
+          child.permission[1],
         );
-      })
-      .map((item) => item.href),
+      });
+
+      if (itemPermitted || allowedChildren.length > 0) {
+        allowedHrefs.push(item.href);
+      }
+      for (const child of allowedChildren) {
+        allowedHrefs.push(child.href);
+      }
+      return allowedHrefs;
+    }),
   );
 
   return (

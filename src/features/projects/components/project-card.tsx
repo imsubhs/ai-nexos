@@ -51,19 +51,19 @@ export function ProjectCard({
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div>
           <div className="text-muted-foreground mb-1 flex items-center space-x-2 text-sm">
-            <span className="bg-muted rounded px-1.5 font-mono text-xs">
+            <span className="bg-surface-3 border border-border text-brand-primary rounded px-1.5 font-mono text-xs font-semibold">
               {project.projectCode}
             </span>
             {project.client?.companyName && (
               <>
                 <span>•</span>
-                <span>{project.client.companyName}</span>
+                <span className="text-foreground-secondary">{project.client.companyName}</span>
               </>
             )}
           </div>
           <Link
             href={`/projects/${project.projectId}`}
-            className="text-lg font-semibold hover:underline"
+            className="text-base font-semibold text-foreground-heading hover:text-brand-primary hover:underline"
           >
             {project.projectName}
           </Link>
@@ -74,7 +74,7 @@ export function ProjectCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="-mt-2 -mr-2 h-8 w-8"
+                className="-mt-2 -mr-2 h-8 w-8 text-muted-foreground hover:text-foreground"
                 aria-label={`Project actions for ${project.projectName}`}
               >
                 <MoreVerticalIcon className="h-4 w-4" />
@@ -108,7 +108,7 @@ export function ProjectCard({
           <ProjectPriorityBadge priority={project.priority} />
         </div>
 
-        <div className="text-muted-foreground flex items-center justify-between border-t pt-3 text-xs">
+        <div className="text-muted-foreground flex items-center justify-between border-t border-border-subtle pt-3 text-xs">
           <div className="flex items-center space-x-1">
             <CalendarIcon className="h-3.5 w-3.5" />
             <span>
@@ -118,10 +118,10 @@ export function ProjectCard({
             </span>
           </div>
           <div className="flex items-center space-x-1">
-            <span>{project.completionPercentage}%</span>
-            <div className="bg-muted h-1.5 w-16 overflow-hidden rounded-full">
+            <span className="font-mono">{project.completionPercentage}%</span>
+            <div className="bg-surface-3 h-1.5 w-16 overflow-hidden rounded-full">
               <div
-                className="bg-primary h-full"
+                className="bg-brand-primary h-full rounded-full"
                 style={{ width: `${project.completionPercentage}%` }}
               />
             </div>

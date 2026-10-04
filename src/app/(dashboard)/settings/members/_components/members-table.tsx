@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -146,7 +147,7 @@ export function MembersTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="bg-card rounded-lg border border-border overflow-hidden shadow-xs">
       <Table aria-label="Organization members">
         <TableHeader>
           <TableRow>
@@ -171,18 +172,18 @@ export function MembersTable({
               <TableRow key={member.userId}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
+                    <Avatar className="h-9 w-9 border border-border">
                       <AvatarImage
                         src={member.avatarUrl ?? ""}
                         alt={fullName}
                       />
-                      <AvatarFallback>{initials}</AvatarFallback>
+                      <AvatarFallback className="bg-surface-3 text-brand-primary font-semibold">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="font-medium">
+                      <span className="font-medium text-foreground-heading">
                         {fullName || member.email}{" "}
                         {isSelf && (
-                          <span className="text-muted-foreground font-normal">
+                          <span className="text-muted-foreground font-normal text-xs">
                             (You)
                           </span>
                         )}
@@ -195,24 +196,14 @@ export function MembersTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Shield className="text-muted-foreground h-4 w-4" />
-                    <span>{member.role?.roleName ?? "No Role"}</span>
+                    <Shield className="text-brand-primary h-4 w-4" />
+                    <span className="text-sm font-medium">{member.role?.roleName ?? "No Role"}</span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      member.status === "active"
-                        ? "default"
-                        : member.status === "invited"
-                          ? "secondary"
-                          : "outline"
-                    }
-                  >
-                    {member.status}
-                  </Badge>
+                  <StatusBadge status={member.status} />
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
+                <TableCell className="text-muted-foreground text-xs font-mono">
                   {member.lastActiveAt
                     ? new Date(member.lastActiveAt).toLocaleDateString()
                     : "Never"}

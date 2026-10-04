@@ -127,11 +127,11 @@ function BoardColumn({
   });
 
   return (
-    <div className="bg-card flex w-80 shrink-0 flex-col rounded-lg border">
-      <div className="border-b p-3">
-        <h3 className="text-foreground font-semibold">
+    <div className="bg-surface-1/60 border border-border flex w-80 shrink-0 flex-col rounded-lg shadow-xs">
+      <div className="border-b border-border-subtle p-3 bg-surface-2/40 rounded-t-lg flex items-center justify-between">
+        <h3 className="text-foreground text-sm font-semibold">
           {column.label}
-          <span className="text-muted-foreground ml-2 text-sm font-normal">
+          <span className="text-muted-foreground ml-2 text-xs font-mono font-normal">
             {tasks.length}
           </span>
         </h3>
@@ -156,7 +156,7 @@ function BoardColumn({
                 }}
               >
                 <div
-                  className={`bg-background rounded-md border shadow-sm transition-opacity ${
+                  className={`bg-card rounded-md border border-border shadow-xs dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-border-strong transition-all ${
                     isMoving ? "opacity-50" : ""
                   }`}
                 >
@@ -165,11 +165,11 @@ function BoardColumn({
                       activatable from the keyboard. */}
                   <button
                     type="button"
-                    className="hover:bg-muted/50 focus-visible:ring-ring flex w-full flex-col gap-2 rounded-t-md p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    className="hover:bg-surface-3/50 focus-visible:ring-primary flex w-full flex-col gap-2 rounded-t-md p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
                     onClick={() => onTaskClick(task.taskId)}
                   >
                     <div className="flex w-full items-start justify-between gap-2">
-                      <Badge variant="outline" className="font-mono text-xs">
+                      <Badge variant="outline" className="font-mono text-xs text-brand-primary border-brand-primary/30 bg-brand-primary/5">
                         {task.taskCode}
                       </Badge>
                       <span className="text-muted-foreground text-xs capitalize">
@@ -187,7 +187,7 @@ function BoardColumn({
                     </div>
                   </button>
 
-                  <div className="flex justify-end border-t px-2 py-1">
+                  <div className="flex justify-end border-t border-border-subtle px-2 py-1 bg-surface-1/30 rounded-b-md">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={

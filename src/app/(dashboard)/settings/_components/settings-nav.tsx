@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Users, Shield, Building2 } from "lucide-react";
+import { User, Users, Shield, Building2, CreditCard, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -10,14 +10,14 @@ const navItems = [
   { title: "Organization", href: "/settings/organization", icon: Building2 },
   { title: "Members", href: "/settings/members", icon: Users },
   { title: "Roles & Permissions", href: "/settings/roles", icon: Shield },
+  { title: "Billing & Compute", href: "/settings/billing", icon: CreditCard },
+  { title: "Security & Keys", href: "/settings/security", icon: KeyRound },
 ];
 
 export function SettingsNav() {
   const pathname = usePathname();
 
   return (
-    // Wraps on narrow viewports — as a single non-wrapping row these four
-    // items overflowed the mobile viewport horizontally.
     <nav
       aria-label="Settings sections"
       className="flex flex-wrap gap-2 md:flex-col md:flex-nowrap md:gap-1"
@@ -33,11 +33,11 @@ export function SettingsNav() {
             className={cn(
               "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
               isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                ? "bg-surface-3 text-brand-primary border-l-2 border-brand-primary"
+                : "text-muted-foreground hover:bg-surface-3/50 hover:text-foreground",
             )}
           >
-            <Icon className="mr-3 h-4 w-4 shrink-0" />
+            <Icon className="mr-3 h-4 w-4 shrink-0 text-brand-primary" />
             {item.title}
           </Link>
         );
