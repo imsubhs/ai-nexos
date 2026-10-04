@@ -201,18 +201,18 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Intelligence",
     items: [
       {
+        title: "Executive Intelligence",
+        href: "/intelligence",
+        icon: BarChart3,
+        status: "live",
+        permission: ["analytics", "read"],
+      },
+      {
         title: "AI Workspace",
         href: "/ai",
         icon: Bot,
         status: "coming-soon",
         permission: ["ai", "read"],
-      },
-      {
-        title: "Analytics",
-        href: "/analytics",
-        icon: BarChart3,
-        status: "coming-soon",
-        permission: ["analytics", "read"],
       },
     ],
   },

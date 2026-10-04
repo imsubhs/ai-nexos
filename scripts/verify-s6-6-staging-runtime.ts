@@ -762,8 +762,6 @@ async function run() {
     // SECTION L: TELEMETRY VERIFICATION
     // -------------------------------------------------------------------------
     console.log("\n--- SECTION L: TELEMETRY VERIFICATION ---");
-    let loggedSecurityEvent: { event: string; outcome: string; fields: Record<string, unknown> } | null = null;
-    
     // Test guarded action throttling event
     const dummyPolicy: RateLimitPolicy = { name: "telemetry:test", limit: 1, windowSeconds: 60, degradedLimit: 1 };
     const guardedAction = withRateLimit(

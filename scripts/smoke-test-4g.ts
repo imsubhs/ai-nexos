@@ -177,7 +177,7 @@ async function main() {
 
   // 7. Database Verification: PostgreSQL 17.6 Schema Integrity
   console.log("\n--- 7. Database Verification: PostgreSQL 17.6 Schema Integrity ---");
-  const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || target.databaseUrl;
+  const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
   const sql = postgres(dbUrl, { max: 1, prepare: false, ssl: "require" });
 
   try {
