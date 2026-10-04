@@ -16,6 +16,11 @@ import type {
   linkFileToDeliverable as real_linkFileToDeliverable,
   unlinkFileFromDeliverable as real_unlinkFileFromDeliverable,
   archiveDeliverable as real_archiveDeliverable,
+  getPortalReviewData as real_getPortalReviewData,
+  submitPortalApproval as real_submitPortalApproval,
+  submitPortalChangeRequest as real_submitPortalChangeRequest,
+  submitPortalComment as real_submitPortalComment,
+  getPortalFileDownloadUrl as real_getPortalFileDownloadUrl,
 } from "./real-actions";
 import {
   getDemoStore,
@@ -626,5 +631,478 @@ export async function archiveDeliverable(
   );
 
   return deliverable as any;
+}
+
+export async function getPortalReviewData(
+  ...args: Parameters<typeof real_getPortalReviewData>
+): Promise<Awaited<ReturnType<typeof real_getPortalReviewData>>> {
+  const [token] = args;
+  const store = getDemoStore();
+  if (!token || typeof token !== "string" || token.trim().length === 0) {
+    return {
+      valid: false,
+      error: "This review link is invalid, expired, or no longer active.",
+    };
+  }
+
+  const shareLink = (store.deliverableShareLinks || []).find(
+    (sl: any) => sl.token === token && !sl.isArchived && !sl.deletedAt,
+  );
+
+  if (!shareLink) {
+    return {
+      valid: false,
+      error: "This review link is invalid, expired, or no longer active.",
+    };
+  }
+
+  if (shareLink.expiresAt && new Date(shareLink.expiresAt) < new Date()) {
+    return {
+      valid: false,
+      error: "This review link has expired.",
+    };
+  }
+
+  const deliverable = (store.deliverables || []).find(
+    (d: any) =>
+      d.deliverableId === shareLink.deliverableId &&
+      d.organizationId === shareLink.organizationId &&
+      !d.deletedAt,
+  );
+
+  if (!deliverable) {
+    return {
+      valid: false,
+      error: "This deliverable is no longer available.",
+    };
+  }
+
+  const project = (store.projects || []).find(
+    (p: any) => p.projectId === deliverable.projectId,
+  );
+
+  const revs = (store.deliverableRevisions || [])
+    .filter((r: any) => r.deliverableId === deliverable.deliverableId && !r.deletedAt)
+    .sort((a: any, b: any) => b.versionNumber - a.versionNumber);
+
+  const targetRevision =
+    revs.find((r: any) => r.revisionId === shareLink.revisionId) ||
+    revs.find((r: any) => r.revisionId === deliverable.currentRevisionId) ||
+    revs[0] || {
+      revisionId: shareLink.revisionId,
+      versionNumber: 1,
+      reason: null,
+      status: "draft",
+      createdAt: new Date(),
+    };
+
+  const attached = (store.deliverableFiles || []).filter(
+    (df: any) =>
+      df.deliverableId === deliverable.deliverableId &&
+      df.revisionId === targetRevision.revisionId,
+  );
+
+  const attachedFiles = attached.map((df: any) => {
+    const file = (store.files || []).find((f: any) => f.fileId === df.fileId);
+    return {
+      fileId: df.fileId,
+      title: file?.title || "Asset",
+      fileType: file?.fileType || "document",
+      totalSizeBytes: file?.totalSizeBytes || 1024,
+      versionNumber: 1,
+    };
+  });
+
+  const approvalsList = (store.deliverableApprovals || [])
+    .filter((a: any) => a.projectId === deliverable.projectId)
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const commentsList = (store.deliverableReviewComments || [])
+    .filter(
+      (c: any) =>
+        c.projectId === deliverable.projectId && !c.isInternalOnly,
+    )
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  let currentStatus: "pending" | "in_review" | "approved" | "changes_requested" = "pending";
+  if (deliverable.status === "approved") {
+    currentStatus = "approved";
+  } else if (deliverable.status === "revision_requested") {
+    currentStatus = "changes_requested";
+  } else if (deliverable.status === "in_review" || deliverable.status === "client_review") {
+    currentStatus = "in_review";
+  }
+
+  const latestApproval = approvalsList[0];
+  const canApprove =
+    (shareLink.accessLevel === "approver" || shareLink.accessLevel === "full_access") &&
+    !deliverable.isLocked &&
+    deliverable.status !== "approved";
+  const canRequestChanges =
+    shareLink.accessLevel !== "view_only" && !deliverable.isLocked;
+
+  const dto: any = {
+    shareId: shareLink.shareId,
+    token: shareLink.token,
+    accessLevel: shareLink.accessLevel,
+    project: {
+      projectId: project ? project.projectId : deliverable.projectId,
+      name: project ? project.name : "Project",
+      code: project ? project.code : null,
+    },
+    deliverable: {
+      deliverableId: deliverable.deliverableId,
+      title: deliverable.title,
+      description: deliverable.description,
+      type: deliverable.type,
+      status: deliverable.status,
+      isLocked: deliverable.isLocked,
+      currentRevision: {
+        revisionId: targetRevision.revisionId,
+        versionNumber: targetRevision.versionNumber,
+        reason: targetRevision.reason,
+        status: targetRevision.status,
+        createdAt: targetRevision.createdAt ? new Date(targetRevision.createdAt).toISOString() : new Date().toISOString(),
+      },
+      revisions: revs.map((r: any) => ({
+        revisionId: r.revisionId,
+        versionNumber: r.versionNumber,
+        reason: r.reason,
+        status: r.status,
+        createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
+      })),
+      files: attachedFiles,
+    },
+    reviewStatus: {
+      currentStatus,
+      canApprove,
+      canRequestChanges,
+      approvedAt: latestApproval ? new Date(latestApproval.createdAt).toISOString() : null,
+      approvedBy: latestApproval ? latestApproval.clientApproverSignature : null,
+      notes: latestApproval ? latestApproval.notes : null,
+    },
+    approvalHistory: approvalsList.map((a: any) => ({
+      approvalId: a.approvalId,
+      status: a.status,
+      approverName: a.clientApproverSignature,
+      approverEmail: a.clientApproverEmail,
+      notes: a.notes,
+      createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : new Date().toISOString(),
+    })),
+    comments: commentsList.map((c: any) => ({
+      commentId: c.commentId,
+      authorName: c.clientAuthorName || "Reviewer",
+      content: typeof c.content === "object" && c.content !== null && "text" in c.content ? c.content.text : String(c.content),
+      createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : new Date().toISOString(),
+    })),
+  };
+
+  return { valid: true, data: dto };
+}
+
+export async function submitPortalApproval(
+  ...args: Parameters<typeof real_submitPortalApproval>
+): Promise<Awaited<ReturnType<typeof real_submitPortalApproval>>> {
+  const [payload] = args;
+  const store = getDemoStore();
+  const shareLink = (store.deliverableShareLinks || []).find(
+    (sl: any) =>
+      sl.token === payload.token &&
+      sl.deliverableId === payload.deliverableId &&
+      !sl.isArchived &&
+      !sl.deletedAt,
+  );
+
+  if (!shareLink) {
+    throw new Error("Invalid or expired review link.");
+  }
+
+  if (shareLink.expiresAt && new Date(shareLink.expiresAt) < new Date()) {
+    throw new Error("This review link has expired.");
+  }
+
+  if (shareLink.accessLevel === "view_only" || shareLink.accessLevel === "comment_only") {
+    throw new Error("You do not have approval permissions for this deliverable.");
+  }
+
+  const deliverable = (store.deliverables || []).find(
+    (d: any) => d.deliverableId === payload.deliverableId,
+  );
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found.");
+  }
+
+  if (deliverable.isLocked || deliverable.status === "approved") {
+    throw new Error("This deliverable has already been approved.");
+  }
+
+  if (
+    deliverable.currentRevisionId &&
+    deliverable.currentRevisionId !== payload.revisionId
+  ) {
+    throw new Error(
+      "This deliverable has been updated with a newer revision. Please review the latest revision.",
+    );
+  }
+
+  const approvalId = nextDemoId(store);
+  const approval = {
+    approvalId,
+    organizationId: shareLink.organizationId,
+    projectId: deliverable.projectId,
+    sessionId: shareLink.shareId,
+    clientApproverSignature: payload.reviewerName,
+    clientApproverEmail: payload.reviewerEmail,
+    status: "approved",
+    notes: payload.notes || null,
+    createdAt: new Date(),
+  };
+
+  store.deliverableApprovals = store.deliverableApprovals || [];
+  store.deliverableApprovals.push(approval);
+
+  deliverable.status = "approved";
+  deliverable.isLocked = true;
+  deliverable.updatedAt = new Date();
+
+  const rev = (store.deliverableRevisions || []).find(
+    (r: any) => r.revisionId === payload.revisionId,
+  );
+  if (rev) {
+    rev.status = "approved";
+    rev.updatedAt = new Date();
+  }
+
+  if (payload.notes) {
+    store.deliverableReviewComments = store.deliverableReviewComments || [];
+    store.deliverableReviewComments.push({
+      commentId: nextDemoId(store),
+      organizationId: shareLink.organizationId,
+      projectId: deliverable.projectId,
+      clientAuthorName: payload.reviewerName,
+      content: { text: `[Approved] ${payload.notes}` },
+      isInternalOnly: false,
+      createdAt: new Date(),
+    });
+  }
+
+  logDemoActivity(
+    store,
+    "deliverables",
+    "client_approved",
+    "deliverable",
+    deliverable.deliverableId,
+    `Client approved: ${payload.reviewerName}`,
+    deliverable.projectId,
+  );
+
+  return { success: true, approvalId };
+}
+
+export async function submitPortalChangeRequest(
+  ...args: Parameters<typeof real_submitPortalChangeRequest>
+): Promise<Awaited<ReturnType<typeof real_submitPortalChangeRequest>>> {
+  const [payload] = args;
+  if (!payload.notes || payload.notes.trim().length === 0) {
+    throw new Error("Please provide notes describing the requested changes.");
+  }
+
+  const store = getDemoStore();
+  const shareLink = (store.deliverableShareLinks || []).find(
+    (sl: any) =>
+      sl.token === payload.token &&
+      sl.deliverableId === payload.deliverableId &&
+      !sl.isArchived &&
+      !sl.deletedAt,
+  );
+
+  if (!shareLink) {
+    throw new Error("Invalid or expired review link.");
+  }
+
+  if (shareLink.expiresAt && new Date(shareLink.expiresAt) < new Date()) {
+    throw new Error("This review link has expired.");
+  }
+
+  if (shareLink.accessLevel === "view_only") {
+    throw new Error("You do not have permission to request changes for this deliverable.");
+  }
+
+  const deliverable = (store.deliverables || []).find(
+    (d: any) => d.deliverableId === payload.deliverableId,
+  );
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found.");
+  }
+
+  if (
+    deliverable.currentRevisionId &&
+    deliverable.currentRevisionId !== payload.revisionId
+  ) {
+    throw new Error(
+      "This deliverable has been updated with a newer revision. Please review the latest revision.",
+    );
+  }
+
+  const approvalId = nextDemoId(store);
+  const approval = {
+    approvalId,
+    organizationId: shareLink.organizationId,
+    projectId: deliverable.projectId,
+    sessionId: shareLink.shareId,
+    clientApproverSignature: payload.reviewerName,
+    clientApproverEmail: payload.reviewerEmail,
+    status: "rejected",
+    notes: payload.notes,
+    createdAt: new Date(),
+  };
+
+  store.deliverableApprovals = store.deliverableApprovals || [];
+  store.deliverableApprovals.push(approval);
+
+  const existingRevs = (store.deliverableRevisions || [])
+    .filter((r: any) => r.deliverableId === deliverable.deliverableId)
+    .sort((a: any, b: any) => b.versionNumber - a.versionNumber);
+
+  const nextVersion = (existingRevs[0]?.versionNumber || 1) + 1;
+  const newRevisionId = nextDemoId(store);
+
+  const newRevision = {
+    revisionId: newRevisionId,
+    organizationId: shareLink.organizationId,
+    projectId: deliverable.projectId,
+    deliverableId: deliverable.deliverableId,
+    versionNumber: nextVersion,
+    clientRequesterName: payload.reviewerName,
+    reason: payload.notes,
+    status: "draft" as any,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  store.deliverableRevisions = store.deliverableRevisions || [];
+  store.deliverableRevisions.push(newRevision);
+
+  // Carry forward files
+  const existingFiles = (store.deliverableFiles || []).filter(
+    (df: any) => df.revisionId === payload.revisionId,
+  );
+
+  store.deliverableFiles = store.deliverableFiles || [];
+  for (const f of existingFiles) {
+    store.deliverableFiles.push({
+      mappingId: nextDemoId(store),
+      organizationId: f.organizationId,
+      projectId: f.projectId,
+      deliverableId: f.deliverableId,
+      revisionId: newRevision.revisionId,
+      fileId: f.fileId,
+      orderIndex: f.orderIndex,
+      createdAt: new Date(),
+    });
+  }
+
+  deliverable.currentRevisionId = newRevision.revisionId;
+  deliverable.status = "revision_requested";
+  deliverable.isLocked = false;
+  deliverable.updatedAt = new Date();
+
+  store.deliverableReviewComments = store.deliverableReviewComments || [];
+  store.deliverableReviewComments.push({
+    commentId: nextDemoId(store),
+    organizationId: shareLink.organizationId,
+    projectId: deliverable.projectId,
+    clientAuthorName: payload.reviewerName,
+    content: { text: `[Changes Requested] ${payload.notes}` },
+    isInternalOnly: false,
+    createdAt: new Date(),
+  });
+
+  logDemoActivity(
+    store,
+    "deliverables",
+    "client_changes_requested",
+    "deliverable",
+    deliverable.deliverableId,
+    `Client requested changes (v${nextVersion}): ${payload.notes}`,
+    deliverable.projectId,
+  );
+
+  return { success: true, nextVersionNumber: nextVersion };
+}
+
+export async function submitPortalComment(
+  ...args: Parameters<typeof real_submitPortalComment>
+): Promise<Awaited<ReturnType<typeof real_submitPortalComment>>> {
+  const [payload] = args;
+  if (!payload.content || payload.content.trim().length === 0) {
+    throw new Error("Comment content cannot be empty.");
+  }
+
+  const store = getDemoStore();
+  const shareLink = (store.deliverableShareLinks || []).find(
+    (sl: any) =>
+      sl.token === payload.token &&
+      sl.deliverableId === payload.deliverableId &&
+      !sl.isArchived &&
+      !sl.deletedAt,
+  );
+
+  if (!shareLink) {
+    throw new Error("Invalid or expired review link.");
+  }
+
+  if (shareLink.accessLevel === "view_only") {
+    throw new Error("You do not have permission to comment on this deliverable.");
+  }
+
+  const commentId = nextDemoId(store);
+  store.deliverableReviewComments = store.deliverableReviewComments || [];
+  store.deliverableReviewComments.push({
+    commentId,
+    organizationId: shareLink.organizationId,
+    projectId: shareLink.projectId,
+    clientAuthorName: payload.reviewerName || "Reviewer",
+    content: { text: payload.content },
+    isInternalOnly: false,
+    createdAt: new Date(),
+  });
+
+  return { success: true, commentId };
+}
+
+export async function getPortalFileDownloadUrl(
+  ...args: Parameters<typeof real_getPortalFileDownloadUrl>
+): Promise<Awaited<ReturnType<typeof real_getPortalFileDownloadUrl>>> {
+  const [payload] = args;
+  const store = getDemoStore();
+  const shareLink = (store.deliverableShareLinks || []).find(
+    (sl: any) => sl.token === payload.token && !sl.isArchived && !sl.deletedAt,
+  );
+
+  if (!shareLink) {
+    throw new Error("Invalid or expired review link.");
+  }
+
+  const attached = (store.deliverableFiles || []).find(
+    (df: any) =>
+      df.deliverableId === shareLink.deliverableId &&
+      df.fileId === payload.fileId,
+  );
+
+  if (!attached) {
+    throw new Error("File not found in this shared deliverable.");
+  }
+
+  const file = (store.files || []).find(
+    (f: any) => f.fileId === payload.fileId && !f.deletedAt,
+  );
+
+  return {
+    downloadUrl: `https://demo-storage.local/${payload.fileId}/download`,
+    filename: file?.title || "downloaded-asset",
+  };
 }
 

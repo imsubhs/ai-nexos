@@ -116,3 +116,39 @@ export async function archiveDeliverable(
   return (real as any).archiveDeliverable(...args);
 }
 
+export async function getPortalReviewData(
+  ...args: Parameters<typeof real.getPortalReviewData>
+): Promise<Awaited<ReturnType<typeof real.getPortalReviewData>>> {
+  if (isDemoMode()) return (mock as any).getPortalReviewData(...args);
+  return (real as any).getPortalReviewData(...args);
+}
+
+export async function submitPortalApproval(
+  ...args: Parameters<typeof real.submitPortalApproval>
+): Promise<Awaited<ReturnType<typeof real.submitPortalApproval>>> {
+  if (isDemoMode()) return (mock as any).submitPortalApproval(...args);
+  return (real as any).submitPortalApproval(...args);
+}
+
+export async function submitPortalChangeRequest(
+  ...args: Parameters<typeof real.submitPortalChangeRequest>
+): Promise<Awaited<ReturnType<typeof real.submitPortalChangeRequest>>> {
+  if (isDemoMode()) return (mock as any).submitPortalChangeRequest(...args);
+  return (real as any).submitPortalChangeRequest(...args);
+}
+
+export async function submitPortalComment(
+  ...args: Parameters<typeof real.submitPortalComment>
+): Promise<Awaited<ReturnType<typeof real.submitPortalComment>>> {
+  if (isDemoMode()) return (mock as any).submitPortalComment(...args);
+  return (real as any).submitPortalComment(...args);
+}
+
+export async function getPortalFileDownloadUrl(
+  ...args: Parameters<typeof real.getPortalFileDownloadUrl>
+): Promise<Awaited<ReturnType<typeof real.getPortalFileDownloadUrl>>> {
+  if (isDemoMode()) return (mock as any).getPortalFileDownloadUrl(...args);
+  return (real as any).getPortalFileDownloadUrl(...args);
+}
+
+

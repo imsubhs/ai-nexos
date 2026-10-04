@@ -41,6 +41,7 @@ const PUBLIC_INTERNAL_PATHS = [
   "/onboarding",
   "/invite",
   "/api/health",
+  "/portal",
 ];
 
 /** Header the root layout reads to nonce its inline scripts. */
@@ -107,9 +108,9 @@ export async function proxy(request: NextRequest) {
     return withCsp(NextResponse.rewrite(url, { request: { headers } }), nonce);
   }
 
-  // --- Internal domain: block direct access to portal routes. ---
+  // --- Client portal routes: allow public access for external reviewers. ---
   if (pathname.startsWith("/portal")) {
-    return withCsp(NextResponse.redirect(new URL("/", request.url)), nonce);
+    return withCsp(NextResponse.next({ request: { headers } }), nonce);
   }
 
   // --- Session refresh (Supabase SSR pattern). ---

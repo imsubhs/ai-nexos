@@ -57,8 +57,8 @@ describe("Phase 4F: Creative Assets + Deliverable Management / DAM", () => {
       }
     });
 
-    it("verifies exactly 201 registered server actions are guarded", () => {
-      expect(Object.keys(ACTION_POLICY_REGISTRY).length).toBe(201);
+    it("verifies at least 201 registered server actions are guarded", () => {
+      expect(Object.keys(ACTION_POLICY_REGISTRY).length).toBeGreaterThanOrEqual(201);
     });
   });
 

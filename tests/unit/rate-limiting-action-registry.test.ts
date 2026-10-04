@@ -13,8 +13,8 @@ describe("Action Policy Registry Verification (Phase S6.3)", () => {
 
     expect(verification.conflictingMappings).toEqual([]);
     expect(verification.unmappedActions).toEqual([]);
-    expect(verification.totalDiscovered).toBe(201);
-    expect(verification.totalRegistered).toBe(201);
+    expect(verification.totalDiscovered).toBe(206);
+    expect(verification.totalRegistered).toBe(206);
 
     expect(verification.valid).toBe(true);
   });

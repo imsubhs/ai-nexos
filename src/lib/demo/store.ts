@@ -186,6 +186,7 @@ export type DemoStore = {
   deliverableReviewSessions: any[];
   deliverableApprovals: any[];
   deliverableShareLinks: any[];
+  deliverableReviewComments: any[];
 };
 
 export const DEMO_USER_SUMMARY = {
@@ -1653,6 +1654,7 @@ function createSeedData(): DemoStore {
     deliverableReviewSessions: [],
     deliverableApprovals: [],
     deliverableShareLinks: [],
+    deliverableReviewComments: [],
   };
 }
 
@@ -1663,6 +1665,12 @@ export function getDemoStore(): DemoStore {
   if (!g[GLOBAL_KEY]) {
     g[GLOBAL_KEY] = createSeedData();
   }
+  return g[GLOBAL_KEY];
+}
+
+export function resetDemoStore(): DemoStore {
+  const g = globalThis as typeof globalThis & { [GLOBAL_KEY]?: DemoStore };
+  g[GLOBAL_KEY] = createSeedData();
   return g[GLOBAL_KEY];
 }
 

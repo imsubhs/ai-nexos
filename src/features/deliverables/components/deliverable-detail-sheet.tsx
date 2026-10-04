@@ -8,7 +8,9 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Archive,
+  Copy,
   Download,
+  ExternalLink,
   File,
   Film,
   Image as ImageIcon,
@@ -509,9 +511,30 @@ export function DeliverableDetailSheet({
                         >
                           {link.accessLevel.replaceAll("_", " ")}
                         </Badge>
-                        <span className="text-muted-foreground text-xs">
-                          {new Date(link.createdAt).toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            size="icon-xs"
+                            variant="ghost"
+                            title="Copy review link"
+                            onClick={() => {
+                              const url = `${window.location.origin}/portal/s/${link.token}`;
+                              navigator.clipboard.writeText(url);
+                              toast.success("Portal link copied to clipboard");
+                            }}
+                          >
+                            <Copy className="size-3 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            size="icon-xs"
+                            variant="ghost"
+                            title="Open client portal"
+                            onClick={() => {
+                              window.open(`/portal/s/${link.token}`, "_blank", "noopener,noreferrer");
+                            }}
+                          >
+                            <ExternalLink className="size-3 text-muted-foreground" />
+                          </Button>
+                        </div>
                       </div>
                       <p className="text-muted-foreground mt-1 text-xs break-all">
                         /portal/s/{link.token}
