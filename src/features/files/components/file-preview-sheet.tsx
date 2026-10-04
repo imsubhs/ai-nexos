@@ -343,7 +343,7 @@ export function FilePreviewSheet({
                 <Button
                   size="sm"
                   variant="default"
-                  className="bg-brand-primary text-brand-contrast hover:bg-brand-hover gap-1.5"
+                  className="gap-1.5"
                   disabled={downloading}
                   onClick={() => handleDownload()}
                 >

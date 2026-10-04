@@ -556,7 +556,7 @@ export function FilesDirectory({
           {organizationId && projects.length > 0 && (
             <Button
               size="sm"
-              className="h-9 bg-brand-primary text-brand-primary-foreground hover:bg-brand-primary/90"
+              className="h-9"
               onClick={() => {
                 setUploadProject(activeProjectId || projects[0]?.projectId || "");
                 setUploadOpen(true);

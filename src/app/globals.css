@@ -123,9 +123,9 @@
   --card-foreground: #545a5b;
   --popover: #ffffff;
   --popover-foreground: #545a5b;
-  --primary: #06151e;
-  --primary-foreground: #ffffff;
-  --primary-hover: #545a5b;
+  --primary: #d6d6d6;
+  --primary-foreground: #06151e;
+  --primary-hover: #898a8c;
   --secondary: #d6d6d6;
   --secondary-foreground: #06151e;
   --muted: #d6d6d6;
@@ -215,13 +215,13 @@
   --popover-foreground: #ffffff;
 
   /* 4. Brand Accent & Primary Controls */
-  --brand-primary: #ffffff;
-  --brand-primary-hover: #d6d6d6;
-  --brand-primary-soft: #d6d6d6;
-  --brand-primary-tint: #898a8c;
+  --brand-primary: #d6d6d6;
+  --brand-primary-hover: #898a8c;
+  --brand-primary-soft: #898a8c;
+  --brand-primary-tint: #545a5b;
 
-  --primary: #ffffff;
-  --primary-hover: #d6d6d6;
+  --primary: #d6d6d6;
+  --primary-hover: #898a8c;
   --primary-foreground: #06151e;
   --secondary: #545a5b;
   --secondary-foreground: #ffffff;
@@ -240,7 +240,7 @@
   /* 6. Sidebar Navigation System */
   --sidebar: #06151e;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
+  --sidebar-primary: #d6d6d6;
   --sidebar-primary-foreground: #06151e;
   --sidebar-accent: #545a5b;
   --sidebar-accent-foreground: #ffffff;
