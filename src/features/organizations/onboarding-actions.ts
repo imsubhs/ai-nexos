@@ -47,7 +47,6 @@ export type ActionResponse<T = Record<string, unknown>> = {
   error?: string;
 };
 
-
 /**
  * Server Action: Create a new organization workspace.
  * Authenticates caller and provisions owner membership.
@@ -61,7 +60,10 @@ export async function createOrganizationAction(data: {
   try {
     const context = await resolveGuardContext();
     const identifier = KeyResolvers.userOrIp([], context);
-    const decision = await consumeRateLimit(RATE_LIMITS.orgCreation, identifier);
+    const decision = await consumeRateLimit(
+      RATE_LIMITS.orgCreation,
+      identifier,
+    );
     if (!decision.allowed) {
       const errorMsg =
         decision.reason === "storage_unavailable_fail_closed"
@@ -84,14 +86,18 @@ export async function createOrganizationAction(data: {
     };
   } catch (err: unknown) {
     if (err instanceof z.ZodError) {
-      return { success: false, error: err.issues[0]?.message ?? "Invalid input" };
+      return {
+        success: false,
+        error: err.issues[0]?.message ?? "Invalid input",
+      };
     }
     if (err instanceof OrganizationServiceError) {
       return { success: false, error: err.message };
     }
     return {
       success: false,
-      error: err instanceof Error ? err.message : "Failed to create organization",
+      error:
+        err instanceof Error ? err.message : "Failed to create organization",
     };
   }
 }
@@ -114,7 +120,10 @@ export async function acceptInvitationAction(data: {
     };
   } catch (err: unknown) {
     if (err instanceof z.ZodError) {
-      return { success: false, error: err.issues[0]?.message ?? "Invalid input" };
+      return {
+        success: false,
+        error: err.issues[0]?.message ?? "Invalid input",
+      };
     }
     if (err instanceof InvitationError) {
       return { success: false, error: err.message };
@@ -160,7 +169,10 @@ export async function previewInvitationAction(data: {
 
   const context = await resolveGuardContext();
   const identifier = `${context.ip}:${prefixBucket}`;
-  const decision = await consumeRateLimit(RATE_LIMITS.invitationPreview, identifier);
+  const decision = await consumeRateLimit(
+    RATE_LIMITS.invitationPreview,
+    identifier,
+  );
   if (!decision.allowed) {
     return {
       valid: false,
@@ -181,7 +193,6 @@ export async function previewInvitationAction(data: {
   return getInvitationByToken(parsed.data.rawToken);
 }
 
-
 /**
  * Server Action: Switch the active organization context.
  * Strictly verifies caller holds active membership in the target organization.
@@ -199,14 +210,18 @@ export async function switchOrganizationAction(data: {
     };
   } catch (err: unknown) {
     if (err instanceof z.ZodError) {
-      return { success: false, error: err.issues[0]?.message ?? "Invalid input" };
+      return {
+        success: false,
+        error: err.issues[0]?.message ?? "Invalid input",
+      };
     }
     if (err instanceof MembershipError) {
       return { success: false, error: err.message };
     }
     return {
       success: false,
-      error: err instanceof Error ? err.message : "Failed to switch organization",
+      error:
+        err instanceof Error ? err.message : "Failed to switch organization",
     };
   }
 }
@@ -225,7 +240,10 @@ export async function inviteMemberAction(data: {
     requirePermission(currentUser.permissions, "users", "create");
 
     const identifier = `${currentUser.organizationId}:${currentUser.userId}`;
-    const decision = await consumeRateLimit(RATE_LIMITS.invitationIssuance, identifier);
+    const decision = await consumeRateLimit(
+      RATE_LIMITS.invitationIssuance,
+      identifier,
+    );
     if (!decision.allowed) {
       return {
         success: false,

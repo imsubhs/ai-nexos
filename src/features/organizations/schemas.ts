@@ -69,7 +69,6 @@ export function validateCodePrefix(raw: string): {
   return { valid: true, normalized };
 }
 
-
 export function slugify(name: string): string {
   const base = name
     .toLowerCase()
@@ -83,7 +82,11 @@ export function deriveCodePrefixFromName(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
   let prefix = "";
   if (words.length >= 2) {
-    prefix = words.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
+    prefix = words
+      .slice(0, 3)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase();
   } else if (words.length === 1 && words[0].length >= 3) {
     prefix = words[0].slice(0, 3).toUpperCase();
   }
@@ -93,7 +96,6 @@ export function deriveCodePrefixFromName(name: string): string {
 }
 
 export const updateOrganizationSchema = z.object({
-
   organizationName: z
     .string()
     .min(2, "Organization name is required")
@@ -181,7 +183,10 @@ export const createOrganizationSchema = z.object({
     .trim()
     .min(2, "Slug must be at least 2 characters")
     .max(50, "Slug must be at most 50 characters")
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase alphanumeric characters and hyphens")
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Slug must contain only lowercase alphanumeric characters and hyphens",
+    )
     .optional(),
   codePrefix: z.string().trim().optional(),
 });

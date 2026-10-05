@@ -143,4 +143,3 @@ export async function restoreFile(
   if (isDemoMode()) return (mock as any).restoreFile(...args);
   return (real as any).restoreFile(...args);
 }
-

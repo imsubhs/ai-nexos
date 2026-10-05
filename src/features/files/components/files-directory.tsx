@@ -191,7 +191,8 @@ export function FilesDirectory({
           });
         }
       } catch {
-        if (!cancelled) setFolderSet({ projectId: selectedProjectId, folders: [] });
+        if (!cancelled)
+          setFolderSet({ projectId: selectedProjectId, folders: [] });
       }
     })();
     return () => {
@@ -261,10 +262,10 @@ export function FilesDirectory({
         const Icon = getFileTypeIcon(row.fileType);
         return (
           <div className="flex items-center gap-2.5">
-            <div className="flex size-7 items-center justify-center rounded-md bg-surface-3 text-brand-primary shrink-0">
+            <div className="bg-surface-3 text-brand-primary flex size-7 shrink-0 items-center justify-center rounded-md">
               <Icon className="size-4" />
             </div>
-            <span className="font-medium text-foreground">{row.title}</span>
+            <span className="text-foreground font-medium">{row.title}</span>
           </div>
         );
       },
@@ -294,7 +295,7 @@ export function FilesDirectory({
       key: "size",
       header: "Size",
       cell: (row) => (
-        <span className="text-sm font-mono text-muted-foreground">
+        <span className="text-muted-foreground font-mono text-sm">
           {formatBytes(row.totalSizeBytes)}
         </span>
       ),
@@ -317,11 +318,14 @@ export function FilesDirectory({
       key: "actions",
       header: "",
       cell: (row) => (
-        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center justify-end gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Button
             variant="ghost"
             size="icon"
-            className="size-8 text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground size-8"
             onClick={(e) => handleDownload(row, e)}
             disabled={downloadingId === row.fileId}
             title="Download file"
@@ -335,7 +339,7 @@ export function FilesDirectory({
           <Button
             variant="ghost"
             size="icon"
-            className="size-8 text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground size-8"
             onClick={() => setSelected(row)}
             title="Inspect asset"
           >
@@ -350,7 +354,7 @@ export function FilesDirectory({
     <div className="space-y-4">
       {/* Top Controls: Search, Filters, View Toggles & Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+        <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2">
           {/* Search bar */}
           <div className="relative w-full max-w-xs">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -358,7 +362,7 @@ export function FilesDirectory({
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Search assets by title…"
-              className="pl-8 h-9"
+              className="h-9 pl-8"
               aria-label="Search files"
             />
           </div>
@@ -368,14 +372,17 @@ export function FilesDirectory({
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="sm" className="h-9">
-                  <span className="truncate max-w-[130px]">
+                  <span className="max-w-[130px] truncate">
                     {activeProjectName ? activeProjectName : "All Projects"}
                   </span>
-                  <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
+                  <ChevronDown className="ml-1 h-4 w-4 opacity-70" />
                 </Button>
               }
             />
-            <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-64 overflow-y-auto"
+            >
               <DropdownMenuItem
                 onClick={() => setParams({ projectId: null, page: null })}
               >
@@ -405,7 +412,7 @@ export function FilesDirectory({
                         activeType
                       : "All Types"}
                   </span>
-                  <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
+                  <ChevronDown className="ml-1 h-4 w-4 opacity-70" />
                 </Button>
               }
             />
@@ -437,7 +444,7 @@ export function FilesDirectory({
                           ?.label || activeStatus
                       : "All Statuses"}
                   </span>
-                  <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
+                  <ChevronDown className="ml-1 h-4 w-4 opacity-70" />
                 </Button>
               }
             />
@@ -463,7 +470,7 @@ export function FilesDirectory({
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground h-9"
+              className="text-muted-foreground hover:text-foreground h-9 text-xs"
               onClick={() =>
                 setParams({
                   projectId: null,
@@ -482,7 +489,7 @@ export function FilesDirectory({
         {/* Right Action buttons: View Switcher, Folder Browser shortcut & Upload */}
         <div className="flex items-center gap-2">
           {/* View toggle */}
-          <div className="flex items-center rounded-lg border border-border bg-surface-1 p-0.5">
+          <div className="border-border bg-surface-1 flex items-center rounded-lg border p-0.5">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
               size="icon"
@@ -531,7 +538,7 @@ export function FilesDirectory({
                   <Button variant="outline" size="sm" className="h-9">
                     <FolderOpen className="mr-1.5 h-4 w-4" />
                     Browse Folders
-                    <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-70" />
+                    <ChevronDown className="ml-1 h-3.5 w-3.5 opacity-70" />
                   </Button>
                 }
               />
@@ -558,7 +565,9 @@ export function FilesDirectory({
               size="sm"
               className="h-9"
               onClick={() => {
-                setUploadProject(activeProjectId || projects[0]?.projectId || "");
+                setUploadProject(
+                  activeProjectId || projects[0]?.projectId || "",
+                );
                 setUploadOpen(true);
               }}
             >
@@ -572,7 +581,7 @@ export function FilesDirectory({
       {/* Main Content: Grid View or List View */}
       {viewMode === "grid" ? (
         rows.length === 0 ? (
-          <div className="rounded-xl border border-border/80 bg-surface-1 p-8">
+          <div className="border-border/80 bg-surface-1 rounded-xl border p-8">
             <EmptyState
               icon={FilesIcon}
               title="No assets found"
@@ -588,20 +597,25 @@ export function FilesDirectory({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {rows.map((row) => {
                 const Icon = getFileTypeIcon(row.fileType);
-                const proj = projects.find((p) => p.projectId === row.projectId);
+                const proj = projects.find(
+                  (p) => p.projectId === row.projectId,
+                );
                 return (
                   <div
                     key={row.fileId}
                     onClick={() => setSelected(row)}
-                    className="group relative flex flex-col justify-between rounded-xl border border-border/80 bg-surface-2 p-4 transition-all hover:border-brand-primary/50 hover:bg-surface-2/80 hover:shadow-md cursor-pointer"
+                    className="group border-border/80 bg-surface-2 hover:border-brand-primary/50 hover:bg-surface-2/80 relative flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-all hover:shadow-md"
                   >
                     {/* Top Row: Type & Status */}
-                    <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="mb-3 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-surface-3 text-brand-primary">
+                        <div className="bg-surface-3 text-brand-primary flex size-8 items-center justify-center rounded-lg">
                           <Icon className="size-4" />
                         </div>
-                        <Badge variant="outline" className="text-[10px] uppercase font-mono tracking-wider">
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-[10px] tracking-wider uppercase"
+                        >
                           {row.fileType}
                         </Badge>
                       </div>
@@ -609,24 +623,31 @@ export function FilesDirectory({
                     </div>
 
                     {/* Middle: Asset Title & Project info */}
-                    <div className="space-y-1 my-2">
-                      <h4 className="font-medium text-foreground text-sm line-clamp-1 group-hover:text-brand-primary transition-colors">
+                    <div className="my-2 space-y-1">
+                      <h4 className="text-foreground group-hover:text-brand-primary line-clamp-1 text-sm font-medium transition-colors">
                         {row.title}
                       </h4>
-                      <p className="text-muted-foreground text-xs flex items-center gap-1">
+                      <p className="text-muted-foreground flex items-center gap-1 text-xs">
                         <FolderOpen className="size-3 shrink-0" />
-                        <span className="truncate">{proj?.projectName || "Unassigned"}</span>
+                        <span className="truncate">
+                          {proj?.projectName || "Unassigned"}
+                        </span>
                       </p>
                     </div>
 
                     {/* Bottom: Size, Date & Action Buttons */}
-                    <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="font-mono">{formatBytes(row.totalSizeBytes)}</span>
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <div className="border-border/60 text-muted-foreground mt-3 flex items-center justify-between border-t pt-3 text-xs">
+                      <span className="font-mono">
+                        {formatBytes(row.totalSizeBytes)}
+                      </span>
+                      <div
+                        className="flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-7 text-muted-foreground hover:text-foreground"
+                          className="text-muted-foreground hover:text-foreground size-7"
                           onClick={(e) => handleDownload(row, e)}
                           disabled={downloadingId === row.fileId}
                           title="Download asset"
@@ -640,7 +661,7 @@ export function FilesDirectory({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-7 text-muted-foreground hover:text-foreground"
+                          className="text-muted-foreground hover:text-foreground size-7"
                           onClick={() => setSelected(row)}
                           title="View asset inspector"
                         >
@@ -731,7 +752,8 @@ export function FilesDirectory({
           pendingLabel="Uploading & computing checksum…"
           onConfirm={async () => {
             if (!uploadFile) throw new Error("Please select a file to upload.");
-            if (!uploadProject) throw new Error("Please select a destination project.");
+            if (!uploadProject)
+              throw new Error("Please select a destination project.");
 
             const mimeType = uploadFile.type || "application/octet-stream";
             const extension = uploadFile.name.includes(".")
@@ -768,7 +790,7 @@ export function FilesDirectory({
                 id="upload-proj"
                 value={uploadProject}
                 onChange={(e) => setUploadProject(e.target.value)}
-                className="w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                className="border-border bg-surface-2 text-foreground focus:ring-brand-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
               >
                 {projects.map((p) => (
                   <option key={p.projectId} value={p.projectId}>
@@ -801,8 +823,8 @@ export function FilesDirectory({
             </div>
 
             <p className="text-muted-foreground text-xs">
-              Uploads directly to tenant-isolated Supabase Storage. Browser computes SHA-256
-              hash before transfer to guarantee data integrity.
+              Uploads directly to tenant-isolated Supabase Storage. Browser
+              computes SHA-256 hash before transfer to guarantee data integrity.
             </p>
           </div>
         </ConfirmDialog>

@@ -41,17 +41,23 @@ export function ProjectDirectoryFilters({
       const matchesSearch =
         !query ||
         project.projectName.toLowerCase().includes(query) ||
-        (project.projectCode && project.projectCode.toLowerCase().includes(query)) ||
+        (project.projectCode &&
+          project.projectCode.toLowerCase().includes(query)) ||
         (project.client?.companyName &&
           project.client.companyName.toLowerCase().includes(query)) ||
-        (project.description && project.description.toLowerCase().includes(query)) ||
-        (project.manager?.name && project.manager.name.toLowerCase().includes(query));
+        (project.description &&
+          project.description.toLowerCase().includes(query)) ||
+        (project.manager?.name &&
+          project.manager.name.toLowerCase().includes(query));
 
       // Status match
       const pStatus = (project.status || "").toLowerCase();
       let matchesStatus = true;
       if (statusFilter === "planning") {
-        matchesStatus = pStatus === "planning" || pStatus === "research" || pStatus === "brief_received";
+        matchesStatus =
+          pStatus === "planning" ||
+          pStatus === "research" ||
+          pStatus === "brief_received";
       } else if (statusFilter === "in_progress") {
         matchesStatus = pStatus === "in_progress";
       } else if (statusFilter === "review") {
@@ -88,7 +94,9 @@ export function ProjectDirectoryFilters({
       ).length,
       review: projects.filter((p) => {
         const s = (p.status || "").toLowerCase();
-        return s === "internal_review" || s === "client_review" || s === "revision";
+        return (
+          s === "internal_review" || s === "client_review" || s === "revision"
+        );
       }).length,
       completed: projects.filter((p) => {
         const s = (p.status || "").toLowerCase();
@@ -109,21 +117,21 @@ export function ProjectDirectoryFilters({
   return (
     <div className="space-y-6">
       {/* Filter toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-xl border border-border bg-surface-1">
+      <div className="border-border bg-surface-1 flex flex-col items-stretch justify-between gap-3 rounded-xl border p-2 sm:flex-row sm:items-center">
         {/* Search input */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search projects by name, code, client, or lead..."
-            className="pl-8.5 pr-8 h-8 text-xs bg-surface-2 border-border/80 text-foreground"
+            className="bg-surface-2 border-border/80 text-foreground h-8 pr-8 pl-8.5 text-xs"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer"
             >
               <X className="size-3.5" />
             </button>
@@ -135,7 +143,7 @@ export function ProjectDirectoryFilters({
           <button
             type="button"
             onClick={() => setStatusFilter("all")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "all"
                 ? "bg-surface-3 text-foreground font-semibold shadow-xs"
                 : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
@@ -146,9 +154,9 @@ export function ProjectDirectoryFilters({
           <button
             type="button"
             onClick={() => setStatusFilter("planning")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "planning"
-                ? "bg-surface-3 text-sky-400 font-semibold shadow-xs"
+                ? "bg-surface-3 font-semibold text-sky-400 shadow-xs"
                 : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
             }`}
           >
@@ -157,7 +165,7 @@ export function ProjectDirectoryFilters({
           <button
             type="button"
             onClick={() => setStatusFilter("in_progress")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "in_progress"
                 ? "bg-surface-3 text-brand-primary font-semibold shadow-xs"
                 : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
@@ -168,9 +176,9 @@ export function ProjectDirectoryFilters({
           <button
             type="button"
             onClick={() => setStatusFilter("review")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "review"
-                ? "bg-surface-3 text-amber-400 font-semibold shadow-xs"
+                ? "bg-surface-3 font-semibold text-amber-400 shadow-xs"
                 : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
             }`}
           >
@@ -179,9 +187,9 @@ export function ProjectDirectoryFilters({
           <button
             type="button"
             onClick={() => setStatusFilter("completed")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "completed"
-                ? "bg-surface-3 text-emerald-400 font-semibold shadow-xs"
+                ? "bg-surface-3 font-semibold text-emerald-400 shadow-xs"
                 : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
             }`}
           >
@@ -190,11 +198,11 @@ export function ProjectDirectoryFilters({
         </div>
 
         {/* Health filter */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <select
             value={healthFilter}
             onChange={(e) => setHealthFilter(e.target.value)}
-            className="h-8 px-2 rounded-md border border-border/80 bg-surface-2 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-brand-primary cursor-pointer"
+            className="border-border/80 bg-surface-2 text-foreground focus:ring-brand-primary h-8 cursor-pointer rounded-md border px-2 text-xs focus:ring-1 focus:outline-none"
           >
             <option value="all">All Health</option>
             <option value="on_track">On Track</option>
@@ -219,14 +227,16 @@ export function ProjectDirectoryFilters({
 
       {/* Grid or Empty state */}
       {filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-1/40 p-12 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-2 text-muted-foreground">
+        <div className="border-border bg-surface-1/40 flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+          <div className="bg-surface-2 text-muted-foreground mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl">
             <FolderKanban className="size-6" />
           </div>
-          <h3 className="mb-1 text-base font-semibold text-foreground">
-            {hasFiltersActive ? "No matching projects found" : "No projects yet"}
+          <h3 className="text-foreground mb-1 text-base font-semibold">
+            {hasFiltersActive
+              ? "No matching projects found"
+              : "No projects yet"}
           </h3>
-          <p className="max-w-sm text-center text-xs text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-4 max-w-sm text-center text-xs">
             {hasFiltersActive
               ? "No creative projects match the active filters or search terms. Try clearing your filters."
               : "Get started by creating your first creative execution workspace to manage tasks, timelines, and milestones."}
@@ -244,7 +254,7 @@ export function ProjectDirectoryFilters({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
             <ProjectCard key={project.projectId} project={project} />
           ))}

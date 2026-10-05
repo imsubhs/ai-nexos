@@ -1,20 +1,21 @@
 # AI NEX OS — Architecture Decision Register (ADR)
+
 ## Phase 1B.1: Architectural Consistency & SaaS Tenancy Specifications
 
 ---
 
 ## Document Control
 
-| Attribute | Detail |
-| :--- | :--- |
-| **Document Path** | `docs/product/AI-NEX-OS-ARCHITECTURE-DECISION-REGISTER.md` |
-| **Version** | 1.0.0 (Phase 1B.1 Canonical Milestone) |
-| **Status** | **APPROVED ARCHITECTURAL BASELINE** |
-| **Date** | September 26, 2026 |
-| **Authors** | Principal Software Architect, Security Architect, Database Architect |
-| **Repository Root** | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`) |
-| **Implementation Branch** | `phase-2-production-readiness` |
-| **Scope** | Authoritative architecture decisions governing identity, multi-tenancy, authorization, routing, and data isolation for the transition of AI NEX OS to an agency-agnostic B2B SaaS platform. |
+| Attribute                 | Detail                                                                                                                                                                                      |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Document Path**         | `docs/product/AI-NEX-OS-ARCHITECTURE-DECISION-REGISTER.md`                                                                                                                                  |
+| **Version**               | 1.0.0 (Phase 1B.1 Canonical Milestone)                                                                                                                                                      |
+| **Status**                | **APPROVED ARCHITECTURAL BASELINE**                                                                                                                                                         |
+| **Date**                  | September 26, 2026                                                                                                                                                                          |
+| **Authors**               | Principal Software Architect, Security Architect, Database Architect                                                                                                                        |
+| **Repository Root**       | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`)                                                                                                                                            |
+| **Implementation Branch** | `phase-2-production-readiness`                                                                                                                                                              |
+| **Scope**                 | Authoritative architecture decisions governing identity, multi-tenancy, authorization, routing, and data isolation for the transition of AI NEX OS to an agency-agnostic B2B SaaS platform. |
 
 ---
 
@@ -45,8 +46,8 @@
 - **Current State**: 1:1 rigid relationship between `auth.users` identity, `public.users` profile, and `public.organizations`.
 - **Problem**: Multi-agency contractors, holding companies, freelance creative directors, and agency operators managing sister studios cannot switch between agency workspaces without creating separate credentials for every organization.
 - **Options**:
-  1. *Retain 1:1 model*: Force users to create unique email aliases (e.g., `user+agency1@domain.com`) for each agency. Rejected as unacceptable UX for an enterprise B2B SaaS platform.
-  2. *Decouple Identity from Tenancy*: Establish `auth.users` and `public.users` as pure global identity and personal creator profile representations, moving all agency affiliations, roles, and status into an explicit membership model.
+  1. _Retain 1:1 model_: Force users to create unique email aliases (e.g., `user+agency1@domain.com`) for each agency. Rejected as unacceptable UX for an enterprise B2B SaaS platform.
+  2. _Decouple Identity from Tenancy_: Establish `auth.users` and `public.users` as pure global identity and personal creator profile representations, moving all agency affiliations, roles, and status into an explicit membership model.
 - **Decision**: Decouple User Identity from Organization Tenancy. `public.users` represents the human creator. All tenant affiliations, role assignments, department bindings, and employment statuses belong exclusively to `organization_memberships`.
 - **Consequences**:
   - `public.users.organization_id` and `public.users.role_id` become deprecated and eventually nullable.
@@ -65,8 +66,8 @@
 - **Current State**: Implicit membership embedded directly as columns in `public.users`.
 - **Problem**: Need to model membership lifecycle (invited, active, suspended), role assignment per agency, department affiliation, and a designated default workspace.
 - **Options**:
-  1. *Relational join table `organization_memberships`*: Standard PostgreSQL join table with composite or UUID primary key.
-  2. *Array/JSONB of tenant memberships inside `users`*: Store tenant memberships as a JSONB array on `users.memberships`. Rejected due to lack of foreign key referential integrity and complex index maintenance.
+  1. _Relational join table `organization_memberships`_: Standard PostgreSQL join table with composite or UUID primary key.
+  2. _Array/JSONB of tenant memberships inside `users`_: Store tenant memberships as a JSONB array on `users.memberships`. Rejected due to lack of foreign key referential integrity and complex index maintenance.
 - **Decision**: Create an explicit relational table `public.organization_memberships`:
   - `membership_id` (UUID PK defaultRandom)
   - `user_id` (UUID FK → `public.users.user_id`, onDelete: cascade)
@@ -81,7 +82,7 @@
 - **Security Impact**: Enforces least privilege per tenant; suspending a membership locks the user out of only that tenant.
 - **Migration Impact**: Forward-only migration `0016_multi_tenant_memberships.sql` in Phase 4.
 - **Dependencies**: ADR-001.
-- **Open Questions**: Should a user be permitted to have multiple distinct memberships within the *same* organization (e.g. across multiple departments)? *Decision*: No, exactly 1 active membership per user per organization.
+- **Open Questions**: Should a user be permitted to have multiple distinct memberships within the _same_ organization (e.g. across multiple departments)? _Decision_: No, exactly 1 active membership per user per organization.
 
 ---
 
@@ -92,9 +93,9 @@
 - **Current State**: No organization switcher exists in UI or server logic. `getCurrentUser()` reads `users.organization_id` directly.
 - **Problem**: How to securely persist and resolve the caller's "active organization" across server renders, Server Actions, and API requests.
 - **Options**:
-  1. *URL path prefix (`/org/[slug]/...`)*: All dashboard routes prefixed with the organization slug.
-  2. *Subdomain routing (`[slug].ai-nexos.com`)*: Every organization isolated by subdomain.
-  3. *Secure Session Cookie (`nexos_active_org_id`)*: HTTP-only, secure, SameSite=Lax cookie recording the selected active organization ID.
+  1. _URL path prefix (`/org/[slug]/...`)_: All dashboard routes prefixed with the organization slug.
+  2. _Subdomain routing (`[slug].ai-nexos.com`)_: Every organization isolated by subdomain.
+  3. _Secure Session Cookie (`nexos_active_org_id`)_: HTTP-only, secure, SameSite=Lax cookie recording the selected active organization ID.
 - **Decision**: Adopt Option 3 (Session Cookie `nexos_active_org_id`) for MVP / Phase 4, with fallback to the user's default membership (`is_default = true`).
   - The switcher component invokes a Server Action `switchActiveOrganization(targetOrgId)`.
   - The server verifies that the authenticated user possesses an `active` membership in `targetOrgId`.
@@ -104,7 +105,7 @@
 - **Security Impact**: Server validates membership on every request; forging the cookie results in immediate rejection because the membership query verifies `auth.uid() = membership.user_id AND organization_id = cookie_org_id`.
 - **Migration Impact**: Update `src/features/auth/current-user.ts` to inspect cookie and resolve membership.
 - **Dependencies**: ADR-001, ADR-002.
-- **Open Questions**: How should background workers resolve active organization? *Decision*: Background workers must always receive explicit `organization_id` from the triggering job payload.
+- **Open Questions**: How should background workers resolve active organization? _Decision_: Background workers must always receive explicit `organization_id` from the triggering job payload.
 
 ---
 
@@ -115,8 +116,8 @@
 - **Current State**: Strong static AST gate (`tests/unit/tenant-identity-surface.test.ts`) preventing caller-supplied tenant IDs, and manual query filtering in Drizzle actions via `eq(table.organizationId, user.organizationId)`.
 - **Problem**: Drizzle ORM runs as the `postgres` superuser/admin role over the connection pooler, thereby completely bypassing PostgreSQL Row Level Security (RLS).
 - **Options**:
-  1. *Rely solely on application filtering*: Easy to implement, but vulnerable to developer error if a filter is omitted.
-  2. *Four-Layer Defense-in-Depth*:
+  1. _Rely solely on application filtering_: Easy to implement, but vulnerable to developer error if a filter is omitted.
+  2. _Four-Layer Defense-in-Depth_:
      - Layer 1: Static AST gate blocking caller-supplied tenant parameters.
      - Layer 2: Mandatory session resolution via `requireCurrentUser()`.
      - Layer 3: Application-level query predicates (`eq(table.organizationId, user.organizationId)`).
@@ -149,7 +150,7 @@
 - **Security Impact**: Code reviews and static gates must strictly scrutinize Drizzle query predicates.
 - **Migration Impact**: None; preserves existing high-performance connection pooling architecture.
 - **Dependencies**: ADR-004.
-- **Open Questions**: Should we consider setting `SET LOCAL app.current_organization_id = ...` in transactions for Drizzle? *Decision*: Deferred to Phase 6; transaction pooler connection resets make session-level GUCs risky without rigorous wrapper abstractions.
+- **Open Questions**: Should we consider setting `SET LOCAL app.current_organization_id = ...` in transactions for Drizzle? _Decision_: Deferred to Phase 6; transaction pooler connection resets make session-level GUCs risky without rigorous wrapper abstractions.
 
 ---
 
@@ -160,8 +161,8 @@
 - **Current State**: `src/features/projects/real-actions.ts` hardcodes `AIC-`. `src/features/tasks/real-actions.ts` hardcodes `AIC-T-`. `organization_sequences` tracks monotonic increments per `[organization_id, entity_type]`.
 - **Problem**: Transforming into a multi-tenant platform requires agency-specific prefixes (e.g. `ACME-2026-0001`) without breaking sequence counters or risking collisions.
 - **Options**:
-  1. *Global unique prefixes*: Force agencies to choose globally unique 3-4 letter prefixes across the entire platform.
-  2. *Tenant-scoped prefixes*: Each organization configures a `code_prefix` (defaults to uppercase slug or `NEX`). Uniqueness is guaranteed because the sequential entity lives within the tenant boundary.
+  1. _Global unique prefixes_: Force agencies to choose globally unique 3-4 letter prefixes across the entire platform.
+  2. _Tenant-scoped prefixes_: Each organization configures a `code_prefix` (defaults to uppercase slug or `NEX`). Uniqueness is guaranteed because the sequential entity lives within the tenant boundary.
 - **Decision**: Adopt **Tenant-Scoped Code Prefixes (Option 2)**.
   - Add additive column `code_prefix text NOT NULL DEFAULT 'NEX'` to `public.organizations` in Phase 3.
   - The sequence counter in `organization_sequences` continues to increment monotonically per `[organization_id, entity_type]`.
@@ -183,8 +184,8 @@
 - **Current State**: Manual database seeding is the only mechanism to provision users.
 - **Problem**: Multi-tenant agencies must be able to invite staff self-serve via email.
 - **Options**:
-  1. *Direct user creation with temporary passwords*: Admin creates account and sends plaintext password. Rejected as insecure.
-  2. *Tokenized Invitation Lifecycle*: Admin creates invitation → system generates secure single-use token → email dispatched → invitee accepts token and joins workspace.
+  1. _Direct user creation with temporary passwords_: Admin creates account and sends plaintext password. Rejected as insecure.
+  2. _Tokenized Invitation Lifecycle_: Admin creates invitation → system generates secure single-use token → email dispatched → invitee accepts token and joins workspace.
 - **Decision**: Adopt **Tokenized Invitation Lifecycle (Option 2)**:
   - Table: `public.organization_invitations` (`invitation_id`, `organization_id`, `email`, `role_id`, `department_id`, `token_hash`, `expires_at`, `status`, `invited_by_user_id`).
   - Token is a 32-byte cryptographically secure random string (HMAC-SHA256 hashed in database).
@@ -194,7 +195,7 @@
 - **Security Impact**: Single-use token prevents replay attacks; token hash in DB prevents leak via database snapshot exposure.
 - **Migration Impact**: Phase 5 migration `0017_organization_invitations.sql`.
 - **Dependencies**: ADR-001, ADR-002.
-- **Open Questions**: What happens if the invitee signs in with an email different from the invitation email? *Decision*: The system requires the authenticated email to match the invited email, or requires explicit confirmation from the user and logs an audit security event.
+- **Open Questions**: What happens if the invitee signs in with an email different from the invitation email? _Decision_: The system requires the authenticated email to match the invited email, or requires explicit confirmation from the user and logs an audit security event.
 
 ---
 
@@ -204,12 +205,12 @@
 - **Context**: Open question regarding whether public registration should immediately provision a live trial workspace or require approval gating.
 - **Current State**: Registration is closed; `/signup` does not exist; unprovisioned accounts are halted at `/unprovisioned`.
 - **Options**:
-  - *Option A: Immediate Self-Service Trial*: Anyone can register, enter an agency name, and immediately enter an active 14-day trial workspace.
-    - *Pros*: Maximum product growth velocity, frictionless time-to-value (< 60 seconds).
-    - *Cons*: Vulnerable to spam organizations, automated resource abuse, and ghost database bloat.
-  - *Option B: Email-Verified / Approval-Gated Access*: User registers, verifies email, and enters a waitlist or requires approval before workspace provisioning.
-    - *Pros*: Controlled growth, spam mitigation, higher quality onboarding.
-    - *Cons*: High signup friction, delayed time-to-value.
+  - _Option A: Immediate Self-Service Trial_: Anyone can register, enter an agency name, and immediately enter an active 14-day trial workspace.
+    - _Pros_: Maximum product growth velocity, frictionless time-to-value (< 60 seconds).
+    - _Cons_: Vulnerable to spam organizations, automated resource abuse, and ghost database bloat.
+  - _Option B: Email-Verified / Approval-Gated Access_: User registers, verifies email, and enters a waitlist or requires approval before workspace provisioning.
+    - _Pros_: Controlled growth, spam mitigation, higher quality onboarding.
+    - _Cons_: High signup friction, delayed time-to-value.
 - **Decision**: **OPEN PRODUCT DECISION (DEFERRED)**. The technical architecture supports both immediate self-service and approval-gated onboarding via a configuration boundary (`REGISTRATION_MODE`: `INVITE_ONLY` | `APPROVAL_REQUIRED` | `SELF_SERVICE`). The technical architecture will implement an atomic provisioning pipeline `createOrganizationAndOwner(userId, orgData)` capable of immediate provisioning, but the public gateway route `/signup` will remain feature-flagged until commercial go-to-market alignment.
 - **Consequences**: Architecture remains flexible to support either model without schema alteration.
 - **Security Impact**: Rate-limiting and email verification must precede organization provisioning under both options.
@@ -228,9 +229,9 @@
   - `portal.<domain>` → Client portal (rewritten to `/portal/*`, tokenized).
 - **Problem**: How to support tenant resolution across thousands of SaaS agencies.
 - **Options**:
-  1. *Subdomain tenancy (`acme.ai-nexos.com`)*: Requires dynamic wildcard DNS, automated SSL certificate issuance, and cookie sharing across subdomains.
-  2. *Path-based tenancy (`app.ai-nexos.com/org/acme/...`)*: Clutters all route parameters and requires updating every navigation link.
-  3. *Consolidated App Domain with Session Tenant Resolution (`app.ai-nexos.com`)*: Single authenticated host, tenant resolved from secure session context cookie (ADR-003). Subdomains reserved for Enterprise tier.
+  1. _Subdomain tenancy (`acme.ai-nexos.com`)_: Requires dynamic wildcard DNS, automated SSL certificate issuance, and cookie sharing across subdomains.
+  2. _Path-based tenancy (`app.ai-nexos.com/org/acme/...`)_: Clutters all route parameters and requires updating every navigation link.
+  3. _Consolidated App Domain with Session Tenant Resolution (`app.ai-nexos.com`)_: Single authenticated host, tenant resolved from secure session context cookie (ADR-003). Subdomains reserved for Enterprise tier.
 - **Decision**: Adopt **Consolidated App Domain (Option 3)** for SaaS Core/MVP:
   - Internal Workspace: `https://app.ai-nexos.com/*` (tenant resolved via session cookie).
   - Client Portal: `https://portal.ai-nexos.com/s/{token}`.
@@ -252,7 +253,7 @@
 - **Problem**: Need to ensure client portal callers can never elevate privileges or access internal workspace data.
 - **Decision**: Maintain strict **Zero-Login Client Identity Isolation**:
   - Client reviewers are never rows in `public.users` and never possess `auth.users` identities.
-  - The cryptographic share token (`share_tokens`) *is* the complete authorization credential.
+  - The cryptographic share token (`share_tokens`) _is_ the complete authorization credential.
   - Every portal request validates token signature, expiration (`share_expiration`), password verification (`share_passwords`), and single-use nonce status (`share_token_nonces`).
   - Portal responses expose only sanitized public DTOs (e.g. deliverable title, review threads, media streaming URL). Internal workspace metadata, budgets, tasks, and attendance are strictly omitted from portal queries.
 - **Consequences**: Preserves zero-friction client review experience while maintaining absolute isolation from internal agency operations.
@@ -307,8 +308,8 @@
 - **Current State**: `src/app/page.tsx` executes `redirect("/dashboard")`. `src/proxy.ts` redirects unauthenticated traffic to `/login`.
 - **Problem**: The platform needs a public SaaS marketing presence with landing pages, pricing, and SEO infrastructure without compromising app authentication.
 - **Options**:
-  1. *Host marketing on external CMS (e.g. Webflow, Framer)*: Requires maintaining two codebases and cross-domain auth redirects.
-  2. *Unified Next.js App Router Architecture with Route Groups*:
+  1. _Host marketing on external CMS (e.g. Webflow, Framer)_: Requires maintaining two codebases and cross-domain auth redirects.
+  2. _Unified Next.js App Router Architecture with Route Groups_:
      - Root `/` serves marketing landing page (public, SEO-indexed).
      - Marketing pages: `/features`, `/pricing`, `/security`, `/about`, `/contact`.
      - Auth pages: `/login`, `/signup`, `/auth/*` (public internal).
@@ -333,9 +334,9 @@
 - **Current State**: Production host `https://ai-nexos.antideploy.com` is actively configured with live data.
 - **Problem**: A naive migration dropping `users.organization_id` would immediately break running server instances and lock out existing users.
 - **Decision**: Mandate **Three-Stage Additive Migration**:
-  1. *Stage 1 (Additive Schema - Phase 4)*: Create `organization_memberships` table via forward migration `0016_multi_tenant_memberships.sql`. Backfill existing `public.users` rows into `organization_memberships` (`is_default = true`, `status = 'active'`).
-  2. *Stage 2 (Dual-Read / Dual-Write - Phase 4)*: Update application code: reads check `organization_memberships`; user creation writes to both `users` and `organization_memberships`.
-  3. *Stage 3 (Deprecation & Relaxation - Phase 5+)*: Relax `users.organization_id` and `users.role_id` to nullable; drop global `uq_users_email` index in favor of membership-scoped resolution; update `getCurrentUser()` to read exclusively from memberships.
+  1. _Stage 1 (Additive Schema - Phase 4)_: Create `organization_memberships` table via forward migration `0016_multi_tenant_memberships.sql`. Backfill existing `public.users` rows into `organization_memberships` (`is_default = true`, `status = 'active'`).
+  2. _Stage 2 (Dual-Read / Dual-Write - Phase 4)_: Update application code: reads check `organization_memberships`; user creation writes to both `users` and `organization_memberships`.
+  3. _Stage 3 (Deprecation & Relaxation - Phase 5+)_: Relax `users.organization_id` and `users.role_id` to nullable; drop global `uq_users_email` index in favor of membership-scoped resolution; update `getCurrentUser()` to read exclusively from memberships.
 - **Consequences**: Zero downtime; completely reversible at Stage 1 and Stage 2 without database rollback.
 - **Security Impact**: Prevents session invalidation and administrative lockout during deployment.
 - **Migration Impact**: Forward-only, non-destructive migrations.

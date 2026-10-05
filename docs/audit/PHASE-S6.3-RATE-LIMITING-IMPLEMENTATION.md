@@ -4,15 +4,16 @@
 **Execution Timestamp**: 2026-09-28T16:20:00Z  
 **Phase Status**: **S6.3 IMPLEMENTATION COMPLETE — LOCAL SECURITY REGRESSION PASSED**  
 **Security Classification**: Critical / Production-Gating  
-**Author**: Application Security Architecture & Infrastructure Engineering  
+**Author**: Application Security Architecture & Infrastructure Engineering
 
 ---
 
 ## 1. Executive Summary
 
-Phase S6.3 has executed the complete implementation of the S6.2 Rate-Limiting & Resource-Control Architecture across AI NEX OS, strictly incorporating all twenty mandatory technical clarifications. 
+Phase S6.3 has executed the complete implementation of the S6.2 Rate-Limiting & Resource-Control Architecture across AI NEX OS, strictly incorporating all twenty mandatory technical clarifications.
 
 ### Key Milestones Achieved:
+
 1. **Direct Action ID Bypass Elimination**: Removed `"use server"` declarations from all 32 internal implementation modules (`real-actions.ts`, `real-queries.ts`, `mock-actions.ts`, `mock-queries.ts`). Compiled Next.js server reference IDs plummeted from **316 to 159** (a 49.7% reduction). Exact build manifest verification proves that **zero internal implementation files leak into client manifests**, eliminating direct un-ratelimited invocation.
 2. **Atomic Concurrency-Safe Redis Lua Engine**: Replaced non-atomic pipeline patterns with an atomic Redis Lua script (`EVAL`) executing `INCR` + conditional `EXPIRE` + `GET` within a single Redis engine evaluation cycle. Verified with concurrent Vitest suites executing 50 simultaneous parallel requests.
 3. **Explicit Normal vs. Degraded State Architecture**: Formally decoupled global distributed rate limits (`storeMode: "normal"`, Redis-backed) from emergency per-process fallbacks (`storeMode: "degraded"`, in-memory LRU). Enforced strict `fail_closed` semantics for high-risk operations (e.g., `orgCreation`) during Redis unavailability.
@@ -31,6 +32,7 @@ Phase S6.3 has executed the complete implementation of the S6.2 Rate-Limiting & 
 ## 2. Inventory of Files Changed & Created
 
 ### Core Security & Infrastructure
+
 - `src/lib/security/rate-limit.ts` (Modified):
   - Integrated `REDIS_HIT_LUA_SCRIPT` for atomic Redis `EVAL` execution.
   - Implemented `storeMode: "normal" | "degraded"` and fail-closed evaluation.
@@ -47,6 +49,7 @@ Phase S6.3 has executed the complete implementation of the S6.2 Rate-Limiting & 
   - Added `experimental: { serverActions: { bodySizeLimit: "1mb" } }`.
 
 ### High-Risk Surface Files
+
 - `src/features/search/actions.ts` (Modified):
   - Bound search queries: min 2, max 64 characters. Throttled via `RATE_LIMITS.searchExpensive`.
 - `src/features/workforce/attendance/read-model-actions.ts` (Modified):
@@ -67,13 +70,16 @@ Phase S6.3 has executed the complete implementation of the S6.2 Rate-Limiting & 
   - Protected `DELETE` route with `assertWithinRateLimit(RATE_LIMITS.portalSessionByIp, ip)`.
 
 ### Domain Schemas (Semantic Resource Bounds)
+
 - `src/features/projects/schemas.ts` (Modified): `projectName` max 200, `description` max 10,000, `budget` max 50.
 - `src/features/tasks/schemas.ts` (Modified): `name` max 300, `recurrenceRule` max 255.
 - `src/features/clients/schemas.ts` (Modified): `companyName` max 150, `address` max 500, `notes` max 5,000.
 - `src/features/files/schemas.ts` (Modified): `title` max 500, `description` max 5,000, `originalFilename` max 255, `mimeType` max 127.
 
 ### Server-Module Boundary Hardening (Stripped `"use server"`)
+
 Removed `"use server"` from 32 implementation modules:
+
 1. `src/features/approvals/real-actions.ts`
 2. `src/features/auth/real-actions.ts`
 3. `src/features/calendar/mock-actions.ts`
@@ -108,6 +114,7 @@ Removed `"use server"` from 32 implementation modules:
 32. `src/features/workforce/employees/real-actions.ts`
 
 ### Comprehensive Automated Test Suites
+
 - `tests/unit/rate-limit.test.ts` (9 tests)
 - `tests/unit/rate-limit-concurrency.test.ts` (8 tests)
 - `tests/unit/rate-limit-token-prefix.test.ts` (2 tests)
@@ -121,14 +128,15 @@ Removed `"use server"` from 32 implementation modules:
 
 Before Phase S6.3, both the public wrappers (`actions.ts`) and the underlying implementation modules (`real-actions.ts`, `mock-actions.ts`) declared `"use server"`. This caused Next.js to assign public Action IDs to both layers, enabling attackers to bypass public rate limit guards by invoking the internal implementation Action IDs directly.
 
-| Metric | Phase S6.2 Baseline | Phase S6.3 Hardened | Status |
-| :--- | :--- | :--- | :--- |
-| **Total Compiled Action IDs** | 316 | **159** | **-157 (-49.7%)** |
-| **Implementation Modules with `"use server"`** | 32 | **0** | **100% Eliminated** |
-| **Implementation Files Leaked in Build Manifest** | 32 | **0** | **100% Eliminated** |
-| **Direct Action ID Bypass Feasibility** | HIGH VULNERABILITY | **ZERO (Physically Impossible)** | **REMEDIATED** |
+| Metric                                            | Phase S6.2 Baseline | Phase S6.3 Hardened              | Status              |
+| :------------------------------------------------ | :------------------ | :------------------------------- | :------------------ |
+| **Total Compiled Action IDs**                     | 316                 | **159**                          | **-157 (-49.7%)**   |
+| **Implementation Modules with `"use server"`**    | 32                  | **0**                            | **100% Eliminated** |
+| **Implementation Files Leaked in Build Manifest** | 32                  | **0**                            | **100% Eliminated** |
+| **Direct Action ID Bypass Feasibility**           | HIGH VULNERABILITY  | **ZERO (Physically Impossible)** | **REMEDIATED**      |
 
-*Verification Command Run Against Production Build:*
+_Verification Command Run Against Production Build:_
+
 ```bash
 node -e '
 const manifest = require("./.next/server/server-reference-manifest.json");
@@ -153,20 +161,21 @@ All 192 public Server Actions across all 31 public action modules have been comp
 
 ### Policy Taxonomy Mapping Summary
 
-| S6.2 Policy Class | Rate Limit | Primary Store | Degraded Mode | Actions Mapped |
-| :--- | :--- | :--- | :--- | :--- |
-| `auth:mutation` | 5 / 15m | Redis | Memory (3 / 15m) | 6 |
-| `auth:read` | 30 / 5m | Redis | Memory (15 / 5m) | 8 |
-| `org:creation` | 3 / 24h | Redis | **FAIL-CLOSED** | 1 |
-| `invitation:issuance` | 10 / 1h | Redis | Memory (5 / 1h) | 3 |
-| `invitation:preview` | 20 / 5m | Redis | Memory (10 / 5m) | 1 |
-| `resource:mutation` | 60 / 1m | Redis | Memory (30 / 1m) | 78 |
-| `resource:read` | 120 / 1m | Redis | Memory (60 / 1m) | 92 |
-| `search:expensive` | 20 / 1m | Redis | Memory (10 / 1m) | 1 |
-| `report:expensive` | 5 / 5m | Redis | Memory (2 / 5m) | 2 |
-| **Total** | — | — | — | **192** |
+| S6.2 Policy Class     | Rate Limit | Primary Store | Degraded Mode    | Actions Mapped |
+| :-------------------- | :--------- | :------------ | :--------------- | :------------- |
+| `auth:mutation`       | 5 / 15m    | Redis         | Memory (3 / 15m) | 6              |
+| `auth:read`           | 30 / 5m    | Redis         | Memory (15 / 5m) | 8              |
+| `org:creation`        | 3 / 24h    | Redis         | **FAIL-CLOSED**  | 1              |
+| `invitation:issuance` | 10 / 1h    | Redis         | Memory (5 / 1h)  | 3              |
+| `invitation:preview`  | 20 / 5m    | Redis         | Memory (10 / 5m) | 1              |
+| `resource:mutation`   | 60 / 1m    | Redis         | Memory (30 / 1m) | 78             |
+| `resource:read`       | 120 / 1m   | Redis         | Memory (60 / 1m) | 92             |
+| `search:expensive`    | 20 / 1m    | Redis         | Memory (10 / 1m) | 1              |
+| `report:expensive`    | 5 / 5m     | Redis         | Memory (2 / 5m)  | 2              |
+| **Total**             | —          | —             | —                | **192**        |
 
 ### Verified Invariants
+
 - **Unmapped Public Actions**: `0`
 - **Conflicting/Duplicate Policy Mappings**: `0`
 - **Total Discovered Public Actions**: `192`
@@ -180,7 +189,9 @@ All 192 public Server Actions across all 31 public action modules have been comp
 A conventional Redis pipeline (`incr` + `expire` + `get`) is **not atomic**; concurrent requests can interleave between pipeline steps, leading to missing expirations, race conditions on counters, and split-brain window calculations.
 
 ### Lua Script Implementation
+
 S6.3 executes an atomic Lua script (`EVAL`) that guarantees atomic execution on single-key and sliding-window pairs:
+
 ```lua
 local current = redis.call('INCR', KEYS[1])
 if current == 1 then
@@ -191,7 +202,9 @@ return { current, previous }
 ```
 
 ### Concurrency Test Results
+
 Under `tests/unit/rate-limit-concurrency.test.ts`, 50 concurrent asynchronous requests were fired against a policy limit of 10:
+
 - **Allowed**: Exactly 10 requests.
 - **Throttled**: Exactly 40 requests.
 - **Race conditions**: 0.
@@ -206,6 +219,7 @@ The sliding-window limiter is formally documented and treated as a **bounded, $O
 $$\text{weighted\_count} = \text{current\_window\_count} + \text{previous\_window\_count} \times \left(1 - \frac{\text{elapsed\_ms}}{\text{window\_ms}}\right)$$
 
 Boundary concurrency tests confirm that:
+
 - Boundary bursts spanning window edges are capped at $\le 1.0\times$ limit under weighted decay.
 - Budget progressively replenishes as the prior window ages out, achieving full reset at $2\times$ window length.
 
@@ -244,6 +258,7 @@ The architecture explicitly differentiates between normal operating state and de
 ```
 
 ### Fail-Closed vs. Fail-Open Matrix
+
 1. **Organization Creation (`orgCreation`)**: **FAIL-CLOSED**. If Redis is unreachable, organization creation is refused to prevent tenant creation amplification attacks.
 2. **Invitations & Mutations (`resourceMutation`, `invitationIssuance`)**: **DEGRADE TO MEMORY** with reduced degraded limits (e.g., 30/min mutation limit).
 3. **Expensive Reports & Search (`reportExpensive`, `searchExpensive`)**: **DEGRADE TO MEMORY** with strict per-pod clamp (2 req / 5min for reports).
@@ -253,6 +268,7 @@ The architecture explicitly differentiates between normal operating state and de
 ## 8. Coarse Token Prefix Abuse Bucket
 
 To mitigate timing attacks and token enumeration without compromising entropy:
+
 - Tokens are 256-bit cryptographic secrets generated via `crypto.randomBytes(32)`.
 - Rate limiting never operates on the raw token (preventing credential leakage in logs).
 - Instead, the SHA-256 hash of the token is computed, and the **first 8 hex characters** are extracted as a coarse abuse-correlation bucket (`tokenPrefixBucket`).
@@ -264,6 +280,7 @@ To mitigate timing attacks and token enumeration without compromising entropy:
 ## 9. Semantic Resource Bounds Enforcement
 
 Input bounds are enforced at the schema validation boundary:
+
 - **Server Action Body Limit**: Capped at **1MB** in `next.config.ts`.
 - **Search Queries**: Min 2 characters, Max 64 characters.
 - **Workforce Report Queries**: Max 31 days date span; results capped at 1,000 rows.
@@ -278,29 +295,29 @@ Input bounds are enforced at the schema validation boundary:
 
 All 21 verification categories from S6.2 were tested and validated in `tests/unit/rate-limiting-categories.test.ts` and companion suites:
 
-| Category | Verification Scenario | Test Method / Assertion | Status |
-| :--- | :--- | :--- | :--- |
-| **A** | Single User Rate Limiting | Exceeding sustained limit triggers `allowed: false`, remaining 0. | **PASSED** |
-| **B** | Burst Behavior | Burst up to limit succeeds; burst + 1 is immediately throttled. | **PASSED** |
-| **C** | Sustained Behavior | Bounded window decay restores budget after window expiry. | **PASSED** |
-| **D** | Tenant Isolation | Exhaustion in Org 1 does not affect Org 2 user budget. | **PASSED** |
-| **E** | User Isolation | User A exhaustion in Org 1 does not throttle User B in Org 1. | **PASSED** |
-| **F** | Anonymous IP Isolation | IP 1 hitting auth limits does not restrict IP 2. | **PASSED** |
-| **G** | Direct ID Bypass Prevention | Implementation modules audited for 0 `"use server"` declarations. | **PASSED** |
-| **H** | Wrapper Parity | `withRateLimit` enforces identical limits across invocation paths. | **PASSED** |
-| **I** | Redis Store Atomic Lua Script | Redis client executes atomic `INCR` + `EXPIRE` Lua script. | **PASSED** |
-| **J** | Redis Outage Failover | Redis drop transitions seamlessly to degraded MemoryStore. | **PASSED** |
-| **K** | Fallback MemoryStore Eviction | Stale entries expire and memory remains bounded under load. | **PASSED** |
-| **L** | Proxy Hop Handling | `getClientIp` traverses `X-Forwarded-For` using trusted hops. | **PASSED** |
-| **M** | Invite Preview Abuse | Silent rejection (`INVITATION_NOT_FOUND`) on 8-char coarse bucket. | **PASSED** |
-| **N** | Org Creation Abuse | Enforces fail-closed semantics when Redis fails. | **PASSED** |
-| **O** | Search Abuse | Rejects $<2$ and $>64$ characters; throttles search flood. | **PASSED** |
-| **P** | Report Abuse | Clamps date span to 31 days; rejects inverted date ranges. | **PASSED** |
-| **Q** | Upload Init Abuse | Frequency bounds enforced on `initializeFileUpload`. | **PASSED** |
-| **R** | Invite Issuance Abuse | Invitations throttled at 10/hr per administrator. | **PASSED** |
-| **S** | Resource Bound Enforcement | Zod schemas reject oversized strings and payloads. | **PASSED** |
-| **T** | HTTP 429 Contract | Emits `Retry-After`, `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`. | **PASSED** |
-| **U** | Security Telemetry | Zero token leakage; logs contain hashed/coarse identifiers only. | **PASSED** |
+| Category | Verification Scenario         | Test Method / Assertion                                                           | Status     |
+| :------- | :---------------------------- | :-------------------------------------------------------------------------------- | :--------- |
+| **A**    | Single User Rate Limiting     | Exceeding sustained limit triggers `allowed: false`, remaining 0.                 | **PASSED** |
+| **B**    | Burst Behavior                | Burst up to limit succeeds; burst + 1 is immediately throttled.                   | **PASSED** |
+| **C**    | Sustained Behavior            | Bounded window decay restores budget after window expiry.                         | **PASSED** |
+| **D**    | Tenant Isolation              | Exhaustion in Org 1 does not affect Org 2 user budget.                            | **PASSED** |
+| **E**    | User Isolation                | User A exhaustion in Org 1 does not throttle User B in Org 1.                     | **PASSED** |
+| **F**    | Anonymous IP Isolation        | IP 1 hitting auth limits does not restrict IP 2.                                  | **PASSED** |
+| **G**    | Direct ID Bypass Prevention   | Implementation modules audited for 0 `"use server"` declarations.                 | **PASSED** |
+| **H**    | Wrapper Parity                | `withRateLimit` enforces identical limits across invocation paths.                | **PASSED** |
+| **I**    | Redis Store Atomic Lua Script | Redis client executes atomic `INCR` + `EXPIRE` Lua script.                        | **PASSED** |
+| **J**    | Redis Outage Failover         | Redis drop transitions seamlessly to degraded MemoryStore.                        | **PASSED** |
+| **K**    | Fallback MemoryStore Eviction | Stale entries expire and memory remains bounded under load.                       | **PASSED** |
+| **L**    | Proxy Hop Handling            | `getClientIp` traverses `X-Forwarded-For` using trusted hops.                     | **PASSED** |
+| **M**    | Invite Preview Abuse          | Silent rejection (`INVITATION_NOT_FOUND`) on 8-char coarse bucket.                | **PASSED** |
+| **N**    | Org Creation Abuse            | Enforces fail-closed semantics when Redis fails.                                  | **PASSED** |
+| **O**    | Search Abuse                  | Rejects $<2$ and $>64$ characters; throttles search flood.                        | **PASSED** |
+| **P**    | Report Abuse                  | Clamps date span to 31 days; rejects inverted date ranges.                        | **PASSED** |
+| **Q**    | Upload Init Abuse             | Frequency bounds enforced on `initializeFileUpload`.                              | **PASSED** |
+| **R**    | Invite Issuance Abuse         | Invitations throttled at 10/hr per administrator.                                 | **PASSED** |
+| **S**    | Resource Bound Enforcement    | Zod schemas reject oversized strings and payloads.                                | **PASSED** |
+| **T**    | HTTP 429 Contract             | Emits `Retry-After`, `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`. | **PASSED** |
+| **U**    | Security Telemetry            | Zero token leakage; logs contain hashed/coarse identifiers only.                  | **PASSED** |
 
 ---
 
@@ -355,6 +372,7 @@ All local quality gates have been executed and passed without exceptions:
 ## 13. Operational Requirements for Unpausing Production
 
 Prior to unpausing production and deploying Phase S6.3:
+
 1. **Redis Provisioning**: Provision a low-latency Redis instance (Upstash Redis or Redis Cloud) located in Tokyo (`ap-northeast-1` / `hnd1` region) and supply the connection string via `REDIS_URL`.
 2. **Edge Proxy Verification**: Verify whether Cloudflare is configured in front of Antideploy/Vercel. If Cloudflare is active, configure `TRUSTED_PROXY_HOPS=2`. If traffic terminates directly at the hosting edge, retain `TRUSTED_PROXY_HOPS=1`.
 
@@ -364,4 +382,4 @@ Prior to unpausing production and deploying Phase S6.3:
 
 $$\mathbf{S6.3\ IMPLEMENTATION\ COMPLETE\ —\ LOCAL\ SECURITY\ REGRESSION\ PASSED}$$
 
-*Local implementation, concurrency validation, and security regression complete. Awaiting operator review and authorization before staging/production resumption.*
+_Local implementation, concurrency validation, and security regression complete. Awaiting operator review and authorization before staging/production resumption._

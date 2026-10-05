@@ -57,7 +57,11 @@ async function tolerate<T>(work: Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-import { RATE_LIMITS, consumeRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
+import {
+  RATE_LIMITS,
+  consumeRateLimit,
+  rateLimitHeaders,
+} from "@/lib/security/rate-limit";
 import { resolveGuardContext, KeyResolvers } from "@/lib/security/action-guard";
 import { ApiError } from "@/lib/security/errors";
 
@@ -67,7 +71,10 @@ export async function globalSearch(term: string): Promise<SearchGroup[]> {
 
   const context = await resolveGuardContext();
   const identifier = KeyResolvers.userAndOrg([], context);
-  const decision = await consumeRateLimit(RATE_LIMITS.searchExpensive, identifier);
+  const decision = await consumeRateLimit(
+    RATE_LIMITS.searchExpensive,
+    identifier,
+  );
   if (!decision.allowed) {
     throw new ApiError(
       "rate_limited",

@@ -289,7 +289,9 @@ export class TenantRepository {
 /**
  * Factory creating an authorized, tenant-bound repository instance.
  */
-export function createTenantRepository(context: TenantContext): TenantRepository {
+export function createTenantRepository(
+  context: TenantContext,
+): TenantRepository {
   return new TenantRepository(context);
 }
 

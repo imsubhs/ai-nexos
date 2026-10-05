@@ -6,7 +6,7 @@
 **Security Classification**: Critical / Production-Gating  
 **Auditor**: Principal Security Engineer, Production Infrastructure Reviewer, and Release Readiness Auditor  
 **Repository**: `/Users/subhamsaha/Downloads/My Docs /WebsiteCreation/NEXOS Comb /AIC NEXOS/ai-nexos`  
-**Branch**: `phase-2-production-readiness`  
+**Branch**: `phase-2-production-readiness`
 
 ---
 
@@ -15,6 +15,7 @@
 Phase S6.5 represents the **Operator Readiness Phase** for the AI NEX OS rate-limiting and resource-control subsystem. Operating under strict, zero-mutation safety invariants (Production Supabase **PAUSED**, Staging Supabase **PAUSED**, zero remote database queries, zero schema migrations, zero code commits, zero package upgrades), this evaluation converted the conditions identified in Phase S6.4 into an evidence-based, actionable operator deployment blueprint.
 
 ### Core Readiness Findings:
+
 1. **S6.4 Finding Resolution**: All four S6.4 findings (2 MEDIUM, 2 LOW) have been analyzed against source code and runtime invariants. No HIGH or CRITICAL security defects exist. The two MEDIUM findings are strictly operator-dependent environment configurations (`REDIS_URL` provisioning and `TRUSTED_PROXY_HOPS` edge topology calibration).
 2. **Redis Datastore Security Contract**: Redis client (`ioredis ^5.11.1`) architecture was validated. Connection initialization is lazy and module-cached, avoiding per-request connection overhead on warm instances. Use of the `rediss://` protocol automatically enforces TLS encryption in transit via Node.js native TLS. Redis must remain strictly isolated behind network firewalls/VPCs with zero direct public internet exposure.
 3. **Timeout & Fail-Safe Semantics**: Redis command retries are constrained (`maxRetriesPerRequest: 1`, `enableOfflineQueue: false`). The sliding-window rate limiter employs atomic Lua scripts (`EVAL`) for race-free consistency. System degradation behavior is verified: `orgCreation` strictly **fails closed** during Redis outages, while standard mutations degrade gracefully to an in-memory store (`MemoryStore`, capped at 20,000 entries with LRU window eviction). Explicit connection and command timeouts (`connectTimeout: 1500ms`, `commandTimeout: 500ms`) are codified for operator provisioning to prevent hanging requests.
@@ -77,6 +78,7 @@ Recommended action: Add recursive byte-length and nesting depth validator in Spr
 ```
 
 ### S6.5 Classification of S6.4 Findings:
+
 - **Finding S6.4-1 (`REDIS_URL`)**: **Class B (Documentation/operator configuration required)** & **Class C (Small corrective code change required before production unpause)**. Classified as `S6.5-CONFIG-REDIS-REQUIRED`.
 - **Finding S6.4-2 (`TRUSTED_PROXY_HOPS`)**: **Class B (Documentation/operator configuration required)**. No code change needed; environment variable configuration only.
 - **Finding S6.4-3 (`scratch/` linting)**: **Class A (No code change required for production security)**. Safely deferred to S7.
@@ -110,7 +112,9 @@ Inspection of `src/lib/security/rate-limit.ts`, `src/lib/env.server.ts`, and `pa
 ```
 
 ### Concurrency & Atomicity Guarantee:
+
 The core rate-limiting primitive executes as a single atomic Lua script:
+
 ```lua
 local current = redis.call('INCR', KEYS[1])
 if current == 1 then
@@ -119,7 +123,9 @@ end
 local previous = redis.call('GET', KEYS[2])
 return { current, previous }
 ```
+
 Because Redis executes Lua scripts on a single-threaded event loop atomically:
+
 1. `INCR`, conditional `EXPIRE`, and previous-window `GET` cannot interleave with concurrent commands on the same keys.
 2. Counter race conditions are eliminated under concurrent request spikes.
 3. Keys are namespaced as `rl:${policy}:${identifier}:${windowStart}` with TTL set to $2 \times \text{windowSeconds}$, guaranteeing automatic eviction without orphan keys.
@@ -156,6 +162,7 @@ Redis acts as a security-enforcing datastore. In accordance with standard securi
 ```
 
 ### Security Checklist:
+
 1. **Zero Public Exposure**: The Redis TCP port (`6379`) must NEVER be bound to `0.0.0.0` or directly reachable from the public internet. Access must be restricted to the application's private network (VPC peering, AWS Security Group, or provider IP allowlist restricting source CIDRs to Antideploy egress IPs).
 2. **Authentication**: Require strong password authentication (minimum 32 random characters). Where Redis 6+ Access Control Lists (ACL) are supported, create a dedicated application user with restricted permissions:
    - Allowed commands: `PING`, `INCR`, `EXPIRE`, `GET`, `EVAL`, `EVALSHA`.
@@ -185,6 +192,7 @@ Production data in transit must be encrypted.
 The Redis connection string contains the hostname, port, and plaintext authentication password (`rediss://:password@host:port`).
 
 ### Forensic Repository Audit:
+
 - **`git grep` Audit**: Searched all source files, configurations, markdown documents, and git commits for unauthorized `REDIS_URL` credentials.
 - **Repository Result**:
   - `src/lib/env.server.ts`: Variable name declaration only.
@@ -227,6 +235,7 @@ The application enforces a dual-mode, multi-tier failure model:
 ```
 
 ### Detailed Mode Behavior:
+
 1. **NORMAL MODE (Redis Available)**:
    - Evaluated against distributed Redis counters.
    - All server pods share the exact same global budget.
@@ -249,7 +258,9 @@ The application enforces a dual-mode, multi-tier failure model:
 The rate limiter must never become an availability bottleneck or cascading failure vector for the application.
 
 ### Current Configuration Analysis:
+
 In `src/lib/security/rate-limit.ts:381-386`:
+
 ```typescript
 const client = new Redis(process.env.REDIS_URL as string, {
   maxRetriesPerRequest: 1,
@@ -257,15 +268,18 @@ const client = new Redis(process.env.REDIS_URL as string, {
   lazyConnect: false,
 });
 ```
+
 - `maxRetriesPerRequest: 1`: **GOOD**. Prevents endless retry loops when Redis is down.
 - `enableOfflineQueue: false`: **GOOD**. If connection drops, commands fail immediately rather than buffering in memory.
 - `connectTimeout`: **DEFAULT (10,000ms)**. If the Redis endpoint is partitioned or unroutable, connection initialization could block for up to 10 seconds.
 - `commandTimeout`: **UNDEFINED**. If an established connection hangs mid-command, the request could stall until the socket times out.
 
 ### Operator & Engineering Timeout Specification:
+
 To satisfy the invariant:
 $$\mathbf{Redis\ Failure \neq Request\ Hangs\ Indefinitely}$$
 The operator checklist and pre-production tuning require setting explicit timeouts:
+
 ```typescript
 {
   connectTimeout: 1500,  // Fail TCP connect after 1.5s
@@ -274,6 +288,7 @@ The operator checklist and pre-production tuning require setting explicit timeou
   enableOfflineQueue: false,
 }
 ```
+
 This guarantees that an unresponsive Redis node can never add more than 500ms of latency before the request seamlessly falls back to `MemoryStore`.
 
 ---
@@ -299,6 +314,7 @@ AI NEX OS operates in containerized environments (Antideploy / Node.js runtime):
 Colocation of application compute, database, and Redis is paramount to minimize round-trip latency overhead.
 
 ### Authoritative Regional Evidence:
+
 1. **Production Supabase Database**:
    - Verified Endpoint: `aws-0-ap-northeast-1.pooler.supabase.com:6543 / 5432`.
    - Verified Project: `gsgseacjcalkhhmunjhx`.
@@ -349,6 +365,7 @@ export function getClientIp(headers: Headers): string {
 ```
 
 ### Right-to-Left Traversal Logic:
+
 - Standard reverse proxies append the connecting IP to the **right-hand end** of `X-Forwarded-For`.
 - The leftmost entries are client-controlled and completely untrusted.
 - The entry appended by the outermost trusted edge proxy is located at:
@@ -360,13 +377,14 @@ export function getClientIp(headers: Headers): string {
 
 The value of `TRUSTED_PROXY_HOPS` depends strictly on the live network architecture:
 
-| Live Ingress Architecture | Expected Chain Shape | `TRUSTED_PROXY_HOPS` | Extracted IP |
-| :--- | :--- | :---: | :--- |
-| **Direct Antideploy Ingress** | `[Client_IP]` | **1** | `Client_IP` |
-| **Cloudflare -> Antideploy -> App** | `[Client_IP, CF_Egress_IP]` | **2** | `Client_IP` |
-| **Cloudflare -> Load Balancer -> Antideploy -> App** | `[Client_IP, CF_Egress_IP, ALB_IP]` | **3** | `Client_IP` |
+| Live Ingress Architecture                            | Expected Chain Shape                | `TRUSTED_PROXY_HOPS` | Extracted IP |
+| :--------------------------------------------------- | :---------------------------------- | :------------------: | :----------- |
+| **Direct Antideploy Ingress**                        | `[Client_IP]`                       |        **1**         | `Client_IP`  |
+| **Cloudflare -> Antideploy -> App**                  | `[Client_IP, CF_Egress_IP]`         |        **2**         | `Client_IP`  |
+| **Cloudflare -> Load Balancer -> Antideploy -> App** | `[Client_IP, CF_Egress_IP, ALB_IP]` |        **3**         | `Client_IP`  |
 
 ### Critical Misconfiguration Hazards:
+
 - **Hops Set Too Low (e.g. 1 instead of 2)**:
   - Next.js extracts `CF_Egress_IP` (Cloudflare edge proxy).
   - All users worldwide routing through that Cloudflare datacenter share the exact same rate-limit bucket.
@@ -376,6 +394,7 @@ The value of `TRUSTED_PROXY_HOPS` depends strictly on the live network architect
   - An attacker sending `X-Forwarded-For: attacker_spoof` can spoof arbitrary IPs and obtain fresh rate-limit buckets per request.
 
 ### Authoritative Invariant:
+
 Because DNS and CDN proxying are managed outside the application repository:
 $$\mathbf{PROXY\ TOPOLOGY = OPERATOR\ REQUIRED}$$
 $$\mathbf{TRUSTED\_PROXY\_HOPS = OPERATOR\ REQUIRED}$$
@@ -408,6 +427,7 @@ Case 5: XFF=undefined                               -> Resolved: "unknown"
 ```
 
 ### Analysis & Origin Protection Invariant:
+
 1. **Case 3 (Attacker Spoofing under 2 Hops)**:
    - Attacker sends `X-Forwarded-For: 10.0.0.1`.
    - Cloudflare receives connection from attacker (`203.0.113.9`) and appends it: `10.0.0.1, 203.0.113.9`.
@@ -442,6 +462,7 @@ Inspection of `src/lib/security/action-registry.ts`:
 ```
 
 ### Architectural Breakdown:
+
 - **189**: Distinct production business actions executing database logic across the 31 public modules.
 - **1**: Demo workspace action (`enterDemoWorkspace` in `src/features/auth/actions/demo-login.ts`).
 - **2**: Notification query wrappers (`getNotificationsQuery`, `getNotificationPreferencesQuery` in `notifications/queries.ts`).
@@ -454,14 +475,14 @@ Inspection of `src/lib/security/action-registry.ts`:
 
 All six designated high-risk action surfaces were re-verified against live source code:
 
-| Action / Endpoint | Policy & Rate Limit | Key Formulation | Resource Bounds & Guards | Failure Semantics | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **`createOrganizationAction`** | `orgCreation`<br>**(3 / 24h)** | `userOrIp` | Auth session required;<br>Schema bounds on name, slug, codePrefix;<br>Owner role derived on server | **FAIL-CLOSED**<br>(Rejects immediately on Redis outage) | **PASS** |
-| **`previewInvitationAction`** | `invitationPreview`<br>**(20 / 5m)** | `ip:prefixBucket`<br>(8-char SHA-256) | Anonymous permitted;<br>Returns silent `INVITATION_NOT_FOUND` on throttle;<br>Full 256-bit token lookup only after rate limit | Degrades to memory | **PASS** |
-| **`globalSearch`** | `searchExpensive`<br>**(20 / 1m)** | `userAndOrg` | Term clamped: min 2, max 64 chars;<br>Results capped at 5 per group;<br>Tenant-isolated database queries | Degrades to memory | **PASS** |
-| **`getWorkforceReportAction`** | `reportExpensive`<br>**(5 / 5m)** | `userAndOrg` | Auth + `attendance:view_team`;<br>Date range clamped $\le 31$ days;<br>Direct SQL pushdown;<br>Row limit: 1,000 | Degrades to memory | **PASS** |
-| **`initializeFileUpload`** | `resourceMutation`<br>**(60 / 1m)** | `org:user` | Auth + `files:upload`;<br>Max file size: 10GB;<br>Org total quota: 500GB;<br>Project access validated | Degrades to memory | **PASS** |
-| **`inviteMemberAction`** | `invitationIssuance`<br>**(10 / 1h)** | `org:user` | Auth + `users:create`;<br>Organization derived from session;<br>Email max 255 chars | Degrades to memory | **PASS** |
+| Action / Endpoint              | Policy & Rate Limit                   | Key Formulation                       | Resource Bounds & Guards                                                                                                      | Failure Semantics                                        | Status   |
+| :----------------------------- | :------------------------------------ | :------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- | :------- |
+| **`createOrganizationAction`** | `orgCreation`<br>**(3 / 24h)**        | `userOrIp`                            | Auth session required;<br>Schema bounds on name, slug, codePrefix;<br>Owner role derived on server                            | **FAIL-CLOSED**<br>(Rejects immediately on Redis outage) | **PASS** |
+| **`previewInvitationAction`**  | `invitationPreview`<br>**(20 / 5m)**  | `ip:prefixBucket`<br>(8-char SHA-256) | Anonymous permitted;<br>Returns silent `INVITATION_NOT_FOUND` on throttle;<br>Full 256-bit token lookup only after rate limit | Degrades to memory                                       | **PASS** |
+| **`globalSearch`**             | `searchExpensive`<br>**(20 / 1m)**    | `userAndOrg`                          | Term clamped: min 2, max 64 chars;<br>Results capped at 5 per group;<br>Tenant-isolated database queries                      | Degrades to memory                                       | **PASS** |
+| **`getWorkforceReportAction`** | `reportExpensive`<br>**(5 / 5m)**     | `userAndOrg`                          | Auth + `attendance:view_team`;<br>Date range clamped $\le 31$ days;<br>Direct SQL pushdown;<br>Row limit: 1,000               | Degrades to memory                                       | **PASS** |
+| **`initializeFileUpload`**     | `resourceMutation`<br>**(60 / 1m)**   | `org:user`                            | Auth + `files:upload`;<br>Max file size: 10GB;<br>Org total quota: 500GB;<br>Project access validated                         | Degrades to memory                                       | **PASS** |
+| **`inviteMemberAction`**       | `invitationIssuance`<br>**(10 / 1h)** | `org:user`                            | Auth + `users:create`;<br>Organization derived from session;<br>Email max 255 chars                                           | Degrades to memory                                       | **PASS** |
 
 ---
 
@@ -531,17 +552,17 @@ Stage L: Pause Staging Supabase Project (Return to secure paused invariant)
 
 ## 19. Staging Test Matrix
 
-| Test Suite Category | Target Invariant | Execution Method | Expected Result |
-| :--- | :--- | :--- | :--- |
-| **Redis Connectivity** | TLS Handshake | Connect using `rediss://` | Connection succeeds; TLS verified |
-| **Redis Authentication** | Auth Rejection | Supply invalid password | Throws `NOAUTH` or auth error; falls back |
-| **Redis Command Timeout** | Latency Cap | Simulate network stall | Operation fails within 500ms; falls back |
-| **Org Creation Fail-Closed** | Zero Tenant Spam | Terminate Redis; invoke `createOrganizationAction` | Immediate rejection: `storage_unavailable_fail_closed` |
-| **Standard Mutation Fallback** | Availability Resiliency | Terminate Redis; invoke `updateProjectAction` | Succeeds in `storeMode: "degraded"` via `MemoryStore` |
-| **50 Parallel Requests** | Lua Script Atomicity | 50 concurrent `consumeRateLimit()` calls | Exactly matches configured limit; excess throttled |
-| **Tenant Isolation** | Independent Budgets | Org A exhausting budget; Org B making request | Org B has full 100% budget remaining |
-| **IP Spoofing Defense** | Header Integrity | Send `X-Forwarded-For: 1.2.3.4, <Real_IP>` | Rate limiter throttles based on `<Real_IP>` |
-| **Invitation Token Probing** | Token Enumeration Defense | Send 25 rapid previews with varied token suffixes | Throttled after 20; returns silent `INVITATION_NOT_FOUND` |
+| Test Suite Category            | Target Invariant          | Execution Method                                   | Expected Result                                           |
+| :----------------------------- | :------------------------ | :------------------------------------------------- | :-------------------------------------------------------- |
+| **Redis Connectivity**         | TLS Handshake             | Connect using `rediss://`                          | Connection succeeds; TLS verified                         |
+| **Redis Authentication**       | Auth Rejection            | Supply invalid password                            | Throws `NOAUTH` or auth error; falls back                 |
+| **Redis Command Timeout**      | Latency Cap               | Simulate network stall                             | Operation fails within 500ms; falls back                  |
+| **Org Creation Fail-Closed**   | Zero Tenant Spam          | Terminate Redis; invoke `createOrganizationAction` | Immediate rejection: `storage_unavailable_fail_closed`    |
+| **Standard Mutation Fallback** | Availability Resiliency   | Terminate Redis; invoke `updateProjectAction`      | Succeeds in `storeMode: "degraded"` via `MemoryStore`     |
+| **50 Parallel Requests**       | Lua Script Atomicity      | 50 concurrent `consumeRateLimit()` calls           | Exactly matches configured limit; excess throttled        |
+| **Tenant Isolation**           | Independent Budgets       | Org A exhausting budget; Org B making request      | Org B has full 100% budget remaining                      |
+| **IP Spoofing Defense**        | Header Integrity          | Send `X-Forwarded-For: 1.2.3.4, <Real_IP>`         | Rate limiter throttles based on `<Real_IP>`               |
+| **Invitation Token Probing**   | Token Enumeration Defense | Send 25 rapid previews with varied token suffixes  | Throttled after 20; returns silent `INVITATION_NOT_FOUND` |
 
 ---
 
@@ -576,10 +597,12 @@ Stage L: Pause Staging Supabase Project (Return to secure paused invariant)
 In the event of an infrastructure failure or operational defect during deployment:
 
 ### 1. Application Rollback:
+
 - Revert the Antideploy deployment to the previously certified deployment artifact.
 - Deployment rollback completes in $< 60$ seconds.
 
 ### 2. Redis Rollback:
+
 - If Redis experiences latency spikes or partition:
   - Do NOT delete the Redis instance immediately.
   - The application automatically switches to `storeMode: "degraded"`.
@@ -587,6 +610,7 @@ In the event of an infrastructure failure or operational defect during deploymen
   - The application will run on bounded `MemoryStore` (with `orgCreation` failing closed in production).
 
 ### 3. Configuration Rollback:
+
 - Restore previous environment variable configuration in the Antideploy management console.
 - Never commit configuration rollbacks or secrets to Git.
 
@@ -594,12 +618,12 @@ In the event of an infrastructure failure or operational defect during deploymen
 
 ## 22. Findings Register
 
-| ID | Finding Title | Severity | Classification | Required Before Production? | Action Required |
-| :--- | :--- | :---: | :---: | :---: | :--- |
-| **S6.4-1** | `REDIS_URL` Not Enforced at Boot | **MEDIUM** | Class B & C | **YES** | Operator provisions Redis; add `REDIS_URL` to `PRODUCTION_REQUIRED` before unpausing. |
-| **S6.4-2** | `TRUSTED_PROXY_HOPS` Dependent on External Topology | **MEDIUM** | Class B | **YES** | Operator verifies edge CDN; configure `TRUSTED_PROXY_HOPS=2` (Cloudflare) or `1` (Direct). |
-| **S6.4-3** | ESLint Config Does Not Ignore `scratch/` | **LOW** | Class A | **NO** | Add `"scratch/**"` to `eslint.config.mjs` in Sprint 7. |
-| **S6.4-4** | Unbounded JSON/Text Fields in Domain Schemas | **LOW** | Class A | **NO** | Add recursive byte/depth validators in Sprint 7. |
+| ID         | Finding Title                                       |  Severity  | Classification | Required Before Production? | Action Required                                                                            |
+| :--------- | :-------------------------------------------------- | :--------: | :------------: | :-------------------------: | :----------------------------------------------------------------------------------------- |
+| **S6.4-1** | `REDIS_URL` Not Enforced at Boot                    | **MEDIUM** |  Class B & C   |           **YES**           | Operator provisions Redis; add `REDIS_URL` to `PRODUCTION_REQUIRED` before unpausing.      |
+| **S6.4-2** | `TRUSTED_PROXY_HOPS` Dependent on External Topology | **MEDIUM** |    Class B     |           **YES**           | Operator verifies edge CDN; configure `TRUSTED_PROXY_HOPS=2` (Cloudflare) or `1` (Direct). |
+| **S6.4-3** | ESLint Config Does Not Ignore `scratch/`            |  **LOW**   |    Class A     |           **NO**            | Add `"scratch/**"` to `eslint.config.mjs` in Sprint 7.                                     |
+| **S6.4-4** | Unbounded JSON/Text Fields in Domain Schemas        |  **LOW**   |    Class A     |           **NO**            | Add recursive byte/depth validators in Sprint 7.                                           |
 
 ---
 
@@ -617,23 +641,23 @@ The following five items require explicit operator resolution prior to productio
 
 ## 24. Required Production Readiness Matrix
 
-| Requirement | Status | Evidence | Operator Action |
-| :--- | :---: | :--- | :--- |
-| **S6.3 Implementation** | **PASS** | Source code & 72 unit tests | None |
-| **S6.4 Audit** | **PASS** | `PHASE-S6.4-RATE-LIMIT-ARCHITECTURE-CORRECTIVE-AUDIT.md` | None |
-| **Redis Provider Selection** | `OPERATOR REQUIRED` | Architecture documented; SLA $\ge 99.9\%$ specified | Operator to provision managed instance |
-| **Redis TLS** | `OPERATOR REQUIRED` | Verified `rediss://` auto-enables TLS in `ioredis` | Operator to ensure URL uses `rediss://` |
-| **Redis Authentication** | `OPERATOR REQUIRED` | ACL and password model documented | Operator to configure $\ge 32$-char secret |
-| **`REDIS_URL` Secret Handling** | **PASS** | Source control exposure = 0; .env.local = empty | Operator to inject via hosting secrets |
-| **Production Redis Required Config** | `OPERATOR REQUIRED` | Documented as `S6.5-CONFIG-REDIS-REQUIRED` | Add to `PRODUCTION_REQUIRED` before unpause |
-| **Redis Timeout Policy** | `OPERATOR REQUIRED` | Verified `maxRetriesPerRequest: 1`; timeouts specified | Configure explicit `connectTimeout`/`commandTimeout` |
-| **Redis Deployment Region** | `OPERATOR REQUIRED` | Database verified in Tokyo (`ap-northeast-1`) | Provision Redis in Tokyo (`ap-northeast-1` / `hnd1`) |
-| **Proxy Topology** | `OPERATOR REQUIRED` | Ingress dependencies documented | Operator to verify Cloudflare presence |
-| **`TRUSTED_PROXY_HOPS`** | `OPERATOR REQUIRED` | Parsing behavior verified across 5 test cases | Set to 2 if Cloudflare active; 1 if direct |
-| **Telemetry & Credential Redaction**| **PASS** | `logger.ts` redacting all tokens/secrets (0 leaks) | None |
-| **Staging Validation** | **NOT RUN** | Staging is currently **PAUSED** | Operator to execute Stages A–L |
-| **Production Preflight Validation** | **NOT RUN** | Production is currently **PAUSED** | Operator to execute Steps 1–15 |
-| **Production Deployment** | **NOT RUN** | Production is currently **PAUSED** | Operator to trigger deployment |
+| Requirement                          |       Status        | Evidence                                                 | Operator Action                                      |
+| :----------------------------------- | :-----------------: | :------------------------------------------------------- | :--------------------------------------------------- |
+| **S6.3 Implementation**              |      **PASS**       | Source code & 72 unit tests                              | None                                                 |
+| **S6.4 Audit**                       |      **PASS**       | `PHASE-S6.4-RATE-LIMIT-ARCHITECTURE-CORRECTIVE-AUDIT.md` | None                                                 |
+| **Redis Provider Selection**         | `OPERATOR REQUIRED` | Architecture documented; SLA $\ge 99.9\%$ specified      | Operator to provision managed instance               |
+| **Redis TLS**                        | `OPERATOR REQUIRED` | Verified `rediss://` auto-enables TLS in `ioredis`       | Operator to ensure URL uses `rediss://`              |
+| **Redis Authentication**             | `OPERATOR REQUIRED` | ACL and password model documented                        | Operator to configure $\ge 32$-char secret           |
+| **`REDIS_URL` Secret Handling**      |      **PASS**       | Source control exposure = 0; .env.local = empty          | Operator to inject via hosting secrets               |
+| **Production Redis Required Config** | `OPERATOR REQUIRED` | Documented as `S6.5-CONFIG-REDIS-REQUIRED`               | Add to `PRODUCTION_REQUIRED` before unpause          |
+| **Redis Timeout Policy**             | `OPERATOR REQUIRED` | Verified `maxRetriesPerRequest: 1`; timeouts specified   | Configure explicit `connectTimeout`/`commandTimeout` |
+| **Redis Deployment Region**          | `OPERATOR REQUIRED` | Database verified in Tokyo (`ap-northeast-1`)            | Provision Redis in Tokyo (`ap-northeast-1` / `hnd1`) |
+| **Proxy Topology**                   | `OPERATOR REQUIRED` | Ingress dependencies documented                          | Operator to verify Cloudflare presence               |
+| **`TRUSTED_PROXY_HOPS`**             | `OPERATOR REQUIRED` | Parsing behavior verified across 5 test cases            | Set to 2 if Cloudflare active; 1 if direct           |
+| **Telemetry & Credential Redaction** |      **PASS**       | `logger.ts` redacting all tokens/secrets (0 leaks)       | None                                                 |
+| **Staging Validation**               |     **NOT RUN**     | Staging is currently **PAUSED**                          | Operator to execute Stages A–L                       |
+| **Production Preflight Validation**  |     **NOT RUN**     | Production is currently **PAUSED**                       | Operator to execute Steps 1–15                       |
+| **Production Deployment**            |     **NOT RUN**     | Production is currently **PAUSED**                       | Operator to trigger deployment                       |
 
 ---
 
@@ -642,6 +666,7 @@ The following five items require explicit operator resolution prior to productio
 $$\mathbf{S6.5\ PASSED\ WITH\ OPERATOR\ ACTIONS\ —\ STAGING\ VALIDATION\ REQUIRED}$$
 
 ### Rationale:
+
 The application rate-limiting architecture, action registry, boundary integrity, atomic Lua concurrency primitives, fail-closed security semantics, and credential-scrubbed telemetry are fully implemented, verified, and passing all quality gates. No code defects or vulnerabilities block progress.
 
 Production readiness is conditioned upon the completion of the physical infrastructure prerequisites (provisioning Redis in Tokyo with TLS, determining edge proxy hop count, and executing the staging validation sequence). Both staging and production environments remain paused.

@@ -9,18 +9,20 @@ export function RoadmapView({
   if (!timeline) return null;
 
   return (
-    <div className="rounded-xl border border-border bg-surface-1 p-6">
+    <div className="border-border bg-surface-1 rounded-xl border p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Roadmap Overview</h3>
+        <h3 className="text-foreground text-lg font-semibold">
+          Roadmap Overview
+        </h3>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         {timeline.phases.map((phase) => (
           <div
             key={phase.phaseId}
-            className="min-h-[300px] rounded-lg border border-border/70 bg-surface-2/40 p-4"
+            className="border-border/70 bg-surface-2/40 min-h-[300px] rounded-lg border p-4"
           >
-            <h4 className="mb-4 border-b border-border/60 pb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+            <h4 className="border-border/60 text-muted-foreground mb-4 border-b pb-2 text-xs font-semibold tracking-wider uppercase">
               {phase.name.replace("_", " ")}
             </h4>
 
@@ -28,25 +30,29 @@ export function RoadmapView({
               {phase.milestones.map((milestone) => (
                 <div
                   key={milestone.milestoneId}
-                  className="rounded-lg border border-border/80 bg-surface-0 p-3 text-sm shadow-sm transition hover:border-brand-primary/40"
+                  className="border-border/80 bg-surface-0 hover:border-brand-primary/40 rounded-lg border p-3 text-sm shadow-sm transition"
                 >
-                  <div className="line-clamp-2 font-medium text-foreground">
+                  <div className="text-foreground line-clamp-2 font-medium">
                     {milestone.name}
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="text-muted-foreground mt-2 flex items-center justify-between text-xs">
                     <span>Progress</span>
-                    <span className="font-mono text-brand-primary">{milestone.progress}%</span>
+                    <span className="text-brand-primary font-mono">
+                      {milestone.progress}%
+                    </span>
                   </div>
-                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
+                  <div className="bg-surface-3 mt-1.5 h-1.5 w-full overflow-hidden rounded-full">
                     <div
-                      className="h-full rounded-full bg-brand-primary transition-all duration-300"
-                      style={{ width: `${Math.min(100, Math.max(0, milestone.progress))}%` }}
+                      className="bg-brand-primary h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, milestone.progress))}%`,
+                      }}
                     />
                   </div>
                 </div>
               ))}
               {phase.milestones.length === 0 && (
-                <div className="text-xs text-muted-foreground/60 italic">
+                <div className="text-muted-foreground/60 text-xs italic">
                   No milestones in this phase
                 </div>
               )}
@@ -57,4 +63,3 @@ export function RoadmapView({
     </div>
   );
 }
-

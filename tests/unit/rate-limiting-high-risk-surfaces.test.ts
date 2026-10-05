@@ -42,15 +42,19 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-vi.mock("@/features/organizations/invitation-service", async (importOriginal) => {
-  const actual = await importOriginal<
-    typeof import("@/features/organizations/invitation-service")
-  >();
-  return {
-    ...actual,
-    getInvitationByToken: vi.fn(async () => null),
-  };
-});
+vi.mock(
+  "@/features/organizations/invitation-service",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@/features/organizations/invitation-service")
+      >();
+    return {
+      ...actual,
+      getInvitationByToken: vi.fn(async () => null),
+    };
+  },
+);
 
 describe("High-Risk Surface Remediation Tests (Phase S6.3)", () => {
   beforeEach(() => {
@@ -72,7 +76,9 @@ describe("High-Risk Surface Remediation Tests (Phase S6.3)", () => {
         organizationName: "Test Org 2",
       });
       expect(throttled.success).toBe(false);
-      expect(throttled.error).toMatch(/Too many organization creation requests/);
+      expect(throttled.error).toMatch(
+        /Too many organization creation requests/,
+      );
     });
 
     it("enforces fail-closed on Redis failure for organization creation", async () => {
@@ -94,7 +100,8 @@ describe("High-Risk Surface Remediation Tests (Phase S6.3)", () => {
   describe("Invitation Preview (Coarse Prefix Bucket Protection)", () => {
     it("silently rejects preview queries after exceeding prefix-bucket budget", async () => {
       // Dummy raw token (64 hex characters)
-      const rawToken = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
+      const rawToken =
+        "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
 
       // Limit in degraded mode is 10
       for (let i = 0; i < 10; i++) {

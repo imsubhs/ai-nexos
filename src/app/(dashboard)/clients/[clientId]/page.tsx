@@ -66,7 +66,11 @@ export default async function ClientDetailPage({
       manager: p.manager,
     }));
 
-  const canCreateProject = hasPermission(user.permissions, "projects", "create");
+  const canCreateProject = hasPermission(
+    user.permissions,
+    "projects",
+    "create",
+  );
 
   const handleRefresh = async () => {
     "use server";
@@ -74,7 +78,7 @@ export default async function ClientDetailPage({
   };
 
   return (
-    <div className="flex-1 space-y-6 p-6 sm:p-8 pt-6 max-w-7xl mx-auto w-full">
+    <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 p-6 pt-6 sm:p-8">
       {/* Navigation Breadcrumb */}
       <Breadcrumb className="mb-1">
         <BreadcrumbList>
@@ -85,7 +89,7 @@ export default async function ClientDetailPage({
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage className="max-w-[200px] truncate sm:max-w-[400px] font-medium text-foreground">
+            <BreadcrumbPage className="text-foreground max-w-[200px] truncate font-medium sm:max-w-[400px]">
               {client.companyName}
             </BreadcrumbPage>
           </BreadcrumbItem>
@@ -113,20 +117,18 @@ export default async function ClientDetailPage({
           referenceAssets: client.referenceAssets,
         }}
         projects={clientProjects}
-        contacts={
-          (client.contacts || []).map((c) => ({
-            contactId: c.contactId,
-            clientId: c.clientId,
-            name: c.name,
-            contactType: c.contactType as any,
-            designation: c.designation,
-            email: c.email,
-            phone: c.phone,
-            linkedin: c.linkedin,
-            notes: c.notes,
-            status: c.status as any,
-          }))
-        }
+        contacts={(client.contacts || []).map((c) => ({
+          contactId: c.contactId,
+          clientId: c.clientId,
+          name: c.name,
+          contactType: c.contactType as any,
+          designation: c.designation,
+          email: c.email,
+          phone: c.phone,
+          linkedin: c.linkedin,
+          notes: c.notes,
+          status: c.status as any,
+        }))}
         activities={activities.map((a) => ({
           activityId: a.activityId,
           action: a.action,

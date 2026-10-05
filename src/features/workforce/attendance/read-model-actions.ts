@@ -32,7 +32,11 @@ import {
 } from "./read-models";
 import type { AttendanceDirectoryRow } from "./types";
 import { isDemoMode } from "@/lib/env.server";
-import { RATE_LIMITS, consumeRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
+import {
+  RATE_LIMITS,
+  consumeRateLimit,
+  rateLimitHeaders,
+} from "@/lib/security/rate-limit";
 import { resolveGuardContext, KeyResolvers } from "@/lib/security/action-guard";
 import { ApiError } from "@/lib/security/errors";
 
@@ -82,7 +86,10 @@ export async function getWorkforceDashboardMetricsAction(input?: {
 
   const context = await resolveGuardContext();
   const identifier = KeyResolvers.userAndOrg([], context);
-  const decision = await consumeRateLimit(RATE_LIMITS.reportExpensive, identifier);
+  const decision = await consumeRateLimit(
+    RATE_LIMITS.reportExpensive,
+    identifier,
+  );
   if (!decision.allowed) {
     throw new ApiError(
       "rate_limited",
@@ -149,7 +156,10 @@ export async function getWorkforceReportAction(input: {
   // Rate limit expensive report projection
   const context = await resolveGuardContext();
   const identifier = KeyResolvers.userAndOrg([], context);
-  const decision = await consumeRateLimit(RATE_LIMITS.reportExpensive, identifier);
+  const decision = await consumeRateLimit(
+    RATE_LIMITS.reportExpensive,
+    identifier,
+  );
   if (!decision.allowed) {
     throw new ApiError(
       "rate_limited",

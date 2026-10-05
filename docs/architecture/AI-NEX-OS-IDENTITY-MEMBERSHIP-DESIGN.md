@@ -1,20 +1,21 @@
 # AI NEX OS — Identity, Membership & Onboarding Architecture
+
 ## Phase 1C: Global Identity, Tenancy Membership & Lifecycle Design
 
 ---
 
 ## Document Control
 
-| Attribute | Detail |
-| :--- | :--- |
-| **Document Path** | `docs/architecture/AI-NEX-OS-IDENTITY-MEMBERSHIP-DESIGN.md` |
-| **Version** | 1.0.0 (Phase 1C Technical Design) |
-| **Status** | **APPROVED TECHNICAL DESIGN (DOCUMENTATION ONLY)** |
-| **Date** | September 26, 2026 |
-| **Architects** | Principal Software Architect, Security Architect, Database Architect |
-| **Repository Root** | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`) |
-| **Target Branch** | `phase-2-production-readiness` |
-| **Scope** | Decoupling global identity from tenancy, membership lifecycle, organization switching, role migration, invitations, onboarding states, and registration modes. |
+| Attribute           | Detail                                                                                                                                                         |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Document Path**   | `docs/architecture/AI-NEX-OS-IDENTITY-MEMBERSHIP-DESIGN.md`                                                                                                    |
+| **Version**         | 1.0.0 (Phase 1C Technical Design)                                                                                                                              |
+| **Status**          | **APPROVED TECHNICAL DESIGN (DOCUMENTATION ONLY)**                                                                                                             |
+| **Date**            | September 26, 2026                                                                                                                                             |
+| **Architects**      | Principal Software Architect, Security Architect, Database Architect                                                                                           |
+| **Repository Root** | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`)                                                                                                               |
+| **Target Branch**   | `phase-2-production-readiness`                                                                                                                                 |
+| **Scope**           | Decoupling global identity from tenancy, membership lifecycle, organization switching, role migration, invitations, onboarding states, and registration modes. |
 
 ---
 
@@ -29,7 +30,9 @@ This document specifies the implementation-grade architecture to decouple **Glob
 ## 2. Global Application Identity (`public.users`)
 
 ### 2.1 The Concept of Global Creator Identity
+
 In the target architecture, `public.users` represents the human creator as an individual entity across the entire AI NEX OS ecosystem:
+
 - Authenticates once via Supabase Auth (`auth.users`).
 - Holds personal profile attributes (Name, Personal Email, Avatar, Personal Timezone).
 - Can be invited into multiple agency workspaces.
@@ -37,23 +40,28 @@ In the target architecture, `public.users` represents the human creator as an in
 - Retains their creator identity even if removed from all agency workspaces.
 
 ### 2.2 Target Field Composition
+
 Following the decoupling migration, `public.users` retains exclusively global attributes:
 
 ```typescript
-export const users = pgTable("users", {
-  userId: uuid("user_id").primaryKey(), // 1:1 with auth.users.id
-  email: text("email").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name"),
-  phone: text("phone"),
-  avatarUrl: text("avatar_url"),
-  timezone: text("timezone").notNull().default("UTC"), // Personal preference
-  status: entityStatusEnum("status").notNull().default("active"),
-  ...auditFields, // createdAt, updatedAt, deletedAt
-}, (table) => [
-  uniqueIndex("uq_users_email").on(table.email),
-  index("idx_users_status").on(table.status),
-]);
+export const users = pgTable(
+  "users",
+  {
+    userId: uuid("user_id").primaryKey(), // 1:1 with auth.users.id
+    email: text("email").notNull(),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name"),
+    phone: text("phone"),
+    avatarUrl: text("avatar_url"),
+    timezone: text("timezone").notNull().default("UTC"), // Personal preference
+    status: entityStatusEnum("status").notNull().default("active"),
+    ...auditFields, // createdAt, updatedAt, deletedAt
+  },
+  (table) => [
+    uniqueIndex("uq_users_email").on(table.email),
+    index("idx_users_status").on(table.status),
+  ],
+);
 ```
 
 ---
@@ -61,36 +69,55 @@ export const users = pgTable("users", {
 ## 3. Organization Membership Architecture (`organization_memberships`)
 
 ### 3.1 Relational Join Table Specification
+
 The join table `public.organization_memberships` establishes the relationship between a global user and an agency workspace:
 
 ```typescript
-export const organizationMemberships = pgTable("organization_memberships", {
-  membershipId: uuid("membership_id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => users.userId, { onDelete: "cascade" }),
-  organizationId: uuid("organization_id").notNull().references(() => organizations.organizationId, { onDelete: "cascade" }),
-  roleId: uuid("role_id").notNull().references(() => roles.roleId, { onDelete: "restrict" }),
-  departmentId: uuid("department_id").references(() => departments.departmentId, { onDelete: "set null" }),
-  designation: text("designation"),
-  employmentType: employmentTypeEnum("employment_type").notNull().default("full_time"),
-  workingHours: jsonb("working_hours").$type<WorkingHours>(),
-  status: text("status").notNull().default("active"), // invited | active | suspended | removed
-  isDefault: boolean("is_default").notNull().default(false),
-  joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow(),
-  invitedAt: timestamp("invited_at", { withTimezone: true }),
-  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
-  suspendedAt: timestamp("suspended_at", { withTimezone: true }),
-  removedAt: timestamp("removed_at", { withTimezone: true }),
-  ...auditFields,
-}, (table) => [
-  uniqueIndex("uq_user_org_active").on(table.userId, table.organizationId).where(isNull(table.deletedAt)),
-  index("idx_membership_user").on(table.userId),
-  index("idx_membership_org").on(table.organizationId),
-  index("idx_membership_role").on(table.roleId),
-  index("idx_membership_status").on(table.organizationId, table.status),
-]);
+export const organizationMemberships = pgTable(
+  "organization_memberships",
+  {
+    membershipId: uuid("membership_id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.userId, { onDelete: "cascade" }),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.organizationId, { onDelete: "cascade" }),
+    roleId: uuid("role_id")
+      .notNull()
+      .references(() => roles.roleId, { onDelete: "restrict" }),
+    departmentId: uuid("department_id").references(
+      () => departments.departmentId,
+      { onDelete: "set null" },
+    ),
+    designation: text("designation"),
+    employmentType: employmentTypeEnum("employment_type")
+      .notNull()
+      .default("full_time"),
+    workingHours: jsonb("working_hours").$type<WorkingHours>(),
+    status: text("status").notNull().default("active"), // invited | active | suspended | removed
+    isDefault: boolean("is_default").notNull().default(false),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow(),
+    invitedAt: timestamp("invited_at", { withTimezone: true }),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    suspendedAt: timestamp("suspended_at", { withTimezone: true }),
+    removedAt: timestamp("removed_at", { withTimezone: true }),
+    ...auditFields,
+  },
+  (table) => [
+    uniqueIndex("uq_user_org_active")
+      .on(table.userId, table.organizationId)
+      .where(isNull(table.deletedAt)),
+    index("idx_membership_user").on(table.userId),
+    index("idx_membership_org").on(table.organizationId),
+    index("idx_membership_role").on(table.roleId),
+    index("idx_membership_status").on(table.organizationId, table.status),
+  ],
+);
 ```
 
 ### 3.2 Membership Cardinality & Active Semantics
+
 - **0 Memberships**: Allowed. User has registered an account but has neither created nor been added to an agency workspace (State B: Authenticated Unaffiliated). Access to workspace routes (`/dashboard`, `/projects`) is blocked; user is routed to `/onboarding`.
 - **1 Membership**: Standard baseline for single-agency employees.
 - **N Memberships**: Supported. Creators, contractors, or agency executives can hold active memberships in multiple sovereign organizations.
@@ -102,16 +129,17 @@ export const organizationMemberships = pgTable("organization_memberships", {
 
 ### 4.1 Evaluation of Context Resolution Strategies
 
-| Strategy | Architecture | Pros | Cons | Verdict |
-| :--- | :--- | :--- | :--- | :--- |
-| **A. Session JWT Claim** | `tenant_id` baked into Supabase Auth JWT | Evaluated directly by Postgres RLS | Requires token refresh / re-authentication on every organization switch; JWT bloat | **Rejected for MVP** |
-| **B. Secure Session Cookie** | `nexos_active_org_id` (HttpOnly, Secure) | Clean dashboard URLs (`/projects`); instant switching via cookie update; no JWT churn | Requires server-side membership validation on every request | **ACCEPTED FOR MVP** |
-| **C. URL Path Prefix** | `/org/[slug]/projects` | Deep-linkable; bookmarks preserve tenant context | Clutters all route parameters; requires massive frontend link refactoring | **Deferred to Phase 7** |
-| **D. Subdomain Tenancy** | `[slug].ai-nexos.com` | Total browser origin isolation; white-label ready | Complex wildcard DNS; SSL certificate automation overhead; cookie-sharing security risks | **Deferred to Enterprise** |
-| **E. Database Preference** | `users.default_organization_id` column | Simple DB query | Inflexible when user works simultaneously across multiple tabs | **Used only as Fallback** |
-| **F. Explicit Request Header** | `x-organization-id` header | Standard for REST APIs | Browser page navigation cannot easily inject custom headers on GET | **Used for API/SDK only** |
+| Strategy                       | Architecture                             | Pros                                                                                  | Cons                                                                                     | Verdict                    |
+| :----------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------- | :------------------------- |
+| **A. Session JWT Claim**       | `tenant_id` baked into Supabase Auth JWT | Evaluated directly by Postgres RLS                                                    | Requires token refresh / re-authentication on every organization switch; JWT bloat       | **Rejected for MVP**       |
+| **B. Secure Session Cookie**   | `nexos_active_org_id` (HttpOnly, Secure) | Clean dashboard URLs (`/projects`); instant switching via cookie update; no JWT churn | Requires server-side membership validation on every request                              | **ACCEPTED FOR MVP**       |
+| **C. URL Path Prefix**         | `/org/[slug]/projects`                   | Deep-linkable; bookmarks preserve tenant context                                      | Clutters all route parameters; requires massive frontend link refactoring                | **Deferred to Phase 7**    |
+| **D. Subdomain Tenancy**       | `[slug].ai-nexos.com`                    | Total browser origin isolation; white-label ready                                     | Complex wildcard DNS; SSL certificate automation overhead; cookie-sharing security risks | **Deferred to Enterprise** |
+| **E. Database Preference**     | `users.default_organization_id` column   | Simple DB query                                                                       | Inflexible when user works simultaneously across multiple tabs                           | **Used only as Fallback**  |
+| **F. Explicit Request Header** | `x-organization-id` header               | Standard for REST APIs                                                                | Browser page navigation cannot easily inject custom headers on GET                       | **Used for API/SDK only**  |
 
 ### 4.2 Target Context Resolution Flow (`requireTenantContext`)
+
 ```
 Incoming Request
        │
@@ -147,15 +175,16 @@ Query `organization_memberships` for user's default active membership (`is_defau
 When a multi-organization user changes their active workspace:
 
 ### 5.1 Switching Workflow
+
 1. **User Action**: User opens top-navigation Switcher and clicks "Acme Studios".
 2. **Server Action Invocation**: Client calls `switchActiveOrganization(targetOrgId)`.
 3. **Authorization Check**:
    ```sql
-   SELECT membership_id, role_id, status 
-   FROM public.organization_memberships 
-   WHERE user_id = auth.uid() 
-     AND organization_id = $targetOrgId 
-     AND status = 'active' 
+   SELECT membership_id, role_id, status
+   FROM public.organization_memberships
+   WHERE user_id = auth.uid()
+     AND organization_id = $targetOrgId
+     AND status = 'active'
      AND deleted_at IS NULL;
    ```
 4. **Cookie Mutation**: Upon successful validation, the server sets:
@@ -167,7 +196,9 @@ When a multi-organization user changes their active workspace:
 6. **Client Refresh**: Server action returns `{ success: true }`. Client invokes `router.refresh()` and invalidates client-side React Query cache.
 
 ### 5.2 Elimination of Stale Context & Crossover Hazards
+
 To guarantee that switching from Organization A to Organization B never leaks cached data:
+
 - **React Cache Invalidation**: Server-side React `cache()` is scoped strictly to the lifetime of a single HTTP request. No cross-request in-memory state is shared between requests.
 - **Client Cache Flush**: The client component executes `queryClient.clear()` immediately before triggering `router.refresh()`.
 - **WebSocket Channel Reset**: The client disconnects from `supabase.channel("org:" + oldOrgId)` and establishes a new subscription to `"org:" + newOrgId`.
@@ -178,11 +209,14 @@ To guarantee that switching from Organization A to Organization B never leaks ca
 ## 6. Role Migration Architecture
 
 ### 6.1 Transition Path
+
 - **Current**: `public.users.role_id` (Rigid 1:1 role).
 - **Target**: `public.organization_memberships.role_id` (Role scoped strictly to membership).
 
 ### 6.2 Standard System Roles Mapping
+
 The platform supports 7 system roles (`src/features/permissions/constants.ts`):
+
 1. **Owner (`owner`)**: Full platform control (`{"*": ["*"]}`).
 2. **Super Admin (`super_admin`)**: Operational administration across all modules.
 3. **HR (`hr`)**: Workforce oversight, attendance reviews, employee directory.
@@ -192,7 +226,9 @@ The platform supports 7 system roles (`src/features/permissions/constants.ts`):
 7. **Finance (`finance`)**: Financial records, client invoices, reports.
 
 ### 6.3 Missing Role & Fallback Rules
+
 During migration or backfill:
+
 - If a user row has a valid `role_id`, it is migrated directly to `organization_memberships.role_id`.
 - If a user row has a dangling or null `role_id`, the migration falls back to the system `team_member` role for that organization.
 - If an organization lacks an `owner` role during backfill, the migration script halts immediately and alerts the database administrator. Every organization must possess exactly one designated primary Owner.
@@ -225,6 +261,7 @@ During migration or backfill:
 ```
 
 ### 7.2 Cryptographic Token Security
+
 1. **Token Generation**: The server generates 32 bytes of cryptographically secure pseudo-random entropy:
    `const rawToken = crypto.randomBytes(32).toString("hex");`
 2. **Token Hashing**: The raw token is NEVER stored in the database. Only its HMAC-SHA256 digest is persisted:
@@ -267,6 +304,7 @@ To eliminate the dead-end `/unprovisioned` error route, the platform implements 
 ```
 
 ### State Specifications
+
 - **STATE A (Existing Member)**: User belongs to 1 or more active organizations. Automatically routed to `/dashboard` of their active or default organization.
 - **STATE B (Authenticated Unaffiliated)**: User has verified email with Supabase Auth, but holds zero memberships and zero pending invitations. Routed to `/onboarding`.
   - Presented with two paths:
@@ -280,16 +318,19 @@ To eliminate the dead-end `/unprovisioned` error route, the platform implements 
 ## 9. Self-Service Registration Architecture (`REGISTRATION_MODE`)
 
 ### 9.1 Open Product Decision Status
+
 As determined in the Phase 1C audit, whether AI NEX OS permits open self-service registration or enforces approval-gated registration remains an **OPEN PRODUCT DECISION**.
 
 ### 9.2 Configurable Architecture (Supporting All Models)
+
 The system introduces an environment and database-backed configuration flag: `REGISTRATION_MODE`.
 
-| Mode Value | Behavior | Security & Operational Implications |
-| :--- | :--- | :--- |
-| **`INVITE_ONLY`** | Public `/signup` route redirects to marketing landing page. Users can only create accounts by redeeming a valid email invitation token. | Maximum spam protection; lowest growth velocity; ideal for private enterprise alpha. |
-| **`APPROVAL_REQUIRED`** | Public `/signup` allows registration, but workspace creation submits a request to the platform admin waitlist. User remains in State B until approved. | Strong spam protection; controlled onboarding quality; slight conversion friction. |
-| **`SELF_SERVICE`** | Public `/signup` allows anyone to register and immediately provisions an active 14-day trial organization with the creator as Owner. | Maximum growth velocity; requires strict rate-limiting, CAPTCHA, and automated trial expiration cleanup. |
+| Mode Value              | Behavior                                                                                                                                               | Security & Operational Implications                                                                      |
+| :---------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| **`INVITE_ONLY`**       | Public `/signup` route redirects to marketing landing page. Users can only create accounts by redeeming a valid email invitation token.                | Maximum spam protection; lowest growth velocity; ideal for private enterprise alpha.                     |
+| **`APPROVAL_REQUIRED`** | Public `/signup` allows registration, but workspace creation submits a request to the platform admin waitlist. User remains in State B until approved. | Strong spam protection; controlled onboarding quality; slight conversion friction.                       |
+| **`SELF_SERVICE`**      | Public `/signup` allows anyone to register and immediately provisions an active 14-day trial organization with the creator as Owner.                   | Maximum growth velocity; requires strict rate-limiting, CAPTCHA, and automated trial expiration cleanup. |
 
 ### 9.3 Architectural Guarantee
+
 The database schema, membership structures, and onboarding services are designed to support all three modes interchangeably without requiring schema modifications or code refactoring when the business selects its commercial strategy.

@@ -16,13 +16,13 @@ export default async function ShareLinkPage({
   if (!reviewResult.valid || !reviewResult.data) {
     return (
       <main className="flex min-h-[70svh] flex-col items-center justify-center gap-4 p-6 text-center">
-        <div className="bg-[#06151E] flex size-12 items-center justify-center rounded-full border border-[#545A5B]">
-          <ShieldCheck className="text-[#898A8C] size-6" />
+        <div className="flex size-12 items-center justify-center rounded-full border border-[#545A5B] bg-[#06151E]">
+          <ShieldCheck className="size-6 text-[#898A8C]" />
         </div>
         <h1 className="text-lg font-semibold tracking-tight text-[#FFFFFF]">
           This review link is not active
         </h1>
-        <p className="text-[#898A8C] max-w-sm text-sm text-balance">
+        <p className="max-w-sm text-sm text-balance text-[#898A8C]">
           {reviewResult.error ||
             "The share link you opened is invalid, expired, or no longer available. Please ask your project contact for a new link."}
         </p>
@@ -32,4 +32,3 @@ export default async function ShareLinkPage({
 
   return <PortalReviewWorkspace initialData={reviewResult.data} />;
 }
-

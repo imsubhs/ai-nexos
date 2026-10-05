@@ -1,5 +1,8 @@
 import { getProjects } from "../actions";
-import { ProjectDirectoryFilters, type ProjectRow } from "./project-directory-filters";
+import {
+  ProjectDirectoryFilters,
+  type ProjectRow,
+} from "./project-directory-filters";
 
 export async function ProjectList({
   query,
@@ -12,6 +15,7 @@ export async function ProjectList({
 }) {
   const projects = await getProjects(query, 50, 0, status, health);
 
-  return <ProjectDirectoryFilters projects={projects as unknown as ProjectRow[]} />;
+  return (
+    <ProjectDirectoryFilters projects={projects as unknown as ProjectRow[]} />
+  );
 }
-

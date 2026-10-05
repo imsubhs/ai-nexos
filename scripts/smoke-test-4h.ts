@@ -20,7 +20,10 @@
 
 import { prepareToolingTarget } from "./lib/environment";
 import postgres from "postgres";
-import { computeExecutiveIntelligence, computeTrends } from "../src/features/intelligence/service";
+import {
+  computeExecutiveIntelligence,
+  computeTrends,
+} from "../src/features/intelligence/service";
 
 const target = prepareToolingTarget("smoke-test-4h");
 
@@ -58,10 +61,14 @@ function recordCheck(
 const BASE_URL = "https://ai-nexos.antideploy.com";
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — PHASE 4H EXECUTIVE INTELLIGENCE SMOKE TEST");
   console.log(`Target Host: ${BASE_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // 1. Health Endpoint
   console.log("--- 1. Health Endpoint ---");
@@ -132,7 +139,9 @@ async function main() {
     "SMOKE-4H-INTEL-02",
     "EXECUTIVE ROUTE",
     "GET /intelligence preserves return target ?next=%2Fintelligence",
-    intelLocation.includes("next=") && (intelLocation.includes("intelligence") || intelLocation.includes("%2Fintelligence")),
+    intelLocation.includes("next=") &&
+      (intelLocation.includes("intelligence") ||
+        intelLocation.includes("%2Fintelligence")),
     "Preserves ?next=/intelligence parameter",
     `Location: ${intelLocation}`,
   );
@@ -155,7 +164,10 @@ async function main() {
     });
     const loc = res.headers.get("location") || "";
     const isProtected =
-      (res.status === 307 || res.status === 308 || res.status === 302 || res.status === 303) &&
+      (res.status === 307 ||
+        res.status === 308 ||
+        res.status === 302 ||
+        res.status === 303) &&
       loc.includes("/login");
 
     recordCheck(
@@ -170,9 +182,12 @@ async function main() {
 
   // 5. Client Portal Isolation Gate (Phase 4G Protection)
   console.log("\n--- 5. Client Portal & External Boundary Gate ---");
-  const portalInvalidRes = await fetch(`${BASE_URL}/portal/s/smoke-test-invalid-token-4h`, {
-    headers: { "User-Agent": "AI-NEXOS-Phase4H-SmokeTest" },
-  });
+  const portalInvalidRes = await fetch(
+    `${BASE_URL}/portal/s/smoke-test-invalid-token-4h`,
+    {
+      headers: { "User-Agent": "AI-NEXOS-Phase4H-SmokeTest" },
+    },
+  );
   const portalHtml = await portalInvalidRes.text();
 
   recordCheck(
@@ -188,9 +203,12 @@ async function main() {
     "SMOKE-4H-PORTAL-02",
     "CLIENT PORTAL",
     "GET /portal/s/[invalid-token] renders secure deactivated message without leaking executive data",
-    portalHtml.includes("This review link is not active") || portalHtml.includes("AI NEX OS Client Review"),
+    portalHtml.includes("This review link is not active") ||
+      portalHtml.includes("AI NEX OS Client Review"),
     "Secure deactivated UI without data disclosure",
-    portalHtml.includes("This review link is not active") ? "This review link is not active" : "Rendered client portal shell",
+    portalHtml.includes("This review link is not active")
+      ? "This review link is not active"
+      : "Rendered client portal shell",
   );
 
   recordCheck(
@@ -205,8 +223,11 @@ async function main() {
   );
 
   // 6. Database Verification: PostgreSQL 17.6 Schema Integrity
-  console.log("\n--- 6. Database Verification: Operational Schema Integrity ---");
-  const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
+  console.log(
+    "\n--- 6. Database Verification: Operational Schema Integrity ---",
+  );
+  const dbUrl =
+    process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
   const sql = postgres(dbUrl, { max: 1, prepare: false, ssl: "require" });
 
   try {
@@ -269,15 +290,21 @@ async function main() {
     "TREND ENGINE",
     "Empty dataset gracefully outputs hasSufficientData=false with safe label",
     testTrends.deliveryVolumeTrend.hasSufficientData === false &&
-      testTrends.deliveryVolumeTrend.statusText?.includes("Insufficient historical data") === true,
+      testTrends.deliveryVolumeTrend.statusText?.includes(
+        "Insufficient historical data",
+      ) === true,
     "hasSufficientData=false & Insufficient historical data label",
     `hasSufficientData=${testTrends.deliveryVolumeTrend.hasSufficientData}, text=${testTrends.deliveryVolumeTrend.statusText}`,
   );
 
   // Summary Report
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   console.log("SMOKE TEST SUMMARY");
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
 
   const total = checks.length;
   const passed = checks.filter((c) => c.passed).length;
@@ -290,11 +317,15 @@ async function main() {
   if (failed > 0) {
     console.log("\nFailed Checks:");
     for (const c of checks.filter((c) => !c.passed)) {
-      console.log(` - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected}, Actual: ${c.actual})`);
+      console.log(
+        ` - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected}, Actual: ${c.actual})`,
+      );
     }
     process.exit(1);
   } else {
-    console.log("\n✓ ALL PHASE 4H PRODUCTION SMOKE CHECKS PASSED SUCCESSFULLY.\n");
+    console.log(
+      "\n✓ ALL PHASE 4H PRODUCTION SMOKE CHECKS PASSED SUCCESSFULLY.\n",
+    );
     process.exit(0);
   }
 }

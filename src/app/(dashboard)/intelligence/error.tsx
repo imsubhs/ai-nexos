@@ -20,27 +20,38 @@ export default function ExecutiveIntelligenceError({
 
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center p-6 text-center">
-      <Card className="max-w-md bg-surface-1/80 border-border-subtle shadow-md">
-        <CardContent className="p-6 space-y-4">
-          <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive mx-auto border border-destructive/20">
+      <Card className="bg-surface-1/80 border-border-subtle max-w-md shadow-md">
+        <CardContent className="space-y-4 p-6">
+          <div className="bg-destructive/10 text-destructive border-destructive/20 mx-auto flex size-12 items-center justify-center rounded-full border">
             <AlertCircle className="size-6" />
           </div>
 
           <div className="space-y-1">
-            <h2 className="text-base font-semibold text-foreground-heading">
+            <h2 className="text-foreground-heading text-base font-semibold">
               Unable to Load Executive Intelligence
             </h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              An error occurred while compiling organizational metrics. Operational data remains intact.
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              An error occurred while compiling organizational metrics.
+              Operational data remains intact.
             </p>
           </div>
 
           <div className="flex items-center justify-center gap-2 pt-2">
-            <Button onClick={() => reset()} size="sm" variant="default" className="gap-1.5 h-8 text-xs">
+            <Button
+              onClick={() => reset()}
+              size="sm"
+              variant="default"
+              className="h-8 gap-1.5 text-xs"
+            >
               <RotateCcw className="size-3.5" />
               <span>Retry Calculation</span>
             </Button>
-            <Button render={<Link href="/dashboard" />} size="sm" variant="outline" className="gap-1.5 h-8 text-xs">
+            <Button
+              render={<Link href="/dashboard" />}
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1.5 text-xs"
+            >
               <Home className="size-3.5" />
               <span>Mission Control</span>
             </Button>

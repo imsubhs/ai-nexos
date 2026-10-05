@@ -4,17 +4,18 @@
 **Security Status:** S6 PASS  
 **Target Environment:** AI NEX OS Core Infrastructure (`ai-nexos`)  
 **Evaluation Date:** September 28, 2026  
-**Auditor Identity:** Principal Application Security Engineer & Production Readiness Lead  
+**Auditor Identity:** Principal Application Security Engineer & Production Readiness Lead
 
 ---
 
 ## 1. Executive Summary
 
-Phase S6.7 represents the formal security and operational closure of Phase S6 (**Rate Limiting & Abuse Prevention**) for AI NEX OS. 
+Phase S6.7 represents the formal security and operational closure of Phase S6 (**Rate Limiting & Abuse Prevention**) for AI NEX OS.
 
-Over cycles S6.1 through S6.6-R, AI NEX OS designed, implemented, and validated an enterprise abuse-control architecture. Operating under human approval for **S6.6-R**, the application employs a **MemoryStore-first architecture with an optional pluggable distributed Redis adapter**. 
+Over cycles S6.1 through S6.6-R, AI NEX OS designed, implemented, and validated an enterprise abuse-control architecture. Operating under human approval for **S6.6-R**, the application employs a **MemoryStore-first architecture with an optional pluggable distributed Redis adapter**.
 
 In the current single-instance deployment model hosted on Antideploy:
+
 - Rate limiting is active and enforced across **192 server actions** and **4 sensitive HTTP route handlers**.
 - **MemoryStore** provides synchronous, race-free token enforcement within the Node.js event loop with LRU eviction and memory bounds (20,000 keys).
 - **Redis is completely optional** for single-instance operations and is **not required** for production boot.
@@ -28,15 +29,15 @@ The rate limiting subsystem satisfies all abuse-prevention criteria without comp
 
 ## 2. S6.1 – S6.6 Evidence Log
 
-| Phase / Loop | Focus Area | Status | Key Evidence & Validation Artifacts |
-|---|---|---|---|
-| **S6.1** | Threat Modeling & Abuse Topology | **PASS** | Identified 8 high-risk attack surfaces (credential stuffing, token enumeration, org creation spam, search ReDoS, analytic DB exhaustion, storage exhaustion). Documented in `AI-NEX-OS-RATE-LIMITING-ARCHITECTURE.md`. |
-| **S6.2** | Rate-Limit Taxonomy & Sliding Window | **PASS** | Established canonical policies (`auth:mutation`, `org:creation`, `invitation:preview`, `search:expensive`, `report:expensive`, `resource:mutation`, `resource:read`). Implemented weighted sliding window algorithm. |
-| **S6.3** | Action Inventory & Registry Coverage | **PASS** | Built `ACTION_POLICY_REGISTRY` covering 100% of public actions. Enforced zero unmapped actions and zero conflicting mappings (`rate-limiting-action-registry.test.ts`). |
-| **S6.4** | Guardrails & High-Risk Surface Hardening | **PASS** | Implemented token prefix bucketing (`tokenPrefixBucket`), fail-closed org creation, query bounds [2, 64], report date clamps (≤31 days), and HTTP 429 rate limit headers. |
-| **S6.5** | Operator Readiness & Scalability Planning | **PASS** | Validated single-instance vs. multi-instance scaling requirements. Added deploy gate assertions (`production-deploy-gate.test.ts`). |
-| **S6.6-R** | Architectural Pivot: MemoryStore-First | **PASS** | Formal human approval to remove mandatory `REDIS_URL` requirement for single-instance Antideploy. Decoupled distributed state from boot prerequisites. |
-| **S6.6 Loop 9/10** | Staging Runtime & Proxy Validation | **PASS** | Executed `scripts/verify-s6-6-staging-runtime.ts` against live Supabase staging (`shnzzbbtydmvfhgeoysg`): 57/57 checks passed. Empirically verified Cloudflare Anycast -> Antideploy -> app path. Tested Cases A–F. |
+| Phase / Loop       | Focus Area                                | Status   | Key Evidence & Validation Artifacts                                                                                                                                                                                    |
+| ------------------ | ----------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **S6.1**           | Threat Modeling & Abuse Topology          | **PASS** | Identified 8 high-risk attack surfaces (credential stuffing, token enumeration, org creation spam, search ReDoS, analytic DB exhaustion, storage exhaustion). Documented in `AI-NEX-OS-RATE-LIMITING-ARCHITECTURE.md`. |
+| **S6.2**           | Rate-Limit Taxonomy & Sliding Window      | **PASS** | Established canonical policies (`auth:mutation`, `org:creation`, `invitation:preview`, `search:expensive`, `report:expensive`, `resource:mutation`, `resource:read`). Implemented weighted sliding window algorithm.   |
+| **S6.3**           | Action Inventory & Registry Coverage      | **PASS** | Built `ACTION_POLICY_REGISTRY` covering 100% of public actions. Enforced zero unmapped actions and zero conflicting mappings (`rate-limiting-action-registry.test.ts`).                                                |
+| **S6.4**           | Guardrails & High-Risk Surface Hardening  | **PASS** | Implemented token prefix bucketing (`tokenPrefixBucket`), fail-closed org creation, query bounds [2, 64], report date clamps (≤31 days), and HTTP 429 rate limit headers.                                              |
+| **S6.5**           | Operator Readiness & Scalability Planning | **PASS** | Validated single-instance vs. multi-instance scaling requirements. Added deploy gate assertions (`production-deploy-gate.test.ts`).                                                                                    |
+| **S6.6-R**         | Architectural Pivot: MemoryStore-First    | **PASS** | Formal human approval to remove mandatory `REDIS_URL` requirement for single-instance Antideploy. Decoupled distributed state from boot prerequisites.                                                                 |
+| **S6.6 Loop 9/10** | Staging Runtime & Proxy Validation        | **PASS** | Executed `scripts/verify-s6-6-staging-runtime.ts` against live Supabase staging (`shnzzbbtydmvfhgeoysg`): 57/57 checks passed. Empirically verified Cloudflare Anycast -> Antideploy -> app path. Tested Cases A–F.    |
 
 ---
 
@@ -100,6 +101,7 @@ The finalized AI NEX OS rate-limiting architecture operates on a two-tier hierar
 ## 4. Rate-Limit Policy Inventory & Action Completeness
 
 ### 4.1 Global Inventory Summary
+
 - **Total Public Action Modules:** 31 modules across all domains (`approvals`, `auth`, `calendar`, `clients`, `deliverables`, `files`, `meetings`, `notifications`, `organizations`, `projects`, `revisions`, `search`, `shares`, `tasks`, `timelines`, `users`, `workforce`, `agents`, `automation`).
 - **Total Registered Server Actions:** 192 actions.
 - **Total Rate-Limited Server Actions:** 192 actions (100.0% coverage).
@@ -108,31 +110,33 @@ The finalized AI NEX OS rate-limiting architecture operates on a two-tier hierar
 
 ### 4.2 Breakdown by Policy Category
 
-| Policy Name | Action Count | Base Limit | Window | Degraded / Memory Limit | Primary Scope | Typical Actions |
-|---|---|---|---|---|---|---|
-| `resource:mutation` | 112 | 60 | 60s | 30 | `userAndOrg` | `createProject`, `updateClient`, `submitReview`, `createTask`, `saveEmployee` |
-| `resource:read` | 64 | 120 | 60s | 60 | `userAndOrg` | `listProjects`, `getClientDetails`, `getDeliverableTimeline`, `getPendingApprovalsCount` |
-| `auth:mutation` | 5 | 5 | 900s (15m) | 3 | `ipOnly` | `signInWithPassword`, `signInWithMagicLink`, `signInWithGoogle`, `signOut`, `demoLogin` |
-| `search:expensive` | 4 | 20 | 60s | 10 | `userAndOrg` | `globalSearch`, `filterDeliverables`, `searchKnowledge` |
-| `report:expensive` | 3 | 5 | 300s (5m) | 2 | `userAndOrg` | `getWorkforceReportAction`, `exportAttendanceSummary`, `generateAuditReport` |
-| `invitation:issuance` | 2 | 10 | 3600s (1h) | 5 | `userAndOrg` | `inviteMemberAction`, `reissueInvitationAction` |
-| `org:creation` | 1 | 3 | 86400s (24h) | 1 | `userAndOrg` (User) | `createOrganizationAction` |
-| `invitation:preview` | 1 | 20 | 300s (5m) | 10 | `invitationTokenPrefixBucket` | `previewInvitationAction` |
+| Policy Name           | Action Count | Base Limit | Window       | Degraded / Memory Limit | Primary Scope                 | Typical Actions                                                                          |
+| --------------------- | ------------ | ---------- | ------------ | ----------------------- | ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `resource:mutation`   | 112          | 60         | 60s          | 30                      | `userAndOrg`                  | `createProject`, `updateClient`, `submitReview`, `createTask`, `saveEmployee`            |
+| `resource:read`       | 64           | 120        | 60s          | 60                      | `userAndOrg`                  | `listProjects`, `getClientDetails`, `getDeliverableTimeline`, `getPendingApprovalsCount` |
+| `auth:mutation`       | 5            | 5          | 900s (15m)   | 3                       | `ipOnly`                      | `signInWithPassword`, `signInWithMagicLink`, `signInWithGoogle`, `signOut`, `demoLogin`  |
+| `search:expensive`    | 4            | 20         | 60s          | 10                      | `userAndOrg`                  | `globalSearch`, `filterDeliverables`, `searchKnowledge`                                  |
+| `report:expensive`    | 3            | 5          | 300s (5m)    | 2                       | `userAndOrg`                  | `getWorkforceReportAction`, `exportAttendanceSummary`, `generateAuditReport`             |
+| `invitation:issuance` | 2            | 10         | 3600s (1h)   | 5                       | `userAndOrg`                  | `inviteMemberAction`, `reissueInvitationAction`                                          |
+| `org:creation`        | 1            | 3          | 86400s (24h) | 1                       | `userAndOrg` (User)           | `createOrganizationAction`                                                               |
+| `invitation:preview`  | 1            | 20         | 300s (5m)    | 10                      | `invitationTokenPrefixBucket` | `previewInvitationAction`                                                                |
 
 ### 4.3 Key Resolver Distribution
+
 - `userAndOrg` (`user:${userId}:org:${orgId}`): 179 actions. Guarantees multi-tenant isolation; actions consumed by a user in Org A do not deplete quotas in Org B.
 - `ipOnly` (`ip:${clientIp}`): 11 actions. Used for pre-auth flows (login, magic link, password reset, demo entry).
 - `userOrIp` (`user:${userId}` or `ip:${clientIp}`): 1 action. Fallback for mixed-context endpoints.
 - `invitationTokenPrefixBucket` (`token_pfx:${token.slice(0, 8)}`): 1 action. Prevents brute-force scanning across large token spaces.
 
 ### 4.4 HTTP Route Handlers
+
 1. `/api/approvals/verify` (POST): Rate limited via `RATE_LIMITS.approvalVerifyByIp` (20 / 300s).
 2. `/api/v1/portal/auth/session` (POST, DELETE): Rate limited via `RATE_LIMITS.portalSessionByIp` (20 / 300s).
 3. `/api/v1/portal/dashboard` (GET): Rate limited via `RATE_LIMITS.portalReadBySession` (120 / 60s).
 4. `/auth/callback` (GET): Rate limited via `RATE_LIMITS.authCallbackByIp` (30 / 300s).
 5. `/api/health` (GET): **Intentionally Unthrottled**.
-   - *Justification:* Liveness and readiness probe for uptime monitors (Antideploy orchestrator, external status monitors).
-   - *Security Properties:* 100% static computation; performs zero database queries, zero network egress, zero writes, and zero CPU-heavy tasks. In production, diagnostic details and variable lists are withheld, returning only generic status `{ status: "healthy", version: "1.0.0" }`.
+   - _Justification:_ Liveness and readiness probe for uptime monitors (Antideploy orchestrator, external status monitors).
+   - _Security Properties:_ 100% static computation; performs zero database queries, zero network egress, zero writes, and zero CPU-heavy tasks. In production, diagnostic details and variable lists are withheld, returning only generic status `{ status: "healthy", version: "1.0.0" }`.
 
 ---
 
@@ -175,12 +179,14 @@ The 8 high-risk attack surfaces identified in S6.1 were subjected to targeted ve
 ## 6. MemoryStore Security Boundary
 
 ### 6.1 Current Operating Context
+
 - The production deployment target is Antideploy running as a **single application instance (single microVM / container)**.
 - Under a single instance, all application requests route through one Node.js runtime process.
 - `MemoryStore` maintains a private in-memory LRU Map with sliding-window accounting.
 - **Race Condition Immunity:** Because JavaScript executes synchronously within the single-threaded event loop, counter increments in `MemoryStore.hit()` are atomic without requiring distributed mutexes or lock primitives. Concurrency testing verified that 20 simultaneous hits against a budget of 10 yielded exactly 10 permitted and 10 rejected calls (`tests/unit/rate-limit-concurrency.test.ts`).
 
 ### 6.2 The Multi-Instance Boundary
+
 - If the application topology is scaled horizontally to $N$ instances without Redis:
   - Each instance maintains its own independent `MemoryStore`.
   - An attacker could distribute requests across instances, effectively multiplying their allowed request budget by $N$.
@@ -194,13 +200,17 @@ The 8 high-risk attack surfaces identified in S6.1 were subjected to targeted ve
 ## 7. Restart Semantics & Defense-in-Depth
 
 ### 7.1 Counter Reset Behavior
+
 When the Node.js application process restarts (e.g. during a release rollout, crash recovery, or container reschedule), all `MemoryStore` counters reset to zero.
 
 ### 7.2 Risk Classification: Low / Bounded
+
 This risk is classified as **LOW** and acceptable for enterprise deployment because **rate limiting is strictly an abuse-control and volumetric throttling mechanism**, never the primary security or authorization perimeter.
 
 ### 7.3 Defense-in-Depth Verification
+
 A process restart and immediate counter reset **CANNOT** bypass any of the following underlying security boundaries:
+
 1. **Cryptographic Authentication:** Supabase Auth issues cryptographically signed JWTs. An attacker cannot forge or elevate session privileges across a restart.
 2. **Role-Based Authorization (RBAC):** Every action invokes `requireCurrentUser()` and `requirePermission()`, validating actual permissions in database state.
 3. **Database Row Level Security (RLS):** All queries against Postgres enforce tenant isolation (`organization_id = auth.jwt()->>'organization_id'`). Even if an unthrottled burst occurs, no user can read or write cross-tenant data.
@@ -213,16 +223,19 @@ A process restart and immediate counter reset **CANNOT** bypass any of the follo
 ## 8. Proxy & IP Resolution Security
 
 ### 8.1 Empirically Verified Staging Topology
+
 During S6.6 live validation on staging, the network path was observed and recorded as:
 $$\text{Client} \longrightarrow \text{Cloudflare Anycast Edge} \longrightarrow \text{Antideploy Reverse Proxy} \longrightarrow \text{Node.js Application}$$
 
-*(Note: While empirically observed in staging, this topology is documented as current evidence rather than a static perpetual guarantee across future platform migrations).*
+_(Note: While empirically observed in staging, this topology is documented as current evidence rather than a static perpetual guarantee across future platform migrations)._
 
 ### 8.2 IP Resolution Verification (`src/lib/security/request.ts`)
+
 The IP resolver computes client identity using `TRUSTED_PROXY_HOPS`:
 $$\text{Target Index} = \max(0, \text{chain.length} - \max(1, \text{trustedHops}))$$
 
 Six deterministic test cases (Cases A through F) are validated in `tests/unit/security-request.test.ts`:
+
 - **Case A (`hops=1`, single entry):** `X-Forwarded-For: 203.0.113.195` $\rightarrow$ Resolves `203.0.113.195`.
 - **Case B (`hops=1`, attacker prepended entry):** `X-Forwarded-For: 1.2.3.4, 203.0.113.195` $\rightarrow$ Resolves `203.0.113.195` (attacker spoof completely ignored).
 - **Case C (`hops=2`, multi-proxy chain):** `X-Forwarded-For: attacker, 203.0.113.50, 198.51.100.1` $\rightarrow$ Resolves `203.0.113.50`.
@@ -269,11 +282,11 @@ All potential vector inputs have strict resource clamps applied prior to databas
 
 ## 10. Failure Semantics & Degradation Modes
 
-| Operating State | Redis Configured? | Redis Reachable? | `storeMode` | `orgCreation` Behavior | Standard Actions Behavior |
-|---|---|---|---|---|---|
-| **Single-Instance Standard** | No (`REDIS_URL` unset) | N/A | `memory` | Permitted up to memory limit (1/24h) | Permitted up to memory limits |
-| **Distributed Normal** | Yes (`rediss://...`) | Yes | `normal` | Enforced globally (3/24h) | Enforced globally (standard limits) |
-| **Distributed Outage** | Yes (`rediss://...`) | No (down / timeout) | `degraded` | **FAIL-CLOSED** (`storage_unavailable_fail_closed`) | Degrade to per-process memory limits |
+| Operating State              | Redis Configured?      | Redis Reachable?    | `storeMode` | `orgCreation` Behavior                              | Standard Actions Behavior            |
+| ---------------------------- | ---------------------- | ------------------- | ----------- | --------------------------------------------------- | ------------------------------------ |
+| **Single-Instance Standard** | No (`REDIS_URL` unset) | N/A                 | `memory`    | Permitted up to memory limit (1/24h)                | Permitted up to memory limits        |
+| **Distributed Normal**       | Yes (`rediss://...`)   | Yes                 | `normal`    | Enforced globally (3/24h)                           | Enforced globally (standard limits)  |
+| **Distributed Outage**       | Yes (`rediss://...`)   | No (down / timeout) | `degraded`  | **FAIL-CLOSED** (`storage_unavailable_fail_closed`) | Degrade to per-process memory limits |
 
 - When Redis is absent in the single-instance topology, the system does not consider this an error; `storeMode` is cleanly reported as `memory`.
 - Under no circumstances does a failure in the caching or rate-limiting infrastructure silently disable rate limits or expose unbounded execution.
@@ -283,12 +296,14 @@ All potential vector inputs have strict resource clamps applied prior to databas
 ## 11. Security Telemetry & Log Sanitization
 
 Structured security logging (`src/lib/security/logger.ts`) emits normalized events for monitoring:
+
 - `ratelimit.action_throttled`: Emitted whenever an action exceeds its budget (includes `action_name`, `identifier` hash/mask, `limit`, `window_seconds`, `retry_after_seconds`).
 - `ratelimit.exceeded`: Emitted on HTTP route handler throttling.
 - `ratelimit.store_failed`: Emitted if the distributed storage adapter throws an error.
 - `ratelimit.redis_error`: Emitted on connection errors when Redis is configured.
 
 **Data Leak Prevention Guarantee:**
+
 - Zero passwords, raw authentication secrets, or user tokens are ever written to log payloads.
 - Token lookups log only the 8-character prefix bucket (`tokenPrefixBucket`) or SHA-256 hash.
 - Email addresses are logged only in hashed or truncated format for abuse correlation.
@@ -330,6 +345,7 @@ $ npm run build
 ## 13. Static Security Audit Findings
 
 A comprehensive static analysis across `src/` confirmed:
+
 1. **Zero Raw SQL Vulnerabilities:** All database queries utilize Drizzle ORM query builders or parameterized `sql` tagged template literals. The only usage of `sql.raw` is an internal numeric integer lease interval within `src/lib/automation/execution.ts`.
 2. **Zero Client Secret Leaks:** No server secrets (`SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`, `SHARE_JWT_SECRET`, `DATABASE_URL`) are exposed to client bundles or prefixed with `NEXT_PUBLIC_`.
 3. **Zero Client-Side Rate-Limit Bypasses:** All rate limits are enforced server-side inside Server Actions and Route Handlers prior to any business or database execution.

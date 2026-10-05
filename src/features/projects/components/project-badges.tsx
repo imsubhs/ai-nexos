@@ -70,4 +70,3 @@ export function ProjectPriorityBadge({ priority }: { priority: string }) {
     </Badge>
   );
 }
-

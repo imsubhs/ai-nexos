@@ -306,7 +306,8 @@ export const realAttendanceRepository: AttendanceRepository = {
       isNull(attendanceRecords.deletedAt),
     ];
     if (filters.date) conditions.push(eq(attendanceRecords.date, filters.date));
-    if (filters.from) conditions.push(gte(attendanceRecords.date, filters.from));
+    if (filters.from)
+      conditions.push(gte(attendanceRecords.date, filters.from));
     if (filters.to) conditions.push(lte(attendanceRecords.date, filters.to));
     if (filters.userId) {
       conditions.push(eq(attendanceRecords.userId, filters.userId));

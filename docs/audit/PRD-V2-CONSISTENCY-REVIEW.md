@@ -1,4 +1,5 @@
 # AI NEX OS — PRD V2 Consistency, Architecture & Security Review
+
 ## Phase 1B.1 Audit Report & Verification Synthesis
 
 ---
@@ -6,6 +7,7 @@
 ## 1. Executive Summary
 
 This audit represents the formal **Phase 1B.1 Architectural Consistency & Security Review** of **AI NEX OS**. Conducted by the Principal Software Architect, Security Architect, and Database Architect, this review evaluates the canonical Phase 1B PRD (`docs/product/AI-NEX-OS-PRD-V2.md`) against:
+
 1. Active application source code and schema implementations,
 2. Phase 0 baseline findings (`docs/audit/AGENCY_SAAS_REARCHITECTURE_BASELINE.md`),
 3. Phase 1A canonical product and coupling specifications,
@@ -13,7 +15,9 @@ This audit represents the formal **Phase 1B.1 Architectural Consistency & Securi
 5. Modern Next.js 16, Supabase, and Drizzle technical specifications verified via **Context7**.
 
 ### Verdict: PASS WITH CONDITIONS
+
 The architectural direction of PRD V2 is sound, rigorous, and aligns with the transformation of AI NEX OS into an agency-agnostic B2B SaaS Agency Operating System. However, three key documentation corrections and clarifications are required before proceeding to Phase 2:
+
 1. **Runtime Terminology**: Clarify that `src/proxy.ts` executes on the **Node.js runtime** in Next.js 16 (where `edge` runtime is not supported for proxy conventions), correcting legacy references to "Edge Runtime".
 2. **Verification Maturity Semantics**: Distinguish between code that exists (`[IMPLEMENTED]`), code verified by automated tests (`[VERIFIED]`), and capabilities tested live in production (`[PRODUCTION VERIFIED]`), preventing premature deployment assumptions.
 3. **Phase Sequencing Alignment**: Reconcile the implementation order so that Public Marketing & SEO (Phase 2) does not block or conflict with multi-tenant identity and onboarding foundations.
@@ -22,17 +26,17 @@ The architectural direction of PRD V2 is sound, rigorous, and aligns with the tr
 
 ## 2. Documents Reviewed
 
-| Document | Canonical Path | Role in Audit |
-| :--- | :--- | :--- |
-| **PRD V2** | `docs/product/AI-NEX-OS-PRD-V2.md` | Primary subject of review (Canonical specification) |
-| **Product Context V2** | `docs/product/AI-NEX-OS-PRODUCT-CONTEXT-V2.md` | Product foundation and positioning baseline |
-| **Terminology Dictionary** | `docs/product/AI-NEX-OS-TERMINOLOGY.md` | Canonical vocabulary standard |
-| **Coupling Register** | `docs/product/AI-COLLECTIVE-COUPLING-REGISTER.md` | Catalog of AI Collective legacy dependencies |
-| **Baseline Audit** | `docs/audit/AGENCY_SAAS_REARCHITECTURE_BASELINE.md` | Technical and architectural baseline |
-| **Authorization Controls** | `docs/AUTHORIZATION-CONTROLS.md` | Security and multi-tenant authorization rules |
-| **Threat Model** | `docs/THREAT-MODEL.md` | Threat taxonomy and boundary definition |
-| **Architecture Decision Register**| `docs/product/AI-NEX-OS-ARCHITECTURE-DECISION-REGISTER.md` | Authoritative ADRs (ADR-001 through ADR-015) |
-| **Tenant Isolation Matrix** | `docs/audit/TENANT-ISOLATION-ENFORCEMENT-MATRIX.md` | 25-layer isolation contract |
+| Document                           | Canonical Path                                             | Role in Audit                                       |
+| :--------------------------------- | :--------------------------------------------------------- | :-------------------------------------------------- |
+| **PRD V2**                         | `docs/product/AI-NEX-OS-PRD-V2.md`                         | Primary subject of review (Canonical specification) |
+| **Product Context V2**             | `docs/product/AI-NEX-OS-PRODUCT-CONTEXT-V2.md`             | Product foundation and positioning baseline         |
+| **Terminology Dictionary**         | `docs/product/AI-NEX-OS-TERMINOLOGY.md`                    | Canonical vocabulary standard                       |
+| **Coupling Register**              | `docs/product/AI-COLLECTIVE-COUPLING-REGISTER.md`          | Catalog of AI Collective legacy dependencies        |
+| **Baseline Audit**                 | `docs/audit/AGENCY_SAAS_REARCHITECTURE_BASELINE.md`        | Technical and architectural baseline                |
+| **Authorization Controls**         | `docs/AUTHORIZATION-CONTROLS.md`                           | Security and multi-tenant authorization rules       |
+| **Threat Model**                   | `docs/THREAT-MODEL.md`                                     | Threat taxonomy and boundary definition             |
+| **Architecture Decision Register** | `docs/product/AI-NEX-OS-ARCHITECTURE-DECISION-REGISTER.md` | Authoritative ADRs (ADR-001 through ADR-015)        |
+| **Tenant Isolation Matrix**        | `docs/audit/TENANT-ISOLATION-ENFORCEMENT-MATRIX.md`        | 25-layer isolation contract                         |
 
 ---
 
@@ -49,6 +53,7 @@ The architectural direction of PRD V2 is sound, rigorous, and aligns with the tr
 ## 4. Graphify Evidence
 
 Structural graph analysis (`graphify-out/graph.json` — 3,637 nodes) confirmed key architectural relationships:
+
 - `users` → `organizations`: Verified direct foreign key reference on `users.organizationId` and unique index on `email`, confirming that multi-organization membership is currently impossible without schema expansion.
 - `projects` → `organizations` & `tasks` → `projects`: Verified relational hierarchy and hardcoded prefix generators in `src/features/projects/real-actions.ts` and `src/features/tasks/real-actions.ts`.
 - `attendance` → `employees` → `organizations`: Verified that workforce punch records and validation calculations are strictly partitioned by `organization_id`.
@@ -60,6 +65,7 @@ Structural graph analysis (`graphify-out/graph.json` — 3,637 nodes) confirmed 
 ## 5. Context7 Evidence
 
 Framework and library specifications were verified via Context7 CLI:
+
 - **Next.js 16 App Router (`/vercel/next.js`)**: Confirmed that Next.js 16 officially renames `middleware.ts` to `proxy.ts`. Crucially, **the runtime for `proxy.ts` is `nodejs`, and the `edge` runtime is not supported**. The PRD has been updated to reflect Node.js runtime proxy execution.
 - **Supabase Multi-Tenancy (`/supabase/supabase`)**: Confirmed best practices for PostgreSQL RLS with `organization_memberships` join tables and security definer helper functions (`app.is_org_member()`).
 - **Drizzle ORM (`/drizzle-team/drizzle-orm-docs`)**: Confirmed composite primary key declarations and relational foreign key referencing patterns for upcoming Phase 4 membership tables.
@@ -82,7 +88,7 @@ Framework and library specifications were verified via Context7 CLI:
 - **Assessment**: **PASS WITH CLARIFICATION**
 - **Findings**:
   - The PRD accurately models the target separation between global identity (`auth.users`), global creator profile (`public.users`), and tenant affiliation (`organization_memberships`).
-  - *Clarification*: The PRD must explicitly state that in the current implementation, `public.users` still contains `organization_id NOT NULL` and `role_id NOT NULL`. This is the exact technical debt that Phase 4 resolves.
+  - _Clarification_: The PRD must explicitly state that in the current implementation, `public.users` still contains `organization_id NOT NULL` and `role_id NOT NULL`. This is the exact technical debt that Phase 4 resolves.
 
 ---
 
@@ -238,20 +244,21 @@ graph TD
 ## 19. Contradictions Identified & Resolved
 
 1. **Proxy Runtime**:
-   - *Conflict*: Historical documentation referred to Next.js middleware as "Edge Runtime".
-   - *Resolution*: Corrected to **Node.js runtime**, matching Next.js 16 `src/proxy.ts` specification.
+   - _Conflict_: Historical documentation referred to Next.js middleware as "Edge Runtime".
+   - _Resolution_: Corrected to **Node.js runtime**, matching Next.js 16 `src/proxy.ts` specification.
 2. **RLS Coverage on Drizzle**:
-   - *Conflict*: PRD draft claimed all queries were protected by PostgreSQL RLS.
-   - *Resolution*: Explicitly documented that Drizzle runs as admin over PgBouncer bypassing RLS, with tenant isolation enforced by application predicates and static AST gates.
+   - _Conflict_: PRD draft claimed all queries were protected by PostgreSQL RLS.
+   - _Resolution_: Explicitly documented that Drizzle runs as admin over PgBouncer bypassing RLS, with tenant isolation enforced by application predicates and static AST gates.
 3. **Email Uniqueness Scope**:
-   - *Conflict*: Single-tenant unique index `uq_users_email` prevented multi-agency membership.
-   - *Resolution*: Documented the transition to membership-scoped uniqueness in Phase 4.
+   - _Conflict_: Single-tenant unique index `uq_users_email` prevented multi-agency membership.
+   - _Resolution_: Documented the transition to membership-scoped uniqueness in Phase 4.
 
 ---
 
 ## 20. Required Corrections Applied to PRD V2
 
 The following updates were integrated into `docs/product/AI-NEX-OS-PRD-V2.md`:
+
 - Updated runtime references in Sections 16, 52, and 61 to specify **Next.js 16 Node.js runtime proxy**.
 - Enhanced Section 76 with the complete 39-capability **Implementation Status Matrix** and 5-tier maturity scale.
 - Expanded Section 14 with the explicit **Current vs Target Architecture Comparison** table.
@@ -262,6 +269,7 @@ The following updates were integrated into `docs/product/AI-NEX-OS-PRD-V2.md`:
 ## 21. Deferred Decisions
 
 The following architectural decisions are deliberately marked **DEFERRED** pending commercial alignment:
+
 - **ADR-008 (Self-Service Registration Gating)**: Whether public signup immediately provisions an active 14-day trial workspace or requires email verification / approval waitlist.
 - **Custom Subdomains (`acme.ai-nexos.com`)**: Deferred to Enterprise tier [FUTURE].
 
@@ -272,6 +280,7 @@ The following architectural decisions are deliberately marked **DEFERRED** pendi
 ### Architecture Readiness: **READY WITH CONDITIONS**
 
 **Conditions for Implementation**:
+
 1. Zero application source code modifications in this phase.
 2. Zero database migrations executed in this phase.
 3. Review and sign-off on the **Architecture Decision Register** (`ADR-001` through `ADR-015`).

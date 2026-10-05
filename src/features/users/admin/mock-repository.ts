@@ -153,7 +153,8 @@ export const mockEmployeeAdminRepository: EmployeeAdminRepository = {
       employeeCode: nextDemoCode(
         store,
         store.organizations.find(
-          (o: { organizationId: string }) => o.organizationId === organizationId,
+          (o: { organizationId: string }) =>
+            o.organizationId === organizationId,
         )?.codePrefix ?? "NEX",
       ),
       managerId: data.managerId ?? null,

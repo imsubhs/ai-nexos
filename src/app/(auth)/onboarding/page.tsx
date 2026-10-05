@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { APP_NAME, APP_TAGLINE } from "@/config/app";
-import { getCurrentIdentity, getUserMemberships } from "@/features/auth/membership-service";
+import {
+  getCurrentIdentity,
+  getUserMemberships,
+} from "@/features/auth/membership-service";
 import { OnboardingWizard } from "@/features/organizations/components/onboarding-wizard";
 
 export const metadata: Metadata = { title: "Set up your Workspace" };
@@ -15,7 +18,9 @@ export default async function OnboardingPage({
   const identity = await getCurrentIdentity();
 
   if (!identity?.authUserId) {
-    const nextUrl = invite ? `/onboarding?invite=${encodeURIComponent(invite)}` : "/onboarding";
+    const nextUrl = invite
+      ? `/onboarding?invite=${encodeURIComponent(invite)}`
+      : "/onboarding";
     redirect(`/login?next=${encodeURIComponent(nextUrl)}`);
   }
 

@@ -44,12 +44,12 @@ export function ClientCommandTabs({
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val)}>
-        <div className="border-b border-border-subtle pb-3">
-          <TabsList className="bg-surface-1 border border-border-subtle p-1 rounded-lg">
+        <div className="border-border-subtle border-b pb-3">
+          <TabsList className="bg-surface-1 border-border-subtle rounded-lg border p-1">
             <TabsTrigger value="projects" className="gap-2">
               <FolderKanban className="size-3.5" />
               <span>Engagements</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-2 text-foreground-muted">
+              <span className="py-0.2 bg-surface-2 text-foreground-muted rounded px-1.5 font-mono text-[10px]">
                 {projects.length}
               </span>
             </TabsTrigger>
@@ -57,7 +57,7 @@ export function ClientCommandTabs({
             <TabsTrigger value="contacts" className="gap-2">
               <Users className="size-3.5" />
               <span>Stakeholders</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-2 text-foreground-muted">
+              <span className="py-0.2 bg-surface-2 text-foreground-muted rounded px-1.5 font-mono text-[10px]">
                 {contacts.length}
               </span>
             </TabsTrigger>
@@ -71,7 +71,7 @@ export function ClientCommandTabs({
               <Activity className="size-3.5" />
               <span>Activity</span>
               {activities.length > 0 && (
-                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-2 text-foreground-muted">
+                <span className="py-0.2 bg-surface-2 text-foreground-muted rounded px-1.5 font-mono text-[10px]">
                   {activities.length}
                 </span>
               )}

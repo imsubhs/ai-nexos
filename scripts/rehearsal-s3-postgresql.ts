@@ -26,7 +26,8 @@ const DB_URL = `postgresql://postgres@localhost:5432/${TARGET_DB}`;
 interface RehearsalCheck {
   id: string;
   name: string;
-  category: "MIGRATION" | "S1_REGRESSION" | "S2_REGRESSION" | "S3_SEC05" | "S3_SEC06";
+  category:
+    "MIGRATION" | "S1_REGRESSION" | "S2_REGRESSION" | "S3_SEC05" | "S3_SEC06";
   passed: boolean;
   evidence: string;
 }
@@ -46,10 +47,14 @@ function recordCheck(
 }
 
 async function runRehearsal() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — S3 DISPOSABLE POSTGRESQL REHEARSAL");
   console.log(`Target: ${DB_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // Step 1: Create fresh database
   const adminSql = postgres(ADMIN_URL, { prepare: false });
@@ -208,7 +213,13 @@ async function runRehearsal() {
         (${projectB}, ${orgB}, 'Project Beta Baseline', 'BET-001', 'planning', 'medium', ${userBPm}, ${userBPm});
     `;
 
-    recordCheck("SEED", "Ephemeral Fixtures Inserted", "MIGRATION", true, "Orgs, roles, users, clients, projects seeded.");
+    recordCheck(
+      "SEED",
+      "Ephemeral Fixtures Inserted",
+      "MIGRATION",
+      true,
+      "Orgs, roles, users, clients, projects seeded.",
+    );
 
     // ------------------------------------------------------------------------
     // SECTION 3: S1 REGRESSION — CLIENT CONTACTS ISOLATION
@@ -218,12 +229,24 @@ async function runRehearsal() {
     const s1Valid = await sql`
       SELECT client_id FROM clients WHERE client_id = ${clientA} AND organization_id = ${orgA} AND deleted_at IS NULL
     `;
-    recordCheck("S1-01", "Org A accesses own Client A", "S1_REGRESSION", s1Valid.length === 1, `Found ${s1Valid.length} rows`);
+    recordCheck(
+      "S1-01",
+      "Org A accesses own Client A",
+      "S1_REGRESSION",
+      s1Valid.length === 1,
+      `Found ${s1Valid.length} rows`,
+    );
 
     const s1Cross = await sql`
       SELECT client_id FROM clients WHERE client_id = ${clientB} AND organization_id = ${orgA} AND deleted_at IS NULL
     `;
-    recordCheck("S1-02", "Org A accesses foreign Client B denied", "S1_REGRESSION", s1Cross.length === 0, `Blocked, found ${s1Cross.length} rows`);
+    recordCheck(
+      "S1-02",
+      "Org A accesses foreign Client B denied",
+      "S1_REGRESSION",
+      s1Cross.length === 0,
+      `Blocked, found ${s1Cross.length} rows`,
+    );
 
     // ------------------------------------------------------------------------
     // SECTION 4: S2 REGRESSION — CREATE PROJECT CLIENT ISOLATION
@@ -232,17 +255,31 @@ async function runRehearsal() {
     const s2Valid = await sql`
       SELECT client_id FROM clients WHERE client_id = ${clientA} AND organization_id = ${orgA} AND deleted_at IS NULL
     `;
-    recordCheck("S2-01", "createProject validates own Client A", "S2_REGRESSION", s2Valid.length === 1, `Found ${s2Valid.length} rows`);
+    recordCheck(
+      "S2-01",
+      "createProject validates own Client A",
+      "S2_REGRESSION",
+      s2Valid.length === 1,
+      `Found ${s2Valid.length} rows`,
+    );
 
     const s2Cross = await sql`
       SELECT client_id FROM clients WHERE client_id = ${clientB} AND organization_id = ${orgA} AND deleted_at IS NULL
     `;
-    recordCheck("S2-02", "createProject foreign Client B denied", "S2_REGRESSION", s2Cross.length === 0, `Blocked, found ${s2Cross.length} rows`);
+    recordCheck(
+      "S2-02",
+      "createProject foreign Client B denied",
+      "S2_REGRESSION",
+      s2Cross.length === 0,
+      `Blocked, found ${s2Cross.length} rows`,
+    );
 
     // ------------------------------------------------------------------------
     // SECTION 5: S3 NEXOS-SEC-05 — UPDATE PROJECT CLIENT ISOLATION
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 5: S3 NEXOS-SEC-05 UPDATE PROJECT CLIENT ISOLATION ---");
+    console.log(
+      "\n--- SECTION 5: S3 NEXOS-SEC-05 UPDATE PROJECT CLIENT ISOLATION ---",
+    );
 
     // 1. Same-org client update succeeds
     const sec05ValidClient = await sql`
@@ -258,7 +295,9 @@ async function runRehearsal() {
       "SEC05-01",
       "Org A updates project with valid same-org Client A",
       "S3_SEC05",
-      sec05ValidClient.length === 1 && sec05UpdateValid.length === 1 && sec05UpdateValid[0].client_id === clientA,
+      sec05ValidClient.length === 1 &&
+        sec05UpdateValid.length === 1 &&
+        sec05UpdateValid[0].client_id === clientA,
       `Project updated with clientId=${sec05UpdateValid[0]?.client_id}`,
     );
 
@@ -317,7 +356,9 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     // SECTION 6: S3 NEXOS-SEC-06 — CREATE PROJECT USER REFERENCES ISOLATION
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 6: S3 NEXOS-SEC-06 USER REFERENCE ISOLATION ---");
+    console.log(
+      "\n--- SECTION 6: S3 NEXOS-SEC-06 USER REFERENCE ISOLATION ---",
+    );
 
     // 1. Same-org PM and CD valid
     const sec06ValidPm = await sql`
@@ -340,7 +381,9 @@ async function runRehearsal() {
       "SEC06-01",
       "Org A creates project with valid Org A PM and CD",
       "S3_SEC06",
-      createdNew !== null && createdNew.project_manager === userAPm && createdNew.creative_director === userACd,
+      createdNew !== null &&
+        createdNew.project_manager === userAPm &&
+        createdNew.creative_director === userACd,
       `Project created with PM=${createdNew?.project_manager} CD=${createdNew?.creative_director}`,
     );
 
@@ -408,12 +451,20 @@ async function runRehearsal() {
     // Summary
     const totalChecks = checks.length;
     const passedChecks = checks.filter((c) => c.passed).length;
-    console.log("\n================================================================================");
-    console.log(`REHEARSAL RESULT: ${passedChecks}/${totalChecks} CHECKS PASSED`);
-    console.log("================================================================================\n");
+    console.log(
+      "\n================================================================================",
+    );
+    console.log(
+      `REHEARSAL RESULT: ${passedChecks}/${totalChecks} CHECKS PASSED`,
+    );
+    console.log(
+      "================================================================================\n",
+    );
 
     if (passedChecks !== totalChecks) {
-      throw new Error(`Rehearsal failed: ${totalChecks - passedChecks} checks failed`);
+      throw new Error(
+        `Rehearsal failed: ${totalChecks - passedChecks} checks failed`,
+      );
     }
   } finally {
     await sql.end();
@@ -422,7 +473,9 @@ async function runRehearsal() {
     const adminSqlCleanup = postgres(ADMIN_URL, { prepare: false });
     try {
       await adminSqlCleanup.unsafe(`DROP DATABASE IF EXISTS ${TARGET_DB};`);
-      console.log(`Dropped disposable database ${TARGET_DB}. Zero lingering state.`);
+      console.log(
+        `Dropped disposable database ${TARGET_DB}. Zero lingering state.`,
+      );
     } finally {
       await adminSqlCleanup.end();
     }

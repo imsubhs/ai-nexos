@@ -1,4 +1,5 @@
 # AI NEX OS — Agency-Agnostic Multi-Tenant SaaS Rearchitecture
+
 ## Phase 0: Read-Only Baseline Audit & Gap Analysis
 
 **Document Path:** `docs/audit/AGENCY_SAAS_REARCHITECTURE_BASELINE.md`  
@@ -8,7 +9,7 @@
 **Target Branch:** `phase-2-production-readiness`  
 **Production Host:** `https://ai-nexos.antideploy.com`  
 **Current Product State:** Next.js 16.3.0 · React 19.2.4 · Supabase Auth · Drizzle ORM · PostgreSQL  
-**Audit Scope:** Read-Only Baseline, Non-Mutating, Non-Destructive  
+**Audit Scope:** Read-Only Baseline, Non-Mutating, Non-Destructive
 
 ---
 
@@ -17,6 +18,7 @@
 This audit establishes the definitive technical and architectural baseline for transitioning **AI NEX OS** from an internal, organization-specific creative agency operating system (tailored to "AI Collective") into a world-class, agency-agnostic, multi-tenant B2B SaaS operating system for creative and production agencies worldwide.
 
 ### Key Audit Findings:
+
 1. **Strong Engineering Foundations**: The repository features clean Next.js 16 App Router architecture, a comprehensive schema across 50+ relational tables in PostgreSQL managed via Drizzle ORM, strict runtime and build-time environment variable validation, 725 passing unit tests across 51 test suites, zero TypeScript typecheck errors, and an AST-based static safety gate (`tenant-identity-surface.test.ts`) preventing caller-supplied tenant IDs in Server Actions.
 2. **AI Collective Single-Tenant Coupling**: The codebase contains hardcoded prefixes (`AIC-YYYY-XXXX` for projects, `AIC-T-YYYY-XXXX` for tasks, `AIC-0001` for employees), seed assumptions in `.env.example` (`SEED_ORG_NAME="AI Collective"`), historical domain documentation references (`app.aicollective.agency`), and an architectural philosophy rooted in "One Organization".
 3. **Tenancy Constraints**: While every operational database table references `organization_id`, the `users` table directly carries a mandatory `organization_id NOT NULL` and a global unique constraint on `email` (`uq_users_email`). A user account can belong to only one organization; there is no `memberships` table, no organization switcher, and no mechanism for an individual to collaborate across multiple agencies.
@@ -29,6 +31,7 @@ This audit establishes the definitive technical and architectural baseline for t
 ## 2. Current Architecture
 
 ### 2.1 Technology Stack & Runtime
+
 - **Framework**: Next.js `16.3.0` (Canary / App Router) running on Node.js 20+ runtime.
 - **UI & Styling**: React `19.2.4`, Tailwind CSS `v4` (`@import "tailwindcss"; @import "shadcn/tailwind.css";`), `@base-ui/react`, Radix UI primitives, Lucide React icons, and Framer Motion.
 - **Database & ORM**: PostgreSQL (hosted on Supabase) accessed via Drizzle ORM `0.45.2` and `postgres.js` `3.4.9`.
@@ -37,12 +40,16 @@ This audit establishes the definitive technical and architectural baseline for t
 - **Cache & State**: In-memory and Redis-backed portal caches, Zustand for client state, React Query (`@tanstack/react-query` `v5`).
 
 ### 2.2 Dual-Domain Architecture
+
 The platform implements a domain-splitting architecture in `src/proxy.ts`:
+
 - **App Domain** (`NEXT_PUBLIC_APP_DOMAIN`, e.g., `app.example.com` or `localhost:3000`): Internal authenticated agency workforce dashboard. Unauthenticated visitors are routed to `/login`.
 - **Portal Domain** (`NEXT_PUBLIC_PORTAL_DOMAIN`, e.g., `portal.example.com` or `portal.localhost:3000`): External client-facing portal. Rewritten internally to `/portal/*`. External access is governed entirely by unauthenticated cryptographically signed share tokens (`/s/{token}`) requiring no user account.
 
 ### 2.3 Layered Data Access Model
+
 The application uses two distinct database communication channels:
+
 1. **Supabase Client (`createClient()` in `@/lib/supabase/server`)**: Uses the anon key with the user's session JWT. All queries execute under PostgreSQL Row Level Security (RLS). Used primarily by `getCurrentUser()` in `src/features/auth/current-user.ts`.
 2. **Drizzle ORM Client (`db` in `@/db`)**: Connects over the PgBouncer transaction pooler (`DATABASE_URL`, `prepare: false`) as the `postgres` administrative role. **This connection bypasses RLS**. Consequently, multi-tenant isolation for all Server Actions in workspace modules rests entirely on application-level filtering: `eq(table.organizationId, user.organizationId)`.
 
@@ -51,7 +58,9 @@ The application uses two distinct database communication channels:
 ## 3. Product Context Findings
 
 ### 3.1 Historical Context from Specification Documents
+
 Analysis of the founding documentation in `DOCS/` (`AIC NexOS (PRD).md`, `AIC Nex OS (SDS).md`, `AIC Nex OS (DBD).md`, `AIC Nex OS (TRD) .md`):
+
 - **Original Client & Sponsor**: Designed specifically for "AI Collective (AIC)" as an internal creative agency management platform.
 - **Architectural Axiom**: The core philosophy outlined in SDS §2 states:
   ```
@@ -67,10 +76,10 @@ Analysis of the founding documentation in `DOCS/` (`AIC NexOS (PRD).md`, `AIC Ne
        ↓
   One Unified System
   ```
-- **Strategic SaaS Pivot Foreshadowed**: PRD §1 already stated the long-term ambition: *"The long-term vision is to evolve AIC Nexus OS into a scalable, multi-tenant SaaS platform for creative agencies worldwide."*
-- **Positioning Evolution**: 
-  - *Old*: AIC Nex OS — The Operating System for Creative Execution (built exclusively for AI Collective).
-  - *New*: **AI NEX OS** — The Agency Operating System. The Operating System for Creative Execution (Multi-tenant B2B SaaS for creative agencies).
+- **Strategic SaaS Pivot Foreshadowed**: PRD §1 already stated the long-term ambition: _"The long-term vision is to evolve AIC Nexus OS into a scalable, multi-tenant SaaS platform for creative agencies worldwide."_
+- **Positioning Evolution**:
+  - _Old_: AIC Nex OS — The Operating System for Creative Execution (built exclusively for AI Collective).
+  - _New_: **AI NEX OS** — The Agency Operating System. The Operating System for Creative Execution (Multi-tenant B2B SaaS for creative agencies).
 
 ---
 
@@ -78,32 +87,34 @@ Analysis of the founding documentation in `DOCS/` (`AIC NexOS (PRD).md`, `AIC Ne
 
 The table below catalogs every hardcoded reference, identifier, and assumption tied to "AI Collective" across the repository:
 
-| Category | File Path | Code / Occurrence | Severity / Impact |
-| :--- | :--- | :--- | :--- |
-| **Code Generation** | `src/features/projects/real-actions.ts` (L40-69) | `generateProjectCode`: hardcodes prefix ``AIC-${currentYear}-${nextSequence}`` | High: All project IDs in all agencies start with `AIC-` |
-| **Code Generation** | `src/features/tasks/real-actions.ts` (L42-68) | `generateTaskCode`: hardcodes prefix ``AIC-T-${currentYear}-${nextSequence}`` | High: All task IDs in all agencies start with `AIC-T-` |
-| **Code Generation** | `src/features/meetings/real-actions.ts` (L217) | `promoteActionItemToTask`: hardcodes prefix ``AIC-T-${year}-${random}`` | High: Meeting action item conversion hardcodes `AIC-T-` |
-| **Schema Comment** | `src/db/schema/tasks.ts` (L33) | `taskCode: text("task_code").notNull().unique(), // AIC-T-YYYY-XXXX` | Low: Schema documentation only |
-| **Workforce Types** | `src/features/workforce/employees/types.ts` (L27) | Documentation references `"AIC-0001"` as per-org employee code pattern | Medium: Mental model coupling |
-| **Workforce Repo** | `src/features/workforce/corrections/correction-code.ts` (L8) | Documentation comments reference `AIC-YYYY-####` | Low: Comment reference |
-| **Mock Data** | `src/features/users/admin/mock-repository.ts` (L59) | `nextDemoCode(store, "AIC")` | Medium: Demo mode employee codes |
-| **Demo Store** | `src/lib/demo/store.ts` (L125-230) | Hardcodes `AIC-0001`..`AIC-0008`, `AIC-2026-0001`, `AIC-T-2026-0001` | Medium: Demo workspace branding |
-| **Environment Docs**| `src/config/app.ts` (L3-14) | Mentions `tenant (AI Collective) is data`, comments `app.aicollective.agency`, `portal.aicollective.agency` | Low: Informational comments |
-| **Environment Schema**| `src/lib/env.server.ts` (L88, L102) | Comments specify `purpose: "Internal dashboard host, e.g. app.aicollective.agency."` | Low: Environment variable description |
-| **Bootstrap Seed** | `.env.example` (L81) | `SEED_ORG_NAME="AI Collective"` | Medium: Default seed value |
-| **Historical Docs** | `docs/PRODUCTION_MIGRATION_PLAN.md`, `docs/SPRINT-2.4.md`, `docs/STABILIZATION_REPORT.md` | Multiple historical references to `app.aicollective.agency` and `AIC Nex OS` | Low: Historical records |
+| Category               | File Path                                                                                 | Code / Occurrence                                                                                           | Severity / Impact                                       |
+| :--------------------- | :---------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- | :------------------------------------------------------ |
+| **Code Generation**    | `src/features/projects/real-actions.ts` (L40-69)                                          | `generateProjectCode`: hardcodes prefix `AIC-${currentYear}-${nextSequence}`                                | High: All project IDs in all agencies start with `AIC-` |
+| **Code Generation**    | `src/features/tasks/real-actions.ts` (L42-68)                                             | `generateTaskCode`: hardcodes prefix `AIC-T-${currentYear}-${nextSequence}`                                 | High: All task IDs in all agencies start with `AIC-T-`  |
+| **Code Generation**    | `src/features/meetings/real-actions.ts` (L217)                                            | `promoteActionItemToTask`: hardcodes prefix `AIC-T-${year}-${random}`                                       | High: Meeting action item conversion hardcodes `AIC-T-` |
+| **Schema Comment**     | `src/db/schema/tasks.ts` (L33)                                                            | `taskCode: text("task_code").notNull().unique(), // AIC-T-YYYY-XXXX`                                        | Low: Schema documentation only                          |
+| **Workforce Types**    | `src/features/workforce/employees/types.ts` (L27)                                         | Documentation references `"AIC-0001"` as per-org employee code pattern                                      | Medium: Mental model coupling                           |
+| **Workforce Repo**     | `src/features/workforce/corrections/correction-code.ts` (L8)                              | Documentation comments reference `AIC-YYYY-####`                                                            | Low: Comment reference                                  |
+| **Mock Data**          | `src/features/users/admin/mock-repository.ts` (L59)                                       | `nextDemoCode(store, "AIC")`                                                                                | Medium: Demo mode employee codes                        |
+| **Demo Store**         | `src/lib/demo/store.ts` (L125-230)                                                        | Hardcodes `AIC-0001`..`AIC-0008`, `AIC-2026-0001`, `AIC-T-2026-0001`                                        | Medium: Demo workspace branding                         |
+| **Environment Docs**   | `src/config/app.ts` (L3-14)                                                               | Mentions `tenant (AI Collective) is data`, comments `app.aicollective.agency`, `portal.aicollective.agency` | Low: Informational comments                             |
+| **Environment Schema** | `src/lib/env.server.ts` (L88, L102)                                                       | Comments specify `purpose: "Internal dashboard host, e.g. app.aicollective.agency."`                        | Low: Environment variable description                   |
+| **Bootstrap Seed**     | `.env.example` (L81)                                                                      | `SEED_ORG_NAME="AI Collective"`                                                                             | Medium: Default seed value                              |
+| **Historical Docs**    | `docs/PRODUCTION_MIGRATION_PLAN.md`, `docs/SPRINT-2.4.md`, `docs/STABILIZATION_REPORT.md` | Multiple historical references to `app.aicollective.agency` and `AIC Nex OS`                                | Low: Historical records                                 |
 
 ---
 
 ## 5. Multi-Tenant Findings
 
 ### 5.1 How Organizations Are Modeled
+
 - Defined in `src/db/schema/organizations.ts`:
   - Table: `organizations`
   - Columns: `organization_id` (UUID PK), `organization_name`, `legal_name`, `slug` (Unique), `logo_url`, `website`, `industry`, `timezone`, `currency`, `country`, `address`, `contact_email`, `contact_phone`, `brand_primary_color`, `brand_secondary_color`, `status`, audit fields.
   - Table: `organization_sequences` (composite PK `[organization_id, entity_type]`) handles monotonic sequence increments per tenant.
 
 ### 5.2 User-to-Organization Relationship
+
 - Defined in `src/db/schema/users.ts`:
   - `users.user_id` (UUID PK) mirrors `auth.users.id`.
   - `users.organization_id` (UUID NOT NULL) directly references `organizations.organization_id`.
@@ -116,6 +127,7 @@ The table below catalogs every hardcoded reference, identifier, and assumption t
   - Organization switching does not exist at either the database, API, or UI layers.
 
 ### 5.3 Tenant Isolation Enforcement
+
 1. **Application Layer (Drizzle ORM)**:
    - Enforced by manually injecting `eq(table.organizationId, user.organizationId)` into every query predicate.
    - Guarded statically by `tests/unit/tenant-identity-surface.test.ts`, which prevents `"use server"` actions from accepting caller-supplied `organizationId` or `userId`.
@@ -137,6 +149,7 @@ The table below catalogs every hardcoded reference, identifier, and assumption t
    - Policies on `organizations`, `departments`, `roles`, `users`, `activity_logs`, `background_jobs`, and workforce tables evaluate `app.is_org_member(organization_id)`.
 
 ### 5.4 Single-Tenant Assumptions
+
 - **Bootstrap Seeding**: The only code path for creating an organization is `scripts/seed.ts`, which provisions an organization from environment variables (`SEED_ORG_NAME`, `SEED_ORG_SLUG`, `SEED_OWNER_EMAIL`).
 - **No Self-Serve Registration**: There is no public `/register` or `/signup` route that provisions an organization, creates the initial owner user, seeds system roles, and logs the user in.
 - **Unprovisioned Trap**: When a new user authenticates with an email not pre-seeded in `public.users`, `getCurrentUser()` returns `null`, and `requireCurrentUser()` immediately redirects them to `/unprovisioned`.
@@ -146,12 +159,14 @@ The table below catalogs every hardcoded reference, identifier, and assumption t
 ## 6. Authentication Findings
 
 ### 6.1 Authentication Methods & Flows
+
 - **Email & Password**: Handled via `signInWithPassword()` in `src/features/auth/real-actions.ts`. Rate-limited by IP (10/min) and by normalized account email (5/min).
 - **Magic Link (OTP)**: Handled via `signInWithOtp()` with `shouldCreateUser: false`. Rate-limited by IP (5/min) and by account (3/min).
 - **Google OAuth**: Handled via `signInWithOAuth({ provider: "google" })` redirecting to `/auth/callback`.
 - **Demo Mode**: When `DEMO_MODE=true` in development, users can enter a mock workspace via `enterDemoWorkspace()`, setting `demo_session=true` cookie. Hardcoded to return false in production.
 
 ### 6.2 Callback & Session Verification
+
 - `src/app/auth/callback/route.ts`:
   - Handles PKCE code exchange (`exchangeCodeForSession(code)`) and OTP verification (`verifyOtp({ token_hash, type })`).
   - Restricts redirect destination to `APP_URL` using `safeInternalPath(next)` to prevent open-redirect vulnerabilities.
@@ -161,6 +176,7 @@ The table below catalogs every hardcoded reference, identifier, and assumption t
   - `requireCurrentUser()` calls `getCurrentUser()` and redirects to `/unprovisioned` if `null`.
 
 ### 6.3 Missing Auth & Provisioning Features
+
 - **Registration**: No public registration form for new agencies.
 - **Invitations**: No database table, email dispatch service, or token redemption route for inviting team members to an organization.
 - **Employee Creation**: `realEmployeeAdminRepository.create()` throws: `"Employee creation requires identity provisioning, which is wired in Phase 7."`
@@ -172,7 +188,9 @@ The table below catalogs every hardcoded reference, identifier, and assumption t
 ## 7. Workspace Findings
 
 ### 7.1 Workspace Modules & Routes
+
 The Workspace comprises the core operational tools for creative execution:
+
 - **Dashboard** (`/dashboard`): Metric cards, active projects summary, open tasks, recent activity.
 - **Projects** (`/projects`, `/projects/[id]`): Project directory, creation modal, project details, member assignment, status tracking.
 - **Clients** (`/clients`, `/clients/[id]`): Client CRM, company information, contacts directory, associated projects.
@@ -181,11 +199,13 @@ The Workspace comprises the core operational tools for creative execution:
 - **Calendar** (`/calendar`): Read-only aggregation of meetings, milestones, and task deadlines.
 
 ### 7.2 Production Modules & Routes
+
 - **Deliverables** (`/deliverables`, `/deliverables/[id]`): Asset deliverables, revision history, approval status, external review sessions.
 - **Files** (`/files`): Media asset manager, folders, file versioning, storage bucket integration.
 - **Meetings** (`/meetings`, `/meetings/[id]`): Meeting schedules, attendees, agenda items, decisions, action item conversion to tasks.
 
 ### 7.3 Layout, Navigation & Page Boundaries
+
 - All workspace routes reside in `src/app/(dashboard)/` and share `DashboardGroupLayout`, which mounts `AppShell`.
 - `AppShell` evaluates `user.permissions` against `NAV_SECTIONS` in `src/config/navigation.ts`, passing only `permittedHrefs` to `AppSidebar`.
 - Each feature module exports server actions wrapped in `actions.ts` that dispatch between `real-actions.ts` and `mock-actions.ts` based on `isDemoMode()`.
@@ -195,7 +215,9 @@ The Workspace comprises the core operational tools for creative execution:
 ## 8. Workforce Findings
 
 ### 8.1 Workforce Modules & Routes
+
 Imported from the merged `worktrack-os` baseline:
+
 - **My Attendance** (`/workforce/attendance`): Shift status, clock-in, clock-out, break start/end, daily worked time.
 - **History** (`/workforce/history`): Historical calendar and timesheet logs.
 - **Corrections** (`/workforce/corrections`): Attendance punch correction requests.
@@ -205,7 +227,9 @@ Imported from the merged `worktrack-os` baseline:
 - **Reports** (`/workforce/reports`): Placeholder (`coming-soon`).
 
 ### 8.2 Work Validation Engine
+
 Located in `src/features/workforce/work-validation/`:
+
 - `session-builder.ts`: Reconstructs continuous working shifts from raw timestamps.
 - `break-processor.ts`: Categorizes paid vs unpaid pauses.
 - `idle-detector.ts`: Detects gaps and missing punch-outs.
@@ -213,6 +237,7 @@ Located in `src/features/workforce/work-validation/`:
 - Timezone resolution is strictly anchored to the organization's configured IANA timezone (`organization.timezone`) via `src/features/workforce/shared/business-day.ts`.
 
 ### 8.3 Workforce RLS & Permissions
+
 - Migration `0014_workforce_rls.sql` enables RLS on `attendance_records`, `attendance_breaks`, and `attendance_corrections`.
 - Actions are protected by permissions: `attendance.clock`, `attendance.read`, `attendance.view_team`, `corrections.create`, `corrections.read`, `corrections.review`.
 
@@ -221,7 +246,9 @@ Located in `src/features/workforce/work-validation/`:
 ## 9. RBAC Findings
 
 ### 9.1 System Roles Inventory
+
 Defined in `src/features/permissions/constants.ts`:
+
 1. **Owner (`owner`)**: Full platform control (`{"*": ["*"]}`). Cannot be deactivated or demoted if they are the sole owner (`checkOwnerProtection`).
 2. **Super Admin (`super_admin`)**: Operational administration across all modules.
 3. **HR (`hr`)**: Workforce oversight, attendance reviews, employee directory.
@@ -231,11 +258,13 @@ Defined in `src/features/permissions/constants.ts`:
 7. **Finance (`finance`)**: Financial records, client invoices, reports.
 
 ### 9.2 Permissions Model
+
 - **22 Modules**: `organization`, `departments`, `users`, `roles`, `clients`, `projects`, `timeline`, `tasks`, `deliverables`, `approvals`, `revisions`, `files`, `meetings`, `comments`, `notifications`, `reports`, `analytics`, `share_links`, `ai`, `settings`, `attendance`, `corrections`.
 - **15 Actions**: `read`, `create`, `update`, `delete`, `comment`, `approve`, `review`, `upload`, `download`, `share`, `export`, `restore`, `archive`, `clock`, `view_team`.
 - Represented as JSONB in `roles.permissions`: `Record<Module | "*", (Action | "*")[]>`.
 
 ### 9.3 Enforcement Architecture
+
 - **Application Engine**: `src/features/permissions/engine.ts` provides `hasPermission(permissions, module, action)` and `requirePermission()`.
 - **Database Engine**: `app.has_permission(p_module text, p_action text)` in PostgreSQL evaluates the role's JSONB permissions for RLS policies.
 - **Client Gating**: `AppSidebar` hides navigation items for unpermitted routes. Direct URL access to unauthorized pages is intercepted by server action guards throwing errors, landing on `/unauthorized` (403 Forbidden).
@@ -245,6 +274,7 @@ Defined in `src/features/permissions/constants.ts`:
 ## 10. Branding Findings
 
 ### 10.1 Visual Assets & Logo
+
 - **No Vector Logo**: There are no SVG brand logos for AI NEX OS.
 - **Inline Badge**: The logo is currently rendered as an inline text element:
   ```tsx
@@ -256,6 +286,7 @@ Defined in `src/features/permissions/constants.ts`:
 - **Favicon**: Legacy `src/app/favicon.ico` (25 KB). No modern SVG favicons, apple touch icons, or web app manifest icons.
 
 ### 10.2 Typography & Theme System
+
 - **Fonts**: Geist Sans (`--font-geist-sans`) and Geist Mono (`--font-geist-mono`) via `next/font/google`.
 - **Color Tokens**: Defined in `src/app/globals.css` using Tailwind CSS v4 and OKLCH color spaces. The default palette is strictly neutral monochrome (grayscale, 0 chroma) with a red `--destructive` accent.
 - **Dynamic Theming Gap**: While the `organizations` table stores `brand_primary_color` and `brand_secondary_color`, these values are not currently injected into CSS variables to white-label the workspace for each agency.
@@ -265,6 +296,7 @@ Defined in `src/features/permissions/constants.ts`:
 ## 11. Landing Page Findings
 
 ### 11.1 Root Route Audit
+
 - `src/app/page.tsx`:
   ```tsx
   import { redirect } from "next/navigation";
@@ -276,6 +308,7 @@ Defined in `src/features/permissions/constants.ts`:
 - **Conclusion**: There is **no public landing page**. An external visitor arriving at the domain sees only a sign-in card.
 
 ### 11.2 SEO & Social Infrastructure
+
 - **Metadata**: `src/app/layout.tsx` specifies bare defaults:
   - Title: `AI NEX OS` (template: `%s · AI NEX OS`)
   - Description: `The Operating System for Creative Execution.`
@@ -291,7 +324,9 @@ Defined in `src/features/permissions/constants.ts`:
 ## 12. Database Findings
 
 ### 12.1 Schema Breakdown (52 Tables)
+
 The database schema in `src/db/schema/` comprises 52 tables organized across domain modules:
+
 1. **Tenancy & Organization**: `organizations`, `organization_sequences`.
 2. **Identity & Governance**: `users`, `roles`, `departments`.
 3. **CRM & Client Management**: `clients`, `external_identities`.
@@ -307,7 +342,9 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 13. **Platform Infrastructure**: `activity_logs`, `background_jobs`, `notifications`, `notification_templates`, `notification_preferences`, `notification_channels`, `notification_deliveries`, `notification_queue`, `notification_digest`, `notification_logs`, `notification_failures`, `notification_webhooks`, `notification_activity`.
 
 ### 12.2 Migration History
+
 15 migrations applied (`0000` to `0014`):
+
 - `0000_init_platform_foundation.sql`: Base tables and enums.
 - `0001_security_rls_foundation.sql`: RLS enablement, `app.current_user_organization_id()`, `app.has_permission()`.
 - `0002_lumpy_vertigo.sql` – `0007_remarkable_maximus.sql`: Module schemas.
@@ -321,6 +358,7 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 ## 13. Security Findings
 
 ### 13.1 Security Strengths
+
 - **The Four Authorization Controls**: Rigorous adherence to the distinction between (1) Authentication, (2) RBAC Authorization, (3) Object-Level Authorization, and (4) Tenant Isolation (`docs/AUTHORIZATION-CONTROLS.md`).
 - **Static AST Gate**: `tests/unit/tenant-identity-surface.test.ts` scans all Server Actions to ensure identity parameters (`userId`, `organizationId`) are never accepted as caller inputs.
 - **Content Security Policy**: Per-request CSP nonces generated in `src/proxy.ts` and stamped in `src/app/layout.tsx`. Does not allow `'unsafe-inline'` scripts.
@@ -328,6 +366,7 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 - **Credential Protection**: Dual rate-limiting on auth actions stops brute-force credential stuffing and enumeration attacks.
 
 ### 13.2 Security Gaps for SaaS Scale
+
 - **Direct Drizzle Connection Bypasses RLS**: If a developer creates a new Server Action and forgets `eq(table.organizationId, user.organizationId)`, cross-tenant data will leak because the Postgres connection runs as admin.
 - **Missing Self-Serve Invitation Token Verification**: Because team member creation is currently disabled in real mode, adding an invitation system requires introducing secure, single-use, time-bound invitation tokens with HMAC verification.
 
@@ -352,6 +391,7 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 ## 16. Recommended Target Architecture
 
 ### 16.1 Agency-Agnostic Multi-Tenancy (Phase 1+)
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Supabase Auth.Users                      │
@@ -385,22 +425,26 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 ```
 
 ### 16.2 Tenant Context & Switching
+
 - Active organization resolved from:
   1. Selected organization cookie / header, validated against `organization_memberships`.
   2. Fallback to default active membership.
 - User menu includes an **Organization Switcher** allowing agency operators to toggle between workspaces seamlessly.
 
 ### 16.3 Agency Onboarding & Provisioning
+
 - **Public Signup** (`/signup`): New agency founder signs up -> Creates user account -> Creates new organization -> Seeds system roles for the new organization -> Assigns founder the `owner` role -> Enters `/dashboard`.
 - **Team Invitations** (`/invite/[token]`): Admin invites team member via email -> Single-use secure token minted -> Invitee signs in or registers -> Added to `organization_memberships` with assigned role.
 
 ### 16.4 Dynamic Code Prefixes
+
 - Replace hardcoded `AIC-` with `organization.codePrefix` (or derived from `organization.slug` / uppercase initials).
 - Project format: `{ORG_CODE}-{YYYY}-{0001}`
 - Task format: `{ORG_CODE}-T-{YYYY}-{0001}`
 - Employee format: `{ORG_CODE}-{0001}`
 
 ### 16.5 Public Agency SaaS Landing Page (`/`)
+
 - Relocate root redirect to a top-tier marketing landing page at `/`:
   - **Hero Section**: "The Operating System for Creative Execution" with product showcase and CTA.
   - **Feature Bento Grid**: Production Timelines, Asset Approvals, Client Portals, Workforce Validation, AI Workspace.
@@ -413,6 +457,7 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 ## 17. Files to Modify (Future Implementation Roadmap)
 
 ### A. Core Configuration & Branding
+
 - `src/config/app.ts`: Remove AI Collective comments; update app descriptor constants.
 - `src/app/layout.tsx`: Expand root metadata with Open Graph, Twitter cards, robots, dynamic branding.
 - `src/app/globals.css`: Support dynamic CSS custom properties for organization primary/secondary colors.
@@ -420,6 +465,7 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 - `src/components/layout/app-header.tsx`: Add Organization Switcher dropdown component.
 
 ### B. Landing Page & Public Infrastructure
+
 - `src/app/page.tsx`: Replace redirect with full Agency SaaS landing page.
 - `src/proxy.ts`: Update public path matcher so `/` is publicly accessible without login redirect.
 - Create `src/app/robots.ts` and `src/app/sitemap.ts`.
@@ -427,12 +473,14 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 - Create marketing components in `src/components/marketing/`.
 
 ### C. Agency-Agnostic Identifiers
+
 - `src/features/projects/real-actions.ts`: Read `codePrefix` from organization instead of `AIC-`.
 - `src/features/tasks/real-actions.ts`: Read `codePrefix` from organization instead of `AIC-T-`.
 - `src/features/meetings/real-actions.ts`: Generate task code using organization prefix.
 - `src/db/schema/organizations.ts`: Add `codePrefix` column (`text("code_prefix").notNull().default("NEX")`).
 
 ### D. Multi-Tenancy & Onboarding
+
 - `src/db/schema/organizations.ts`: Schema updates for multi-tenant settings.
 - `src/features/auth/current-user.ts`: Support multi-organization membership resolution.
 - `src/app/(auth)/signup/page.tsx`: Self-service agency creation wizard.
@@ -440,6 +488,7 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 - `src/features/users/admin/real-repository.ts`: Wire real identity provisioning and invitation emails.
 
 ### E. Tooling & Linting
+
 - `eslint.config.mjs`: Add `scratch/**` to `globalIgnores` to resolve the 27 lint errors.
 - `.env.example`: Update `SEED_ORG_NAME` and domain references to agency-neutral values.
 
@@ -448,6 +497,7 @@ The database schema in `src/db/schema/` comprises 52 tables organized across dom
 ## 18. Files That Must NOT Be Modified
 
 To preserve system stability, data integrity, and security guarantees:
+
 - `database/migrations/0000_*.sql` through `database/migrations/0014_*.sql`: **IMMUTABLE**. Never modify historical migrations. All database changes must be forward-only in new migrations (`0015+`).
 - `src/lib/security/headers.ts`: Security-critical CSP policy and nonce generation.
 - `src/lib/security/rate-limit.ts`: Rate limiting algorithms.

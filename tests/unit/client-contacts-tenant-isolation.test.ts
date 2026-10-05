@@ -107,12 +107,20 @@ vi.mock("@/db", () => {
           then: (resolve: (val: any) => any) => {
             const params = extractParams(whereCondition);
             state.recordedQueries.push({
-              table: isClientContactsTable ? "client_contacts" : isClientsTable ? "clients" : "unknown",
+              table: isClientContactsTable
+                ? "client_contacts"
+                : isClientsTable
+                  ? "clients"
+                  : "unknown",
               params,
             });
 
             // 1. SELECT from clients: createContact parent check
-            if (isClientsTable && !isJoinWithClients && !isClientContactsTable) {
+            if (
+              isClientsTable &&
+              !isJoinWithClients &&
+              !isClientContactsTable
+            ) {
               const [targetClientId, targetOrgId] = params;
               const found = state.clients.find(
                 (c) =>
@@ -330,9 +338,8 @@ function resetTestDatabase() {
   state.recordedQueries = [];
 }
 
-const { createContact, updateContact, archiveContact } = await import(
-  "@/features/clients/real-actions"
-);
+const { createContact, updateContact, archiveContact } =
+  await import("@/features/clients/real-actions");
 
 describe("NEXOS-SEC-01: Cross-Tenant Client Contact Mutation Regression Suite", () => {
   beforeEach(() => {
@@ -358,7 +365,9 @@ describe("NEXOS-SEC-01: Cross-Tenant Client Contact Mutation Regression Suite", 
     expect(result.contactId).toBeDefined();
 
     // Verify contact was inserted and bound to Client A
-    const created = state.contacts.find((c) => c.contactId === result.contactId);
+    const created = state.contacts.find(
+      (c) => c.contactId === result.contactId,
+    );
     expect(created).toBeDefined();
     expect(created?.name).toBe("Charlie Org A");
     expect(created?.clientId).toBe(CLIENT_A_ID);
@@ -450,9 +459,9 @@ describe("NEXOS-SEC-01: Cross-Tenant Client Contact Mutation Regression Suite", 
   it("TEST 6: Organization A user archives Organization B contact -> DENIED", async () => {
     setSession(ORG_A, "owner");
 
-    await expect(
-      archiveContact(CONTACT_B_ID, CLIENT_B_ID),
-    ).rejects.toThrow("Contact not found");
+    await expect(archiveContact(CONTACT_B_ID, CLIENT_B_ID)).rejects.toThrow(
+      "Contact not found",
+    );
 
     // Verify Tenant B contact was NOT archived
     const intact = state.contacts.find((c) => c.contactId === CONTACT_B_ID);
@@ -507,9 +516,9 @@ describe("NEXOS-SEC-01: Cross-Tenant Client Contact Mutation Regression Suite", 
       }),
     ).rejects.toThrow(PermissionDeniedError);
 
-    await expect(
-      archiveContact(CONTACT_A_ID, CLIENT_A_ID),
-    ).rejects.toThrow(PermissionDeniedError);
+    await expect(archiveContact(CONTACT_A_ID, CLIENT_A_ID)).rejects.toThrow(
+      PermissionDeniedError,
+    );
   });
 
   // --------------------------------------------------------------------------
@@ -533,9 +542,9 @@ describe("NEXOS-SEC-01: Cross-Tenant Client Contact Mutation Regression Suite", 
       }),
     ).rejects.toThrow(/Authentication required/);
 
-    await expect(
-      archiveContact(CONTACT_A_ID, CLIENT_A_ID),
-    ).rejects.toThrow(/Authentication required/);
+    await expect(archiveContact(CONTACT_A_ID, CLIENT_A_ID)).rejects.toThrow(
+      /Authentication required/,
+    );
   });
 
   // --------------------------------------------------------------------------

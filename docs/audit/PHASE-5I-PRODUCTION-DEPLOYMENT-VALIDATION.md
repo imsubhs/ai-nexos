@@ -10,7 +10,7 @@
 **Antideploy Deployment ID**: `c9bfc4fb-ea90-435c-a148-c3347fa79716`  
 **Production Host**: `https://ai-nexos.antideploy.com`  
 **Execution Timestamp**: `2026-09-27T01:55:50+05:30` (UTC `2026-09-26T20:25:50Z`)  
-**Certified Pre-Migration Backup**: `pre_migration_backup_gsgseacjcalkhhmunjhx_20260926194357.dump` (1,135,591 bytes)  
+**Certified Pre-Migration Backup**: `pre_migration_backup_gsgseacjcalkhhmunjhx_20260926194357.dump` (1,135,591 bytes)
 
 ---
 
@@ -58,22 +58,22 @@ Post-deployment HTTP smoke testing confirmed all primary routes respond with exp
 
 Independent verification of live environment variables on Antideploy host (`GET /api/v1/secrets`):
 
-| Environment Variable | Antideploy Live Host Status | Format / Type | Verification Result |
-| :--- | :---: | :---: | :---: |
-| `DATABASE_URL` | **SET** | Pooler connection string (Port 6543) | **PASS** |
-| `DIRECT_DATABASE_URL` | **SET** | Direct session connection string (Port 5432) | **PASS** |
-| `NEXT_PUBLIC_SUPABASE_URL` | **SET** | HTTPS URL (`https://gsgseacjcalkhhmunjhx.supabase.co`) | **PASS** |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **SET** | JWT (Anon role) | **PASS** |
-| `SUPABASE_SERVICE_ROLE_KEY` | **SET** | JWT (Service-role) | **PASS** |
-| `JWT_SECRET` | **SET** | 256-bit secret string | **PASS** |
-| `SHARE_JWT_SECRET` | **SET** | 256-bit secret string | **PASS** |
-| `NEXT_PUBLIC_APP_DOMAIN` | **SET** | FQDN (`ai-nexos.antideploy.com`) | **PASS** |
-| `NEXT_PUBLIC_PORTAL_DOMAIN` | **SET** | FQDN (`portal.ai-nexos.antideploy.com`) | **PASS** |
-| `NEXT_PUBLIC_APP_URL` | **SET** | HTTPS URL (`https://ai-nexos.antideploy.com`) | **PASS** |
-| `NEXT_PUBLIC_PORTAL_URL` | **SET** | HTTPS URL (`https://portal.ai-nexos.antideploy.com`) | **PASS** |
-| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | **SET** | Identifier (`documents`) | **PASS** |
-| `NODE_ENV` | **SET** | `production` | **PASS** |
-| `DEMO_MODE` | **SET** | String boolean | **PASS** |
+| Environment Variable                  | Antideploy Live Host Status |                     Format / Type                      | Verification Result |
+| :------------------------------------ | :-------------------------: | :----------------------------------------------------: | :-----------------: |
+| `DATABASE_URL`                        |           **SET**           |          Pooler connection string (Port 6543)          |      **PASS**       |
+| `DIRECT_DATABASE_URL`                 |           **SET**           |      Direct session connection string (Port 5432)      |      **PASS**       |
+| `NEXT_PUBLIC_SUPABASE_URL`            |           **SET**           | HTTPS URL (`https://gsgseacjcalkhhmunjhx.supabase.co`) |      **PASS**       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`       |           **SET**           |                    JWT (Anon role)                     |      **PASS**       |
+| `SUPABASE_SERVICE_ROLE_KEY`           |           **SET**           |                   JWT (Service-role)                   |      **PASS**       |
+| `JWT_SECRET`                          |           **SET**           |                 256-bit secret string                  |      **PASS**       |
+| `SHARE_JWT_SECRET`                    |           **SET**           |                 256-bit secret string                  |      **PASS**       |
+| `NEXT_PUBLIC_APP_DOMAIN`              |           **SET**           |            FQDN (`ai-nexos.antideploy.com`)            |      **PASS**       |
+| `NEXT_PUBLIC_PORTAL_DOMAIN`           |           **SET**           |        FQDN (`portal.ai-nexos.antideploy.com`)         |      **PASS**       |
+| `NEXT_PUBLIC_APP_URL`                 |           **SET**           |     HTTPS URL (`https://ai-nexos.antideploy.com`)      |      **PASS**       |
+| `NEXT_PUBLIC_PORTAL_URL`              |           **SET**           |  HTTPS URL (`https://portal.ai-nexos.antideploy.com`)  |      **PASS**       |
+| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` |           **SET**           |                Identifier (`documents`)                |      **PASS**       |
+| `NODE_ENV`                            |           **SET**           |                      `production`                      |      **PASS**       |
+| `DEMO_MODE`                           |           **SET**           |                     String boolean                     |      **PASS**       |
 
 Local tool contract verification via `npm run env:check -- --environment=production --verify`: **PASS**.
 
@@ -84,6 +84,7 @@ Local tool contract verification via `npm run env:check -- --environment=product
 **Status**: **PASS**
 
 Pre-deployment read-only database health verified against `gsgseacjcalkhhmunjhx`:
+
 - `SELECT 1`: Confirmed responsive.
 - PostgreSQL Version: `17.6.1.155`
 - Database: `postgres`
@@ -128,16 +129,17 @@ Pre-deployment read-only database health verified against `gsgseacjcalkhhmunjhx`
 
 Live requests issued to production endpoints on `https://ai-nexos.antideploy.com`:
 
-| Endpoint | HTTP Status | Response Time | Location Header | Evaluation |
-| :--- | :---: | :---: | :---: | :---: |
-| `GET /` | **307** | 2,475ms | `/login` | **PASS** (Unauthenticated redirect) |
-| `GET /login` | **200** | 1,745ms | `-` | **PASS** (Login page renders) |
-| `GET /dashboard` | **307** | 623ms | `/login?next=%2Fdashboard` | **PASS** (Protected route redirect) |
-| `GET /onboarding` | **200** | 791ms | `-` | **PASS** (Onboarding entrypoint reachable) |
-| `GET /unauthorized` | **307** | 179ms | `/login?next=%2Funauthorized` | **PASS** (Protected redirect) |
-| `GET /api/health` | **200** | 220ms | `-` | **PASS** (Service healthy) |
+| Endpoint            | HTTP Status | Response Time |        Location Header        |                 Evaluation                 |
+| :------------------ | :---------: | :-----------: | :---------------------------: | :----------------------------------------: |
+| `GET /`             |   **307**   |    2,475ms    |           `/login`            |    **PASS** (Unauthenticated redirect)     |
+| `GET /login`        |   **200**   |    1,745ms    |              `-`              |       **PASS** (Login page renders)        |
+| `GET /dashboard`    |   **307**   |     623ms     |  `/login?next=%2Fdashboard`   |    **PASS** (Protected route redirect)     |
+| `GET /onboarding`   |   **200**   |     791ms     |              `-`              | **PASS** (Onboarding entrypoint reachable) |
+| `GET /unauthorized` |   **307**   |     179ms     | `/login?next=%2Funauthorized` |       **PASS** (Protected redirect)        |
+| `GET /api/health`   |   **200**   |     220ms     |              `-`              |         **PASS** (Service healthy)         |
 
 Payload returned by `/api/health`:
+
 ```json
 {
   "status": "healthy",
@@ -222,27 +224,27 @@ Zero 5xx errors recorded across all endpoints.
 
 Post-deployment read-only verification across all production tables:
 
-| Table / Entity | Pre-Deployment Baseline | Post-Deployment Count | Delta | Status |
-| :--- | :---: | :---: | :---: | :---: |
-| `drizzle.__drizzle_migrations` | 19 | 19 | 0 | **PASS** |
-| `organizations` | 1 | 1 | 0 | **PASS** |
-| `users` | 2 | 2 | 0 | **PASS** |
-| `roles` | 7 | 7 | 0 | **PASS** |
-| `departments` | 7 | 7 | 0 | **PASS** |
-| `clients` | 1 | 1 | 0 | **PASS** |
-| `projects` | 0 | 0 | 0 | **PASS** |
-| `project_members` | 0 | 0 | 0 | **PASS** |
-| `tasks` | 0 | 0 | 0 | **PASS** |
-| `meetings` | 0 | 0 | 0 | **PASS** |
-| `deliverables` | 0 | 0 | 0 | **PASS** |
-| `files` | 0 | 0 | 0 | **PASS** |
-| `timelines` | 0 | 0 | 0 | **PASS** |
-| `attendance_records` | 2 | 2 | 0 | **PASS** |
-| `automation_workflows` | 0 | 0 | 0 | **PASS** |
-| `storage.buckets` | 1 | 1 | 0 | **PASS** |
-| `storage.objects` | 0 | 0 | 0 | **PASS** |
-| `organization_memberships` | 2 | 2 | 0 | **PASS** |
-| `organization_invitations` | 0 | 0 | 0 | **PASS** |
+| Table / Entity                 | Pre-Deployment Baseline | Post-Deployment Count | Delta |  Status  |
+| :----------------------------- | :---------------------: | :-------------------: | :---: | :------: |
+| `drizzle.__drizzle_migrations` |           19            |          19           |   0   | **PASS** |
+| `organizations`                |            1            |           1           |   0   | **PASS** |
+| `users`                        |            2            |           2           |   0   | **PASS** |
+| `roles`                        |            7            |           7           |   0   | **PASS** |
+| `departments`                  |            7            |           7           |   0   | **PASS** |
+| `clients`                      |            1            |           1           |   0   | **PASS** |
+| `projects`                     |            0            |           0           |   0   | **PASS** |
+| `project_members`              |            0            |           0           |   0   | **PASS** |
+| `tasks`                        |            0            |           0           |   0   | **PASS** |
+| `meetings`                     |            0            |           0           |   0   | **PASS** |
+| `deliverables`                 |            0            |           0           |   0   | **PASS** |
+| `files`                        |            0            |           0           |   0   | **PASS** |
+| `timelines`                    |            0            |           0           |   0   | **PASS** |
+| `attendance_records`           |            2            |           2           |   0   | **PASS** |
+| `automation_workflows`         |            0            |           0           |   0   | **PASS** |
+| `storage.buckets`              |            1            |           1           |   0   | **PASS** |
+| `storage.objects`              |            0            |           0           |   0   | **PASS** |
+| `organization_memberships`     |            2            |           2           |   0   | **PASS** |
+| `organization_invitations`     |            0            |           0           |   0   | **PASS** |
 
 Parity: **100%**. Zero unintended DML or DDL executed during or after deployment.
 
@@ -253,6 +255,7 @@ Parity: **100%**. Zero unintended DML or DDL executed during or after deployment
 **Status**: **PASS**
 
 Inspected the last 100 log lines from Antideploy runtime (`GET /api/v1/logs`):
+
 - `500` / `502` / `503` / `504` errors: **0**
 - `Unhandled` / `uncaught` exceptions: **0**
 - `42P17` infinite recursion errors: **0**
@@ -305,33 +308,33 @@ Inspected the last 100 log lines from Antideploy runtime (`GET /api/v1/logs`):
 
 ## 19. Pass / Fail / Not Tested Matrix
 
-| Evaluation Domain | Verification Item | Status |
-| :--- | :--- | :---: |
-| **Local Quality Gates** | TypeScript Compile (`tsc --noEmit`) | **PASS** |
-| | Authorization Audit (`audit:authz`) | **PASS** |
-| | Linter (`eslint src tests`) | **PASS** |
-| | Test Suite (847/847 tests) | **PASS** |
-| | Next.js Turbopack Production Build | **PASS** |
-| **Production Target** | Antideploy Application Lock (`ai-nexos`) | **PASS** |
-| | Supabase Target Lock (`gsgseacjcalkhhmunjhx`) | **PASS** |
-| **Environment** | Antideploy Production Secret Contract (14 keys) | **PASS** |
-| | Tooling Connectivity Preflight (`env:check`) | **PASS** |
-| **Deployment** | Archive Packaging & Sanitization | **PASS** |
-| | Remote Container Build (258s) | **PASS** |
-| | Container Service Live (`HTTP 200`) | **PASS** |
-| **Runtime Health** | HTTP Smoke Tests (`/`, `/login`, `/dashboard`, `/health`) | **PASS** |
-| | Runtime Log Audit (Zero 5xx / Zero errors) | **PASS** |
-| **Identity & Access** | Server-Side Membership Resolution | **PASS** |
-| | Interactive Browser Login with Password | **OPERATOR REQUIRED** |
-| | Live Invitation Acceptance Workflow | **NOT TESTED** |
-| **Security & RLS** | Anonymous Project Access Blocked | **PASS** |
-| | 42P17 Recursion Elimination | **PASS** |
-| | Helper Function Security Attributes (`is_project_member`) | **PASS** |
-| | Positive Project Row Filtering | **NOT TESTED WITH CURRENT PRODUCTION DATA** |
-| **Data Integrity** | Post-Deployment Table Parity (19/19 baseline) | **PASS** |
-| | Legacy Column Compatibility (`users.organization_id`) | **PASS** |
-| **Safety & Recovery**| Rollback Readiness (Backup + Previous Deployment) | **PASS** |
-| | Git Monorepo Safety (0 commits / 0 pushes) | **PASS** |
+| Evaluation Domain       | Verification Item                                         |                   Status                    |
+| :---------------------- | :-------------------------------------------------------- | :-----------------------------------------: |
+| **Local Quality Gates** | TypeScript Compile (`tsc --noEmit`)                       |                  **PASS**                   |
+|                         | Authorization Audit (`audit:authz`)                       |                  **PASS**                   |
+|                         | Linter (`eslint src tests`)                               |                  **PASS**                   |
+|                         | Test Suite (847/847 tests)                                |                  **PASS**                   |
+|                         | Next.js Turbopack Production Build                        |                  **PASS**                   |
+| **Production Target**   | Antideploy Application Lock (`ai-nexos`)                  |                  **PASS**                   |
+|                         | Supabase Target Lock (`gsgseacjcalkhhmunjhx`)             |                  **PASS**                   |
+| **Environment**         | Antideploy Production Secret Contract (14 keys)           |                  **PASS**                   |
+|                         | Tooling Connectivity Preflight (`env:check`)              |                  **PASS**                   |
+| **Deployment**          | Archive Packaging & Sanitization                          |                  **PASS**                   |
+|                         | Remote Container Build (258s)                             |                  **PASS**                   |
+|                         | Container Service Live (`HTTP 200`)                       |                  **PASS**                   |
+| **Runtime Health**      | HTTP Smoke Tests (`/`, `/login`, `/dashboard`, `/health`) |                  **PASS**                   |
+|                         | Runtime Log Audit (Zero 5xx / Zero errors)                |                  **PASS**                   |
+| **Identity & Access**   | Server-Side Membership Resolution                         |                  **PASS**                   |
+|                         | Interactive Browser Login with Password                   |            **OPERATOR REQUIRED**            |
+|                         | Live Invitation Acceptance Workflow                       |               **NOT TESTED**                |
+| **Security & RLS**      | Anonymous Project Access Blocked                          |                  **PASS**                   |
+|                         | 42P17 Recursion Elimination                               |                  **PASS**                   |
+|                         | Helper Function Security Attributes (`is_project_member`) |                  **PASS**                   |
+|                         | Positive Project Row Filtering                            | **NOT TESTED WITH CURRENT PRODUCTION DATA** |
+| **Data Integrity**      | Post-Deployment Table Parity (19/19 baseline)             |                  **PASS**                   |
+|                         | Legacy Column Compatibility (`users.organization_id`)     |                  **PASS**                   |
+| **Safety & Recovery**   | Rollback Readiness (Backup + Previous Deployment)         |                  **PASS**                   |
+|                         | Git Monorepo Safety (0 commits / 0 pushes)                |                  **PASS**                   |
 
 ---
 
@@ -340,6 +343,7 @@ Inspected the last 100 log lines from Antideploy runtime (`GET /api/v1/logs`):
 # **B. PRODUCTION DEPLOYMENT PASSED WITH CONDITIONS**
 
 **Conditions for Full Operational Sign-Off**:
+
 1. **Interactive Operator Login**: Production operator signs into `https://ai-nexos.antideploy.com/login` with provisioned credentials to visually confirm dashboard rendering.
 2. **Project Creation & Positive RLS Filtering**: When the operator creates the first production project, verify that the project appears in the project list and that non-members cannot query private projects.
 3. **Invitation Testing**: When the first team member is invited, verify end-to-end acceptance via the generated token URL.

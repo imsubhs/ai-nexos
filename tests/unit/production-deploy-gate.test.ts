@@ -129,7 +129,9 @@ describe("production deploy gate (npm run env:check -- --production)", () => {
   it("exits non-zero when REDIS_URL uses cleartext redis:// in production", () => {
     const { status, output } = runGate({ REDIS_URL: "redis://localhost:6379" });
     expect(status, output).not.toBe(0);
-    expect(output).toContain("REDIS_URL: must use rediss:// (TLS) in production.");
+    expect(output).toContain(
+      "REDIS_URL: must use rediss:// (TLS) in production.",
+    );
   });
 
   // Table-driven rather than one case each: the point is that *no* required

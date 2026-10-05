@@ -150,5 +150,3 @@ export async function getPortalFileDownloadUrl(
   if (isDemoMode()) return (mock as any).getPortalFileDownloadUrl(...args);
   return (real as any).getPortalFileDownloadUrl(...args);
 }
-
-

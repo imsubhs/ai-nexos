@@ -31,7 +31,11 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category A: Single User Rate Limiting
   // ---------------------------------------------------------------------------
   it("Category A: single-user-rate-limiting throttles single user exceeding sustained limit", async () => {
-    const policy: RateLimitPolicy = { name: "cat_a", limit: 3, windowSeconds: 60 };
+    const policy: RateLimitPolicy = {
+      name: "cat_a",
+      limit: 3,
+      windowSeconds: 60,
+    };
     const userKey = "user-123";
 
     for (let i = 0; i < 3; i++) {
@@ -49,7 +53,11 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category B: Burst Behavior
   // ---------------------------------------------------------------------------
   it("Category B: burst-behavior permits requests up to burst limit and immediately rejects next", async () => {
-    const burstPolicy: RateLimitPolicy = { name: "cat_b", limit: 5, windowSeconds: 10 };
+    const burstPolicy: RateLimitPolicy = {
+      name: "cat_b",
+      limit: 5,
+      windowSeconds: 10,
+    };
     const burstKey = "burst-caller";
 
     const results = await Promise.all(
@@ -66,16 +74,28 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category C: Sustained Behavior
   // ---------------------------------------------------------------------------
   it("Category C: sustained-behavior replenishes budget after window expires", async () => {
-    const policy: RateLimitPolicy = { name: "cat_c", limit: 2, windowSeconds: 60 };
+    const policy: RateLimitPolicy = {
+      name: "cat_c",
+      limit: 2,
+      windowSeconds: 60,
+    };
     const fixedTime = 1_700_000_000_000;
 
     await consumeRateLimit(policy, "caller-c", fixedTime);
     await consumeRateLimit(policy, "caller-c", fixedTime + 1000);
-    const rejected = await consumeRateLimit(policy, "caller-c", fixedTime + 2000);
+    const rejected = await consumeRateLimit(
+      policy,
+      "caller-c",
+      fixedTime + 2000,
+    );
     expect(rejected.allowed).toBe(false);
 
     // After 2 full windows (120s), previous window fully decayed
-    const replenished = await consumeRateLimit(policy, "caller-c", fixedTime + 130_000);
+    const replenished = await consumeRateLimit(
+      policy,
+      "caller-c",
+      fixedTime + 130_000,
+    );
     expect(replenished.allowed).toBe(true);
     expect(replenished.remaining).toBe(1);
   });
@@ -84,7 +104,11 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category D: Tenant Isolation
   // ---------------------------------------------------------------------------
   it("Category D: tenant-isolation ensures Org 1 exhaustion does not affect Org 2", async () => {
-    const policy: RateLimitPolicy = { name: "cat_d", limit: 2, windowSeconds: 60 };
+    const policy: RateLimitPolicy = {
+      name: "cat_d",
+      limit: 2,
+      windowSeconds: 60,
+    };
     const org1User = "org1:userA";
     const org2User = "org2:userA";
 
@@ -102,7 +126,11 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category E: User Isolation
   // ---------------------------------------------------------------------------
   it("Category E: user-isolation ensures User A exhaustion in Org 1 does not throttle User B in Org 1", async () => {
-    const policy: RateLimitPolicy = { name: "cat_e", limit: 2, windowSeconds: 60 };
+    const policy: RateLimitPolicy = {
+      name: "cat_e",
+      limit: 2,
+      windowSeconds: 60,
+    };
     const org1UserA = "org1:userA";
     const org1UserB = "org1:userB";
 
@@ -177,7 +205,11 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category H: Wrapper Parity
   // ---------------------------------------------------------------------------
   it("Category H: wrapper-parity validates withRateLimit enforces identical limits", async () => {
-    const testPolicy: RateLimitPolicy = { name: "cat_h", limit: 2, windowSeconds: 60 };
+    const testPolicy: RateLimitPolicy = {
+      name: "cat_h",
+      limit: 2,
+      windowSeconds: 60,
+    };
 
     const protectedFn = withRateLimit(
       testPolicy,
@@ -201,7 +233,11 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
     let evalScript = "";
 
     const mockRedis = {
-      eval: async (script: string, _numKeys: number, ..._args: (string | number)[]) => {
+      eval: async (
+        script: string,
+        _numKeys: number,
+        ..._args: (string | number)[]
+      ) => {
         evalCalled = true;
         evalScript = script;
         // Lua returns [current_count, previous_count]
@@ -218,7 +254,9 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
 
     expect(evalCalled).toBe(true);
     expect(evalScript).toContain("redis.call('INCR', KEYS[1])");
-    expect(evalScript).toContain("redis.call('EXPIRE', KEYS[1], tonumber(ARGV[1]))");
+    expect(evalScript).toContain(
+      "redis.call('EXPIRE', KEYS[1], tonumber(ARGV[1]))",
+    );
     expect(res.allowed).toBe(true);
 
     __setRateLimitRedisClient(null);
@@ -249,7 +287,11 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category K: Fallback Memory Store Eviction
   // ---------------------------------------------------------------------------
   it("Category K: fallback-memory-store bounds memory by evicting stale keys", async () => {
-    const policy: RateLimitPolicy = { name: "cat_k", limit: 5, windowSeconds: 1 };
+    const policy: RateLimitPolicy = {
+      name: "cat_k",
+      limit: 5,
+      windowSeconds: 1,
+    };
     const t0 = 1_700_000_000_000;
 
     // Insert keys
@@ -270,7 +312,9 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
     expect(getClientIp(h1)).toBe("203.0.113.195");
 
     // Multi-hop proxy chain: client, edge-proxy
-    const h2 = new Headers({ "x-forwarded-for": "198.51.100.2, 203.0.113.195" });
+    const h2 = new Headers({
+      "x-forwarded-for": "198.51.100.2, 203.0.113.195",
+    });
     // Default 1 hop selects the rightmost entry (trusted edge)
     expect(getClientIp(h2)).toBe("203.0.113.195");
 
@@ -287,7 +331,8 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   // Category M: Invite Preview Abuse Prevention
   // ---------------------------------------------------------------------------
   it("Category M: invite-preview-abuse prevents enumeration via coarse prefix buckets", () => {
-    const tokenHash = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    const tokenHash =
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     const bucket = tokenPrefixBucket(tokenHash);
     expect(bucket).toBe("01234567");
     expect(bucket.length).toBe(8);
@@ -341,8 +386,12 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
       return true;
     };
 
-    expect(() => validateReportRange("2026-03-31", "2026-03-01")).toThrow("Invalid date range");
-    expect(() => validateReportRange("2026-01-01", "2026-03-01")).toThrow("Range cannot exceed 31 days");
+    expect(() => validateReportRange("2026-03-31", "2026-03-01")).toThrow(
+      "Invalid date range",
+    );
+    expect(() => validateReportRange("2026-01-01", "2026-03-01")).toThrow(
+      "Range cannot exceed 31 days",
+    );
     expect(validateReportRange("2026-03-01", "2026-03-31")).toBe(true);
   });
 
@@ -446,7 +495,8 @@ describe("Phase S6.3 Test Matrix: Categories A through U", () => {
   it("Category U: security-telemetry ensures tokenPrefixBucket preserves 256-bit entropy without leaking raw token", () => {
     const rawSecretToken = "sec_live_abcdef1234567890deadbeefcafebabef00d";
     // We never bucket on raw token; only on SHA-256 hash prefix
-    const sha256Hex = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    const sha256Hex =
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     const bucket = tokenPrefixBucket(sha256Hex);
 
     expect(bucket).not.toContain(rawSecretToken);

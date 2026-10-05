@@ -466,7 +466,10 @@ export async function consumeRateLimit(
           limit: policy.limit,
           remaining: 0,
           resetAt: windowStart + windowMs,
-          retryAfterSeconds: Math.max(1, Math.ceil((windowStart + windowMs - now) / 1000)),
+          retryAfterSeconds: Math.max(
+            1,
+            Math.ceil((windowStart + windowMs - now) / 1000),
+          ),
           storeMode: "degraded",
           reason: "storage_unavailable_fail_closed",
         };
@@ -482,7 +485,10 @@ export async function consumeRateLimit(
           limit: policy.limit,
           remaining: 0,
           resetAt: windowStart + windowMs,
-          retryAfterSeconds: Math.max(1, Math.ceil((windowStart + windowMs - now) / 1000)),
+          retryAfterSeconds: Math.max(
+            1,
+            Math.ceil((windowStart + windowMs - now) / 1000),
+          ),
           storeMode: "degraded",
           reason: "storage_unavailable_fail_closed",
         };

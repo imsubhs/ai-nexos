@@ -12,7 +12,10 @@ import {
 import { getTasksByProject } from "@/features/tasks/actions";
 import { TaskBoard } from "@/features/tasks/components/task-board";
 import { TaskList } from "@/features/tasks/components/task-list";
-import { TaskForm, type TaskScope } from "@/features/tasks/components/task-form";
+import {
+  TaskForm,
+  type TaskScope,
+} from "@/features/tasks/components/task-form";
 import {
   TaskDetailModal,
   type TaskMemberOption,
@@ -88,8 +91,7 @@ export function ProjectTaskWorkspace({
         }
       : null;
 
-  const selectedTask =
-    tasks.find((task) => task.taskId === selectedId) ?? null;
+  const selectedTask = tasks.find((task) => task.taskId === selectedId) ?? null;
 
   const taskDetailScope: TaskScope = selectedTask
     ? {
@@ -108,18 +110,18 @@ export function ProjectTaskWorkspace({
   return (
     <div className="space-y-4">
       {/* Workspace Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-border bg-surface-1">
+      <div className="border-border bg-surface-1 flex flex-col justify-between gap-3 rounded-xl border p-3 sm:flex-row sm:items-center">
         <div className="flex flex-wrap items-center gap-2">
           {/* View switcher */}
           <div
             aria-label="Task view"
-            className="bg-surface-2 border border-border/80 flex items-center gap-1 rounded-lg p-1"
+            className="bg-surface-2 border-border/80 flex items-center gap-1 rounded-lg border p-1"
           >
             <button
               type="button"
               aria-pressed={view === "board"}
               onClick={() => setView("board")}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 view === "board"
                   ? "bg-surface-3 text-foreground font-semibold shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -132,7 +134,7 @@ export function ProjectTaskWorkspace({
               type="button"
               aria-pressed={view === "list"}
               onClick={() => setView("list")}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 view === "list"
                   ? "bg-surface-3 text-foreground font-semibold shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -146,11 +148,11 @@ export function ProjectTaskWorkspace({
           {/* Milestone filter */}
           {milestones.length > 0 && (
             <div className="flex items-center gap-1.5">
-              <Layers className="size-3.5 text-muted-foreground ml-1" />
+              <Layers className="text-muted-foreground ml-1 size-3.5" />
               <select
                 value={selectedMilestoneId}
                 onChange={(e) => setSelectedMilestoneId(e.target.value)}
-                className="h-8 px-2.5 rounded-lg border border-border/80 bg-surface-2 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                className="border-border/80 bg-surface-2 text-foreground focus:ring-brand-primary h-8 rounded-lg border px-2.5 text-xs focus:ring-1 focus:outline-none"
               >
                 <option value="all">All Milestones ({tasks.length})</option>
                 {milestones.map((m) => (
@@ -164,11 +166,11 @@ export function ProjectTaskWorkspace({
 
           {/* Priority filter */}
           <div className="flex items-center gap-1.5">
-            <Filter className="size-3.5 text-muted-foreground ml-1" />
+            <Filter className="text-muted-foreground ml-1 size-3.5" />
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="h-8 px-2.5 rounded-lg border border-border/80 bg-surface-2 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              className="border-border/80 bg-surface-2 text-foreground focus:ring-brand-primary h-8 rounded-lg border px-2.5 text-xs focus:ring-1 focus:outline-none"
             >
               <option value="all">All Priorities</option>
               <option value="critical">Critical</option>
@@ -184,7 +186,7 @@ export function ProjectTaskWorkspace({
           <Button
             size="sm"
             onClick={() => setCreateOpen(true)}
-            className="gap-1.5 shrink-0"
+            className="shrink-0 gap-1.5"
           >
             <PlusIcon className="size-4" />
             <span>New Task</span>
@@ -200,22 +202,23 @@ export function ProjectTaskWorkspace({
 
       {/* Main View Area */}
       {milestones.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-1/40 p-12 text-center">
-          <Layers className="size-8 text-muted-foreground mb-3" />
-          <h3 className="text-base font-semibold text-foreground mb-1">
+        <div className="border-border bg-surface-1/40 flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+          <Layers className="text-muted-foreground mb-3 size-8" />
+          <h3 className="text-foreground mb-1 text-base font-semibold">
             No milestones defined
           </h3>
-          <p className="max-w-sm text-xs text-muted-foreground mb-4">
-            Tasks in AI NEX OS belong to project milestones. Define a milestone first to start tracking execution.
+          <p className="text-muted-foreground mb-4 max-w-sm text-xs">
+            Tasks in AI NEX OS belong to project milestones. Define a milestone
+            first to start tracking execution.
           </p>
         </div>
       ) : filteredTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-1/40 p-12 text-center">
-          <Kanban className="size-8 text-muted-foreground mb-3" />
-          <h3 className="text-base font-semibold text-foreground mb-1">
+        <div className="border-border bg-surface-1/40 flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+          <Kanban className="text-muted-foreground mb-3 size-8" />
+          <h3 className="text-foreground mb-1 text-base font-semibold">
             No tasks in this view
           </h3>
-          <p className="max-w-sm text-xs text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-4 max-w-sm text-xs">
             {tasks.length > 0
               ? "No tasks match the active milestone or priority filter."
               : "No tasks have been scheduled for this project yet."}
@@ -256,7 +259,7 @@ export function ProjectTaskWorkspace({
               <DialogTitle>
                 Create New Task
                 {effectiveMilestone && (
-                  <span className="block text-xs font-normal text-muted-foreground mt-1">
+                  <span className="text-muted-foreground mt-1 block text-xs font-normal">
                     Assigning to milestone:{" "}
                     <span className="text-foreground font-medium">
                       {effectiveMilestone.name}

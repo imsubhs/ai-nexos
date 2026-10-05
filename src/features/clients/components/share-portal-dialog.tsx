@@ -31,9 +31,10 @@ export function SharePortalDialog({
   const [copied, setCopied] = useState(false);
 
   // Portal URL: /portal
-  const portalUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/portal`
-    : "/portal";
+  const portalUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/portal`
+      : "/portal";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(portalUrl);
@@ -47,7 +48,7 @@ export function SharePortalDialog({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-md bg-brand-primary/10 text-brand-primary">
+            <div className="bg-brand-primary/10 text-brand-primary flex size-7 items-center justify-center rounded-md">
               <ShieldCheck className="size-4" />
             </div>
             <DialogTitle>Client Portal Collaboration</DialogTitle>
@@ -58,17 +59,24 @@ export function SharePortalDialog({
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          <div className="p-3 rounded-lg border border-border-subtle bg-surface-1 text-xs text-foreground-secondary leading-relaxed space-y-2">
-            <div className="font-semibold text-foreground flex items-center gap-1.5">
+          <div className="border-border-subtle bg-surface-1 text-foreground-secondary space-y-2 rounded-lg border p-3 text-xs leading-relaxed">
+            <div className="text-foreground flex items-center gap-1.5 font-semibold">
               <span>Cryptographic Share Boundary</span>
             </div>
             <p>
-              External clients access deliverables, reviews, and meeting recordings exclusively through cryptographically signed share links. Internal CRM details, contact records, and workforce attendance are strictly quarantined and never exposed to the public portal.
+              External clients access deliverables, reviews, and meeting
+              recordings exclusively through cryptographically signed share
+              links. Internal CRM details, contact records, and workforce
+              attendance are strictly quarantined and never exposed to the
+              public portal.
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="portal-link" className="text-xs text-foreground-secondary font-medium">
+            <Label
+              htmlFor="portal-link"
+              className="text-foreground-secondary text-xs font-medium"
+            >
               Client Portal Entrance
             </Label>
             <div className="flex items-center gap-2">
@@ -78,7 +86,11 @@ export function SharePortalDialog({
                 value={portalUrl}
                 className="bg-surface-2 border-border font-mono text-xs"
               />
-              <Button size="sm" onClick={handleCopy} className="shrink-0 gap-1.5">
+              <Button
+                size="sm"
+                onClick={handleCopy}
+                className="shrink-0 gap-1.5"
+              >
                 {copied ? (
                   <>
                     <Check className="size-3.5 text-emerald-400" />
@@ -94,12 +106,12 @@ export function SharePortalDialog({
             </div>
           </div>
 
-          <div className="pt-2 flex justify-between items-center border-t border-border-subtle">
+          <div className="border-border-subtle flex items-center justify-between border-t pt-2">
             <a
               href="/portal"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-brand-primary hover:underline"
+              className="text-brand-primary inline-flex items-center gap-1.5 text-xs hover:underline"
             >
               <span>Preview Portal Root</span>
               <ExternalLink className="size-3" />

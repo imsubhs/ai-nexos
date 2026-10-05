@@ -64,20 +64,20 @@ export function ExecutiveIntelligenceDashboard({
   return (
     <div className="flex flex-col gap-8 pb-12">
       {/* Top Header Command Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border-subtle pb-4">
+      <div className="border-border-subtle flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground-heading">
+            <h1 className="text-foreground-heading text-2xl font-bold tracking-tight">
               Executive Intelligence
             </h1>
-            <span className="inline-flex items-center gap-1 rounded-full border border-brand-primary/30 bg-brand-primary/10 px-2 py-0.5 text-[11px] font-mono font-medium text-brand-primary">
-              <span className="size-1.5 rounded-full bg-brand-primary animate-pulse" />
+            <span className="border-brand-primary/30 bg-brand-primary/10 text-brand-primary inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] font-medium">
+              <span className="bg-brand-primary size-1.5 animate-pulse rounded-full" />
               Decision Support Active
             </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {data.organizationName} · Operational Telemetry & Threat Surface · Generated:{" "}
-            {new Date(data.generatedAt).toLocaleTimeString()}
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            {data.organizationName} · Operational Telemetry & Threat Surface ·
+            Generated: {new Date(data.generatedAt).toLocaleTimeString()}
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export function ExecutiveIntelligenceDashboard({
           <div
             role="group"
             aria-label="Trend time window selector"
-            className="flex items-center gap-1 bg-surface-2 p-1 rounded-lg border border-border-subtle"
+            className="bg-surface-2 border-border-subtle flex items-center gap-1 rounded-lg border p-1"
           >
             {(["7d", "30d", "90d"] as const).map((tw) => (
               <button
@@ -95,7 +95,7 @@ export function ExecutiveIntelligenceDashboard({
                 onClick={() => handleTimeWindowChange(tw)}
                 disabled={isPending}
                 aria-pressed={timeWindow === tw}
-                className={`px-2.5 py-1 rounded text-xs font-mono font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
+                className={`focus-visible:ring-brand-primary rounded px-2.5 py-1 font-mono text-xs font-medium transition-all outline-none focus-visible:ring-2 ${
                   timeWindow === tw
                     ? "bg-brand-primary text-white shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -113,7 +113,9 @@ export function ExecutiveIntelligenceDashboard({
             size="sm"
             className="h-8 gap-1.5 text-xs font-medium"
           >
-            <RefreshCw className={`size-3.5 ${isPending ? "animate-spin text-brand-primary" : ""}`} />
+            <RefreshCw
+              className={`size-3.5 ${isPending ? "text-brand-primary animate-spin" : ""}`}
+            />
             <span>{isPending ? "Computing…" : "Refresh"}</span>
           </Button>
 
@@ -121,7 +123,7 @@ export function ExecutiveIntelligenceDashboard({
             onClick={handlePrint}
             variant="ghost"
             size="sm"
-            className="h-8 gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hidden sm:flex"
+            className="text-muted-foreground hover:text-foreground hidden h-8 gap-1.5 text-xs font-medium sm:flex"
           >
             <Printer className="size-3.5" />
             <span>Export View</span>
@@ -164,10 +166,12 @@ export function ExecutiveIntelligenceDashboard({
       <ActivityIntelligenceSection activity={data.activity} />
 
       {/* Operational Security Footer Note */}
-      <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between text-[11px] text-muted-foreground font-mono gap-2">
+      <div className="border-border-subtle text-muted-foreground flex flex-col items-center justify-between gap-2 border-t pt-4 font-mono text-[11px] sm:flex-row">
         <div className="flex items-center gap-1.5">
           <ShieldCheck className="size-3.5 text-emerald-400" />
-          <span>Strict Multi-Tenant RLS Active · Internal Executive Console</span>
+          <span>
+            Strict Multi-Tenant RLS Active · Internal Executive Console
+          </span>
         </div>
         <div>AI NEX OS · Phase 4H Enterprise Decision-Support Layer</div>
       </div>

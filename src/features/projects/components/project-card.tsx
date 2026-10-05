@@ -51,11 +51,11 @@ export function ProjectCard({
   const clientTargetId = project.client?.clientId || project.clientId;
 
   return (
-    <Card className="rounded-xl border border-border bg-surface-1 shadow-xs transition hover:border-brand-primary/40">
+    <Card className="border-border bg-surface-1 hover:border-brand-primary/40 rounded-xl border shadow-xs transition">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div>
           <div className="text-muted-foreground mb-1 flex items-center space-x-2 text-sm">
-            <span className="bg-surface-3 border border-border text-brand-primary rounded px-1.5 font-mono text-xs font-semibold">
+            <span className="bg-surface-3 border-border text-brand-primary rounded border px-1.5 font-mono text-xs font-semibold">
               {project.projectCode}
             </span>
             {project.client?.companyName && (
@@ -70,14 +70,16 @@ export function ProjectCard({
                     {project.client.companyName}
                   </Link>
                 ) : (
-                  <span className="text-foreground-secondary">{project.client.companyName}</span>
+                  <span className="text-foreground-secondary">
+                    {project.client.companyName}
+                  </span>
                 )}
               </>
             )}
           </div>
           <Link
             href={`/projects/${project.projectId}`}
-            className="text-base font-semibold text-foreground-heading hover:text-brand-primary hover:underline"
+            className="text-foreground-heading hover:text-brand-primary text-base font-semibold hover:underline"
           >
             {project.projectName}
           </Link>
@@ -88,7 +90,7 @@ export function ProjectCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="-mt-2 -mr-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground -mt-2 -mr-2 h-8 w-8"
                 aria-label={`Project actions for ${project.projectName}`}
               >
                 <MoreVerticalIcon className="h-4 w-4" />
@@ -122,7 +124,7 @@ export function ProjectCard({
           <ProjectPriorityBadge priority={project.priority} />
         </div>
 
-        <div className="text-muted-foreground flex items-center justify-between border-t border-border-subtle pt-3 text-xs">
+        <div className="text-muted-foreground border-border-subtle flex items-center justify-between border-t pt-3 text-xs">
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1">
               <CalendarIcon className="h-3.5 w-3.5" />
@@ -135,24 +137,27 @@ export function ProjectCard({
             {project.manager?.name && (
               <>
                 <span>•</span>
-                <span className="truncate max-w-[100px] text-foreground-secondary">
+                <span className="text-foreground-secondary max-w-[100px] truncate">
                   {project.manager.name}
                 </span>
               </>
             )}
           </div>
           <div className="flex items-center space-x-1.5">
-            <span className="font-mono text-foreground">{project.completionPercentage}%</span>
+            <span className="text-foreground font-mono">
+              {project.completionPercentage}%
+            </span>
             <div className="bg-surface-3 h-1.5 w-16 overflow-hidden rounded-full">
               <div
                 className="bg-brand-primary h-full rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(100, Math.max(0, project.completionPercentage))}%` }}
+                style={{
+                  width: `${Math.min(100, Math.max(0, project.completionPercentage))}%`,
+                }}
               />
             </div>
           </div>
         </div>
       </CardContent>
-
 
       <ConfirmDialog
         open={archiveOpen}

@@ -47,7 +47,7 @@ export function TaskList({
   return (
     <div
       ref={parentRef}
-      className="bg-surface-1 border border-border h-[500px] overflow-auto rounded-xl shadow-xs"
+      className="bg-surface-1 border-border h-[500px] overflow-auto rounded-xl border shadow-xs"
     >
       <div
         className="relative w-full"
@@ -68,11 +68,14 @@ export function TaskList({
               <button
                 type="button"
                 onClick={() => onTaskClick(task.taskId)}
-                className="hover:bg-surface-2/50 focus-visible:ring-ring flex w-full items-center justify-between gap-3 border-b border-border/60 px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="hover:bg-surface-2/50 focus-visible:ring-ring border-border/60 flex w-full items-center justify-between gap-3 border-b px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 <div className="flex min-w-0 flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs text-brand-primary border-brand-primary/30 bg-brand-primary/5">
+                    <Badge
+                      variant="outline"
+                      className="text-brand-primary border-brand-primary/30 bg-brand-primary/5 font-mono text-xs"
+                    >
                       {task.taskCode}
                     </Badge>
                     <span className="text-foreground truncate text-sm font-medium">

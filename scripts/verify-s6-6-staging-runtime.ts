@@ -23,13 +23,20 @@ import {
   type RateLimitPolicy,
 } from "../src/lib/security/rate-limit";
 import { getClientIp, UNKNOWN_CLIENT_IP } from "../src/lib/security/request";
-import { withRateLimit, KeyResolvers, resolveGuardContext } from "../src/lib/security/action-guard";
+import {
+  withRateLimit,
+  KeyResolvers,
+  resolveGuardContext,
+} from "../src/lib/security/action-guard";
 import { ApiError } from "../src/lib/security/errors";
 import { hasRedis, getEnvDiagnostics, isDemoMode } from "../src/lib/env.server";
 import { GET as healthHandler } from "../src/app/api/health/route";
 import { insertProjectSchema } from "../src/features/projects/schemas";
 import { initializeUploadSchema } from "../src/features/files/schemas";
-import { codePrefixSchema, validateCodePrefix } from "../src/features/organizations/schemas";
+import {
+  codePrefixSchema,
+  validateCodePrefix,
+} from "../src/features/organizations/schemas";
 import { logSecurityEvent } from "../src/lib/security/logger";
 
 // Initialize and guard environment selection
@@ -67,9 +74,15 @@ function record(
 }
 
 async function run() {
-  console.log("================================================================================");
-  console.log("AI NEX OS — S6.6 STAGING RUNTIME & PROXY TOPOLOGY VALIDATION HARNESS");
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================",
+  );
+  console.log(
+    "AI NEX OS — S6.6 STAGING RUNTIME & PROXY TOPOLOGY VALIDATION HARNESS",
+  );
+  console.log(
+    "================================================================================\n",
+  );
 
   console.log(`Target Environment:  ${target.environment}`);
   console.log(`Project Ref:         ${target.projectRef}`);
@@ -78,7 +91,9 @@ async function run() {
 
   // Target Safety Check
   if (target.projectRef !== "shnzzbbtydmvfhgeoysg") {
-    console.error(`FATAL: Target projectRef is "${target.projectRef}", expected "shnzzbbtydmvfhgeoysg". ABORTING.`);
+    console.error(
+      `FATAL: Target projectRef is "${target.projectRef}", expected "shnzzbbtydmvfhgeoysg". ABORTING.`,
+    );
     process.exit(1);
   }
 
@@ -150,10 +165,15 @@ async function run() {
       "REDIS_URL reported in usingFallback",
       diagnostics.usingFallback.includes("REDIS_URL"),
       "REDIS_URL in usingFallback list",
-      diagnostics.usingFallback.includes("REDIS_URL") ? "Present in usingFallback" : "Missing",
+      diagnostics.usingFallback.includes("REDIS_URL")
+        ? "Present in usingFallback"
+        : "Missing",
     );
 
-    const initialConsume = await consumeRateLimit(RATE_LIMITS.authRead, "boot-test-id");
+    const initialConsume = await consumeRateLimit(
+      RATE_LIMITS.authRead,
+      "boot-test-id",
+    );
     record(
       "A-03",
       "BOOT",
@@ -213,7 +233,9 @@ async function run() {
       "Health payload contains zero secret leakage",
       leakedSecrets.length === 0,
       "Zero credentials or secret strings leaked",
-      leakedSecrets.length === 0 ? "ZERO SECRETS LEAKED" : `LEAK DETECTED: ${leakedSecrets.length} items`,
+      leakedSecrets.length === 0
+        ? "ZERO SECRETS LEAKED"
+        : `LEAK DETECTED: ${leakedSecrets.length} items`,
     );
 
     // -------------------------------------------------------------------------
@@ -226,9 +248,14 @@ async function run() {
     const authId = "staging-auth-user@example.com";
     const authResults = [];
     for (let i = 0; i < 3; i++) {
-      authResults.push(await consumeRateLimit(RATE_LIMITS.authMutation, authId));
+      authResults.push(
+        await consumeRateLimit(RATE_LIMITS.authMutation, authId),
+      );
     }
-    const authThrottled = await consumeRateLimit(RATE_LIMITS.authMutation, authId);
+    const authThrottled = await consumeRateLimit(
+      RATE_LIMITS.authMutation,
+      authId,
+    );
 
     record(
       "C-01",
@@ -243,7 +270,9 @@ async function run() {
       "C-02",
       "AUTH",
       "auth:mutation throttles 4th request with retryAfterSeconds",
-      !authThrottled.allowed && authThrottled.retryAfterSeconds > 0 && authThrottled.storeMode === "memory",
+      !authThrottled.allowed &&
+        authThrottled.retryAfterSeconds > 0 &&
+        authThrottled.storeMode === "memory",
       "allowed: false, retryAfterSeconds > 0, storeMode: memory",
       `allowed: ${authThrottled.allowed}, retryAfter: ${authThrottled.retryAfterSeconds}s, storeMode: ${authThrottled.storeMode}`,
     );
@@ -269,9 +298,14 @@ async function run() {
     const testAccount = "victim-staff@staging.internal";
     const acctResults = [];
     for (let i = 0; i < 5; i++) {
-      acctResults.push(await consumeRateLimit(RATE_LIMITS.loginByAccount, testAccount));
+      acctResults.push(
+        await consumeRateLimit(RATE_LIMITS.loginByAccount, testAccount),
+      );
     }
-    const acctThrottled = await consumeRateLimit(RATE_LIMITS.loginByAccount, testAccount);
+    const acctThrottled = await consumeRateLimit(
+      RATE_LIMITS.loginByAccount,
+      testAccount,
+    );
 
     record(
       "C-04",
@@ -310,7 +344,9 @@ async function run() {
       }),
     });
     const authJson = await authResp.json();
-    const isCredentialsError = authJson.error_description === "Invalid login credentials" || authJson.msg === "Invalid login credentials";
+    const isCredentialsError =
+      authJson.error_description === "Invalid login credentials" ||
+      authJson.msg === "Invalid login credentials";
 
     record(
       "C-06",
@@ -328,16 +364,22 @@ async function run() {
     resetRateLimitState();
 
     const anonIp = "198.51.100.42";
-    const tokenHashA = "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0";
+    const tokenHashA =
+      "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0";
     const prefixA = tokenPrefixBucket(tokenHashA);
     const anonKeyA = `${anonIp}:${prefixA}`;
 
     // invitationPreview: limit 20, degradedLimit 10
     const previewResults = [];
     for (let i = 0; i < 10; i++) {
-      previewResults.push(await consumeRateLimit(RATE_LIMITS.invitationPreview, anonKeyA));
+      previewResults.push(
+        await consumeRateLimit(RATE_LIMITS.invitationPreview, anonKeyA),
+      );
     }
-    const previewThrottled = await consumeRateLimit(RATE_LIMITS.invitationPreview, anonKeyA);
+    const previewThrottled = await consumeRateLimit(
+      RATE_LIMITS.invitationPreview,
+      anonKeyA,
+    );
 
     record(
       "D-01",
@@ -358,16 +400,21 @@ async function run() {
     );
 
     // Verify independent bucket for different token prefix from same IP
-    const tokenHashB = "f9e8d7c6b5a43210123456789abcdef0123456789abcdef0123456789abcdef0";
+    const tokenHashB =
+      "f9e8d7c6b5a43210123456789abcdef0123456789abcdef0123456789abcdef0";
     const prefixB = tokenPrefixBucket(tokenHashB);
     const anonKeyB = `${anonIp}:${prefixB}`;
-    const independentBucketResult = await consumeRateLimit(RATE_LIMITS.invitationPreview, anonKeyB);
+    const independentBucketResult = await consumeRateLimit(
+      RATE_LIMITS.invitationPreview,
+      anonKeyB,
+    );
 
     record(
       "D-03",
       "ANONYMOUS",
       "Different token prefix bucket retains independent budget",
-      independentBucketResult.allowed && independentBucketResult.remaining === 9,
+      independentBucketResult.allowed &&
+        independentBucketResult.remaining === 9,
       "allowed: true, remaining: 9",
       `allowed: ${independentBucketResult.allowed}, remaining: ${independentBucketResult.remaining}`,
     );
@@ -383,9 +430,14 @@ async function run() {
     // 1. searchExpensive: limit 20, degradedLimit 10
     const searchResults = [];
     for (let i = 0; i < 10; i++) {
-      searchResults.push(await consumeRateLimit(RATE_LIMITS.searchExpensive, tenantUser));
+      searchResults.push(
+        await consumeRateLimit(RATE_LIMITS.searchExpensive, tenantUser),
+      );
     }
-    const searchThrottled = await consumeRateLimit(RATE_LIMITS.searchExpensive, tenantUser);
+    const searchThrottled = await consumeRateLimit(
+      RATE_LIMITS.searchExpensive,
+      tenantUser,
+    );
 
     record(
       "E-01",
@@ -399,9 +451,14 @@ async function run() {
     // 2. reportExpensive: limit 5, degradedLimit 2
     const reportResults = [];
     for (let i = 0; i < 2; i++) {
-      reportResults.push(await consumeRateLimit(RATE_LIMITS.reportExpensive, tenantUser));
+      reportResults.push(
+        await consumeRateLimit(RATE_LIMITS.reportExpensive, tenantUser),
+      );
     }
-    const reportThrottled = await consumeRateLimit(RATE_LIMITS.reportExpensive, tenantUser);
+    const reportThrottled = await consumeRateLimit(
+      RATE_LIMITS.reportExpensive,
+      tenantUser,
+    );
 
     record(
       "E-02",
@@ -415,9 +472,14 @@ async function run() {
     // 3. invitationIssuance: limit 10, degradedLimit 5
     const inviteResults = [];
     for (let i = 0; i < 5; i++) {
-      inviteResults.push(await consumeRateLimit(RATE_LIMITS.invitationIssuance, tenantUser));
+      inviteResults.push(
+        await consumeRateLimit(RATE_LIMITS.invitationIssuance, tenantUser),
+      );
     }
-    const inviteThrottled = await consumeRateLimit(RATE_LIMITS.invitationIssuance, tenantUser);
+    const inviteThrottled = await consumeRateLimit(
+      RATE_LIMITS.invitationIssuance,
+      tenantUser,
+    );
 
     record(
       "E-03",
@@ -436,8 +498,14 @@ async function run() {
 
     // Surface 1: createOrganizationAction (orgCreation)
     const orgCreationId = "user-creator-001";
-    const orgRes1 = await consumeRateLimit(RATE_LIMITS.orgCreation, orgCreationId);
-    const orgRes2 = await consumeRateLimit(RATE_LIMITS.orgCreation, orgCreationId);
+    const orgRes1 = await consumeRateLimit(
+      RATE_LIMITS.orgCreation,
+      orgCreationId,
+    );
+    const orgRes2 = await consumeRateLimit(
+      RATE_LIMITS.orgCreation,
+      orgCreationId,
+    );
 
     record(
       "F-01",
@@ -450,7 +518,10 @@ async function run() {
 
     // Verify fail-closed behavior for orgCreation when Redis fails
     __simulateRedisFailure();
-    const orgFailClosed = await consumeRateLimit(RATE_LIMITS.orgCreation, "user-creator-fail-closed");
+    const orgFailClosed = await consumeRateLimit(
+      RATE_LIMITS.orgCreation,
+      "user-creator-fail-closed",
+    );
     record(
       "F-02",
       "HIGH_RISK",
@@ -464,7 +535,10 @@ async function run() {
     __setRateLimitRedisClient(null); // restore to unconfigured memory mode
 
     // Surface 2: previewInvitationAction
-    const prevRes = await consumeRateLimit(RATE_LIMITS.invitationPreview, "192.0.2.1:12345678");
+    const prevRes = await consumeRateLimit(
+      RATE_LIMITS.invitationPreview,
+      "192.0.2.1:12345678",
+    );
     record(
       "F-03",
       "HIGH_RISK",
@@ -475,7 +549,10 @@ async function run() {
     );
 
     // Surface 3: inviteMemberAction
-    const invRes = await consumeRateLimit(RATE_LIMITS.invitationIssuance, "orgA:adminUser");
+    const invRes = await consumeRateLimit(
+      RATE_LIMITS.invitationIssuance,
+      "orgA:adminUser",
+    );
     record(
       "F-04",
       "HIGH_RISK",
@@ -486,8 +563,14 @@ async function run() {
     );
 
     // Surface 4: signInWithPasswordAction
-    const loginIpRes = await consumeRateLimit(RATE_LIMITS.loginByIp, "192.0.2.55");
-    const loginAcctRes = await consumeRateLimit(RATE_LIMITS.loginByAccount, "admin@nexus.test");
+    const loginIpRes = await consumeRateLimit(
+      RATE_LIMITS.loginByIp,
+      "192.0.2.55",
+    );
+    const loginAcctRes = await consumeRateLimit(
+      RATE_LIMITS.loginByAccount,
+      "admin@nexus.test",
+    );
     record(
       "F-05",
       "HIGH_RISK",
@@ -498,8 +581,14 @@ async function run() {
     );
 
     // Surface 5: sendMagicLinkAction
-    const magicIpRes = await consumeRateLimit(RATE_LIMITS.magicLinkByIp, "192.0.2.55");
-    const magicAcctRes = await consumeRateLimit(RATE_LIMITS.magicLinkByAccount, "lead@nexus.test");
+    const magicIpRes = await consumeRateLimit(
+      RATE_LIMITS.magicLinkByIp,
+      "192.0.2.55",
+    );
+    const magicAcctRes = await consumeRateLimit(
+      RATE_LIMITS.magicLinkByAccount,
+      "lead@nexus.test",
+    );
     record(
       "F-06",
       "HIGH_RISK",
@@ -510,7 +599,10 @@ async function run() {
     );
 
     // Surface 6: globalSearch
-    const searchRes = await consumeRateLimit(RATE_LIMITS.searchExpensive, "orgA:analyst");
+    const searchRes = await consumeRateLimit(
+      RATE_LIMITS.searchExpensive,
+      "orgA:analyst",
+    );
     record(
       "F-07",
       "HIGH_RISK",
@@ -521,7 +613,10 @@ async function run() {
     );
 
     // Surface 7: workforce report
-    const reportRes = await consumeRateLimit(RATE_LIMITS.reportExpensive, "orgA:hrManager");
+    const reportRes = await consumeRateLimit(
+      RATE_LIMITS.reportExpensive,
+      "orgA:hrManager",
+    );
     record(
       "F-08",
       "HIGH_RISK",
@@ -532,7 +627,10 @@ async function run() {
     );
 
     // Surface 8: initializeFileUpload
-    const uploadRes = await consumeRateLimit(RATE_LIMITS.resourceMutation, "orgA:designer");
+    const uploadRes = await consumeRateLimit(
+      RATE_LIMITS.resourceMutation,
+      "orgA:designer",
+    );
     record(
       "F-09",
       "HIGH_RISK",
@@ -578,7 +676,9 @@ async function run() {
       "'normal' is NEVER reported when REDIS_URL is absent",
       !storeModes.includes("normal"),
       "normal is absent",
-      storeModes.includes("normal") ? "VIOLATION: reported normal" : "CONFIRMED: normal not reported",
+      storeModes.includes("normal")
+        ? "VIOLATION: reported normal"
+        : "CONFIRMED: normal not reported",
     );
 
     record(
@@ -587,16 +687,26 @@ async function run() {
       "'degraded' is NOT reported in standard absent-Redis state",
       !storeModes.includes("degraded"),
       "degraded is absent",
-      storeModes.includes("degraded") ? "VIOLATION: reported degraded" : "CONFIRMED: degraded not reported",
+      storeModes.includes("degraded")
+        ? "VIOLATION: reported degraded"
+        : "CONFIRMED: degraded not reported",
     );
 
     // Eviction verification: test that historical windows past cutoff are evicted
-    const evictPolicy: RateLimitPolicy = { name: "evict:test", limit: 5, windowSeconds: 10 };
+    const evictPolicy: RateLimitPolicy = {
+      name: "evict:test",
+      limit: 5,
+      windowSeconds: 10,
+    };
     const t0 = 1_000_000_000;
     await consumeRateLimit(evictPolicy, "evict-key", t0);
     // Move forward past 2 windows (25 seconds)
     const tFuture = t0 + 25_000;
-    const futureConsume = await consumeRateLimit(evictPolicy, "evict-key", tFuture);
+    const futureConsume = await consumeRateLimit(
+      evictPolicy,
+      "evict-key",
+      tFuture,
+    );
     record(
       "G-04",
       "MEMORYSTORE",
@@ -622,7 +732,9 @@ async function run() {
 
     // Run 20 concurrent requests simultaneously
     const concurrentHits = await Promise.all(
-      Array.from({ length: 20 }, (_, i) => consumeRateLimit(burstPolicy, concurrentKey)),
+      Array.from({ length: 20 }, (_, i) =>
+        consumeRateLimit(burstPolicy, concurrentKey),
+      ),
     );
 
     const allowedHits = concurrentHits.filter((h) => h.allowed);
@@ -675,7 +787,9 @@ async function run() {
       "I-01",
       "TENANT_ISOLATION",
       "Exhausting Org A budget does not affect Org B with identical userId",
-      !orgA_exhausted.allowed && orgB_first.allowed && orgB_first.remaining === 2,
+      !orgA_exhausted.allowed &&
+        orgB_first.allowed &&
+        orgB_first.remaining === 2,
       "Org A throttled, Org B allowed with 2 remaining",
       `Org A allowed: ${orgA_exhausted.allowed}, Org B allowed: ${orgB_first.allowed} (remaining: ${orgB_first.remaining})`,
     );
@@ -687,7 +801,9 @@ async function run() {
 
     // 1. String maximums (Project Name max 200, Org Code Prefix 2-8 chars)
     const longProjectName = "A".repeat(201);
-    const projectValidation = insertProjectSchema.safeParse({ projectName: longProjectName });
+    const projectValidation = insertProjectSchema.safeParse({
+      projectName: longProjectName,
+    });
     record(
       "J-01",
       "RESOURCE_BOUNDS",
@@ -744,7 +860,10 @@ async function run() {
     console.log("\n--- SECTION K: ERROR SEMANTICS ---");
     resetRateLimitState();
 
-    const throttledDecision = await consumeRateLimit(RATE_LIMITS.authMutation, "error-semantics-key");
+    const throttledDecision = await consumeRateLimit(
+      RATE_LIMITS.authMutation,
+      "error-semantics-key",
+    );
     const rfcHeaders = rateLimitHeaders(throttledDecision);
 
     record(
@@ -763,12 +882,16 @@ async function run() {
     // -------------------------------------------------------------------------
     console.log("\n--- SECTION L: TELEMETRY VERIFICATION ---");
     // Test guarded action throttling event
-    const dummyPolicy: RateLimitPolicy = { name: "telemetry:test", limit: 1, windowSeconds: 60, degradedLimit: 1 };
-    const guardedAction = withRateLimit(
-      dummyPolicy,
-      async () => "ok",
-      { actionName: "testTelemetryAction", returnsActionResponse: true },
-    );
+    const dummyPolicy: RateLimitPolicy = {
+      name: "telemetry:test",
+      limit: 1,
+      windowSeconds: 60,
+      degradedLimit: 1,
+    };
+    const guardedAction = withRateLimit(dummyPolicy, async () => "ok", {
+      actionName: "testTelemetryAction",
+      returnsActionResponse: true,
+    });
 
     // First attempt succeeds
     await guardedAction();
@@ -782,7 +905,8 @@ async function run() {
       "L-01",
       "TELEMETRY",
       "Guarded action throttles gracefully returning ActionResponse error",
-      throttledActionRes.success === false && typeof throttledActionRes.error === "string",
+      throttledActionRes.success === false &&
+        typeof throttledActionRes.error === "string",
       "success: false, error: string",
       `success: ${throttledActionRes.success}, error: ${throttledActionRes.error}`,
     );
@@ -803,19 +927,26 @@ async function run() {
     // Establish a counter
     const restartKey = "restart-test-key";
     await consumeRateLimit(RATE_LIMITS.authMutation, restartKey);
-    const preRestart = await consumeRateLimit(RATE_LIMITS.authMutation, restartKey);
+    const preRestart = await consumeRateLimit(
+      RATE_LIMITS.authMutation,
+      restartKey,
+    );
 
     // Simulate process restart
     resetRateLimitState();
 
     // Verify counter resets cleanly
-    const postRestart = await consumeRateLimit(RATE_LIMITS.authMutation, restartKey);
+    const postRestart = await consumeRateLimit(
+      RATE_LIMITS.authMutation,
+      restartKey,
+    );
 
     record(
       "M-01",
       "RESTART",
       "Process restart clears in-memory rate-limit counters",
-      preRestart.remaining < postRestart.remaining && postRestart.remaining === 2,
+      preRestart.remaining < postRestart.remaining &&
+        postRestart.remaining === 2,
       "Full budget restored after restart",
       `Pre-restart remaining: ${preRestart.remaining}, Post-restart remaining: ${postRestart.remaining}`,
     );
@@ -840,7 +971,9 @@ async function run() {
 
     // CASE A: hops=1, single forwarding entry
     process.env.TRUSTED_PROXY_HOPS = "1";
-    const ipCaseA = getClientIp(makeHeaders({ "x-forwarded-for": "203.0.113.195" }));
+    const ipCaseA = getClientIp(
+      makeHeaders({ "x-forwarded-for": "203.0.113.195" }),
+    );
     record(
       "L10-CASE-A",
       "PROXY_IP",
@@ -942,24 +1075,40 @@ async function run() {
       }
 
       const clientIp = getClientIp(reqHeaders);
-      const rlResult = await consumeRateLimit(RATE_LIMITS.authMutation, clientIp);
+      const rlResult = await consumeRateLimit(
+        RATE_LIMITS.authMutation,
+        clientIp,
+      );
 
       if (!rlResult.allowed) {
         res.writeHead(429, {
           "Content-Type": "application/json",
           ...rateLimitHeaders(rlResult),
         });
-        res.end(JSON.stringify({ error: "rate_limited", retryAfter: rlResult.retryAfterSeconds }));
+        res.end(
+          JSON.stringify({
+            error: "rate_limited",
+            retryAfter: rlResult.retryAfterSeconds,
+          }),
+        );
       } else {
         res.writeHead(200, {
           "Content-Type": "application/json",
           ...rateLimitHeaders(rlResult),
         });
-        res.end(JSON.stringify({ clientIp, storeMode: rlResult.storeMode, remaining: rlResult.remaining }));
+        res.end(
+          JSON.stringify({
+            clientIp,
+            storeMode: rlResult.storeMode,
+            remaining: rlResult.remaining,
+          }),
+        );
       }
     });
 
-    await new Promise<void>((resolve) => testServer.listen(serverPort, "127.0.0.1", resolve));
+    await new Promise<void>((resolve) =>
+      testServer.listen(serverPort, "127.0.0.1", resolve),
+    );
 
     try {
       // 1. Send normal request with edge header
@@ -971,7 +1120,9 @@ async function run() {
         "L10-HTTP-01",
         "LIVE_SOCKET",
         "Live HTTP Socket: Edge header extracts client IP over HTTP wire",
-        res1.status === 200 && body1.clientIp === "198.51.100.77" && body1.storeMode === "memory",
+        res1.status === 200 &&
+          body1.clientIp === "198.51.100.77" &&
+          body1.storeMode === "memory",
         "HTTP 200, clientIp: 198.51.100.77, storeMode: memory",
         `HTTP ${res1.status}, clientIp: ${body1.clientIp}, storeMode: ${body1.storeMode}`,
       );
@@ -991,7 +1142,9 @@ async function run() {
       );
 
       // 3. Exhaust budget over socket to receive HTTP 429
-      await fetch(`http://127.0.0.1:${serverPort}`, { headers: { "x-forwarded-for": "198.51.100.77" } });
+      await fetch(`http://127.0.0.1:${serverPort}`, {
+        headers: { "x-forwarded-for": "198.51.100.77" },
+      });
       const resThrottled = await fetch(`http://127.0.0.1:${serverPort}`, {
         headers: { "x-forwarded-for": "198.51.100.77" },
       });
@@ -1000,7 +1153,8 @@ async function run() {
         "L10-HTTP-03",
         "LIVE_SOCKET",
         "Live HTTP Socket: Exceeding budget returns HTTP 429 with RFC headers",
-        resThrottled.status === 429 && resThrottled.headers.get("RateLimit-Remaining") === "0",
+        resThrottled.status === 429 &&
+          resThrottled.headers.get("RateLimit-Remaining") === "0",
         "HTTP 429 with RateLimit-Remaining: 0",
         `HTTP ${resThrottled.status}, Remaining: ${resThrottled.headers.get("RateLimit-Remaining")}`,
       );
@@ -1010,7 +1164,6 @@ async function run() {
 
     // Clean up proxy hops env
     delete process.env.TRUSTED_PROXY_HOPS;
-
   } finally {
     await sql.end();
   }
@@ -1022,18 +1175,28 @@ async function run() {
   const passed = checkResults.filter((c) => c.passed).length;
   const failed = checkResults.filter((c) => !c.passed).length;
 
-  console.log("\n================================================================================");
-  console.log(`VALIDATION RESULT: ${passed} / ${total} CHECKS PASSED (${failed} FAILURES)`);
-  console.log("================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
+  console.log(
+    `VALIDATION RESULT: ${passed} / ${total} CHECKS PASSED (${failed} FAILURES)`,
+  );
+  console.log(
+    "================================================================================",
+  );
 
   if (failed > 0) {
     console.error(`\nFAILED CHECKS (${failed}):`);
     for (const c of checkResults.filter((c) => !c.passed)) {
-      console.error(` - [${c.id}] ${c.name}: expected "${c.expected}", got "${c.actual}"`);
+      console.error(
+        ` - [${c.id}] ${c.name}: expected "${c.expected}", got "${c.actual}"`,
+      );
     }
     process.exit(1);
   } else {
-    console.log("\nALL S6.6 LOOP 9 & LOOP 10 VALIDATION CHECKS PASSED CLEANLY.");
+    console.log(
+      "\nALL S6.6 LOOP 9 & LOOP 10 VALIDATION CHECKS PASSED CLEANLY.",
+    );
   }
 }
 

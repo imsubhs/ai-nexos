@@ -162,7 +162,9 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
       organizationId: DEMO_ORG_ID,
       projectId,
       clientAuthorName: "Sarah Client",
-      content: { text: "Looks great, please verify logo contrast on dark surfaces." },
+      content: {
+        text: "Looks great, please verify logo contrast on dark surfaces.",
+      },
       isInternalOnly: false,
       createdAt: new Date(),
     });
@@ -208,7 +210,9 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
 
       // Verify only client comments are exposed
       expect(dto.comments.length).toBe(1);
-      expect(dto.comments[0].content).toContain("logo contrast on dark surfaces");
+      expect(dto.comments[0].content).toContain(
+        "logo contrast on dark surfaces",
+      );
 
       // Verify internal comment is completely excluded
       const leakedInternal = dto.comments.some((c) =>
@@ -225,7 +229,9 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
     it("rejects an empty, invalid, or malformed token", async () => {
       expect((await getPortalReviewData("")).valid).toBe(false);
       expect((await getPortalReviewData("   ")).valid).toBe(false);
-      expect((await getPortalReviewData("non-existent-token")).valid).toBe(false);
+      expect((await getPortalReviewData("non-existent-token")).valid).toBe(
+        false,
+      );
     });
 
     it("rejects an expired portal token", async () => {
@@ -259,7 +265,9 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
       expect(approvalResult.approvalId).toBeDefined();
 
       const store = getDemoStore();
-      const deliverable = store.deliverables.find((d) => d.deliverableId === deliverableId);
+      const deliverable = store.deliverables.find(
+        (d) => d.deliverableId === deliverableId,
+      );
       expect(deliverable?.status).toBe("approved");
       expect(deliverable?.isLocked).toBe(true);
 
@@ -321,7 +329,9 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
         comparisonMetadata: null,
       });
 
-      const deliv = store.deliverables.find((d) => d.deliverableId === deliverableId);
+      const deliv = store.deliverables.find(
+        (d) => d.deliverableId === deliverableId,
+      );
       deliv!.currentRevisionId = rev2Id;
 
       // Client attempts to approve Revision 1
@@ -370,7 +380,9 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
       expect(changeResult.nextVersionNumber).toBe(2);
 
       const store = getDemoStore();
-      const deliverable = store.deliverables.find((d) => d.deliverableId === deliverableId);
+      const deliverable = store.deliverables.find(
+        (d) => d.deliverableId === deliverableId,
+      );
       expect(deliverable?.status).toBe("revision_requested");
       expect(deliverable?.isLocked).toBe(false);
 
@@ -390,7 +402,8 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
       expect(carriedFiles.length).toBe(1);
 
       // Verify approval record was created with 'rejected' status
-      const lastApproval = store.deliverableApprovals[store.deliverableApprovals.length - 1];
+      const lastApproval =
+        store.deliverableApprovals[store.deliverableApprovals.length - 1];
       expect(lastApproval.status).toBe("rejected");
       expect(lastApproval.notes).toContain("increase header typography");
     });
@@ -437,7 +450,9 @@ describe("Phase 4G: Client Portal & Approval Chains", () => {
         comparisonMetadata: null,
       });
 
-      const deliv = store.deliverables.find((d) => d.deliverableId === deliverableId);
+      const deliv = store.deliverables.find(
+        (d) => d.deliverableId === deliverableId,
+      );
       deliv!.currentRevisionId = rev2Id;
 
       await expect(

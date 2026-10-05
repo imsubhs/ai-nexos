@@ -1,4 +1,5 @@
 # AI NEX OS — Phase 4G Production Reconciliation & Certification
+
 ## Client Portal + Approval Chains
 
 **Document Version**: `1.0.0`  
@@ -17,6 +18,7 @@
 Phase 4G bridges the gap between **Internal Creative Execution** and **External Client Review**, establishing a hardened, secure Client Portal and Approval Engine for AI NEX OS.
 
 The workflow implemented and enforced in production is:
+
 ```text
 ORGANIZATION (Tenant Boundary)
       ↓
@@ -42,6 +44,7 @@ APPROVAL CHAIN & AUDIT LOG (deliverable_approvals & deliverable_review_comments)
 ```
 
 ### Core Architecture Principles Enforced:
+
 1. **External Client Access is a Strict Security Boundary**: External reviewers are completely separate from internal organization members, employees, or managers. They have zero access to the internal workspace, workforce navigation, financial data, internal notes, tasks, or other projects/clients.
 2. **Zero Database Migrations**: Leveraging existing canonical PostgreSQL 17.6 tables (`deliverables`, `deliverable_revisions`, `deliverable_files`, `files`, `deliverable_approvals`, `deliverable_review_threads`, `deliverable_review_comments`, `share_tokens`), Phase 4G required zero new schema migrations, maintaining stability at schema `0018`.
 3. **Explicit External DTO Projection**: Database rows are never serialized directly to external clients. The server projects a strictly filtered `PortalReviewDto` containing only client-authorized fields.
@@ -54,6 +57,7 @@ APPROVAL CHAIN & AUDIT LOG (deliverable_approvals & deliverable_review_comments)
 ## 2. Security & Trust Boundary Architecture
 
 ### A. Access & Capability Token Model
+
 - **Token Format & Resolution**: Tokens are high-entropy alphanumeric strings issued via `deliverable_share_links` or `share_tokens`.
 - **Scope Verification**: Every portal interaction validates:
   1. Token existence, expiration date, and revocation state.
@@ -64,14 +68,14 @@ APPROVAL CHAIN & AUDIT LOG (deliverable_approvals & deliverable_review_comments)
 
 ### B. Portal Data Allowlist (Projection vs Internal Isolation)
 
-| Category | Client-Visible (Exposed in `PortalReviewDto`) | Internal-Only (Strictly Excluded / Isolated) |
-| :--- | :--- | :--- |
-| **Deliverable** | Name, description, type, current status, target due date, current revision number | Internal notes, budget, margin, internal assignees, raw DB IDs beyond context |
-| **Project** | Project name, project code | Internal financial health, internal timeline Gantt details, team rates, client CRM notes |
-| **Client** | Client name | Internal billing details, internal client tier, relationship manager notes |
-| **Assets / Files** | Attached filenames, byte size, file type, mime type, upload timestamp | Storage bucket names, internal storage paths, unshared files, drafts from other revisions |
-| **Approval Chain** | Reviewer display name, decision, notes/comments, decision timestamp | Internal review notes marked `is_internal_only = true`, workforce evaluation metrics |
-| **Navigation** | None (Standalone review shell) | Workforce sidebar, Settings, Command Palette (`⌘K`), Project directories, Billing |
+| Category           | Client-Visible (Exposed in `PortalReviewDto`)                                     | Internal-Only (Strictly Excluded / Isolated)                                              |
+| :----------------- | :-------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| **Deliverable**    | Name, description, type, current status, target due date, current revision number | Internal notes, budget, margin, internal assignees, raw DB IDs beyond context             |
+| **Project**        | Project name, project code                                                        | Internal financial health, internal timeline Gantt details, team rates, client CRM notes  |
+| **Client**         | Client name                                                                       | Internal billing details, internal client tier, relationship manager notes                |
+| **Assets / Files** | Attached filenames, byte size, file type, mime type, upload timestamp             | Storage bucket names, internal storage paths, unshared files, drafts from other revisions |
+| **Approval Chain** | Reviewer display name, decision, notes/comments, decision timestamp               | Internal review notes marked `is_internal_only = true`, workforce evaluation metrics      |
+| **Navigation**     | None (Standalone review shell)                                                    | Workforce sidebar, Settings, Command Palette (`⌘K`), Project directories, Billing         |
 
 ---
 
@@ -139,19 +143,19 @@ Five new external-facing server actions were introduced, audited, and registered
 
 ## 5. Quality & Verification Gates
 
-| Quality Gate | Requirement | Measured Result | Status |
-| :--- | :--- | :--- | :--- |
-| **Unit & Integration Tests** | 100% passing | 1,028 tests passed across 69 test files | `PASS` |
-| **Phase 4G Target Suite** | `tests/unit/phase-4g-client-portal.test.ts` | 17/17 passing | `PASS` |
-| **Phase 4F Regression Suite**| `tests/unit/phase-4f-dam-assets.test.ts` | 12/12 passing | `PASS` |
-| **Action Registry Tests** | `tests/unit/rate-limiting-action-registry.test.ts` | 4/4 passing (206 actions verified) | `PASS` |
-| **TypeScript Typecheck** | 0 errors (`tsc --noEmit`) | 0 errors | `PASS` |
-| **Production Build** | `next build` success | 40/40 routes generated (including `/portal/s/[token]`) | `PASS` |
-| **Authorization Audit** | 100% guarded actions | 206/206 registered actions guarded | `PASS` |
-| **Tenant Isolation Gate** | 0 cross-tenant data leaks | 0 violations | `PASS` |
-| **Database Migrations** | Zero migrations | 0 migrations generated (schema at `0018`) | `PASS` |
-| **Production Deployment** | Antideploy `live` | Deployment `6d1aaa36-78ae-476c-be77-fe96fc379cdd` (Task `e54168eb-d40e-447e-8925-ea09810e9a12`) | `PASS` |
-| **Post-Deploy Smoke Test** | 100% passing | 20/20 Phase 4G smoke checks passed, 15/15 baseline checks passed | `PASS` |
+| Quality Gate                  | Requirement                                        | Measured Result                                                                                 | Status |
+| :---------------------------- | :------------------------------------------------- | :---------------------------------------------------------------------------------------------- | :----- |
+| **Unit & Integration Tests**  | 100% passing                                       | 1,028 tests passed across 69 test files                                                         | `PASS` |
+| **Phase 4G Target Suite**     | `tests/unit/phase-4g-client-portal.test.ts`        | 17/17 passing                                                                                   | `PASS` |
+| **Phase 4F Regression Suite** | `tests/unit/phase-4f-dam-assets.test.ts`           | 12/12 passing                                                                                   | `PASS` |
+| **Action Registry Tests**     | `tests/unit/rate-limiting-action-registry.test.ts` | 4/4 passing (206 actions verified)                                                              | `PASS` |
+| **TypeScript Typecheck**      | 0 errors (`tsc --noEmit`)                          | 0 errors                                                                                        | `PASS` |
+| **Production Build**          | `next build` success                               | 40/40 routes generated (including `/portal/s/[token]`)                                          | `PASS` |
+| **Authorization Audit**       | 100% guarded actions                               | 206/206 registered actions guarded                                                              | `PASS` |
+| **Tenant Isolation Gate**     | 0 cross-tenant data leaks                          | 0 violations                                                                                    | `PASS` |
+| **Database Migrations**       | Zero migrations                                    | 0 migrations generated (schema at `0018`)                                                       | `PASS` |
+| **Production Deployment**     | Antideploy `live`                                  | Deployment `6d1aaa36-78ae-476c-be77-fe96fc379cdd` (Task `e54168eb-d40e-447e-8925-ea09810e9a12`) | `PASS` |
+| **Post-Deploy Smoke Test**    | 100% passing                                       | 20/20 Phase 4G smoke checks passed, 15/15 baseline checks passed                                | `PASS` |
 
 ---
 
@@ -181,6 +185,7 @@ Five new external-facing server actions were introduced, audited, and registered
 Executed via `scripts/smoke-test-4g.ts` and `scripts/post-deploy-smoke-test.ts` against `https://ai-nexos.antideploy.com`:
 
 ### A. Phase 4G Dedicated Smoke Test (`scripts/smoke-test-4g.ts`)
+
 ```text
 ================================================================================
 AI NEX OS — PHASE 4G PRODUCTION SMOKE TEST
@@ -228,6 +233,7 @@ SMOKE TEST RESULTS: 20/20 checks passed (0 failed)
 ```
 
 ### B. Platform Baseline Smoke Test (`scripts/post-deploy-smoke-test.ts`)
+
 ```text
 ================================================================================
 AI NEX OS — POST-DEPLOYMENT PRODUCTION SMOKE TEST
@@ -250,6 +256,7 @@ PASS — PHASE 4G CERTIFIED & CLOSED
 ```
 
 All 15 closure requirements are satisfied:
+
 - [x] Repository clean
 - [x] Branch synchronized with origin
 - [x] Exact production commit known (`400bb09`)

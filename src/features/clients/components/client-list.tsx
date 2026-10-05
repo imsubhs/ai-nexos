@@ -40,7 +40,7 @@ export function ClientList({ clients }: { clients: Client[] }) {
                     src={client.logoUrl || undefined}
                     alt={client.companyName}
                   />
-                  <AvatarFallback className="bg-surface-3 text-brand-primary font-semibold border border-border">
+                  <AvatarFallback className="bg-surface-3 text-brand-primary border-border border font-semibold">
                     {getInitials(client.companyName)}
                   </AvatarFallback>
                 </Avatar>

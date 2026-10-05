@@ -13,6 +13,7 @@
 Phase S5 conducted an exhaustive forensic audit and hardening rehearsal of the PostgreSQL Row-Level Security (RLS) and PostgREST Data API authorization boundary across migrations `0000_init_platform_foundation` through `0018_remediate_projects_rls_recursion`.
 
 The audit identified a critical defense-in-depth and runtime authorization defect:
+
 1. `public.organization_memberships` (created in migration `0016`) lacked `ENABLE ROW LEVEL SECURITY` and had zero table privileges granted to `authenticated`. This caused runtime calls in `src/features/auth/current-user.ts:138-144` (`supabase.from("organization_memberships").select(...)`) to fail with PostgreSQL error `42501 (permission denied)`, silently breaking multi-tenant organization context resolution and organization switching via the PostgREST client.
 2. `public.organization_invitations` (created in migration `0017`) lacked `ENABLE ROW LEVEL SECURITY`.
 3. To address this without touching historical migrations or modifying table owner connection semantics (Drizzle), an additive migration `0019_rls_hardening.sql` was engineered, registered in the Drizzle journal, and rehearsed against disposable PostgreSQL 17.11 (`nexos_s5_disposable`).
@@ -44,27 +45,29 @@ The audit identified a critical defense-in-depth and runtime authorization defec
 
 Detailed catalog metadata was extracted to [s5-inventory-raw.json](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/scripts/s5-inventory-raw.json) and documented in [PHASE-S5-RLS-INVENTORY.md](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/docs/audit/PHASE-S5-RLS-INVENTORY.md).
 
-| Metric | Baseline (0000–0018) | Post-0019 Remediation |
-| :--- | :--- | :--- |
-| **Total Public Tables** | 204 | 204 |
-| **Tables with RLS Enabled** | 55 | **57** (+`organization_memberships`, +`organization_invitations`) |
-| **Tables with FORCE RLS** | 0 | 0 (Deliberately false to preserve Drizzle table owner queries) |
-| **Total RLS Policies** | 77 | **79** (+2 policies) |
-| **Tables with Grants to `anon`** | 0 | 0 (Completely blocked at grant layer) |
-| **Tables with Grants to `authenticated`** | 55 (SELECT only) | **56** (SELECT only, +`organization_memberships`) |
-| **Tables with Write Grants to `authenticated`** | 0 | 0 (Writes strictly mediated by server-side actions) |
-| **Tables without RLS or Grants** | 149 | 147 (Internal worker/ledger tables unreachable via Data API) |
+| Metric                                          | Baseline (0000–0018) | Post-0019 Remediation                                             |
+| :---------------------------------------------- | :------------------- | :---------------------------------------------------------------- |
+| **Total Public Tables**                         | 204                  | 204                                                               |
+| **Tables with RLS Enabled**                     | 55                   | **57** (+`organization_memberships`, +`organization_invitations`) |
+| **Tables with FORCE RLS**                       | 0                    | 0 (Deliberately false to preserve Drizzle table owner queries)    |
+| **Total RLS Policies**                          | 77                   | **79** (+2 policies)                                              |
+| **Tables with Grants to `anon`**                | 0                    | 0 (Completely blocked at grant layer)                             |
+| **Tables with Grants to `authenticated`**       | 55 (SELECT only)     | **56** (SELECT only, +`organization_memberships`)                 |
+| **Tables with Write Grants to `authenticated`** | 0                    | 0 (Writes strictly mediated by server-side actions)               |
+| **Tables without RLS or Grants**                | 149                  | 147 (Internal worker/ledger tables unreachable via Data API)      |
 
 ---
 
 ## 4. Policy Dependency Graph & Recursion Analysis
 
 Historical defect `42P17 (infinite recursion detected in policy for relation "projects")` stemmed from:
+
 1. `projects` SELECT policy evaluating subquery against `project_members`.
 2. `project_members` SELECT policy evaluating subquery against `projects`.
 3. Under an unprivileged role (`authenticated`), PostgreSQL query rewriter expanded both policies cyclically.
 
 ### Resolution Verification (0018 Baseline)
+
 - Migration `0018_remediate_projects_rls_recursion.sql` created:
   ```sql
   CREATE OR REPLACE FUNCTION app.is_project_member(p_project_id uuid)
@@ -84,13 +87,13 @@ Historical defect `42P17 (infinite recursion detected in policy for relation "pr
 
 All functions defined with `SECURITY DEFINER` in schemas `public` and `app` were audited for privilege escalation vectors, mutable search paths, and execution grants.
 
-| Function | Owner | Volatility | `search_path` | Roles with EXECUTE | Security Justification |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `app.current_user_organization_id()` | `postgres` | STABLE | `public` (pinned) | `authenticated` | Reads active `users.organization_id` for caller's JWT `auth.uid()`. Does not accept arguments. Cannot be manipulated. |
-| `app.has_permission(text, text)` | `postgres` | STABLE | `public` (pinned) | `authenticated` | Evaluates caller's role permissions JSONB against module/action arguments. Does not run dynamic SQL. |
-| `app.is_org_member(uuid)` | `postgres` | STABLE | `public` (pinned) | `authenticated` | Compares argument UUID to `app.current_user_organization_id()`. |
-| `app.is_project_member(uuid)` | `postgres` | STABLE | `public` (pinned) | `authenticated` | Queries `project_members` for `(project_id, auth.uid())`. Resolves 42P17 recursion. Revoked from public. |
-| `app.protect_privileged_user_fields()` | `postgres` | VOLATILE | `public` (pinned) | `PUBLIC` (trigger) | Before-update trigger on `users`. Enforces `users.update` permission for modifications to role, org, or status. |
+| Function                               | Owner      | Volatility | `search_path`     | Roles with EXECUTE | Security Justification                                                                                                |
+| :------------------------------------- | :--------- | :--------- | :---------------- | :----------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `app.current_user_organization_id()`   | `postgres` | STABLE     | `public` (pinned) | `authenticated`    | Reads active `users.organization_id` for caller's JWT `auth.uid()`. Does not accept arguments. Cannot be manipulated. |
+| `app.has_permission(text, text)`       | `postgres` | STABLE     | `public` (pinned) | `authenticated`    | Evaluates caller's role permissions JSONB against module/action arguments. Does not run dynamic SQL.                  |
+| `app.is_org_member(uuid)`              | `postgres` | STABLE     | `public` (pinned) | `authenticated`    | Compares argument UUID to `app.current_user_organization_id()`.                                                       |
+| `app.is_project_member(uuid)`          | `postgres` | STABLE     | `public` (pinned) | `authenticated`    | Queries `project_members` for `(project_id, auth.uid())`. Resolves 42P17 recursion. Revoked from public.              |
+| `app.protect_privileged_user_fields()` | `postgres` | VOLATILE   | `public` (pinned) | `PUBLIC` (trigger) | Before-update trigger on `users`. Enforces `users.update` permission for modifications to role, org, or status.       |
 
 **Verdict**: All 5 `SECURITY DEFINER` functions have pinned search paths (`SET search_path = public`), run immutable or stable logic without dynamic SQL, and are restricted to appropriate roles.
 
@@ -99,6 +102,7 @@ All functions defined with `SECURITY DEFINER` in schemas `public` and `app` were
 ## 6. Grants Audit
 
 PostgreSQL object privileges were inspected across all roles (`anon`, `authenticated`, `service_role`, `PUBLIC`):
+
 - `anon`: Holds 0 privileges across all 204 tables. Unauthenticated access to public tables via Data API returns `42501 (permission denied)`.
 - `authenticated`: Holds `SELECT` only on 56 tables (55 baseline + `organization_memberships`). Holds 0 `INSERT`, `UPDATE`, `DELETE`, or `TRUNCATE` privileges on any table.
 - `service_role`: Bypasses RLS natively in Supabase; Drizzle server actions connect as the PostgreSQL table owner (`postgres`), ensuring writes are completely mediated by server-side authorization checks (S1–S4).
@@ -157,6 +161,7 @@ $$;
 ```
 
 **Key Architectural Properties**:
+
 1. `user_id = auth.uid()`: Allows users to retrieve all of their own memberships across all organizations. This unblocks `src/features/auth/current-user.ts:138-144` and the organization switcher.
 2. `app.is_org_member(organization_id)`: Allows team members within an active organization to see other members of the same organization (e.g. for task assignees and project member pickers).
 3. Deliberately omits `INSERT`/`UPDATE`/`DELETE` grants to `authenticated`: mutations remain governed by `membership-service.ts` and `invitation-service.ts`.
@@ -181,31 +186,31 @@ REHEARSAL PASSED — Local PostgreSQL RLS Hardening Verified!
 
 ### Detailed Verification Matrix
 
-| Check ID | Category | Test Description | Expected | Actual | Result |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `MIG-01` | MIGRATION | Apply full chain (0000 → 0019) | Clean exit | Clean exit, 20 migrations | **PASS** |
-| `MIG-02` | MIGRATION | RLS-Enabled Table Count | 57 | 57 | **PASS** |
-| `MIG-03` | MIGRATION | Total Policies Count | 79 | 79 | **PASS** |
-| `SECDEF-01..05` | SECDEF_AUDIT | Pinned `search_path` on app functions | `search_path=public` | All 5 pinned to `public` | **PASS** |
-| `GRANT-01` | GRANTS_AUDIT | Anon table grants | 0 | 0 | **PASS** |
-| `GRANT-02` | GRANTS_AUDIT | Authenticated write grants | 0 | 0 | **PASS** |
-| `GRANT-03` | GRANTS_AUDIT | Authenticated SELECT grants | 56 | 56 | **PASS** |
-| `ANON-01..04` | ANON_DENIAL | Anon SELECT/INSERT/UPDATE/DELETE projects | 42501 Denied | 42501 Permission Denied | **PASS** |
-| `ANON-05` | ANON_DENIAL | Anon SELECT organization_memberships | 42501 Denied | 42501 Permission Denied | **PASS** |
-| `ANON-06` | ANON_DENIAL | Anon SELECT organization_invitations | 42501 Denied | 42501 Permission Denied | **PASS** |
-| `ISO-01` | TENANT_ISOLATION | Alice (Alpha) reads projects | 3 Alpha projects | 3 Alpha projects, 0 Beta | **PASS** |
-| `ISO-02` | TENANT_ISOLATION | Alice direct query for Beta project ID | 0 rows | 0 rows returned | **PASS** |
-| `ISO-03` | TENANT_ISOLATION | Bob (Beta) reads projects | 1 Beta project | 1 Beta project, 0 Alpha | **PASS** |
-| `ISO-04` | TENANT_ISOLATION | Alice direct INSERT on projects | 42501 Denied | 42501 Permission Denied | **PASS** |
-| `MEMB-01` | MEMBERSHIP_RLS | Alice reads organization_memberships | Alpha members only | 5 Alpha members, 0 Beta | **PASS** |
-| `MEMB-02` | MEMBERSHIP_RLS | Bob reads organization_memberships | Beta members only | 2 Beta members, 0 Alpha | **PASS** |
-| `MEMB-03` | MEMBERSHIP_RLS | Frank (Dual Member) reads own memberships | 2 memberships | 2 memberships (Alpha + Beta) | **PASS** |
-| `PROJ-01` | MEMBERSHIP_RLS | Charlie reads assigned private project | ALLOWED | 1 row returned | **PASS** |
-| `PROJ-02` | MEMBERSHIP_RLS | Charlie reads internal project | ALLOWED | 1 row returned | **PASS** |
-| `PROJ-03` | MEMBERSHIP_RLS | Charlie reads unassigned private project | DENIED (0 rows) | 0 rows returned | **PASS** |
-| `LIFE-01` | LIFECYCLE_GUARD | Inactive user David reads projects | 0 rows | 0 rows returned | **PASS** |
-| `LIFE-02` | LIFECYCLE_GUARD | Soft-deleted user Eve reads projects | 0 rows | 0 rows returned | **PASS** |
-| `REC-ALL` | RECURSION_CHECK | Direct query across all 57 RLS tables | No 42P17 | All 57 tables evaluated cleanly | **PASS** |
+| Check ID        | Category         | Test Description                          | Expected             | Actual                          | Result   |
+| :-------------- | :--------------- | :---------------------------------------- | :------------------- | :------------------------------ | :------- |
+| `MIG-01`        | MIGRATION        | Apply full chain (0000 → 0019)            | Clean exit           | Clean exit, 20 migrations       | **PASS** |
+| `MIG-02`        | MIGRATION        | RLS-Enabled Table Count                   | 57                   | 57                              | **PASS** |
+| `MIG-03`        | MIGRATION        | Total Policies Count                      | 79                   | 79                              | **PASS** |
+| `SECDEF-01..05` | SECDEF_AUDIT     | Pinned `search_path` on app functions     | `search_path=public` | All 5 pinned to `public`        | **PASS** |
+| `GRANT-01`      | GRANTS_AUDIT     | Anon table grants                         | 0                    | 0                               | **PASS** |
+| `GRANT-02`      | GRANTS_AUDIT     | Authenticated write grants                | 0                    | 0                               | **PASS** |
+| `GRANT-03`      | GRANTS_AUDIT     | Authenticated SELECT grants               | 56                   | 56                              | **PASS** |
+| `ANON-01..04`   | ANON_DENIAL      | Anon SELECT/INSERT/UPDATE/DELETE projects | 42501 Denied         | 42501 Permission Denied         | **PASS** |
+| `ANON-05`       | ANON_DENIAL      | Anon SELECT organization_memberships      | 42501 Denied         | 42501 Permission Denied         | **PASS** |
+| `ANON-06`       | ANON_DENIAL      | Anon SELECT organization_invitations      | 42501 Denied         | 42501 Permission Denied         | **PASS** |
+| `ISO-01`        | TENANT_ISOLATION | Alice (Alpha) reads projects              | 3 Alpha projects     | 3 Alpha projects, 0 Beta        | **PASS** |
+| `ISO-02`        | TENANT_ISOLATION | Alice direct query for Beta project ID    | 0 rows               | 0 rows returned                 | **PASS** |
+| `ISO-03`        | TENANT_ISOLATION | Bob (Beta) reads projects                 | 1 Beta project       | 1 Beta project, 0 Alpha         | **PASS** |
+| `ISO-04`        | TENANT_ISOLATION | Alice direct INSERT on projects           | 42501 Denied         | 42501 Permission Denied         | **PASS** |
+| `MEMB-01`       | MEMBERSHIP_RLS   | Alice reads organization_memberships      | Alpha members only   | 5 Alpha members, 0 Beta         | **PASS** |
+| `MEMB-02`       | MEMBERSHIP_RLS   | Bob reads organization_memberships        | Beta members only    | 2 Beta members, 0 Alpha         | **PASS** |
+| `MEMB-03`       | MEMBERSHIP_RLS   | Frank (Dual Member) reads own memberships | 2 memberships        | 2 memberships (Alpha + Beta)    | **PASS** |
+| `PROJ-01`       | MEMBERSHIP_RLS   | Charlie reads assigned private project    | ALLOWED              | 1 row returned                  | **PASS** |
+| `PROJ-02`       | MEMBERSHIP_RLS   | Charlie reads internal project            | ALLOWED              | 1 row returned                  | **PASS** |
+| `PROJ-03`       | MEMBERSHIP_RLS   | Charlie reads unassigned private project  | DENIED (0 rows)      | 0 rows returned                 | **PASS** |
+| `LIFE-01`       | LIFECYCLE_GUARD  | Inactive user David reads projects        | 0 rows               | 0 rows returned                 | **PASS** |
+| `LIFE-02`       | LIFECYCLE_GUARD  | Soft-deleted user Eve reads projects      | 0 rows               | 0 rows returned                 | **PASS** |
+| `REC-ALL`       | RECURSION_CHECK  | Direct query across all 57 RLS tables     | No 42P17             | All 57 tables evaluated cleanly | **PASS** |
 
 ---
 
@@ -267,6 +272,7 @@ Full application regression suite was executed:
 ## 12. Final Decision & Status
 
 All S5 objectives have been satisfied with zero regressions and zero security degradation:
+
 - Multi-tenant RLS defense-in-depth is complete.
 - PostgREST Data API 42501 blocker on `organization_memberships` is resolved.
 - Recursion 42P17 is verified eliminated across all 57 tables.

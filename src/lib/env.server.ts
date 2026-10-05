@@ -383,9 +383,7 @@ function productionIssues(env: NodeJS.ProcessEnv): string[] {
   }
 
   if (env.REDIS_URL && !env.REDIS_URL.startsWith("rediss://")) {
-    issues.push(
-      "REDIS_URL: must use rediss:// (TLS) in production.",
-    );
+    issues.push("REDIS_URL: must use rediss:// (TLS) in production.");
   }
 
   // Demo mode serves fabricated data and bypasses the database entirely.

@@ -57,10 +57,16 @@ function recordCheck(
 const BASE_URL = "https://ai-nexos.antideploy.com";
 
 async function main() {
-  console.log("================================================================================");
-  console.log("AI NEX OS — PHASE 4I ACCESSIBILITY & POLISH PRODUCTION SMOKE TEST");
+  console.log(
+    "================================================================================",
+  );
+  console.log(
+    "AI NEX OS — PHASE 4I ACCESSIBILITY & POLISH PRODUCTION SMOKE TEST",
+  );
   console.log(`Target Host: ${BASE_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // 1. Health Endpoint
   console.log("--- 1. Health & Application State ---");
@@ -101,7 +107,9 @@ async function main() {
     "Root HTML specifies lang='en' attribute",
     loginHtml.includes("<html") && loginHtml.includes('lang="en"'),
     "lang='en' present",
-    loginHtml.includes('lang="en"') ? "lang='en' verified" : "lang attribute missing",
+    loginHtml.includes('lang="en"')
+      ? "lang='en' verified"
+      : "lang attribute missing",
   );
 
   recordCheck(
@@ -117,7 +125,8 @@ async function main() {
     "SMOKE-4I-A11Y-03",
     "A11Y CONTROLS",
     "Login form provides accessible inputs and submit controls",
-    loginHtml.includes("email") && (loginHtml.includes("type=\"password\"") || loginHtml.includes("password")),
+    loginHtml.includes("email") &&
+      (loginHtml.includes('type="password"') || loginHtml.includes("password")),
     "Accessible credentials input fields",
     "Email & password inputs detected",
   );
@@ -188,7 +197,10 @@ async function main() {
   // 5. Codebase Accessibility Verification
   console.log("\n--- 5. Source Code Accessibility System Audit ---");
   const rootDir = path.resolve(__dirname, "..");
-  const globalsCss = fs.readFileSync(path.join(rootDir, "src/app/globals.css"), "utf-8");
+  const globalsCss = fs.readFileSync(
+    path.join(rootDir, "src/app/globals.css"),
+    "utf-8",
+  );
 
   recordCheck(
     "SMOKE-4I-CSS-01",
@@ -203,7 +215,8 @@ async function main() {
     "SMOKE-4I-CSS-02",
     "FOCUS",
     "globals.css defines high-contrast focus-visible ring styles",
-    globalsCss.includes(":focus-visible") && globalsCss.includes("outline: 2px solid var(--ring)"),
+    globalsCss.includes(":focus-visible") &&
+      globalsCss.includes("outline: 2px solid var(--ring)"),
     "Focus visible ring token defined",
     "Verified in globals.css",
   );
@@ -212,14 +225,18 @@ async function main() {
     "SMOKE-4I-CSS-03",
     "SKIP-LINK",
     "globals.css defines accessible skip-link positioning utility",
-    globalsCss.includes(".skip-link") && globalsCss.includes(".skip-link:focus"),
+    globalsCss.includes(".skip-link") &&
+      globalsCss.includes(".skip-link:focus"),
     "skip-link utility defined",
     "Verified in globals.css",
   );
 
   // 6. PostgreSQL Schema Baseline & Executive Intelligence Determinism
-  console.log("\n--- 6. PostgreSQL Schema Integrity & Deterministic Calculations ---");
-  const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
+  console.log(
+    "\n--- 6. PostgreSQL Schema Integrity & Deterministic Calculations ---",
+  );
+  const dbUrl =
+    process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
   const sql = postgres(dbUrl, { max: 1, prepare: false, ssl: "require" });
 
   try {
@@ -258,13 +275,16 @@ async function main() {
 
     // Verify migration count: zero migrations added in Phase 4I (latest is 0020)
     const migrationsDir = path.join(rootDir, "database/migrations");
-    const migrationFiles = fs.readdirSync(migrationsDir).filter((f) => f.endsWith(".sql"));
+    const migrationFiles = fs
+      .readdirSync(migrationsDir)
+      .filter((f) => f.endsWith(".sql"));
 
     recordCheck(
       "SMOKE-4I-MIGRATION-01",
       "DATABASE",
       "Zero database migrations introduced in Phase 4I (schema remains at baseline 0020)",
-      migrationFiles.length === 21 && !migrationFiles.some((f) => f.startsWith("0021_")),
+      migrationFiles.length === 21 &&
+        !migrationFiles.some((f) => f.startsWith("0021_")),
       "21 migrations (0000_... to 0020_...)",
       `${migrationFiles.length} migrations, latest: ${migrationFiles[migrationFiles.length - 1]}`,
     );
@@ -284,7 +304,9 @@ async function main() {
       "INTELLIGENCE",
       "Deterministic trend intelligence computes cleanly with safe empty state",
       testTrends.deliveryVolumeTrend.hasSufficientData === false &&
-        testTrends.deliveryVolumeTrend.statusText?.includes("Insufficient historical data") === true,
+        testTrends.deliveryVolumeTrend.statusText?.includes(
+          "Insufficient historical data",
+        ) === true,
       "hasSufficientData=false & Insufficient historical data label",
       `hasSufficientData=${testTrends.deliveryVolumeTrend.hasSufficientData}, text=${testTrends.deliveryVolumeTrend.statusText}`,
     );
@@ -303,21 +325,29 @@ async function main() {
   }
 
   // 7. Results Summary
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   console.log("SMOKE TEST SUMMARY — PHASE 4I ACCESSIBILITY & POLISH");
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   const passedCount = checks.filter((c) => c.passed).length;
   const failedCount = checks.filter((c) => !c.passed).length;
   console.log(`Total Checks: ${checks.length}`);
   console.log(`Passed:       ${passedCount}`);
   console.log(`Failed:       ${failedCount}`);
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
 
   if (failedCount > 0) {
     console.error(`\nPhase 4I Smoke Test FAILED with ${failedCount} errors.`);
     process.exit(1);
   } else {
-    console.log(`\nPhase 4I Smoke Test PASSED (${passedCount}/${checks.length} checks).`);
+    console.log(
+      `\nPhase 4I Smoke Test PASSED (${passedCount}/${checks.length} checks).`,
+    );
   }
 }
 

@@ -1,4 +1,5 @@
 # AI NEX OS — TENANT AUTHORIZATION COVERAGE & BOUNDARY HARDENING AUDIT
+
 **Phase 4.4 Technical Audit & Pre-Production Boundary Verification**
 **Date:** September 2026  
 **Status:** COMPLETE & VERIFIED  
@@ -8,9 +9,10 @@
 
 ## 1. Scope
 
-This document records the exhaustive tenant authorization audit, defense-in-depth boundary hardening, and object-level authorization verification executed in Phase 4.4. 
+This document records the exhaustive tenant authorization audit, defense-in-depth boundary hardening, and object-level authorization verification executed in Phase 4.4.
 
 The audit addresses the primary architectural risk of the AI NEX OS service layer:
+
 > **Server-side Drizzle operates with privileged database credentials (bypassing Postgres Row Level Security). Tenant isolation therefore relies on application-level authorization, identity resolution, active tenant context derivation, and strict object-level validation.**
 
 Phase 4.4 proves that the application-level authorization chain:
@@ -103,12 +105,14 @@ The active workspace organization is resolved via `resolveActiveOrganizationCont
 ## 5. Membership Authority
 
 `public.organization_memberships` is the sole source of truth for:
+
 - Tenant membership status (`active`, `invited`, `suspended`, `pending`).
 - Tenant role assignment (`role_id`).
 - Tenant department assignment (`department_id`).
 - Tenant designation (`designation`).
 
 Invariant:
+
 - **A user cannot perform any operation within an organization without an active, non-deleted membership in that organization.**
 - Suspended memberships (`status = 'suspended'`) and soft-deleted memberships (`deleted_at IS NOT NULL`) cannot resolve an active context.
 
@@ -123,8 +127,14 @@ Invariant:
   const [role] = await db
     .select({ roleId: roles.roleId })
     .from(roles)
-    .where(and(eq(roles.roleId, input.roleId), eq(roles.organizationId, user.organizationId)));
-  if (!role) throw new Error("Role not found or belongs to another organization");
+    .where(
+      and(
+        eq(roles.roleId, input.roleId),
+        eq(roles.organizationId, user.organizationId),
+      ),
+    );
+  if (!role)
+    throw new Error("Role not found or belongs to another organization");
   ```
 - Cross-tenant role injection and privilege escalation through foreign role UUIDs are rejected.
 
@@ -133,6 +143,7 @@ Invariant:
 ## 7. TenantRepository Model
 
 The `TenantRepository` provides a tenant-bound query facade:
+
 - **Construction Requirement**: Valid `TenantContext` containing verified `organizationId`, `userId`, and `membershipId`. Constructing without these throws `SecurityViolationError`.
 - **Query Auto-Scoping**: Automatically appends `eq(table.organizationId, this.orgId)` and `isNull(table.deletedAt)` to read, update, and delete operations.
 - **withScope Helper**: Produces an equality predicate binding arbitrary tables to `this.orgId`.
@@ -145,10 +156,10 @@ The `TenantRepository` provides a tenant-bound query facade:
 
 The AI NEX OS database schema is classified into two distinct operational scopes:
 
-| Classification | Tables | Isolation Model | Access Policy |
-|---|---|---|---|
-| **TENANT-SCOPED** | `organizations`, `roles`, `departments`, `organization_memberships`, `organization_invitations`, `projects`, `clients`, `timelines`, `project_phases`, `milestones`, `timeline_dependencies`, `tasks`, `task_dependencies`, `task_time_logs`, `files`, `file_folders`, `file_versions`, `deliverables`, `deliverable_revisions`, `deliverable_review_sessions`, `deliverable_approvals`, `deliverable_share_links`, `meetings`, `meeting_agenda_items`, `meeting_transcripts`, `meeting_action_items`, `activity_logs`, `notifications`, `attendance_records`, `attendance_breaks`, `work_sessions`, `intervals`, `ai_workspace_*` | Partitioned strictly by `organization_id` foreign key. Unique constraints composite on `(organization_id, ...)`. | **Strict Tenant Isolation**: Every query must filter by `organization_id`. Cross-tenant mutations blocked. |
-| **GLOBAL / PLATFORM** | `users` (Global Identity profile), `auth.users` (Supabase Auth credentials), `background_jobs` (Worker execution queue), Platform system reference constants | Shared infrastructure / global entity tables. | **Controlled Global Access**: `users` queried only for identity lookup and authentication; `background_jobs` claimed by worker with payload tenant validation. |
+| Classification        | Tables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Isolation Model                                                                                                  | Access Policy                                                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TENANT-SCOPED**     | `organizations`, `roles`, `departments`, `organization_memberships`, `organization_invitations`, `projects`, `clients`, `timelines`, `project_phases`, `milestones`, `timeline_dependencies`, `tasks`, `task_dependencies`, `task_time_logs`, `files`, `file_folders`, `file_versions`, `deliverables`, `deliverable_revisions`, `deliverable_review_sessions`, `deliverable_approvals`, `deliverable_share_links`, `meetings`, `meeting_agenda_items`, `meeting_transcripts`, `meeting_action_items`, `activity_logs`, `notifications`, `attendance_records`, `attendance_breaks`, `work_sessions`, `intervals`, `ai_workspace_*` | Partitioned strictly by `organization_id` foreign key. Unique constraints composite on `(organization_id, ...)`. | **Strict Tenant Isolation**: Every query must filter by `organization_id`. Cross-tenant mutations blocked.                                                     |
+| **GLOBAL / PLATFORM** | `users` (Global Identity profile), `auth.users` (Supabase Auth credentials), `background_jobs` (Worker execution queue), Platform system reference constants                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Shared infrastructure / global entity tables.                                                                    | **Controlled Global Access**: `users` queried only for identity lookup and authentication; `background_jobs` claimed by worker with payload tenant validation. |
 
 ---
 
@@ -156,20 +167,21 @@ The AI NEX OS database schema is classified into two distinct operational scopes
 
 Every exported server action across `src/features/**/real-actions.ts` was systematically audited:
 
-| Module | Hardening Actions Applied |
-|---|---|
-| **Files (`src/features/files`)** | 1. Schema updated: `organizationId` made optional in `createFolderSchema` and `initializeUploadSchema`.<br>2. Action updated: Server actions strictly inject `user.organizationId` into storage quotas, folders, files, and file versions.<br>3. Client-supplied `organizationId` completely ignored. |
-| **Projects (`src/features/projects`)** | 1. `updateProjectMemberRole` and `removeProjectMember` hardened: Joined `projectMembers` with `projects` to verify `projects.organizationId === user.organizationId` before updating or deleting member records.<br>2. BOLA / IDOR vulnerability on member ID eliminated. |
-| **Tasks (`src/features/tasks`)** | 1. `createTask` hardened: Verifies `data.projectId` belongs to `user.organizationId` before creating task.<br>2. `assignTask` hardened: Verifies assigned user belongs to caller's organization.<br>3. `stopTaskTimer` hardened: Scoped to both `user.userId` and `user.organizationId`.<br>4. `addTaskDependency` hardened: Validates access on both predecessor and successor tasks. |
-| **Deliverables (`src/features/deliverables`)** | 1. `createDeliverable` hardened: Validates `data.projectId` belongs to caller's active organization.<br>2. Validates optional `clientId` and `taskId` belong to caller's organization.<br>3. Cross-tenant deliverable grafting blocked. |
+| Module                                           | Hardening Actions Applied                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Files (`src/features/files`)**                 | 1. Schema updated: `organizationId` made optional in `createFolderSchema` and `initializeUploadSchema`.<br>2. Action updated: Server actions strictly inject `user.organizationId` into storage quotas, folders, files, and file versions.<br>3. Client-supplied `organizationId` completely ignored.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Projects (`src/features/projects`)**           | 1. `updateProjectMemberRole` and `removeProjectMember` hardened: Joined `projectMembers` with `projects` to verify `projects.organizationId === user.organizationId` before updating or deleting member records.<br>2. BOLA / IDOR vulnerability on member ID eliminated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **Tasks (`src/features/tasks`)**                 | 1. `createTask` hardened: Verifies `data.projectId` belongs to `user.organizationId` before creating task.<br>2. `assignTask` hardened: Verifies assigned user belongs to caller's organization.<br>3. `stopTaskTimer` hardened: Scoped to both `user.userId` and `user.organizationId`.<br>4. `addTaskDependency` hardened: Validates access on both predecessor and successor tasks.                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Deliverables (`src/features/deliverables`)**   | 1. `createDeliverable` hardened: Validates `data.projectId` belongs to caller's active organization.<br>2. Validates optional `clientId` and `taskId` belong to caller's organization.<br>3. Cross-tenant deliverable grafting blocked.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | **Organizations (`src/features/organizations`)** | 1. `createInvitation` hardened: Validates `input.roleId` belongs to `input.organizationId`.<br>2. `revokeInvitation` hardened: Accepts `targetOrganizationId` and scopes DB update to `and(eq(id), eq(orgId))`.<br>3. `revokeInvitationAction` hardened: Passes `currentUser.organizationId` to `revokeInvitation`.<br>4. `updateUserRole` hardened: Scopes role query to `user.organizationId`, and synchronizes `organizationMemberships.roleId` in addition to legacy `users.roleId`.<br>5. `deactivateUser` / `reactivateUser` hardened: Synchronizes `organizationMemberships.status` with `users.status`.<br>6. `getOrganizationMembers` upgraded: Queries `organizationMemberships` with joins to `users` and `roles`, enabling full multi-membership member listings. |
-| **Workforce (`src/features/workforce`)** | All operations filter by `user.organizationId` and enforce attendance policy timezones resolved from the active organization. |
+| **Workforce (`src/features/workforce`)**         | All operations filter by `user.organizationId` and enforce attendance policy timezones resolved from the active organization.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ---
 
 ## 10. Direct Drizzle Exceptions
 
 Direct privileged Drizzle calls (using `db.select`, `db.insert`, `db.update`, `db.delete`) are permitted only under strict criteria:
+
 1. **Module contains explicit caller identity and permission checks** (`requireCurrentUser()`, `requirePermission()`).
 2. **Every SQL query includes an explicit predicate on `table.organizationId = user.organizationId`**.
 3. **Cross-table mutations verify parent/child relationship ownership** (e.g. project ownership checked when creating a task).
@@ -180,6 +192,7 @@ Direct privileged Drizzle calls (using `db.select`, `db.insert`, `db.update`, `d
 ## 11. Legacy `users.organization_id` Compatibility
 
 Phase 3 and Phase 4 operate under Stage C Dual-Read architecture:
+
 - `organization_memberships` is the **authoritative** source of active tenant context and multi-membership.
 - `users.organization_id` is maintained for backwards compatibility with legacy routes and scripts.
 - **Security Rule**: In any context where `organization_memberships` exists, it takes precedence. `users.organization_id` is NEVER permitted to override an active membership context.
@@ -190,6 +203,7 @@ Phase 3 and Phase 4 operate under Stage C Dual-Read architecture:
 ## 12. Active Organization Cookie Security
 
 `nexos_active_org_id` configuration & security characteristics:
+
 1. **Attributes**: `HttpOnly`, `Secure` (in production/HTTPS), `SameSite=Lax`, `Path=/`, `Max-Age=30 days`.
 2. **Context-Only Principle**: The cookie is treated solely as a UI navigation hint. It does NOT establish authority.
 3. **Server Validation**: The server validates the cookie against `organization_memberships`. An attacker crafting a cookie for Org X when they only belong to Org Y receives access ONLY to Org Y.
@@ -201,17 +215,17 @@ Phase 3 and Phase 4 operate under Stage C Dual-Read architecture:
 
 Exhaustive object-level authorization tests verify that knowing another organization's UUID does not permit unauthorized operations:
 
-| Resource Type | IDOR Attack Vector | Server Defense | Result |
-|---|---|---|---|
-| **Project** | Read Org B project by UUID | `where: and(eq(projectId, id), eq(organizationId, callerOrg))` | Returns `null` / 404 |
-| **Project** | Update Org B project by UUID | `where: and(eq(projectId, id), eq(organizationId, callerOrg))` | 0 rows affected |
-| **Task** | Inject Org B project into new task | Validates project ownership before insert | Operation rejected |
-| **Task** | Assign task to user in another org | Validates assignee membership in caller org | Operation rejected |
-| **Project Member** | Delete member using foreign memberId | Joins with `projects` and checks `organizationId` | Operation rejected |
-| **Deliverable** | Attach deliverable to Org B project | Validates project ownership before insert | Operation rejected |
-| **File / Folder** | Pass foreign `organizationId` in upload | Disregards payload; injects `user.organizationId` | Scoped to caller org |
-| **Invitation** | Revoke invitation of another tenant | `where: and(eq(invitationId, id), eq(organizationId, callerOrg))` | `INVITATION_NOT_FOUND` |
-| **Membership** | Modify role/status in another tenant | `where: and(eq(userId, id), eq(organizationId, callerOrg))` | 0 rows affected |
+| Resource Type      | IDOR Attack Vector                      | Server Defense                                                    | Result                 |
+| ------------------ | --------------------------------------- | ----------------------------------------------------------------- | ---------------------- |
+| **Project**        | Read Org B project by UUID              | `where: and(eq(projectId, id), eq(organizationId, callerOrg))`    | Returns `null` / 404   |
+| **Project**        | Update Org B project by UUID            | `where: and(eq(projectId, id), eq(organizationId, callerOrg))`    | 0 rows affected        |
+| **Task**           | Inject Org B project into new task      | Validates project ownership before insert                         | Operation rejected     |
+| **Task**           | Assign task to user in another org      | Validates assignee membership in caller org                       | Operation rejected     |
+| **Project Member** | Delete member using foreign memberId    | Joins with `projects` and checks `organizationId`                 | Operation rejected     |
+| **Deliverable**    | Attach deliverable to Org B project     | Validates project ownership before insert                         | Operation rejected     |
+| **File / Folder**  | Pass foreign `organizationId` in upload | Disregards payload; injects `user.organizationId`                 | Scoped to caller org   |
+| **Invitation**     | Revoke invitation of another tenant     | `where: and(eq(invitationId, id), eq(organizationId, callerOrg))` | `INVITATION_NOT_FOUND` |
+| **Membership**     | Modify role/status in another tenant    | `where: and(eq(userId, id), eq(organizationId, callerOrg))`       | 0 rows affected        |
 
 ---
 
@@ -219,24 +233,24 @@ Exhaustive object-level authorization tests verify that knowing another organiza
 
 The following test matrix was executed against disposable local PostgreSQL (`nexos_p44_rehearsal`) and unit test suites:
 
-| Test ID | Scenario | Expected | Result | Evidence |
-|---|---|---|---|---|
-| **P4-045** | Member of Org A reads Org B project | Denied (Null/404) | **PASS** | `TenantRepository.projects.findById` returns `null` |
-| **P4-046** | Member of Org A mutates Org B project | Denied (0 rows) | **PASS** | `update` returns `null`; DB record unchanged |
-| **P4-047** | Forged active-org cookie for foreign org | Rejected | **PASS** | Cookie discarded; defaults to user's active membership |
-| **P4-048** | Suspended membership activation attempt | Denied | **PASS** | Query for active context returns NULL / throws |
-| **P4-049** | Deleted membership activation attempt | Denied | **PASS** | Soft-deleted memberships filtered out |
-| **P4-050** | Legacy users.org_id vs multi-membership | Membership Wins | **PASS** | Context derived from active membership record |
-| **P4-051** | Client organizationId override attempt | Rejected | **PASS** | `TenantRepository` throws `SecurityViolationError` |
-| **P4-052** | Client roleId escalation with foreign role | Rejected | **PASS** | Foreign role lookup in caller org returns NULL |
-| **P4-053** | Client userId targeting foreign user | Rejected | **PASS** | Scoped query returns 0 rows |
-| **P4-054** | Cross-tenant membership mutation | Rejected | **PASS** | Membership update constrained by caller org |
-| **P4-055** | Cross-tenant invitation revocation | Rejected | **PASS** | `revokeInvitation` throws `INVITATION_NOT_FOUND` |
-| **P4-056** | Multi-member dashboard metrics isolation | Strictly Scoped | **PASS** | Org A context returns 2 projects; Org B returns 1 |
-| **P4-057** | Cross-tenant deliverable search leakage | Blocked | **PASS** | Search for shared term returns only caller org items |
-| **P4-058** | Cross-tenant task aggregation leakage | Blocked | **PASS** | Counts strictly partitioned (Alpha=2, Beta=1) |
-| **P4-059** | Protected server action unauthenticated | Denied | **PASS** | Static audit confirms all actions guarded |
-| **P4-060** | Protected server action untrusted org param | Denied | **PASS** | Static audit confirms 0 untrusted org params |
+| Test ID    | Scenario                                    | Expected          | Result   | Evidence                                               |
+| ---------- | ------------------------------------------- | ----------------- | -------- | ------------------------------------------------------ |
+| **P4-045** | Member of Org A reads Org B project         | Denied (Null/404) | **PASS** | `TenantRepository.projects.findById` returns `null`    |
+| **P4-046** | Member of Org A mutates Org B project       | Denied (0 rows)   | **PASS** | `update` returns `null`; DB record unchanged           |
+| **P4-047** | Forged active-org cookie for foreign org    | Rejected          | **PASS** | Cookie discarded; defaults to user's active membership |
+| **P4-048** | Suspended membership activation attempt     | Denied            | **PASS** | Query for active context returns NULL / throws         |
+| **P4-049** | Deleted membership activation attempt       | Denied            | **PASS** | Soft-deleted memberships filtered out                  |
+| **P4-050** | Legacy users.org_id vs multi-membership     | Membership Wins   | **PASS** | Context derived from active membership record          |
+| **P4-051** | Client organizationId override attempt      | Rejected          | **PASS** | `TenantRepository` throws `SecurityViolationError`     |
+| **P4-052** | Client roleId escalation with foreign role  | Rejected          | **PASS** | Foreign role lookup in caller org returns NULL         |
+| **P4-053** | Client userId targeting foreign user        | Rejected          | **PASS** | Scoped query returns 0 rows                            |
+| **P4-054** | Cross-tenant membership mutation            | Rejected          | **PASS** | Membership update constrained by caller org            |
+| **P4-055** | Cross-tenant invitation revocation          | Rejected          | **PASS** | `revokeInvitation` throws `INVITATION_NOT_FOUND`       |
+| **P4-056** | Multi-member dashboard metrics isolation    | Strictly Scoped   | **PASS** | Org A context returns 2 projects; Org B returns 1      |
+| **P4-057** | Cross-tenant deliverable search leakage     | Blocked           | **PASS** | Search for shared term returns only caller org items   |
+| **P4-058** | Cross-tenant task aggregation leakage       | Blocked           | **PASS** | Counts strictly partitioned (Alpha=2, Beta=1)          |
+| **P4-059** | Protected server action unauthenticated     | Denied            | **PASS** | Static audit confirms all actions guarded              |
+| **P4-060** | Protected server action untrusted org param | Denied            | **PASS** | Static audit confirms 0 untrusted org params           |
 
 ---
 
@@ -267,17 +281,18 @@ The following test matrix was executed against disposable local PostgreSQL (`nex
 
 ## 17. Remaining Risks
 
-| Severity | Risk Description | Mitigation | Pre-Production Action |
-|---|---|---|---|
-| **MEDIUM** | Future server actions might introduce direct queries without tenant scoping | Static AST audit gate (`auditTenantIsolation`) enforced in CI pipeline | Maintain CI gate blocking merges on un-scoped queries |
-| **LOW** | Legacy `users.organization_id` column still exists | Dual-read architecture prioritizes `organization_memberships` in all active paths | Phase 5 will deprecate and drop legacy column once all read paths migrate |
-| **LOW** | Direct SQL migrations bypass Drizzle schema checks | Rehearsal scripts test full migration chain against clean PostgreSQL instances | All migrations must pass local rehearsal before production deployment |
+| Severity   | Risk Description                                                            | Mitigation                                                                        | Pre-Production Action                                                     |
+| ---------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **MEDIUM** | Future server actions might introduce direct queries without tenant scoping | Static AST audit gate (`auditTenantIsolation`) enforced in CI pipeline            | Maintain CI gate blocking merges on un-scoped queries                     |
+| **LOW**    | Legacy `users.organization_id` column still exists                          | Dual-read architecture prioritizes `organization_memberships` in all active paths | Phase 5 will deprecate and drop legacy column once all read paths migrate |
+| **LOW**    | Direct SQL migrations bypass Drizzle schema checks                          | Rehearsal scripts test full migration chain against clean PostgreSQL instances    | All migrations must pass local rehearsal before production deployment     |
 
 ---
 
 ## 18. Pre-Production Requirements
 
 Before production deployment:
+
 1. Run `npx tsx scripts/audit-authorization.ts` to verify 100% static authorization coverage.
 2. Run `npm test` to verify all 847 regression tests pass.
 3. Verify `DATABASE_URL` uses direct connection for migrations and pooled connection for application runtime.

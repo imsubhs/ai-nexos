@@ -280,7 +280,8 @@ export async function assignTask(taskId: string, assigneeUserId: string) {
           ),
         )
         .limit(1);
-      if (!targetUser) throw new Error("Assignee not found in this organization");
+      if (!targetUser)
+        throw new Error("Assignee not found in this organization");
     }
 
     const [assignee] = await tx

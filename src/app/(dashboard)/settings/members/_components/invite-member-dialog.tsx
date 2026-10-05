@@ -81,7 +81,10 @@ export function InviteMemberDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => (val ? setOpen(true) : handleClose())}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => (val ? setOpen(true) : handleClose())}
+    >
       <DialogTrigger
         render={
           <Button size="sm" className="gap-2">
@@ -95,29 +98,31 @@ export function InviteMemberDialog({
         <DialogHeader>
           <DialogTitle>Invite Organization Member</DialogTitle>
           <DialogDescription>
-            Generate a secure, cryptographically hashed single-use invitation for your agency workspace.
+            Generate a secure, cryptographically hashed single-use invitation
+            for your agency workspace.
           </DialogDescription>
         </DialogHeader>
 
         {createdInviteUrl ? (
           <div className="flex flex-col gap-4 py-2">
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
-              <div className="flex items-center gap-2 font-medium text-primary">
+            <div className="border-primary/20 bg-primary/5 rounded-lg border p-4 text-sm">
+              <div className="text-primary flex items-center gap-2 font-medium">
                 <Check className="h-4 w-4" />
                 Invitation Created for {email}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Share this secure link directly with the invitee. They will join with the assigned role upon acceptance.
+              <p className="text-muted-foreground mt-1 text-xs">
+                Share this secure link directly with the invitee. They will join
+                with the assigned role upon acceptance.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 rounded-md border border-border bg-surface-1 p-2">
-              <LinkIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="border-border bg-surface-1 flex items-center gap-2 rounded-md border p-2">
+              <LinkIcon className="text-muted-foreground h-4 w-4 shrink-0" />
               <input
                 type="text"
                 readOnly
                 value={createdInviteUrl}
-                className="w-full bg-transparent font-mono text-xs text-foreground focus:outline-hidden"
+                className="text-foreground w-full bg-transparent font-mono text-xs focus:outline-hidden"
               />
               <Button
                 type="button"
@@ -126,7 +131,11 @@ export function InviteMemberDialog({
                 onClick={copyToClipboard}
                 className="shrink-0 gap-1.5"
               >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
                 {copied ? "Copied" : "Copy"}
               </Button>
             </div>
@@ -140,7 +149,10 @@ export function InviteMemberDialog({
         ) : (
           <form onSubmit={handleInvite} className="flex flex-col gap-4 py-2">
             <div className="space-y-1.5">
-              <label htmlFor="invite-email" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="invite-email"
+                className="text-muted-foreground text-xs font-medium tracking-wider uppercase"
+              >
                 Email Address
               </label>
               <Input
@@ -155,7 +167,10 @@ export function InviteMemberDialog({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="invite-role" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="invite-role"
+                className="text-muted-foreground text-xs font-medium tracking-wider uppercase"
+              >
                 Workspace Role
               </label>
               <select
@@ -163,7 +178,7 @@ export function InviteMemberDialog({
                 value={roleId}
                 onChange={(e) => setRoleId(e.target.value)}
                 disabled={isPending}
-                className="w-full rounded-md border border-border bg-surface-1 px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-hidden focus:ring-1 focus:ring-primary"
+                className="border-border bg-surface-1 text-foreground focus:border-primary focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-hidden"
               >
                 {roles.map((r) => (
                   <option key={r.roleId} value={r.roleId}>
@@ -171,8 +186,9 @@ export function InviteMemberDialog({
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">
-                Determines operational permissions and access boundaries across projects and settings.
+              <p className="text-muted-foreground text-xs">
+                Determines operational permissions and access boundaries across
+                projects and settings.
               </p>
             </div>
 

@@ -1,15 +1,16 @@
 # AI NEX OS — Phase 4B: Global Search & Command Palette Specification
+
 **Product:** AI NEX OS — The Operating System for Creative Execution  
 **Phase:** 4B — Core Workspace + Global Navigation  
 **Status:** COMPLETE / CANONICAL SPECIFICATION  
 **Component:** `src/features/search/components/global-search.tsx`  
-**Server Action:** `src/features/search/actions.ts::globalSearch`  
+**Server Action:** `src/features/search/actions.ts::globalSearch`
 
 ---
 
 ## 1. Executive Summary
 
-Phase 4B replaces the previous decorative, desktop-only header input with an accessible, high-performance **Command Palette** (`⌘K` / `Ctrl+K`). 
+Phase 4B replaces the previous decorative, desktop-only header input with an accessible, high-performance **Command Palette** (`⌘K` / `Ctrl+K`).
 
 The search engine operates with strict multi-tenant scoping (`session.organizationId`), permission-tolerant fan-out queries, bounded result quotas, and integrated memory-first rate limiting, ensuring that search queries can never leak cross-tenant records or degrade server performance.
 
@@ -18,25 +19,28 @@ The search engine operates with strict multi-tenant scoping (`session.organizati
 ## 2. Command Palette UX & Interaction Lifecycle
 
 ### 2.1 Triggers
+
 1. **Global Keyboard Listener:** Pressing `⌘K` (on macOS) or `Ctrl+K` (on Windows/Linux) triggers the Command Palette modal from anywhere in the authenticated application.
 2. **Desktop Header Trigger:** A button styled as an active search input rendered in `AppHeader` featuring a search icon, placeholder text, and a `⌘K` keyboard badge.
 3. **Mobile Header Trigger:** A dedicated `Search` icon button (`size="icon"`) displayed on viewports < 768px (`md:hidden`).
 
 ### 2.2 Dialog Overlay Architecture
+
 - Built on Base UI `@base-ui/react/dialog` with `DialogContent` styled as a floating command sheet (`max-w-xl top-[20%] border shadow-2xl rounded-xl`).
 - Features a semi-transparent backdrop blur overlay (`bg-black/10 backdrop-blur-xs`).
 - Input receives automatic focus within 50ms of modal mount.
 - Dismissible via `Escape` key, backdrop click, or result selection.
 
 ### 2.3 Keyboard Navigation Matrix
-| Key Combination | Action / State Transition |
-|---|---|
-| `⌘K` / `Ctrl+K` | Toggle open / closed state of Command Palette |
-| `Escape` | Close Command Palette and restore focus to trigger |
-| `ArrowDown` | Move active selection down through the flattened results list (wraps around) |
-| `ArrowUp` | Move active selection up through the flattened results list (wraps around) |
-| `Enter` | Navigate to highlighted result (`router.push(hit.href)`) and close palette |
-| Typing (`char`) | Update search term; triggers debounced query |
+
+| Key Combination | Action / State Transition                                                    |
+| --------------- | ---------------------------------------------------------------------------- |
+| `⌘K` / `Ctrl+K` | Toggle open / closed state of Command Palette                                |
+| `Escape`        | Close Command Palette and restore focus to trigger                           |
+| `ArrowDown`     | Move active selection down through the flattened results list (wraps around) |
+| `ArrowUp`       | Move active selection up through the flattened results list (wraps around)   |
+| `Enter`         | Navigate to highlighted result (`router.push(hit.href)`) and close palette   |
+| Typing (`char`) | Update search term; triggers debounced query                                 |
 
 ---
 
@@ -44,16 +48,17 @@ The search engine operates with strict multi-tenant scoping (`session.organizati
 
 The Command Palette queries and categorizes hits across six core entity types:
 
-| Entity Group | Label | Underlying Server Read | Entity Icon | Destination Route |
-|---|---|---|---|---|
-| `projects` | **Projects** | `getProjects(query, 5, 0)` | `FolderKanban` | `/projects/[projectId]` |
-| `clients` | **Clients** | `getClients(query)` | `Building2` | `/clients/[clientId]` |
-| `deliverables` | **Deliverables** | `searchDeliverables(query, 0, 5)` | `FileText` | `/deliverables?search=[title]` |
-| `people` | **People** | `listEmployeesAction({ search, page: 1, pageSize: 10 })` | `Users` | `/workforce/employees/[userId]` |
-| `tasks` | **Tasks** | `searchTasks(query, 0, 5)` | `CheckSquare` | `/tasks` |
-| `files` | **Files** | `searchFiles(query, 0, 5)` | `Files` | `/files` |
+| Entity Group   | Label            | Underlying Server Read                                   | Entity Icon    | Destination Route               |
+| -------------- | ---------------- | -------------------------------------------------------- | -------------- | ------------------------------- |
+| `projects`     | **Projects**     | `getProjects(query, 5, 0)`                               | `FolderKanban` | `/projects/[projectId]`         |
+| `clients`      | **Clients**      | `getClients(query)`                                      | `Building2`    | `/clients/[clientId]`           |
+| `deliverables` | **Deliverables** | `searchDeliverables(query, 0, 5)`                        | `FileText`     | `/deliverables?search=[title]`  |
+| `people`       | **People**       | `listEmployeesAction({ search, page: 1, pageSize: 10 })` | `Users`        | `/workforce/employees/[userId]` |
+| `tasks`        | **Tasks**        | `searchTasks(query, 0, 5)`                               | `CheckSquare`  | `/tasks`                        |
+| `files`        | **Files**        | `searchFiles(query, 0, 5)`                               | `Files`        | `/files`                        |
 
 Each hit displays:
+
 - **Title:** Primary entity name (e.g. "Brand Refresh", "Nike Inc.", "Hero Video V1")
 - **Subtitle:** Distinctive metadata (e.g. project code `PRJ-2026-0042`, industry, designation, status)
 - **Visual Icon:** Color-coded categorical icon
@@ -63,7 +68,7 @@ Each hit displays:
 ## 4. Query Flow & Performance Engineering
 
 ```
-[User Input] 
+[User Input]
      │ (Debounced 250ms, Min length: 2 chars)
      ▼
 [globalSearch(term)] (Server Action)
@@ -85,6 +90,7 @@ Each hit displays:
 ```
 
 ### 4.1 Resource Bounds & Guardrails
+
 - **Min Query Length:** 2 characters (queries < 2 chars return quick navigation links immediately without issuing server actions).
 - **Max Query Length:** 64 characters (enforced in `actions.ts`).
 - **Debounce Interval:** 250ms client-side delay to prevent keystroke flooding.

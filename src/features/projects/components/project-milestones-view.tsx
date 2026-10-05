@@ -96,15 +96,15 @@ export function ProjectMilestonesView({
 
   if (!timelineId) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-1/40 p-12 text-center">
-        <Flag className="size-8 text-muted-foreground mb-3" />
-        <h3 className="text-base font-semibold text-foreground mb-1">
+      <div className="border-border bg-surface-1/40 flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+        <Flag className="text-muted-foreground mb-3 size-8" />
+        <h3 className="text-foreground mb-1 text-base font-semibold">
           No Timeline Defined
         </h3>
-        <p className="max-w-sm text-xs text-muted-foreground">
-          Initialize this project&apos;s timeline to define delivery phases and milestones.
+        <p className="text-muted-foreground max-w-sm text-xs">
+          Initialize this project&apos;s timeline to define delivery phases and
+          milestones.
         </p>
-
       </div>
     );
   }
@@ -122,12 +122,14 @@ export function ProjectMilestonesView({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border border-border bg-surface-1">
+      <div className="border-border bg-surface-1 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-base font-semibold text-foreground">Project Milestones</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {completedMilestones} of {totalMilestones} milestones completed across{" "}
-            {phases.length} execution phases.
+          <h3 className="text-foreground text-base font-semibold">
+            Project Milestones
+          </h3>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            {completedMilestones} of {totalMilestones} milestones completed
+            across {phases.length} execution phases.
           </p>
         </div>
 
@@ -214,13 +216,14 @@ export function ProjectMilestonesView({
       </div>
 
       {totalMilestones === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-1/40 p-12 text-center">
-          <Flag className="size-8 text-muted-foreground mb-3" />
-          <h3 className="text-base font-semibold text-foreground mb-1">
+        <div className="border-border bg-surface-1/40 flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+          <Flag className="text-muted-foreground mb-3 size-8" />
+          <h3 className="text-foreground mb-1 text-base font-semibold">
             No milestones defined
           </h3>
-          <p className="max-w-sm text-xs text-muted-foreground mb-4">
-            Add key delivery checkpoints to track progress across the creative workflow.
+          <p className="text-muted-foreground mb-4 max-w-sm text-xs">
+            Add key delivery checkpoints to track progress across the creative
+            workflow.
           </p>
           <Button size="sm" onClick={() => setOpen(true)} className="gap-1.5">
             <Plus className="size-3.5" />
@@ -232,67 +235,72 @@ export function ProjectMilestonesView({
           {phasesWithMilestones.map((phase) => (
             <div
               key={phase.phaseId}
-              className="rounded-xl border border-border bg-surface-1 overflow-hidden"
+              className="border-border bg-surface-1 overflow-hidden rounded-xl border"
             >
-              <div className="flex items-center justify-between border-b border-border/80 bg-surface-2/40 px-4 py-3">
-                <h4 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <div className="border-border/80 bg-surface-2/40 flex items-center justify-between border-b px-4 py-3">
+                <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                   {phase.name.replace("_", " ")}
                 </h4>
-                <Badge variant="outline" className="text-xs font-mono">
-                  {phase.milestones.length} milestone{phase.milestones.length === 1 ? "" : "s"}
+                <Badge variant="outline" className="font-mono text-xs">
+                  {phase.milestones.length} milestone
+                  {phase.milestones.length === 1 ? "" : "s"}
                 </Badge>
               </div>
 
-              <div className="divide-y divide-border/60">
+              <div className="divide-border/60 divide-y">
                 {phase.milestones.length === 0 ? (
-                  <div className="px-4 py-3 text-xs text-muted-foreground/60 italic">
+                  <div className="text-muted-foreground/60 px-4 py-3 text-xs italic">
                     No milestones in this phase
                   </div>
                 ) : (
                   phase.milestones.map((m) => (
                     <div
                       key={m.milestoneId}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 hover:bg-surface-2/20 transition-colors"
+                      className="hover:bg-surface-2/20 flex flex-col justify-between gap-3 p-4 transition-colors sm:flex-row sm:items-center"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           {m.progress === 100 || m.status === "completed" ? (
                             <CheckCircle2 className="size-4 text-emerald-400" />
                           ) : (
-                            <Flag className="size-4 text-brand-primary" />
+                            <Flag className="text-brand-primary size-4" />
                           )}
-                          <span className="font-semibold text-foreground text-sm">
+                          <span className="text-foreground text-sm font-semibold">
                             {m.name}
                           </span>
                           <Badge
                             variant="outline"
-                            className="text-xs capitalize font-normal"
+                            className="text-xs font-normal capitalize"
                           >
                             {m.status.replace("_", " ")}
                           </Badge>
                         </div>
                         {m.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-1 pl-6">
+                          <p className="text-muted-foreground line-clamp-1 pl-6 text-xs">
                             {m.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-6 self-end sm:self-center shrink-0">
+                      <div className="flex shrink-0 items-center gap-6 self-end sm:self-center">
                         {m.endDate && (
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
                             <Calendar className="size-3.5" />
-                            <span>{new Date(m.endDate).toLocaleDateString()}</span>
+                            <span>
+                              {new Date(m.endDate).toLocaleDateString()}
+                            </span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 w-32">
-                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-3">
+                        <div className="flex w-32 items-center gap-2">
+                          <div className="bg-surface-3 h-1.5 flex-1 overflow-hidden rounded-full">
                             <div
-                              className="h-full rounded-full bg-brand-primary transition-all duration-300"
-                              style={{ width: `${Math.min(100, Math.max(0, m.progress))}%` }}
+                              className="bg-brand-primary h-full rounded-full transition-all duration-300"
+                              style={{
+                                width: `${Math.min(100, Math.max(0, m.progress))}%`,
+                              }}
                             />
                           </div>
-                          <span className="font-mono text-xs text-brand-primary">
+                          <span className="text-brand-primary font-mono text-xs">
                             {m.progress}%
                           </span>
                         </div>

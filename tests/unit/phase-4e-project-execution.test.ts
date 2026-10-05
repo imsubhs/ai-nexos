@@ -16,7 +16,10 @@ import {
 import { insertProjectSchema } from "@/features/projects/schemas";
 import { insertTaskSchema } from "@/features/tasks/schemas";
 
-import { insertTimelineSchema, insertMilestoneSchema } from "@/features/timelines/schemas";
+import {
+  insertTimelineSchema,
+  insertMilestoneSchema,
+} from "@/features/timelines/schemas";
 import { BOARD_COLUMNS, TASK_STATUSES } from "@/features/tasks/constants";
 import { getDemoStore } from "@/lib/demo/store";
 
@@ -29,7 +32,9 @@ describe("Phase 4E: Project Execution, Kanban & Gantt Architecture", () => {
     const content = readFileSync(tasksPagePath, "utf-8");
 
     // The known Phase 4A bug was the fallback UUID "00000000-0000-4000-8000-000000000312"
-    expect(content.includes("00000000-0000-4000-8000-000000000312")).toBe(false);
+    expect(content.includes("00000000-0000-4000-8000-000000000312")).toBe(
+      false,
+    );
     expect(content.includes("DEMO_TASK_SCOPE")).toBe(false);
   });
 
@@ -109,17 +114,28 @@ describe("Phase 4E: Project Execution, Kanban & Gantt Architecture", () => {
 
       // Search by exact project name
       const searched = await mockGetProjects(sample.projectName);
-      expect(searched.some((p: any) => p.projectId === sample.projectId)).toBe(true);
+      expect(searched.some((p: any) => p.projectId === sample.projectId)).toBe(
+        true,
+      );
 
       // Search by code
       if (sample.projectCode) {
         const byCode = await mockGetProjects(sample.projectCode);
-        expect(byCode.some((p: any) => p.projectId === sample.projectId)).toBe(true);
+        expect(byCode.some((p: any) => p.projectId === sample.projectId)).toBe(
+          true,
+        );
       }
 
       // Filter by status
-      const filteredByStatus = await mockGetProjects(undefined, 50, 0, sample.status);
-      expect(filteredByStatus.every((p: any) => p.status === sample.status)).toBe(true);
+      const filteredByStatus = await mockGetProjects(
+        undefined,
+        50,
+        0,
+        sample.status,
+      );
+      expect(
+        filteredByStatus.every((p: any) => p.status === sample.status),
+      ).toBe(true);
 
       // Filter by healthStatus
       const filteredByHealth = await mockGetProjects(
@@ -129,7 +145,11 @@ describe("Phase 4E: Project Execution, Kanban & Gantt Architecture", () => {
         undefined,
         sample.healthStatus,
       );
-      expect(filteredByHealth.every((p: any) => p.healthStatus === sample.healthStatus)).toBe(true);
+      expect(
+        filteredByHealth.every(
+          (p: any) => p.healthStatus === sample.healthStatus,
+        ),
+      ).toBe(true);
     });
   });
 
@@ -148,7 +168,9 @@ describe("Phase 4E: Project Execution, Kanban & Gantt Architecture", () => {
     it("aggregates authentic task counts and real progress for project summary", async () => {
       const store = getDemoStore();
       const demoProject = store.projects[0];
-      const summary = await mockGetProjectDashboardSummary(demoProject.projectId);
+      const summary = await mockGetProjectDashboardSummary(
+        demoProject.projectId,
+      );
 
       expect(summary).toBeDefined();
       expect(typeof summary.overallProgress).toBe("number");

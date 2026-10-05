@@ -13,6 +13,7 @@
 This document establishes a rigorous structural, architectural, and operational parity assessment across **Local Rehearsal**, **Supabase Staging**, and **Supabase Production** environments without connecting to or mutating production infrastructure.
 
 ### Parity Verdict
+
 - **Database Engine Parity**: **100% MATCH**. Both Supabase Staging (`shnzzbbtydmvfhgeoysg`) and Supabase Production (`gsgseacjcalkhhmunjhx`) run **PostgreSQL 17.6.1.155 (GA)**.
 - **Connection Architecture Parity**: **100% MATCH**. Both environments utilize Supavisor with dual endpoints:
   - Port 6543 (Transaction mode) for high-concurrency runtime queries.
@@ -26,28 +27,30 @@ This document establishes a rigorous structural, architectural, and operational 
 
 ## 2. Structural Environment Comparison
 
-| Dimension | Local Rehearsal | Supabase Staging (`AI NEX OS Staging`) | Supabase Production (`ai-nexos`) | Parity Status |
-|---|---|---|---|---|
-| **Project Ref** | `local_rehearsal` | `shnzzbbtydmvfhgeoysg` | `gsgseacjcalkhhmunjhx` | Isolated |
-| **Cloud Region** | Localhost (macOS) | `ap-southeast-1` (Singapore) | `ap-northeast-1` (Tokyo) | Verified Distinct |
-| **Status** | Active / Ephemeral | **INACTIVE (PAUSED)** | **ACTIVE_HEALTHY** | Staging Paused |
-| **PostgreSQL Version** | PostgreSQL 14/15/16/17 | **17.6.1.155** | **17.6.1.155** | **Identical Engine** |
-| **Connection Pooling** | Direct connection | Supavisor (Ports 5432 & 6543) | Supavisor (Ports 5432 & 6543) | Identical Pooler |
-| **Public Tables** | 204 tables | Expected 204 post-migration | Baseline production schema | Verified in 0000→0017 |
-| **Migrations Applied** | 0000 → 0017 (18 total) | Awaiting 0015→0017 post-resume | 0000 → 0014 applied | Safe Sequence |
-| **Storage Buckets** | Mock / Local | `documents` | `documents` | Identical Target |
-| **Auth Provider** | Supabase Auth (Synthetic) | Supabase Auth (Synthetic) | Supabase Auth (Live Users) | Safe Isolation |
-| **Email Delivery** | Mocked in tests | Unconfigured (`RESEND_API_KEY` unset) | Production configured | Requires Mock/Link |
-| **Redis Cache** | In-memory fallback | In-memory fallback | In-memory / Optional Redis | Graceful degradation |
-| **App Domains** | `localhost:3000` | Fallback active (`.env.test.local`) | Configured (`.env.local`) | Separate Domains |
-| **Portal Domains**| `portal.localhost:3000` | Fallback active (`.env.test.local`) | Configured (`.env.local`) | Separate Domains |
+| Dimension              | Local Rehearsal           | Supabase Staging (`AI NEX OS Staging`) | Supabase Production (`ai-nexos`) | Parity Status         |
+| ---------------------- | ------------------------- | -------------------------------------- | -------------------------------- | --------------------- |
+| **Project Ref**        | `local_rehearsal`         | `shnzzbbtydmvfhgeoysg`                 | `gsgseacjcalkhhmunjhx`           | Isolated              |
+| **Cloud Region**       | Localhost (macOS)         | `ap-southeast-1` (Singapore)           | `ap-northeast-1` (Tokyo)         | Verified Distinct     |
+| **Status**             | Active / Ephemeral        | **INACTIVE (PAUSED)**                  | **ACTIVE_HEALTHY**               | Staging Paused        |
+| **PostgreSQL Version** | PostgreSQL 14/15/16/17    | **17.6.1.155**                         | **17.6.1.155**                   | **Identical Engine**  |
+| **Connection Pooling** | Direct connection         | Supavisor (Ports 5432 & 6543)          | Supavisor (Ports 5432 & 6543)    | Identical Pooler      |
+| **Public Tables**      | 204 tables                | Expected 204 post-migration            | Baseline production schema       | Verified in 0000→0017 |
+| **Migrations Applied** | 0000 → 0017 (18 total)    | Awaiting 0015→0017 post-resume         | 0000 → 0014 applied              | Safe Sequence         |
+| **Storage Buckets**    | Mock / Local              | `documents`                            | `documents`                      | Identical Target      |
+| **Auth Provider**      | Supabase Auth (Synthetic) | Supabase Auth (Synthetic)              | Supabase Auth (Live Users)       | Safe Isolation        |
+| **Email Delivery**     | Mocked in tests           | Unconfigured (`RESEND_API_KEY` unset)  | Production configured            | Requires Mock/Link    |
+| **Redis Cache**        | In-memory fallback        | In-memory fallback                     | In-memory / Optional Redis       | Graceful degradation  |
+| **App Domains**        | `localhost:3000`          | Fallback active (`.env.test.local`)    | Configured (`.env.local`)        | Separate Domains      |
+| **Portal Domains**     | `portal.localhost:3000`   | Fallback active (`.env.test.local`)    | Configured (`.env.local`)        | Separate Domains      |
 
 ---
 
 ## 3. Database Engine & Extension Parity
 
 ### PostgreSQL 17.6.1 Compatibility
+
 Supabase Staging and Production both run the latest PostgreSQL 17 engine (`17.6.1.155`).
+
 - **UUID Generation**: Supported natively via `gen_random_uuid()`.
 - **JSONB Operations**: Full support for indexed JSONB columns (`working_hours`, metadata).
 - **Constraints & Indexes**:
@@ -85,6 +88,7 @@ The application configuration strictly differentiates between transactional pool
 ## 5. Security & Authorization Parity
 
 ### Privileged Drizzle Model vs. PostgreSQL RLS
+
 1. **Server Architecture Reality**: In AI NEX OS, server-side Drizzle instances connect using privileged database credentials (table-owner / service connection). Therefore, PostgreSQL Row-Level Security (RLS) is bypassed at the database connection layer during server action execution.
 2. **Authoritative Security Layer**: Application-level tenant authorization is the **authoritative boundary**.
    - Identity must be resolved server-side from Supabase Auth (`getCurrentUser()`).
@@ -130,6 +134,7 @@ The pending migrations to be applied to Staging (and eventually Production) are 
 ## 7. Operational Pre-Flight Checklist for Cloud Staging
 
 Before staging execution can proceed:
+
 - [x] Local test suite clean (847/847 tests).
 - [x] TypeScript compiler clean (0 errors).
 - [x] Production build clean (44 routes compiled).

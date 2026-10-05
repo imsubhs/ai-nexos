@@ -2,7 +2,11 @@
 
 import { describe, expect, it } from "vitest";
 import { hasPermission, type PermissionMap } from "@/features/permissions";
-import { insertClientSchema, insertContactSchema, updateClientSchema } from "@/features/clients/schemas";
+import {
+  insertClientSchema,
+  insertContactSchema,
+  updateClientSchema,
+} from "@/features/clients/schemas";
 
 describe("Phase 4D — Client CRM & External Collaboration Experience", () => {
   describe("Client Schemas & Validation Invariants", () => {
@@ -27,7 +31,11 @@ describe("Phase 4D — Client CRM & External Collaboration Experience", () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.companyName).toBe("Acme Creative Studio");
-        expect(result.data.brandColors).toEqual(["#0EA5E9", "#11212D", "#F5F7F8"]);
+        expect(result.data.brandColors).toEqual([
+          "#0EA5E9",
+          "#11212D",
+          "#F5F7F8",
+        ]);
         expect(result.data.preferredCommunication).toBe("slack");
       }
     });
@@ -52,7 +60,13 @@ describe("Phase 4D — Client CRM & External Collaboration Experience", () => {
     });
 
     it("validates client contact creation with supported contact types", () => {
-      const validTypes = ["primary", "billing", "marketing", "technical", "legal"] as const;
+      const validTypes = [
+        "primary",
+        "billing",
+        "marketing",
+        "technical",
+        "legal",
+      ] as const;
 
       for (const contactType of validTypes) {
         const payload = {
@@ -182,8 +196,12 @@ describe("Phase 4D — Client CRM & External Collaboration Experience", () => {
 
     it("filters clients accurately by health score", () => {
       const healthyOnly = mockClients.filter((c) => c.clientHealth === "good");
-      const atRiskOnly = mockClients.filter((c) => c.clientHealth === "at_risk");
-      const criticalOnly = mockClients.filter((c) => c.clientHealth === "critical");
+      const atRiskOnly = mockClients.filter(
+        (c) => c.clientHealth === "at_risk",
+      );
+      const criticalOnly = mockClients.filter(
+        (c) => c.clientHealth === "critical",
+      );
 
       expect(healthyOnly).toHaveLength(1);
       expect(atRiskOnly).toHaveLength(1);
@@ -197,13 +215,32 @@ describe("Phase 4D — Client CRM & External Collaboration Experience", () => {
       const clientBId = "00000000-0000-4000-8000-00000000000b";
 
       const mockProjects = [
-        { projectId: "p1", clientId: clientAId, projectName: "Acme Campaign 1", status: "in_progress" },
-        { projectId: "p2", clientId: clientAId, projectName: "Acme Brand Refresh", status: "completed" },
-        { projectId: "p3", clientId: clientBId, projectName: "Globex Commercial", status: "in_progress" },
+        {
+          projectId: "p1",
+          clientId: clientAId,
+          projectName: "Acme Campaign 1",
+          status: "in_progress",
+        },
+        {
+          projectId: "p2",
+          clientId: clientAId,
+          projectName: "Acme Brand Refresh",
+          status: "completed",
+        },
+        {
+          projectId: "p3",
+          clientId: clientBId,
+          projectName: "Globex Commercial",
+          status: "in_progress",
+        },
       ];
 
-      const clientAProjects = mockProjects.filter((p) => p.clientId === clientAId);
-      const activeClientAProjects = clientAProjects.filter((p) => p.status !== "completed");
+      const clientAProjects = mockProjects.filter(
+        (p) => p.clientId === clientAId,
+      );
+      const activeClientAProjects = clientAProjects.filter(
+        (p) => p.status !== "completed",
+      );
 
       expect(clientAProjects).toHaveLength(2);
       expect(activeClientAProjects).toHaveLength(1);

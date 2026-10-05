@@ -34,13 +34,7 @@ const WARNING = new Set([
   "needs_revision",
 ]);
 
-const INFO = new Set([
-  "in_progress",
-  "draft",
-  "planned",
-  "reviewing",
-  "open",
-]);
+const INFO = new Set(["in_progress", "draft", "planned", "reviewing", "open"]);
 
 function humanize(status: string): string {
   return status
@@ -81,7 +75,7 @@ export function StatusBadge({
       )}
     >
       <span
-        className={cn("size-1.5 rounded-full shrink-0", dotClasses)}
+        className={cn("size-1.5 shrink-0 rounded-full", dotClasses)}
         aria-hidden="true"
       />
       {humanize(status)}

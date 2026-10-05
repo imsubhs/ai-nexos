@@ -152,7 +152,6 @@ export async function getProjects(
     .slice(offset, offset + limit) as any;
 }
 
-
 export async function getProjectById(
   ...args: Parameters<typeof real_getProjectById>
 ): Promise<Awaited<ReturnType<typeof real_getProjectById>>> {

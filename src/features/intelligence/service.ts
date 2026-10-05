@@ -82,7 +82,10 @@ export async function computeExecutiveIntelligence(
   ] = await Promise.all([
     // Active & recent projects
     db.query.projects.findMany({
-      where: and(eq(projects.organizationId, orgId), isNull(projects.deletedAt)),
+      where: and(
+        eq(projects.organizationId, orgId),
+        isNull(projects.deletedAt),
+      ),
       with: {
         client: true,
         manager: true,
@@ -174,7 +177,9 @@ export async function computeExecutiveIntelligence(
   const clientMap = new Map(orgClients.map((c) => [c.clientId, c]));
   const userMap = new Map(orgUsers.map((u) => [u.userId, u]));
   const projectMap = new Map(orgProjects.map((p) => [p.projectId, p]));
-  const deliverableMap = new Map(orgDeliverables.map((d) => [d.deliverableId, d]));
+  const deliverableMap = new Map(
+    orgDeliverables.map((d) => [d.deliverableId, d]),
+  );
 
   // Tasks by project
   const tasksByProject = new Map<string, typeof orgTasks>();
@@ -245,7 +250,9 @@ export async function computeExecutiveIntelligence(
   );
 
   const projectsOverdue = activeProjects.filter(
-    (p) => p.estimatedEndDate && new Date(p.estimatedEndDate).getTime() < now.getTime(),
+    (p) =>
+      p.estimatedEndDate &&
+      new Date(p.estimatedEndDate).getTime() < now.getTime(),
   ).length;
 
   const projectsAtRisk = activeProjects.filter((p) => {
@@ -259,10 +266,7 @@ export async function computeExecutiveIntelligence(
     return isExplicitlyAtRisk || isOverdue;
   }).length;
 
-  const projectsOnTrack = Math.max(
-    0,
-    activeProjects.length - projectsAtRisk,
-  );
+  const projectsOnTrack = Math.max(0, activeProjects.length - projectsAtRisk);
 
   const activeDeliverableStatuses = [
     "draft",
@@ -315,7 +319,10 @@ export async function computeExecutiveIntelligence(
   }).length;
 
   const openTasksList = orgTasks.filter(
-    (t) => t.status !== "completed" && t.status !== "cancelled" && t.status !== "archived",
+    (t) =>
+      t.status !== "completed" &&
+      t.status !== "cancelled" &&
+      t.status !== "archived",
   );
 
   const overdueTasks = openTasksList.filter(
@@ -389,7 +396,9 @@ export async function computeExecutiveIntelligence(
     if (deliverablesRequiringChanges > 0) {
       const revisionPenalty = Math.min(
         30,
-        Math.round((deliverablesRequiringChanges / activeDeliverablesList.length) * 35),
+        Math.round(
+          (deliverablesRequiringChanges / activeDeliverablesList.length) * 35,
+        ),
       );
       penalty += revisionPenalty;
       deliveryReasons.push(
@@ -409,12 +418,16 @@ export async function computeExecutiveIntelligence(
   let clientReviewScore = 100;
   if (deliverablesAwaitingClientReview === 0) {
     clientReviewScore = 100;
-    clientReviewReasons.push("Zero pending client reviews currently blocking the pipeline.");
+    clientReviewReasons.push(
+      "Zero pending client reviews currently blocking the pipeline.",
+    );
   } else {
     // Check if any review has been pending for > 72 hours
     const longPending = activeDeliverablesList.filter((d) => {
-      if (!["ready_for_client", "client_review"].includes(d.status)) return false;
-      const ageHours = (now.getTime() - new Date(d.updatedAt).getTime()) / (1000 * 3600);
+      if (!["ready_for_client", "client_review"].includes(d.status))
+        return false;
+      const ageHours =
+        (now.getTime() - new Date(d.updatedAt).getTime()) / (1000 * 3600);
       return ageHours > 72;
     }).length;
 
@@ -506,11 +519,14 @@ export async function computeExecutiveIntelligence(
 
   let summary = "Operational velocity is optimal across all departments.";
   if (overallLevel === "CRITICAL") {
-    summary = "Critical operational delays detected requiring immediate executive intervention.";
+    summary =
+      "Critical operational delays detected requiring immediate executive intervention.";
   } else if (overallLevel === "AT_RISK") {
-    summary = "Execution friction identified in project timelines and delivery SLAs.";
+    summary =
+      "Execution friction identified in project timelines and delivery SLAs.";
   } else if (overallLevel === "HEALTHY") {
-    summary = "Operations are stable with minor items requiring managerial review.";
+    summary =
+      "Operations are stable with minor items requiring managerial review.";
   }
 
   const health: ExecutiveHealthDto = {
@@ -530,9 +546,13 @@ export async function computeExecutiveIntelligence(
 
   // R1: Overdue Projects (CRITICAL)
   for (const p of activeProjects) {
-    if (p.estimatedEndDate && new Date(p.estimatedEndDate).getTime() < now.getTime()) {
+    if (
+      p.estimatedEndDate &&
+      new Date(p.estimatedEndDate).getTime() < now.getTime()
+    ) {
       const daysOverdue = Math.ceil(
-        (now.getTime() - new Date(p.estimatedEndDate).getTime()) / (1000 * 3600 * 24),
+        (now.getTime() - new Date(p.estimatedEndDate).getTime()) /
+          (1000 * 3600 * 24),
       );
       const projTasks = tasksByProject.get(p.projectId) ?? [];
       const openProjTasks = projTasks.filter(
@@ -547,7 +567,8 @@ export async function computeExecutiveIntelligence(
         entityTitle: `${p.projectCode} · ${p.projectName}`,
         explanation: `Project is overdue by ${daysOverdue} day(s) with ${openProjTasks.length} task(s) remaining incomplete.`,
         detectedAt: now.toISOString(),
-        recommendedAction: "Review task allocation and realign delivery milestone dates.",
+        recommendedAction:
+          "Review task allocation and realign delivery milestone dates.",
         navigationTarget: `/projects/${p.projectId}`,
       });
     }
@@ -558,7 +579,8 @@ export async function computeExecutiveIntelligence(
     if (
       p.estimatedEndDate &&
       new Date(p.estimatedEndDate).getTime() >= now.getTime() &&
-      new Date(p.estimatedEndDate).getTime() <= now.getTime() + 3 * 24 * 3600 * 1000
+      new Date(p.estimatedEndDate).getTime() <=
+        now.getTime() + 3 * 24 * 3600 * 1000
     ) {
       const completion = p.completionPercentage ?? 0;
       if (completion < 75) {
@@ -570,7 +592,8 @@ export async function computeExecutiveIntelligence(
           entityTitle: `${p.projectCode} · ${p.projectName}`,
           explanation: `Final deadline is within 3 days but project is only ${completion}% complete.`,
           detectedAt: now.toISOString(),
-          recommendedAction: "Expedite remaining deliverables and assess scope compression.",
+          recommendedAction:
+            "Expedite remaining deliverables and assess scope compression.",
           navigationTarget: `/projects/${p.projectId}`,
         });
       }
@@ -588,7 +611,8 @@ export async function computeExecutiveIntelligence(
     );
     if (overdueSession && overdueSession.deadlineAt) {
       const hoursLate = Math.round(
-        (now.getTime() - new Date(overdueSession.deadlineAt).getTime()) / (1000 * 3600),
+        (now.getTime() - new Date(overdueSession.deadlineAt).getTime()) /
+          (1000 * 3600),
       );
       risks.push({
         id: `risk-del-overdue-${d.deliverableId}`,
@@ -598,7 +622,8 @@ export async function computeExecutiveIntelligence(
         entityTitle: d.title,
         explanation: `Review session deadline passed ${hoursLate} hour(s) ago without sign-off.`,
         detectedAt: now.toISOString(),
-        recommendedAction: "Follow up with client approver or re-issue review reminder.",
+        recommendedAction:
+          "Follow up with client approver or re-issue review reminder.",
         navigationTarget: `/deliverables/${d.deliverableId}`,
       });
     }
@@ -616,7 +641,8 @@ export async function computeExecutiveIntelligence(
         entityTitle: d.title,
         explanation: `Deliverable has undergone ${revs.length} revision cycles with further changes requested.`,
         detectedAt: now.toISOString(),
-        recommendedAction: "Convene creative alignment sync with client stakeholder.",
+        recommendedAction:
+          "Convene creative alignment sync with client stakeholder.",
         navigationTarget: `/deliverables/${d.deliverableId}`,
       });
     }
@@ -647,7 +673,8 @@ export async function computeExecutiveIntelligence(
   for (const t of openTasksList) {
     if (
       (t.priority === "critical" || t.priority === "high") &&
-      (!assigneesByTask.get(t.taskId) || assigneesByTask.get(t.taskId)!.length === 0)
+      (!assigneesByTask.get(t.taskId) ||
+        assigneesByTask.get(t.taskId)!.length === 0)
     ) {
       risks.push({
         id: `risk-task-unassigned-${t.taskId}`,
@@ -666,10 +693,13 @@ export async function computeExecutiveIntelligence(
   // R7: Client with Multiple Delayed Projects (HIGH)
   for (const c of orgClients) {
     const clientProjects = orgProjects.filter(
-      (p) => p.clientId === c.clientId && activeProjectStatuses.includes(p.status),
+      (p) =>
+        p.clientId === c.clientId && activeProjectStatuses.includes(p.status),
     );
     const clientOverdueProjects = clientProjects.filter(
-      (p) => p.estimatedEndDate && new Date(p.estimatedEndDate).getTime() < now.getTime(),
+      (p) =>
+        p.estimatedEndDate &&
+        new Date(p.estimatedEndDate).getTime() < now.getTime(),
     );
     if (clientOverdueProjects.length >= 2 || c.clientHealth === "critical") {
       risks.push({
@@ -680,7 +710,8 @@ export async function computeExecutiveIntelligence(
         entityTitle: c.companyName,
         explanation: `Client account has ${clientOverdueProjects.length} overdue project(s) and critical relationship status.`,
         detectedAt: now.toISOString(),
-        recommendedAction: "Schedule executive account review with account manager.",
+        recommendedAction:
+          "Schedule executive account review with account manager.",
         navigationTarget: `/clients/${c.clientId}`,
       });
     }
@@ -702,13 +733,17 @@ export async function computeExecutiveIntelligence(
 
   // 1. Immediate Project Interventions
   for (const p of activeProjects) {
-    if (p.estimatedEndDate && new Date(p.estimatedEndDate).getTime() < now.getTime()) {
+    if (
+      p.estimatedEndDate &&
+      new Date(p.estimatedEndDate).getTime() < now.getTime()
+    ) {
       actionQueue.push({
         id: `action-proj-${p.projectId}`,
         priority: "CRITICAL",
         category: "OVERDUE",
         title: `Overdue Project: ${p.projectName}`,
-        reason: "Estimated completion date has lapsed with active deliverables in flight.",
+        reason:
+          "Estimated completion date has lapsed with active deliverables in flight.",
         context: `${p.projectCode} · PM: ${p.manager?.firstName ?? "Unassigned"}`,
         recommendedAction: "Review Project Timeline",
         navigationTarget: `/projects/${p.projectId}`,
@@ -745,7 +780,8 @@ export async function computeExecutiveIntelligence(
         priority: "HIGH",
         category: "DEADLINE",
         title: `Revision Requested: ${d.title}`,
-        reason: "Client feedback received; creative changes pending implementation.",
+        reason:
+          "Client feedback received; creative changes pending implementation.",
         context: "Deliverable Revisions",
         recommendedAction: "Review Client Changes",
         navigationTarget: `/deliverables/${d.deliverableId}`,
@@ -757,7 +793,8 @@ export async function computeExecutiveIntelligence(
   for (const t of openTasksList) {
     if (
       t.priority === "critical" &&
-      (!assigneesByTask.get(t.taskId) || assigneesByTask.get(t.taskId)!.length === 0)
+      (!assigneesByTask.get(t.taskId) ||
+        assigneesByTask.get(t.taskId)!.length === 0)
     ) {
       actionQueue.push({
         id: `action-task-unassigned-${t.taskId}`,
@@ -774,7 +811,9 @@ export async function computeExecutiveIntelligence(
 
   // Sort action queue by priority
   const actionPriorityRank = { CRITICAL: 3, HIGH: 2, MEDIUM: 1 };
-  actionQueue.sort((a, b) => actionPriorityRank[b.priority] - actionPriorityRank[a.priority]);
+  actionQueue.sort(
+    (a, b) => actionPriorityRank[b.priority] - actionPriorityRank[a.priority],
+  );
 
   // -------------------------------------------------------------
   // LAYER 4: DELIVERY INTELLIGENCE
@@ -792,7 +831,10 @@ export async function computeExecutiveIntelligence(
     const lastSession = sessions[sessions.length - 1];
     if (lastSession?.deadlineAt) {
       deliverablesWithDeadlineCount++;
-      if (new Date(d.updatedAt).getTime() <= new Date(lastSession.deadlineAt).getTime()) {
+      if (
+        new Date(d.updatedAt).getTime() <=
+        new Date(lastSession.deadlineAt).getTime()
+      ) {
         onTimeCount++;
       }
     }
@@ -801,7 +843,9 @@ export async function computeExecutiveIntelligence(
   let onTimeDeliveryRate: number | null = null;
   let onTimeDeliveryStatusText = "Insufficient historical data";
   if (deliverablesWithDeadlineCount > 0) {
-    onTimeDeliveryRate = Math.round((onTimeCount / deliverablesWithDeadlineCount) * 100);
+    onTimeDeliveryRate = Math.round(
+      (onTimeCount / deliverablesWithDeadlineCount) * 100,
+    );
     onTimeDeliveryStatusText = `${onTimeCount} of ${deliverablesWithDeadlineCount} on schedule`;
   }
 
@@ -814,18 +858,24 @@ export async function computeExecutiveIntelligence(
       const revs = revisionsByDeliverable.get(d.deliverableId) ?? [];
       totalRevisions += Math.max(1, revs.length);
     }
-    averageRevisionCycles = Number((totalRevisions / completedDeliverables.length).toFixed(1));
+    averageRevisionCycles = Number(
+      (totalRevisions / completedDeliverables.length).toFixed(1),
+    );
     averageRevisionStatusText = `${averageRevisionCycles} cycles per deliverable`;
   }
 
   // Approval turnaround in hours (from session creation to approval)
   let approvalTurnaroundHours: number | null = null;
   let approvalTurnaroundStatusText = "Insufficient historical data";
-  const approvedSessions = orgReviewSessions.filter((s) => s.status === "approved");
+  const approvedSessions = orgReviewSessions.filter(
+    (s) => s.status === "approved",
+  );
   if (approvedSessions.length > 0) {
     let totalHours = 0;
     for (const s of approvedSessions) {
-      const hours = (new Date(s.updatedAt).getTime() - new Date(s.createdAt).getTime()) / (1000 * 3600);
+      const hours =
+        (new Date(s.updatedAt).getTime() - new Date(s.createdAt).getTime()) /
+        (1000 * 3600);
       totalHours += Math.max(1, hours);
     }
     approvalTurnaroundHours = Math.round(totalHours / approvedSessions.length);
@@ -839,7 +889,9 @@ export async function computeExecutiveIntelligence(
       const revs = revisionsByDeliverable.get(d.deliverableId) ?? [];
       return revs.length > 1 || d.status === "revision_requested";
     }).length;
-    revisionFrequencyRate = Math.round((withRevisions / orgDeliverables.length) * 100);
+    revisionFrequencyRate = Math.round(
+      (withRevisions / orgDeliverables.length) * 100,
+    );
   }
 
   const delivery: DeliveryIntelligenceDto = {
@@ -903,7 +955,9 @@ export async function computeExecutiveIntelligence(
       attentionFlags.push(`${revisionRequestsCount} change requests`);
     }
     const overdueProjects = activeClientProjects.filter(
-      (p) => p.estimatedEndDate && new Date(p.estimatedEndDate).getTime() < now.getTime(),
+      (p) =>
+        p.estimatedEndDate &&
+        new Date(p.estimatedEndDate).getTime() < now.getTime(),
     ).length;
     if (overdueProjects > 0) {
       attentionFlags.push(`${overdueProjects} overdue project(s)`);
@@ -934,7 +988,8 @@ export async function computeExecutiveIntelligence(
   // Sort clients: critical first, then at_risk, then by active projects
   const clientHealthRank = { critical: 3, at_risk: 2, good: 1 };
   clientIntelligenceItems.sort((a, b) => {
-    const diff = clientHealthRank[b.healthStatus] - clientHealthRank[a.healthStatus];
+    const diff =
+      clientHealthRank[b.healthStatus] - clientHealthRank[a.healthStatus];
     if (diff !== 0) return diff;
     return b.activeProjectsCount - a.activeProjectsCount;
   });
@@ -974,7 +1029,8 @@ export async function computeExecutiveIntelligence(
     ).length;
 
     const isOverdue = Boolean(
-      p.estimatedEndDate && new Date(p.estimatedEndDate).getTime() < now.getTime(),
+      p.estimatedEndDate &&
+      new Date(p.estimatedEndDate).getTime() < now.getTime(),
     );
 
     // Deterministic Urgency Score (0 - 100)
@@ -1017,14 +1073,18 @@ export async function computeExecutiveIntelligence(
       status: p.status,
       healthStatus: p.healthStatus,
       completionPercentage: p.completionPercentage ?? 0,
-      dueDate: p.estimatedEndDate ? new Date(p.estimatedEndDate).toISOString() : null,
+      dueDate: p.estimatedEndDate
+        ? new Date(p.estimatedEndDate).toISOString()
+        : null,
       isOverdue,
       openTasksCount: openProjTasks.length,
       overdueTasksCount: overdueProjTasks.length,
       openDeliverablesCount: openProjDeliverables.length,
       pendingReviewsCount,
       revisionRequestsCount,
-      latestActivityAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : null,
+      latestActivityAt: p.updatedAt
+        ? new Date(p.updatedAt).toISOString()
+        : null,
       urgencyScore: urgency,
       keyIssues,
     });
@@ -1082,16 +1142,22 @@ export async function computeExecutiveIntelligence(
 
   // Unassigned tasks count
   const unassignedTasksCount = openTasksList.filter(
-    (t) => !assigneesByTask.get(t.taskId) || assigneesByTask.get(t.taskId)!.length === 0,
+    (t) =>
+      !assigneesByTask.get(t.taskId) ||
+      assigneesByTask.get(t.taskId)!.length === 0,
   ).length;
 
-  const activeAssigneesCount = distribution.filter((d) => d.openTasksCount > 0).length;
+  const activeAssigneesCount = distribution.filter(
+    (d) => d.openTasksCount > 0,
+  ).length;
 
   // Concentration flag: top 2 team members carry > 50% of work when total users > 3
   let isConcentrated = false;
   let capacitySignal = "Workload is evenly distributed across team members.";
   if (distribution.length > 2 && totalOpenTasks > 5) {
-    const top2Share = (distribution[0]?.taskSharePercentage ?? 0) + (distribution[1]?.taskSharePercentage ?? 0);
+    const top2Share =
+      (distribution[0]?.taskSharePercentage ?? 0) +
+      (distribution[1]?.taskSharePercentage ?? 0);
     if (top2Share >= 50) {
       isConcentrated = true;
       capacitySignal = `${top2Share}% of active production tasks are concentrated with 2 team members.`;
@@ -1218,7 +1284,11 @@ export function computeTrends(params: {
       const t = new Date(d.createdAt).getTime();
       return t >= b.startMs && t < b.endMs;
     }).length;
-    return { date: new Date(b.startMs).toISOString(), label: b.label, value: count };
+    return {
+      date: new Date(b.startMs).toISOString(),
+      label: b.label,
+      value: count,
+    };
   });
 
   const totalDeliveries = deliveryPoints.reduce((acc, p) => acc + p.value, 0);
@@ -1226,7 +1296,10 @@ export function computeTrends(params: {
   const deliveryVolumeTrend: TrendSeriesDto = {
     metricName: "New Deliverables",
     hasSufficientData: totalDeliveries > 0,
-    statusText: totalDeliveries > 0 ? `${totalDeliveries} total in window` : "Insufficient historical data",
+    statusText:
+      totalDeliveries > 0
+        ? `${totalDeliveries} total in window`
+        : "Insufficient historical data",
     currentValue: totalDeliveries,
     previousValue: null,
     changePercentage: null,
@@ -1239,7 +1312,11 @@ export function computeTrends(params: {
       const t = new Date(r.createdAt).getTime();
       return t >= b.startMs && t < b.endMs;
     }).length;
-    return { date: new Date(b.startMs).toISOString(), label: b.label, value: count };
+    return {
+      date: new Date(b.startMs).toISOString(),
+      label: b.label,
+      value: count,
+    };
   });
 
   const totalRevisions = revisionPoints.reduce((acc, p) => acc + p.value, 0);
@@ -1247,7 +1324,10 @@ export function computeTrends(params: {
   const revisionTrend: TrendSeriesDto = {
     metricName: "Revisions Created",
     hasSufficientData: totalRevisions > 0,
-    statusText: totalRevisions > 0 ? `${totalRevisions} revision requests` : "Insufficient historical data",
+    statusText:
+      totalRevisions > 0
+        ? `${totalRevisions} revision requests`
+        : "Insufficient historical data",
     currentValue: totalRevisions,
     previousValue: null,
     changePercentage: null,
@@ -1260,7 +1340,11 @@ export function computeTrends(params: {
       const ts = new Date(t.updatedAt).getTime();
       return t.status === "completed" && ts >= b.startMs && ts < b.endMs;
     }).length;
-    return { date: new Date(b.startMs).toISOString(), label: b.label, value: count };
+    return {
+      date: new Date(b.startMs).toISOString(),
+      label: b.label,
+      value: count,
+    };
   });
 
   const totalTaskCompletions = taskPoints.reduce((acc, p) => acc + p.value, 0);
@@ -1268,7 +1352,10 @@ export function computeTrends(params: {
   const taskCompletionTrend: TrendSeriesDto = {
     metricName: "Tasks Completed",
     hasSufficientData: totalTaskCompletions > 0,
-    statusText: totalTaskCompletions > 0 ? `${totalTaskCompletions} tasks finished` : "Insufficient historical data",
+    statusText:
+      totalTaskCompletions > 0
+        ? `${totalTaskCompletions} tasks finished`
+        : "Insufficient historical data",
     currentValue: totalTaskCompletions,
     previousValue: null,
     changePercentage: null,
@@ -1279,7 +1366,10 @@ export function computeTrends(params: {
   const onTimeTrend: TrendSeriesDto = {
     metricName: "On-Time Compliance",
     hasSufficientData: totalDeliveries > 0,
-    statusText: totalDeliveries > 0 ? "Tracking delivery compliance" : "Insufficient historical data",
+    statusText:
+      totalDeliveries > 0
+        ? "Tracking delivery compliance"
+        : "Insufficient historical data",
     currentValue: 100,
     previousValue: null,
     changePercentage: null,

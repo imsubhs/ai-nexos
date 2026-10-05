@@ -11,7 +11,7 @@
 **Antideploy Task ID:** `a5d18cb1-209f-4360-99b3-6c985bc7d4b9`  
 **Production Host:** `https://ai-nexos.antideploy.com`  
 **Evaluation Date:** October 3, 2026  
-**Auditor:** Principal Security Engineer, Release Engineer & Production Readiness Gatekeeper  
+**Auditor:** Principal Security Engineer, Release Engineer & Production Readiness Gatekeeper
 
 ---
 
@@ -20,6 +20,7 @@
 Phase S7.14 executes the **FINAL PRODUCTION READINESS GATE** for AI NEX OS following the Next.js `16.3.8` security upgrade and the manual resumption of the production Supabase database (`gsgseacjcalkhhmunjhx`) on October 3, 2026.
 
 All hard safety rules and verification gates were enforced without deviation:
+
 1. **Zero Synthetic Injections:** Zero synthetic organizations, users, projects, clients, invitations, files, or meetings were created in production.
 2. **Schema & Migration Ledger Invariant:** Inspected the production migration ledger; confirmed that migrations `0000` through `0018` (19 migrations total) were already applied and current. In accordance with safety rules, zero migrations were executed and production schema was not mutated.
 3. **Defense-in-Depth & RLS Isolation:** Verified that all 77 active RLS policies are operational, all 5 SECURITY DEFINER functions have fixed `search_path = public`, all 149 server-only tables have zero grants to `anon` or `authenticated`, and the `42P17` infinite recursion condition is permanently eliminated.
@@ -33,6 +34,7 @@ All hard safety rules and verification gates were enforced without deviation:
 ## 2. Repository & Working Tree Safety Audit
 
 ### Git Status & Lineage
+
 - **Branch:** `phase-2-production-readiness`
 - **Prior Production Baseline Target:** `2d28256c09fc14de9f048e1fb559aeed10592f8f`
 - **New Production Commit SHA:** `0c221d4`
@@ -40,7 +42,9 @@ All hard safety rules and verification gates were enforced without deviation:
 - **Git Diff Check (`git diff --check`):** Clean (0 whitespace errors, 0 trailing blank lines)
 
 ### Intentional Workstream Composition
+
 Commit `0c221d4` contains exclusively audited, intentional security, multi-tenancy, and framework components:
+
 - **S1–S4 Security Work:** Tenant isolation (`action-guard.ts`, `action-registry.ts`), project object authorization, and client contacts hardening.
 - **Phase 3 & 4 Work:** Multi-membership join architecture (`organization_memberships`, `membership-service.ts`) and onboarding flows (`/onboarding`, `code-generation.ts`).
 - **S5 RLS & SECDEF Hardening:** Search-path fixations and helper routines (`app.is_project_member`, `app.is_org_member`).
@@ -54,12 +58,12 @@ Commit `0c221d4` contains exclusively audited, intentional security, multi-tenan
 
 Independent verification via `npm ls` and `npm view`:
 
-| Package | Locked Target | Installed Version | Registry `latest` | Status |
-| :--- | :---: | :---: | :---: | :---: |
-| `next` | `16.3.8` | `16.3.8` | `16.3.8` | **MATCH (Pinned)** |
-| `react` | `19.2.4` | `19.2.4` | `19.2.4` | **MATCH (Pinned)** |
-| `react-dom` | `19.2.4` | `19.2.4` | `19.2.4` | **MATCH (Pinned)** |
-| `eslint-config-next` | `16.3.8` | `16.3.8` | `16.3.8` | **MATCH (Pinned)** |
+| Package              | Locked Target | Installed Version | Registry `latest` |       Status       |
+| :------------------- | :-----------: | :---------------: | :---------------: | :----------------: |
+| `next`               |   `16.3.8`    |     `16.3.8`      |     `16.3.8`      | **MATCH (Pinned)** |
+| `react`              |   `19.2.4`    |     `19.2.4`      |     `19.2.4`      | **MATCH (Pinned)** |
+| `react-dom`          |   `19.2.4`    |     `19.2.4`      |     `19.2.4`      | **MATCH (Pinned)** |
+| `eslint-config-next` |   `16.3.8`    |     `16.3.8`      |     `16.3.8`      | **MATCH (Pinned)** |
 
 - **ABI & Typing Compatibility:** Confirmed that `next@16.3.8` peer dependencies declare `react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0`, deduplicating seamlessly with `react@19.2.4`.
 - **Zero Drift:** No other dependencies were modified or upgraded.
@@ -79,6 +83,7 @@ npm run build         # Next.js Turbopack production compilation
 ```
 
 ### Execution Metrics:
+
 - **Unit & Integration Tests:** **64 / 64 test suites passed** (965 / 965 tests passed, 0 failures).
 - **TypeScript (`tsc --noEmit`):** **0 errors** (Clean exit code 0).
 - **Authorization Coverage (`audit:authz`):** **159 / 159 server actions guarded**; 0 untrusted client `organizationId` parameter leaks.
@@ -105,27 +110,27 @@ Read-only inspection of the production database (`gsgseacjcalkhhmunjhx`) followi
 
 Query against production migration bookkeeping table `drizzle.__drizzle_migrations`:
 
-| ID | Migration Tag / Journal Identifier | Hash (SHA-256) | Applied Timestamp | Status |
-| :---: | :--- | :--- | :---: | :---: |
-| 1 | `0000_init_platform_foundation` | `5abf5be3211a97...` | `2026-07-11T19:47:07Z` | **APPLIED** |
-| 2 | `0001_security_rls_foundation` | `40b7bb0e44c830...` | `2026-07-11T19:47:27Z` | **APPLIED** |
-| 3 | `0002_lumpy_vertigo` | `e7dc018da7273e...` | `2026-07-12T12:57:43Z` | **APPLIED** |
-| 4 | `0003_project_management` | `e0b841cc45fe5a...` | `2026-07-12T15:34:51Z` | **APPLIED** |
-| 5 | `0004_typical_wolfpack` | `e0d75efdb0d2fd...` | `2026-07-12T15:46:20Z` | **APPLIED** |
-| 6 | `0005_reflective_king_cobra` | `fc07ab855ce256...` | `2026-07-12T15:54:08Z` | **APPLIED** |
-| 7 | `0006_wooden_micromax` | `5688afb7d1766e...` | `2026-07-12T18:33:43Z` | **APPLIED** |
-| 8 | `0007_remarkable_maximus` | `815fae64d4cf06...` | `2026-07-13T19:28:18Z` | **APPLIED** |
-| 9 | `0008_same_johnny_storm` | `ea91db693e9438...` | `2026-07-17T19:09:51Z` | **APPLIED** |
-| 10 | `0009_mute_wallow` | `cfe6650e3adf6c...` | `2026-07-17T20:15:21Z` | **APPLIED** |
-| 11 | `0010_data_api_select_grants` | `8ecc05f903d8fa...` | `2026-07-17T20:15:21Z` | **APPLIED** |
-| 12 | `0011_revoke_blanket_data_api_grants` | `52cdeae6f68251...` | `2026-07-17T20:15:21Z` | **APPLIED** |
-| 13 | `0012_revoke_default_privileges` | `8c897cb0aa1789...` | `2026-07-17T20:15:21Z` | **APPLIED** |
-| 14 | `0013_org_sequences_composite_pk` | `9a0cdab16ccf03...` | `2026-08-09T07:11:45Z` | **APPLIED** |
-| 15 | `0014_workforce_rls` | `78948fcdadf00f...` | `2026-08-09T07:11:45Z` | **APPLIED** |
-| 16 | `0015_organization_code_prefix` | `79e43d7f3ed66b...` | `2026-09-25T19:49:00Z` | **APPLIED** |
-| 17 | `0016_organization_memberships` | `bdb140752c92f3...` | `2026-09-26T19:49:00Z` | **APPLIED** |
-| 18 | `0017_organization_invitations` | `9c8ac5da7c4fbc...` | `2026-09-27T19:49:00Z` | **APPLIED** |
-| 19 | `0018_remediate_projects_rls_recursion` | `1357970f070c34...` | `2026-09-28T19:49:00Z` | **APPLIED** |
+| ID  | Migration Tag / Journal Identifier      | Hash (SHA-256)      |   Applied Timestamp    |   Status    |
+| :-: | :-------------------------------------- | :------------------ | :--------------------: | :---------: |
+|  1  | `0000_init_platform_foundation`         | `5abf5be3211a97...` | `2026-07-11T19:47:07Z` | **APPLIED** |
+|  2  | `0001_security_rls_foundation`          | `40b7bb0e44c830...` | `2026-07-11T19:47:27Z` | **APPLIED** |
+|  3  | `0002_lumpy_vertigo`                    | `e7dc018da7273e...` | `2026-07-12T12:57:43Z` | **APPLIED** |
+|  4  | `0003_project_management`               | `e0b841cc45fe5a...` | `2026-07-12T15:34:51Z` | **APPLIED** |
+|  5  | `0004_typical_wolfpack`                 | `e0d75efdb0d2fd...` | `2026-07-12T15:46:20Z` | **APPLIED** |
+|  6  | `0005_reflective_king_cobra`            | `fc07ab855ce256...` | `2026-07-12T15:54:08Z` | **APPLIED** |
+|  7  | `0006_wooden_micromax`                  | `5688afb7d1766e...` | `2026-07-12T18:33:43Z` | **APPLIED** |
+|  8  | `0007_remarkable_maximus`               | `815fae64d4cf06...` | `2026-07-13T19:28:18Z` | **APPLIED** |
+|  9  | `0008_same_johnny_storm`                | `ea91db693e9438...` | `2026-07-17T19:09:51Z` | **APPLIED** |
+| 10  | `0009_mute_wallow`                      | `cfe6650e3adf6c...` | `2026-07-17T20:15:21Z` | **APPLIED** |
+| 11  | `0010_data_api_select_grants`           | `8ecc05f903d8fa...` | `2026-07-17T20:15:21Z` | **APPLIED** |
+| 12  | `0011_revoke_blanket_data_api_grants`   | `52cdeae6f68251...` | `2026-07-17T20:15:21Z` | **APPLIED** |
+| 13  | `0012_revoke_default_privileges`        | `8c897cb0aa1789...` | `2026-07-17T20:15:21Z` | **APPLIED** |
+| 14  | `0013_org_sequences_composite_pk`       | `9a0cdab16ccf03...` | `2026-08-09T07:11:45Z` | **APPLIED** |
+| 15  | `0014_workforce_rls`                    | `78948fcdadf00f...` | `2026-08-09T07:11:45Z` | **APPLIED** |
+| 16  | `0015_organization_code_prefix`         | `79e43d7f3ed66b...` | `2026-09-25T19:49:00Z` | **APPLIED** |
+| 17  | `0016_organization_memberships`         | `bdb140752c92f3...` | `2026-09-26T19:49:00Z` | **APPLIED** |
+| 18  | `0017_organization_invitations`         | `9c8ac5da7c4fbc...` | `2026-09-27T19:49:00Z` | **APPLIED** |
+| 19  | `0018_remediate_projects_rls_recursion` | `1357970f070c34...` | `2026-09-28T19:49:00Z` | **APPLIED** |
 
 - **Current Ledger Count:** Exactly **19 migrations** (`0000` through `0018`).
 - **Migration Gate Verdict:** **CURRENT — ZERO MIGRATIONS EXECUTED**.
@@ -137,6 +142,7 @@ Query against production migration bookkeeping table `drizzle.__drizzle_migratio
 System catalog inspection (`pg_class`, `pg_policies`, `pg_proc`, `information_schema.role_table_grants`):
 
 ### Table & Policy Inventory:
+
 - **Total Public Ordinary Tables:** **204**
 - **Tables with RLS Enabled (`relrowsecurity = true`):** **55**
 - **Active RLS Policies:** **77 policies**
@@ -147,15 +153,19 @@ System catalog inspection (`pg_class`, `pg_policies`, `pg_proc`, `information_sc
   - **Server Evaluation:** Evaluated exclusively via Drizzle ORM connecting as table owner `postgres`.
 
 ### SECURITY DEFINER Functions:
+
 Exhaustive check of `pg_proc` for `prosecdef = true` across `app` and `public`:
+
 1. `app.current_user_organization_id`: `search_path=public` (**HARDENED**)
 2. `app.has_permission`: `search_path=public` (**HARDENED**)
 3. `app.is_org_member`: `search_path=public` (**HARDENED**)
 4. `app.protect_privileged_user_fields`: `search_path=public` (**HARDENED**)
 5. `app.is_project_member`: `search_path=public` (**HARDENED**)
+
 - **Unhardened Functions:** **0**
 
 ### Recursion Check (`42P17`):
+
 Simulated an authenticated query (`SELECT project_id, project_name FROM public.projects LIMIT 1`) with claims under `SET LOCAL ROLE authenticated` inside an isolated transaction. The query completed cleanly with zero recursion errors.
 
 ---
@@ -165,6 +175,7 @@ Simulated an authenticated query (`SELECT project_id, project_name FROM public.p
 Direct read-only inspection of identity tables:
 
 ### User & Account Inventory:
+
 - **`auth.users`:** 3 registered users:
   1. `owner@example.com` (`8eb3f7ad-2a25-433b-b8dc-459608f8d33a`)
   2. `aw1623665@gmail.com` (`e4946fd8-df47-4275-9e25-9be76643bc29`)
@@ -190,22 +201,22 @@ Direct read-only inspection of identity tables:
 
 Audited via `scripts/check-env.ts` and automated inspection (zero secrets printed):
 
-| Variable Specification | Requirement | Production Value Status | Security Evaluation |
-| :--- | :---: | :---: | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Required | Set | Valid HTTPS (`https://gsgseacjcalkhhmunjhx...`) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Required | Set | Valid JWT |
-| `SUPABASE_SERVICE_ROLE_KEY` | Production | Set | Valid JWT |
-| `DATABASE_URL` | Required | Set | Transaction pooler (Port 6543) |
-| `DIRECT_DATABASE_URL` | Tooling | Set | Direct session mode (Port 5432) |
-| `JWT_SECRET` | Production | Set | 256-bit entropy |
-| `SHARE_JWT_SECRET` | Production | Set | 256-bit entropy |
-| `NEXT_PUBLIC_APP_DOMAIN` | Production | Set | `ai-nexos.antideploy.com` |
-| `NEXT_PUBLIC_PORTAL_DOMAIN` | Production | Set | `portal.ai-nexos.antideploy.com` |
-| `NEXT_PUBLIC_APP_URL` | Production | Set | `https://ai-nexos.antideploy.com` |
-| `NEXT_PUBLIC_PORTAL_URL` | Production | Set | `https://portal.ai-nexos.antideploy.com` |
-| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | Production | Set | `documents` |
-| `REDIS_URL` | Optional | Unset | In-memory `MemoryStore` active |
-| `DEMO_MODE` | Development | "false" | Non-demo production enforcement |
+| Variable Specification                | Requirement | Production Value Status | Security Evaluation                             |
+| :------------------------------------ | :---------: | :---------------------: | :---------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`            |  Required   |           Set           | Valid HTTPS (`https://gsgseacjcalkhhmunjhx...`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`       |  Required   |           Set           | Valid JWT                                       |
+| `SUPABASE_SERVICE_ROLE_KEY`           | Production  |           Set           | Valid JWT                                       |
+| `DATABASE_URL`                        |  Required   |           Set           | Transaction pooler (Port 6543)                  |
+| `DIRECT_DATABASE_URL`                 |   Tooling   |           Set           | Direct session mode (Port 5432)                 |
+| `JWT_SECRET`                          | Production  |           Set           | 256-bit entropy                                 |
+| `SHARE_JWT_SECRET`                    | Production  |           Set           | 256-bit entropy                                 |
+| `NEXT_PUBLIC_APP_DOMAIN`              | Production  |           Set           | `ai-nexos.antideploy.com`                       |
+| `NEXT_PUBLIC_PORTAL_DOMAIN`           | Production  |           Set           | `portal.ai-nexos.antideploy.com`                |
+| `NEXT_PUBLIC_APP_URL`                 | Production  |           Set           | `https://ai-nexos.antideploy.com`               |
+| `NEXT_PUBLIC_PORTAL_URL`              | Production  |           Set           | `https://portal.ai-nexos.antideploy.com`        |
+| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | Production  |           Set           | `documents`                                     |
+| `REDIS_URL`                           |  Optional   |          Unset          | In-memory `MemoryStore` active                  |
+| `DEMO_MODE`                           | Development |         "false"         | Non-demo production enforcement                 |
 
 - **Security Boundaries:** Zero dev/staging credentials present in `.env.local`; zero staging Supabase project references; zero client-side exposed secrets.
 
@@ -264,29 +275,30 @@ Deployment was triggered via Antideploy Deployment API:
 
 Automated HTTP requests issued to `https://ai-nexos.antideploy.com`:
 
-| Check ID | Surface / Endpoint | Method | Expected | Actual | Verdict |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| `SMOKE-HEALTH-01` | `/api/health` | `GET` | HTTP 200 | HTTP 200 | **PASS** |
-| `SMOKE-HEALTH-02` | `/api/health` | `GET` | `status: "healthy"` | `healthy` | **PASS** |
-| `SMOKE-HEALTH-03` | `/api/health` | `GET` | `environment: "production"` | `production` | **PASS** |
-| `SMOKE-ROOT-01` | `/` | `GET` | HTTP 307 $\rightarrow$ `/login` | HTTP 307 | **PASS** |
-| `SMOKE-LOGIN-01` | `/login` | `GET` | HTTP 200 | HTTP 200 | **PASS** |
-| `SMOKE-LOGIN-02` | `/login` | `GET` | `AI NEX OS` branding | Present | **PASS** |
-| `SMOKE-SEC-01` | `/login` (HSTS) | `GET` | `Strict-Transport-Security` | `max-age=63072000` | **PASS** |
-| `SMOKE-SEC-02` | `/login` (XCTO) | `GET` | `nosniff` | `nosniff` | **PASS** |
-| `SMOKE-SEC-03` | `/login` (XFO) | `GET` | `DENY` | `DENY` | **PASS** |
-| `SMOKE-SEC-04` | `/login` (Referrer) | `GET` | `strict-origin-...` | `strict-origin-...` | **PASS** |
-| `SMOKE-DASH-01` | `/dashboard` | `GET` | HTTP 307 $\rightarrow$ `/login?next=...` | HTTP 307 | **PASS** |
-| `SMOKE-ONB-01` | `/onboarding` | `GET` | HTTP 200 | HTTP 200 | **PASS** |
-| `SMOKE-RATE-01` | Rate limit behavior | `GET` | No 429/5xx degradation | HTTP 200 | **PASS** |
-| `SMOKE-AUTH-01` | Identity Alignment | SQL | `auth.users` === `public.users` | Matched (`5dcd62d1...`) | **PASS** |
-| `SMOKE-AUTH-02` | Tenant Resolution | SQL | Active `Owner` membership | `Subs` [SUB] - `Owner` | **PASS** |
+| Check ID          | Surface / Endpoint  | Method |                 Expected                 |         Actual          | Verdict  |
+| :---------------- | :------------------ | :----: | :--------------------------------------: | :---------------------: | :------: |
+| `SMOKE-HEALTH-01` | `/api/health`       | `GET`  |                 HTTP 200                 |        HTTP 200         | **PASS** |
+| `SMOKE-HEALTH-02` | `/api/health`       | `GET`  |           `status: "healthy"`            |        `healthy`        | **PASS** |
+| `SMOKE-HEALTH-03` | `/api/health`       | `GET`  |       `environment: "production"`        |      `production`       | **PASS** |
+| `SMOKE-ROOT-01`   | `/`                 | `GET`  |     HTTP 307 $\rightarrow$ `/login`      |        HTTP 307         | **PASS** |
+| `SMOKE-LOGIN-01`  | `/login`            | `GET`  |                 HTTP 200                 |        HTTP 200         | **PASS** |
+| `SMOKE-LOGIN-02`  | `/login`            | `GET`  |           `AI NEX OS` branding           |         Present         | **PASS** |
+| `SMOKE-SEC-01`    | `/login` (HSTS)     | `GET`  |       `Strict-Transport-Security`        |   `max-age=63072000`    | **PASS** |
+| `SMOKE-SEC-02`    | `/login` (XCTO)     | `GET`  |                `nosniff`                 |        `nosniff`        | **PASS** |
+| `SMOKE-SEC-03`    | `/login` (XFO)      | `GET`  |                  `DENY`                  |         `DENY`          | **PASS** |
+| `SMOKE-SEC-04`    | `/login` (Referrer) | `GET`  |           `strict-origin-...`            |   `strict-origin-...`   | **PASS** |
+| `SMOKE-DASH-01`   | `/dashboard`        | `GET`  | HTTP 307 $\rightarrow$ `/login?next=...` |        HTTP 307         | **PASS** |
+| `SMOKE-ONB-01`    | `/onboarding`       | `GET`  |                 HTTP 200                 |        HTTP 200         | **PASS** |
+| `SMOKE-RATE-01`   | Rate limit behavior | `GET`  |          No 429/5xx degradation          |        HTTP 200         | **PASS** |
+| `SMOKE-AUTH-01`   | Identity Alignment  |  SQL   |     `auth.users` === `public.users`      | Matched (`5dcd62d1...`) | **PASS** |
+| `SMOKE-AUTH-02`   | Tenant Resolution   |  SQL   |        Active `Owner` membership         | `Subs` [SUB] - `Owner`  | **PASS** |
 
 ---
 
 ## 14. Production Runtime & Historical Error Analysis
 
 ### Current Runtime Error State
+
 - **5xx Server Errors:** **0**
 - **Unhandled Promise Rejections:** **0**
 - **Database Connection Dropouts:** **0**
@@ -295,7 +307,9 @@ Automated HTTP requests issued to `https://ai-nexos.antideploy.com`:
 - **`NEXT_RUNTIME` Errors:** **0**
 
 ### Forensic Investigation of Supabase Dashboard Historical Errors:
+
 The Supabase dashboard displayed a spike in request errors during the period preceding the manual resume on October 3, 2026.
+
 - **Evidence & Classification:**
   - **Source Service:** Supabase API Gateway / Kong Proxy (`gsgseacjcalkhhmunjhx.supabase.co`).
   - **HTTP Status:** HTTP 503 Service Unavailable ("Project is paused").
@@ -328,4 +342,4 @@ PHASE 4 — AUTHORIZED TO BEGIN
 ================================================================================
 ```
 
-*Note: In accordance with the hard stop condition of S7.14, no Phase 4 implementation has been initiated.*
+_Note: In accordance with the hard stop condition of S7.14, no Phase 4 implementation has been initiated._

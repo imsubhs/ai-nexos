@@ -1,4 +1,5 @@
 # AI NEX OS — PHASE S6.6-R IMPLEMENTATION REPORT
+
 ## MemoryStore-First Rate-Limiting Implementation & Regression Closure
 
 **Audit Phase:** S6.6-R Implementation (Loop 7 & Loop 8)  
@@ -28,7 +29,7 @@ The objective was to implement **Option 3: MemoryStore-first with optional distr
 2. **First-Class `MemoryStore` Operational Mode:**
    - Updated `RateLimitResult.storeMode` in `src/lib/security/rate-limit.ts` to include `"memory"`.
    - When `REDIS_URL` is unconfigured, the limiter operates cleanly in `storeMode: "memory"`, preventing false degradation telemetry.
-   - Retained `fail_closed` semantics for high-risk operations (`orgCreation`) when Redis *is* configured but encounters connection failure or command timeout.
+   - Retained `fail_closed` semantics for high-risk operations (`orgCreation`) when Redis _is_ configured but encounters connection failure or command timeout.
    - Preserved all rate-limit policies, tenant-aware keys, anonymous IP protections, resource bounds, and telemetry logging.
 3. **Full Quality & Security Regression Suite Passed (Loop 8):**
    - **Vitest Unit & Integration:** 64 test suites, **965 passed** (0 failures; increased from 963 baseline with 2 new test cases covering single-instance production gate passing and clean memory storeMode).
@@ -45,14 +46,14 @@ The objective was to implement **Option 3: MemoryStore-first with optional distr
 
 ## 2. Files Changed (Loop 7)
 
-| File Path | Description of Changes | Security Rationale |
-| :--- | :--- | :--- |
-| [`src/lib/env.server.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/src/lib/env.server.ts) | - Changed `REDIS_URL` requirement in `ENV_MANIFEST` from `"production"` to `"optional"`.<br>- Removed `"REDIS_URL"` from `PRODUCTION_REQUIRED`.<br>- Retained `rediss://` TLS protocol validation in `assertProductionConfig()`.<br>- Updated `getEnvDiagnostics()` warning to describe single-instance MemoryStore behavior. | Enables single-instance Antideploy production without external Redis, while ensuring any configured Redis connection is encrypted via TLS. |
-| [`src/lib/security/rate-limit.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/src/lib/security/rate-limit.ts) | - Extended `RateLimitResult.storeMode` union to `"normal" \| "memory" \| "degraded"`.<br>- In `consumeRateLimit()`, when Redis is unconfigured, return `storeMode: "memory"`.<br>- If Redis is configured and fails, return `storeMode: "degraded"`.<br>- Adjusted `effectiveLimit` calculation to apply `policy.degradedLimit` for both `memory` and `degraded` modes. | Distinguishes intentional single-instance in-memory execution from runtime infrastructure outages. Preserves tight per-process caps. |
-| [`.env.example`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/.env.example) | - Updated documentation comments above `REDIS_URL` clarifying single-instance optionality and horizontal scaling mandate. | Prevents operator confusion regarding deployment prerequisites. |
-| [`tests/unit/production-deploy-gate.test.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/tests/unit/production-deploy-gate.test.ts) | - Removed `"REDIS_URL"` from `PRODUCTION_REQUIRED_VARIABLES`.<br>- Added test asserting that absent `REDIS_URL` in production exits `0`.<br>- Added test asserting that cleartext `redis://` in production exits non-zero. | Verifies the CI production deployment gate under the approved architecture. |
-| [`tests/unit/env-validation.test.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/tests/unit/env-validation.test.ts) | - Updated test to assert `assertProductionConfig()` passes without `REDIS_URL`.<br>- Retained test asserting cleartext `redis://` throws. | Verifies in-process configuration assertions. |
-| [`tests/unit/rate-limit.test.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/tests/unit/rate-limit.test.ts) | - Added test asserting `storeMode: "memory"` when `REDIS_URL` is unconfigured. | Verifies clean first-class memory store mode. |
+| File Path                                                                                                                                                                                     | Description of Changes                                                                                                                                                                                                                                                                                                                                                  | Security Rationale                                                                                                                         |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`src/lib/env.server.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/src/lib/env.server.ts)                                         | - Changed `REDIS_URL` requirement in `ENV_MANIFEST` from `"production"` to `"optional"`.<br>- Removed `"REDIS_URL"` from `PRODUCTION_REQUIRED`.<br>- Retained `rediss://` TLS protocol validation in `assertProductionConfig()`.<br>- Updated `getEnvDiagnostics()` warning to describe single-instance MemoryStore behavior.                                           | Enables single-instance Antideploy production without external Redis, while ensuring any configured Redis connection is encrypted via TLS. |
+| [`src/lib/security/rate-limit.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/src/lib/security/rate-limit.ts)                       | - Extended `RateLimitResult.storeMode` union to `"normal" \| "memory" \| "degraded"`.<br>- In `consumeRateLimit()`, when Redis is unconfigured, return `storeMode: "memory"`.<br>- If Redis is configured and fails, return `storeMode: "degraded"`.<br>- Adjusted `effectiveLimit` calculation to apply `policy.degradedLimit` for both `memory` and `degraded` modes. | Distinguishes intentional single-instance in-memory execution from runtime infrastructure outages. Preserves tight per-process caps.       |
+| [`.env.example`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/.env.example)                                                           | - Updated documentation comments above `REDIS_URL` clarifying single-instance optionality and horizontal scaling mandate.                                                                                                                                                                                                                                               | Prevents operator confusion regarding deployment prerequisites.                                                                            |
+| [`tests/unit/production-deploy-gate.test.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/tests/unit/production-deploy-gate.test.ts) | - Removed `"REDIS_URL"` from `PRODUCTION_REQUIRED_VARIABLES`.<br>- Added test asserting that absent `REDIS_URL` in production exits `0`.<br>- Added test asserting that cleartext `redis://` in production exits non-zero.                                                                                                                                              | Verifies the CI production deployment gate under the approved architecture.                                                                |
+| [`tests/unit/env-validation.test.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/tests/unit/env-validation.test.ts)                 | - Updated test to assert `assertProductionConfig()` passes without `REDIS_URL`.<br>- Retained test asserting cleartext `redis://` throws.                                                                                                                                                                                                                               | Verifies in-process configuration assertions.                                                                                              |
+| [`tests/unit/rate-limit.test.ts`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/tests/unit/rate-limit.test.ts)                         | - Added test asserting `storeMode: "memory"` when `REDIS_URL` is unconfigured.                                                                                                                                                                                                                                                                                          | Verifies clean first-class memory store mode.                                                                                              |
 
 ---
 
@@ -110,16 +111,16 @@ Request Arrives at Server Action / Route Handler
 
 ### Baseline vs. Post-Implementation Test Comparison
 
-| Metric | S6.6 Baseline (Pre-S6.6-R) | Post-Implementation (Loop 8) | Delta |
-| :--- | :--- | :--- | :--- |
-| **Total Test Suites** | 64 | 64 | 0 |
-| **Total Tests** | 963 | **965** | **+2** |
-| **Failed Tests** | 0 | **0** | 0 |
-| **TypeScript Typecheck** | 0 errors | **0 errors** (`tsc --noEmit` exited 0) | 0 |
-| **Authorization Coverage**| 159 / 159 (100%) | **159 / 159 (100%)** | 0 |
-| **Static Tenant Isolation**| Clean (0 leaks) | **Clean (0 leaks)** | 0 |
-| **ESLint (`src/`)** | 0 errors | **0 errors** | 0 |
-| **Turbopack Build** | 38 / 38 routes | **38 / 38 routes** | 0 |
+| Metric                      | S6.6 Baseline (Pre-S6.6-R) | Post-Implementation (Loop 8)           | Delta  |
+| :-------------------------- | :------------------------- | :------------------------------------- | :----- |
+| **Total Test Suites**       | 64                         | 64                                     | 0      |
+| **Total Tests**             | 963                        | **965**                                | **+2** |
+| **Failed Tests**            | 0                          | **0**                                  | 0      |
+| **TypeScript Typecheck**    | 0 errors                   | **0 errors** (`tsc --noEmit` exited 0) | 0      |
+| **Authorization Coverage**  | 159 / 159 (100%)           | **159 / 159 (100%)**                   | 0      |
+| **Static Tenant Isolation** | Clean (0 leaks)            | **Clean (0 leaks)**                    | 0      |
+| **ESLint (`src/`)**         | 0 errors                   | **0 errors**                           | 0      |
+| **Turbopack Build**         | 38 / 38 routes             | **38 / 38 routes**                     | 0      |
 
 ### Dedicated Rate-Limiting Suites Breakdown
 
@@ -153,11 +154,13 @@ Request Arrives at Server Action / Route Handler
 ## 6. S6 Status & Next Steps
 
 ### Remaining S6 Blockers
+
 - **Zero code or test blockers remain.**
 - The previous blocker (`S6.6 BLOCKED — STAGING REDIS NOT PROVISIONED`) has been **resolved** by the approved Option 3 architecture.
 - Neither staging nor production requires Redis provisioning for single-instance operations.
 
 ### Readiness for Staging Runtime Validation
+
 - **Staging runtime validation is READY to proceed upon operator authorization.**
 - Because the operator has resumed staging Supabase (`shnzzbbtydmvfhgeoysg`), Loop 9 (Staging Runtime Validation) can be executed cleanly without requiring an external Redis instance.
 
@@ -166,6 +169,7 @@ Request Arrives at Server Action / Route Handler
 ## 7. Stop Condition Adherence
 
 Per the instructions:
+
 - Loop 7 & Loop 8 are complete.
 - S6.6 Staging Runtime Validation has **NOT** been started.
 - S6.7 has **NOT** been started.

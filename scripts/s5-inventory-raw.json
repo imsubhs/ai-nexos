@@ -1027,9 +1027,7 @@
       "tablename": "activity_logs",
       "policyname": "activity_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "(app.is_org_member(organization_id) AND (user_id = auth.uid()))"
@@ -1039,9 +1037,7 @@
       "tablename": "activity_logs",
       "policyname": "activity_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "app.is_org_member(organization_id)",
       "with_check": null
@@ -1051,9 +1047,7 @@
       "tablename": "attendance_breaks",
       "policyname": "attendance_breaks_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM attendance_records r\n  WHERE ((r.attendance_id = attendance_breaks.attendance_id) AND (r.organization_id = attendance_breaks.organization_id) AND (((r.user_id = auth.uid()) AND app.has_permission('attendance'::text, 'read'::text)) OR app.has_permission('attendance'::text, 'view_team'::text))))))",
       "with_check": null
@@ -1063,9 +1057,7 @@
       "tablename": "attendance_corrections",
       "policyname": "attendance_corrections_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (((user_id = auth.uid()) AND app.has_permission('corrections'::text, 'read'::text)) OR app.has_permission('corrections'::text, 'review'::text)))",
       "with_check": null
@@ -1075,9 +1067,7 @@
       "tablename": "attendance_records",
       "policyname": "attendance_records_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (((user_id = auth.uid()) AND app.has_permission('attendance'::text, 'read'::text)) OR app.has_permission('attendance'::text, 'view_team'::text)))",
       "with_check": null
@@ -1087,9 +1077,7 @@
       "tablename": "background_jobs",
       "policyname": "jobs_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "app.is_org_member(organization_id)",
       "with_check": null
@@ -1099,9 +1087,7 @@
       "tablename": "client_contacts",
       "policyname": "client_contacts_delete",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "DELETE",
       "qual": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'delete'::text))",
       "with_check": null
@@ -1111,9 +1097,7 @@
       "tablename": "client_contacts",
       "policyname": "client_contacts_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'create'::text))"
@@ -1123,9 +1107,7 @@
       "tablename": "client_contacts",
       "policyname": "client_contacts_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'read'::text))",
       "with_check": null
@@ -1135,9 +1117,7 @@
       "tablename": "client_contacts",
       "policyname": "client_contacts_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "((EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id)))) AND app.has_permission('clients'::text, 'update'::text))",
       "with_check": "(EXISTS ( SELECT 1\n   FROM clients c\n  WHERE ((c.client_id = client_contacts.client_id) AND app.is_org_member(c.organization_id))))"
@@ -1147,9 +1127,7 @@
       "tablename": "clients",
       "policyname": "clients_delete",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "DELETE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'delete'::text))",
       "with_check": null
@@ -1159,9 +1137,7 @@
       "tablename": "clients",
       "policyname": "clients_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'create'::text))"
@@ -1171,9 +1147,7 @@
       "tablename": "clients",
       "policyname": "clients_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'read'::text))",
       "with_check": null
@@ -1183,9 +1157,7 @@
       "tablename": "clients",
       "policyname": "clients_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('clients'::text, 'update'::text))",
       "with_check": "app.is_org_member(organization_id)"
@@ -1195,9 +1167,7 @@
       "tablename": "deliverable_activity",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1207,9 +1177,7 @@
       "tablename": "deliverable_approvals",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1219,9 +1187,7 @@
       "tablename": "deliverable_files",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1231,9 +1197,7 @@
       "tablename": "deliverable_labels",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1243,9 +1207,7 @@
       "tablename": "deliverable_reference_attachments",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1255,9 +1217,7 @@
       "tablename": "deliverable_review_comments",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1267,9 +1227,7 @@
       "tablename": "deliverable_review_sessions",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1279,9 +1237,7 @@
       "tablename": "deliverable_review_threads",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1291,9 +1247,7 @@
       "tablename": "deliverable_revisions",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1303,9 +1257,7 @@
       "tablename": "deliverable_share_links",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1315,9 +1267,7 @@
       "tablename": "deliverable_tags",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1327,9 +1277,7 @@
       "tablename": "deliverables",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1339,9 +1287,7 @@
       "tablename": "departments",
       "policyname": "dept_delete",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "DELETE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('departments'::text, 'delete'::text))",
       "with_check": null
@@ -1351,9 +1297,7 @@
       "tablename": "departments",
       "policyname": "dept_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "(app.is_org_member(organization_id) AND app.has_permission('departments'::text, 'create'::text))"
@@ -1363,9 +1307,7 @@
       "tablename": "departments",
       "policyname": "dept_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "app.is_org_member(organization_id)",
       "with_check": null
@@ -1375,9 +1317,7 @@
       "tablename": "departments",
       "policyname": "dept_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('departments'::text, 'update'::text))",
       "with_check": "app.is_org_member(organization_id)"
@@ -1387,9 +1327,7 @@
       "tablename": "file_activity",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1399,9 +1337,7 @@
       "tablename": "file_collection_items",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1411,9 +1347,7 @@
       "tablename": "file_collections",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1423,9 +1357,7 @@
       "tablename": "file_comments",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1435,9 +1367,7 @@
       "tablename": "file_folders",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1447,9 +1377,7 @@
       "tablename": "file_labels",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1459,9 +1387,7 @@
       "tablename": "file_metrics",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1471,9 +1397,7 @@
       "tablename": "file_relations",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1483,9 +1407,7 @@
       "tablename": "file_shares",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1495,9 +1417,7 @@
       "tablename": "file_tags",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1507,9 +1427,7 @@
       "tablename": "file_versions",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1519,9 +1437,7 @@
       "tablename": "files",
       "policyname": "org_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "(organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid())))",
       "with_check": null
@@ -1531,9 +1447,7 @@
       "tablename": "milestones",
       "policyname": "milestones_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = milestones.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
       "with_check": null
@@ -1543,9 +1457,7 @@
       "tablename": "organizations",
       "policyname": "org_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "app.is_org_member(organization_id)",
       "with_check": null
@@ -1555,9 +1467,7 @@
       "tablename": "organizations",
       "policyname": "org_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('organization'::text, 'update'::text))",
       "with_check": "app.is_org_member(organization_id)"
@@ -1567,9 +1477,7 @@
       "tablename": "project_members",
       "policyname": "project_members_delete",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "DELETE",
       "qual": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'update'::text))",
       "with_check": null
@@ -1579,9 +1487,7 @@
       "tablename": "project_members",
       "policyname": "project_members_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'update'::text))"
@@ -1591,9 +1497,7 @@
       "tablename": "project_members",
       "policyname": "project_members_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'read'::text))",
       "with_check": null
@@ -1603,9 +1507,7 @@
       "tablename": "project_members",
       "policyname": "project_members_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "((EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id)))) AND app.has_permission('projects'::text, 'update'::text))",
       "with_check": "(EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = project_members.project_id) AND app.is_org_member(p.organization_id))))"
@@ -1615,9 +1517,7 @@
       "tablename": "project_phases",
       "policyname": "project_phases_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = project_phases.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
       "with_check": null
@@ -1627,9 +1527,7 @@
       "tablename": "projects",
       "policyname": "projects_delete",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "DELETE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'delete'::text))",
       "with_check": null
@@ -1639,9 +1537,7 @@
       "tablename": "projects",
       "policyname": "projects_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'create'::text))"
@@ -1651,9 +1547,7 @@
       "tablename": "projects",
       "policyname": "projects_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'read'::text) AND ((visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR app.is_project_member(project_id)))",
       "with_check": null
@@ -1663,9 +1557,7 @@
       "tablename": "projects",
       "policyname": "projects_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('projects'::text, 'update'::text))",
       "with_check": "app.is_org_member(organization_id)"
@@ -1675,9 +1567,7 @@
       "tablename": "revision_activity",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1687,9 +1577,7 @@
       "tablename": "revision_assignments",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1699,9 +1587,7 @@
       "tablename": "revision_changes",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1711,9 +1597,7 @@
       "tablename": "revision_checklists",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1723,9 +1607,7 @@
       "tablename": "revision_comments",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1735,9 +1617,7 @@
       "tablename": "revision_history",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1747,9 +1627,7 @@
       "tablename": "revision_items",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1759,9 +1637,7 @@
       "tablename": "revision_labels",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1771,9 +1647,7 @@
       "tablename": "revision_merge_previews",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1783,9 +1657,7 @@
       "tablename": "revision_requests",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1795,9 +1667,7 @@
       "tablename": "revision_tags",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1807,9 +1677,7 @@
       "tablename": "revision_threads",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1819,9 +1687,7 @@
       "tablename": "revisions",
       "policyname": "project_isolation_policy",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "ALL",
       "qual": "((organization_id = ( SELECT users.organization_id\n   FROM users\n  WHERE (users.user_id = auth.uid()))) AND (project_id IN ( SELECT project_members.project_id\n   FROM project_members\n  WHERE (project_members.user_id = auth.uid()))))",
       "with_check": null
@@ -1831,9 +1697,7 @@
       "tablename": "roles",
       "policyname": "roles_delete",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "DELETE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('roles'::text, 'delete'::text) AND (is_system = false))",
       "with_check": null
@@ -1843,9 +1707,7 @@
       "tablename": "roles",
       "policyname": "roles_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "(app.is_org_member(organization_id) AND app.has_permission('roles'::text, 'create'::text) AND (is_system = false))"
@@ -1855,9 +1717,7 @@
       "tablename": "roles",
       "policyname": "roles_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "app.is_org_member(organization_id)",
       "with_check": null
@@ -1867,9 +1727,7 @@
       "tablename": "roles",
       "policyname": "roles_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "(app.is_org_member(organization_id) AND app.has_permission('roles'::text, 'update'::text) AND (is_system = false))",
       "with_check": "(app.is_org_member(organization_id) AND (is_system = false))"
@@ -1879,9 +1737,7 @@
       "tablename": "timeline_dependencies",
       "policyname": "timeline_dependencies_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = timeline_dependencies.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
       "with_check": null
@@ -1891,9 +1747,7 @@
       "tablename": "timeline_versions",
       "policyname": "timeline_versions_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM (timelines t\n     JOIN projects p ON ((t.project_id = p.project_id)))\n  WHERE ((t.timeline_id = timeline_versions.timeline_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
       "with_check": null
@@ -1903,9 +1757,7 @@
       "tablename": "timelines",
       "policyname": "timelines_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "(app.is_org_member(organization_id) AND (EXISTS ( SELECT 1\n   FROM projects p\n  WHERE ((p.project_id = timelines.project_id) AND ((p.visibility <> 'private'::project_visibility) OR app.has_permission('projects'::text, '*'::text) OR (EXISTS ( SELECT 1\n           FROM project_members pm\n          WHERE ((pm.project_id = p.project_id) AND (pm.user_id = auth.uid())))))))))",
       "with_check": null
@@ -1915,9 +1767,7 @@
       "tablename": "users",
       "policyname": "users_insert",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "INSERT",
       "qual": null,
       "with_check": "(app.is_org_member(organization_id) AND app.has_permission('users'::text, 'create'::text))"
@@ -1927,9 +1777,7 @@
       "tablename": "users",
       "policyname": "users_select",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "SELECT",
       "qual": "app.is_org_member(organization_id)",
       "with_check": null
@@ -1939,9 +1787,7 @@
       "tablename": "users",
       "policyname": "users_update",
       "permissive": "PERMISSIVE",
-      "roles": [
-        "authenticated"
-      ],
+      "roles": ["authenticated"],
       "cmd": "UPDATE",
       "qual": "(app.is_org_member(organization_id) AND ((user_id = auth.uid()) OR app.has_permission('users'::text, 'update'::text)))",
       "with_check": "app.is_org_member(organization_id)"
@@ -1955,9 +1801,7 @@
       "result_type": "uuid",
       "is_security_definer": true,
       "volatility": "s",
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "owner": "postgres",
       "definition": "CREATE OR REPLACE FUNCTION app.current_user_organization_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT organization_id\n  FROM public.users\n  WHERE user_id = auth.uid()\n    AND status = 'active'\n    AND deleted_at IS NULL\n  LIMIT 1;\n$function$\n"
     },
@@ -1968,9 +1812,7 @@
       "result_type": "boolean",
       "is_security_definer": true,
       "volatility": "s",
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "owner": "postgres",
       "definition": "CREATE OR REPLACE FUNCTION app.has_permission(p_module text, p_action text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.users u\n    JOIN public.roles r ON r.role_id = u.role_id\n    WHERE u.user_id = auth.uid()\n      AND u.status = 'active'\n      AND u.deleted_at IS NULL\n      AND r.deleted_at IS NULL\n      AND (\n        r.permissions -> '*' ? '*'\n        OR r.permissions -> p_module ? '*'\n        OR r.permissions -> p_module ? p_action\n      )\n  );\n$function$\n"
     },
@@ -1981,9 +1823,7 @@
       "result_type": "boolean",
       "is_security_definer": true,
       "volatility": "s",
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "owner": "postgres",
       "definition": "CREATE OR REPLACE FUNCTION app.is_org_member(p_organization_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT app.current_user_organization_id() = p_organization_id;\n$function$\n"
     },
@@ -1994,9 +1834,7 @@
       "result_type": "boolean",
       "is_security_definer": true,
       "volatility": "s",
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "owner": "postgres",
       "definition": "CREATE OR REPLACE FUNCTION app.is_project_member(p_project_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.project_members\n    WHERE project_id = p_project_id\n      AND user_id = auth.uid()\n  );\n$function$\n"
     },
@@ -2007,9 +1845,7 @@
       "result_type": "trigger",
       "is_security_definer": true,
       "volatility": "v",
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "owner": "postgres",
       "definition": "CREATE OR REPLACE FUNCTION app.protect_privileged_user_fields()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  -- The service role (workers, seeding) bypasses RLS and skips this guard.\n  IF current_setting('request.jwt.claims', true) IS NULL THEN\n    RETURN NEW;\n  END IF;\n\n  IF (\n    NEW.role_id IS DISTINCT FROM OLD.role_id\n    OR NEW.organization_id IS DISTINCT FROM OLD.organization_id\n    OR NEW.user_id IS DISTINCT FROM OLD.user_id\n    OR NEW.status IS DISTINCT FROM OLD.status\n    OR NEW.employment_type IS DISTINCT FROM OLD.employment_type\n    OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at\n    OR NEW.deleted_by IS DISTINCT FROM OLD.deleted_by\n  ) AND NOT app.has_permission('users', 'update') THEN\n    RAISE EXCEPTION 'insufficient_privilege: privileged user fields require users.update permission'\n      USING ERRCODE = '42501';\n  END IF;\n\n  RETURN NEW;\nEND;\n$function$\n"
     }
@@ -2020,9 +1856,7 @@
       "arguments": "",
       "result_type": "uuid",
       "is_security_definer": true,
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "definition": "CREATE OR REPLACE FUNCTION app.current_user_organization_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT organization_id\n  FROM public.users\n  WHERE user_id = auth.uid()\n    AND status = 'active'\n    AND deleted_at IS NULL\n  LIMIT 1;\n$function$\n"
     },
     {
@@ -2030,9 +1864,7 @@
       "arguments": "p_module text, p_action text",
       "result_type": "boolean",
       "is_security_definer": true,
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "definition": "CREATE OR REPLACE FUNCTION app.has_permission(p_module text, p_action text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.users u\n    JOIN public.roles r ON r.role_id = u.role_id\n    WHERE u.user_id = auth.uid()\n      AND u.status = 'active'\n      AND u.deleted_at IS NULL\n      AND r.deleted_at IS NULL\n      AND (\n        r.permissions -> '*' ? '*'\n        OR r.permissions -> p_module ? '*'\n        OR r.permissions -> p_module ? p_action\n      )\n  );\n$function$\n"
     },
     {
@@ -2040,9 +1872,7 @@
       "arguments": "p_organization_id uuid",
       "result_type": "boolean",
       "is_security_definer": true,
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "definition": "CREATE OR REPLACE FUNCTION app.is_org_member(p_organization_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT app.current_user_organization_id() = p_organization_id;\n$function$\n"
     },
     {
@@ -2050,9 +1880,7 @@
       "arguments": "p_project_id uuid",
       "result_type": "boolean",
       "is_security_definer": true,
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "definition": "CREATE OR REPLACE FUNCTION app.is_project_member(p_project_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.project_members\n    WHERE project_id = p_project_id\n      AND user_id = auth.uid()\n  );\n$function$\n"
     },
     {
@@ -2060,9 +1888,7 @@
       "arguments": "",
       "result_type": "trigger",
       "is_security_definer": true,
-      "config_settings": [
-        "search_path=public"
-      ],
+      "config_settings": ["search_path=public"],
       "definition": "CREATE OR REPLACE FUNCTION app.protect_privileged_user_fields()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  -- The service role (workers, seeding) bypasses RLS and skips this guard.\n  IF current_setting('request.jwt.claims', true) IS NULL THEN\n    RETURN NEW;\n  END IF;\n\n  IF (\n    NEW.role_id IS DISTINCT FROM OLD.role_id\n    OR NEW.organization_id IS DISTINCT FROM OLD.organization_id\n    OR NEW.user_id IS DISTINCT FROM OLD.user_id\n    OR NEW.status IS DISTINCT FROM OLD.status\n    OR NEW.employment_type IS DISTINCT FROM OLD.employment_type\n    OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at\n    OR NEW.deleted_by IS DISTINCT FROM OLD.deleted_by\n  ) AND NOT app.has_permission('users', 'update') THEN\n    RAISE EXCEPTION 'insufficient_privilege: privileged user fields require users.update permission'\n      USING ERRCODE = '42501';\n  END IF;\n\n  RETURN NEW;\nEND;\n$function$\n"
     },
     {

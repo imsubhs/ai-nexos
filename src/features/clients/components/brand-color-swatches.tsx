@@ -56,13 +56,13 @@ export function BrandColorSwatches({
         {validColors.slice(0, 4).map((color, idx) => (
           <div
             key={idx}
-            className="size-3.5 rounded-full border border-white/20 shadow-xs shrink-0"
+            className="size-3.5 shrink-0 rounded-full border border-white/20 shadow-xs"
             style={{ backgroundColor: color }}
             title={color}
           />
         ))}
         {validColors.length > 4 && (
-          <span className="text-[10px] font-mono text-foreground-muted">
+          <span className="text-foreground-muted font-mono text-[10px]">
             +{validColors.length - 4}
           </span>
         )}
@@ -71,7 +71,12 @@ export function BrandColorSwatches({
   }
 
   return (
-    <div className={cn("grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3", className)}>
+    <div
+      className={cn(
+        "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4",
+        className,
+      )}
+    >
       {validColors.map((color, idx) => {
         const isCopied = copiedColor === color;
 
@@ -80,13 +85,13 @@ export function BrandColorSwatches({
             key={idx}
             type="button"
             onClick={() => handleCopy(color)}
-            className="group relative flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-2 p-2.5 text-left transition-all duration-200 hover:border-brand-primary/40 hover:bg-surface-3 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+            className="group border-border-subtle bg-surface-2 hover:border-brand-primary/40 hover:bg-surface-3 focus-visible:ring-brand-primary relative flex cursor-pointer flex-col overflow-hidden rounded-lg border p-2.5 text-left transition-all duration-200 outline-none focus-visible:ring-2"
           >
             <div
-              className="h-14 w-full rounded-md border border-white/10 shadow-inner transition-transform group-hover:scale-[1.02] flex items-center justify-center"
+              className="flex h-14 w-full items-center justify-center rounded-md border border-white/10 shadow-inner transition-transform group-hover:scale-[1.02]"
               style={{ backgroundColor: color }}
             >
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-xs rounded-md px-2 py-1 flex items-center gap-1 text-[11px] text-white font-mono">
+              <div className="flex items-center gap-1 rounded-md bg-black/60 px-2 py-1 font-mono text-[11px] text-white opacity-0 backdrop-blur-xs transition-opacity group-hover:opacity-100">
                 {isCopied ? (
                   <>
                     <Check className="size-3 text-emerald-400" />
@@ -103,10 +108,10 @@ export function BrandColorSwatches({
 
             {showLabels && (
               <div className="mt-2 flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-foreground tracking-wider uppercase">
+                <span className="text-foreground font-mono text-xs font-semibold tracking-wider uppercase">
                   {color}
                 </span>
-                <span className="text-[10px] text-foreground-subtle font-medium">
+                <span className="text-foreground-subtle text-[10px] font-medium">
                   Color #{idx + 1}
                 </span>
               </div>

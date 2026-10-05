@@ -1,9 +1,25 @@
 import { db } from "@/db";
-import { activityLogs, clients, projectMembers, projects, users, tasks } from "@/db/schema";
+import {
+  activityLogs,
+  clients,
+  projectMembers,
+  projects,
+  users,
+  tasks,
+} from "@/db/schema";
 import { generateProjectCode } from "@/features/organizations/code-generation";
 import { requireCurrentUser } from "@/features/auth/current-user";
 import { requirePermission } from "@/features/permissions";
-import { and, eq, ilike, isNull, count, not, inArray, or as drizzleOr } from "drizzle-orm";
+import {
+  and,
+  eq,
+  ilike,
+  isNull,
+  count,
+  not,
+  inArray,
+  or as drizzleOr,
+} from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { insertProjectSchema, updateProjectSchema } from "./schemas";
@@ -99,12 +115,20 @@ export async function createProject(data: z.infer<typeof insertProjectSchema>) {
 
     // Verify projectManager belongs to active organization and is active
     if (data.projectManager) {
-      await assertActiveTenantUser(data.projectManager, user.organizationId, tx);
+      await assertActiveTenantUser(
+        data.projectManager,
+        user.organizationId,
+        tx,
+      );
     }
 
     // Verify creativeDirector belongs to active organization and is active
     if (data.creativeDirector) {
-      await assertActiveTenantUser(data.creativeDirector, user.organizationId, tx);
+      await assertActiveTenantUser(
+        data.creativeDirector,
+        user.organizationId,
+        tx,
+      );
     }
 
     const projectCode = await generateProjectCode(user.organizationId, tx);
@@ -157,12 +181,20 @@ export async function updateProject(
 
     // If projectManager is specified, verify it exists, is active, is not deleted, and belongs to caller's organization
     if (data.projectManager) {
-      await assertActiveTenantUser(data.projectManager, user.organizationId, tx);
+      await assertActiveTenantUser(
+        data.projectManager,
+        user.organizationId,
+        tx,
+      );
     }
 
     // If creativeDirector is specified, verify it exists, is active, is not deleted, and belongs to caller's organization
     if (data.creativeDirector) {
-      await assertActiveTenantUser(data.creativeDirector, user.organizationId, tx);
+      await assertActiveTenantUser(
+        data.creativeDirector,
+        user.organizationId,
+        tx,
+      );
     }
 
     // Whitelist only legitimate editable fields to prevent mass-assignment (OWASP API3:2023)
@@ -172,21 +204,31 @@ export async function updateProject(
       organizationId: user.organizationId,
     };
 
-    if (data.projectName !== undefined) updatePayload.projectName = data.projectName;
-    if (data.description !== undefined) updatePayload.description = data.description;
+    if (data.projectName !== undefined)
+      updatePayload.projectName = data.projectName;
+    if (data.description !== undefined)
+      updatePayload.description = data.description;
     if (data.clientId !== undefined) updatePayload.clientId = data.clientId;
-    if (data.projectManager !== undefined) updatePayload.projectManager = data.projectManager;
-    if (data.creativeDirector !== undefined) updatePayload.creativeDirector = data.creativeDirector;
-    if (data.departmentId !== undefined) updatePayload.departmentId = data.departmentId;
+    if (data.projectManager !== undefined)
+      updatePayload.projectManager = data.projectManager;
+    if (data.creativeDirector !== undefined)
+      updatePayload.creativeDirector = data.creativeDirector;
+    if (data.departmentId !== undefined)
+      updatePayload.departmentId = data.departmentId;
     if (data.priority !== undefined) updatePayload.priority = data.priority;
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.startDate !== undefined) updatePayload.startDate = data.startDate;
-    if (data.estimatedEndDate !== undefined) updatePayload.estimatedEndDate = data.estimatedEndDate;
-    if (data.actualEndDate !== undefined) updatePayload.actualEndDate = data.actualEndDate;
-    if (data.completionPercentage !== undefined) updatePayload.completionPercentage = data.completionPercentage;
+    if (data.estimatedEndDate !== undefined)
+      updatePayload.estimatedEndDate = data.estimatedEndDate;
+    if (data.actualEndDate !== undefined)
+      updatePayload.actualEndDate = data.actualEndDate;
+    if (data.completionPercentage !== undefined)
+      updatePayload.completionPercentage = data.completionPercentage;
     if (data.budget !== undefined) updatePayload.budget = data.budget;
-    if (data.healthStatus !== undefined) updatePayload.healthStatus = data.healthStatus;
-    if (data.visibility !== undefined) updatePayload.visibility = data.visibility;
+    if (data.healthStatus !== undefined)
+      updatePayload.healthStatus = data.healthStatus;
+    if (data.visibility !== undefined)
+      updatePayload.visibility = data.visibility;
     if (data.tags !== undefined) updatePayload.tags = data.tags;
 
     const [updated] = await tx
@@ -268,7 +310,6 @@ export async function getProjects(
     },
   });
 }
-
 
 /**
  * Get a specific project by ID.

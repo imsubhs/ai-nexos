@@ -283,10 +283,10 @@ export function FilePreviewSheet({
 
             <div className="space-y-4 px-4 pb-8">
               {/* Media Preview Box */}
-              <div className="rounded-xl border border-border/80 bg-surface-2/60 p-3 overflow-hidden">
+              <div className="border-border/80 bg-surface-2/60 overflow-hidden rounded-xl border p-3">
                 {previewLoading ? (
-                  <div className="h-44 flex flex-col items-center justify-center space-y-2 text-muted-foreground text-xs">
-                    <Loader2 className="size-5 animate-spin text-brand-primary" />
+                  <div className="text-muted-foreground flex h-44 flex-col items-center justify-center space-y-2 text-xs">
+                    <Loader2 className="text-brand-primary size-5 animate-spin" />
                     <span>Loading preview…</span>
                   </div>
                 ) : file.fileType === "image" && previewUrl ? (
@@ -307,27 +307,29 @@ export function FilePreviewSheet({
                     />
                   </div>
                 ) : file.fileType === "audio" && previewUrl ? (
-                  <div className="py-4 px-2 space-y-2">
-                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                      <FileText className="size-4 text-brand-primary" />
+                  <div className="space-y-2 px-2 py-4">
+                    <div className="text-muted-foreground flex items-center space-x-2 text-xs">
+                      <FileText className="text-brand-primary size-4" />
                       <span>Audio Playback</span>
                     </div>
                     <audio controls src={previewUrl} className="w-full" />
                   </div>
                 ) : (
-                  <div className="h-36 flex flex-col items-center justify-center text-center space-y-2 py-4">
-                    <div className="size-12 rounded-xl bg-surface-3/60 flex items-center justify-center text-brand-primary">
+                  <div className="flex h-36 flex-col items-center justify-center space-y-2 py-4 text-center">
+                    <div className="bg-surface-3/60 text-brand-primary flex size-12 items-center justify-center rounded-xl">
                       <FileText className="size-6" />
                     </div>
-                    <span className="text-sm font-medium text-foreground line-clamp-1">{file.title}</span>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground px-2 py-0.5 rounded bg-surface-3/80">
+                    <span className="text-foreground line-clamp-1 text-sm font-medium">
+                      {file.title}
+                    </span>
+                    <span className="text-muted-foreground bg-surface-3/80 rounded px-2 py-0.5 font-mono text-[10px] tracking-wider uppercase">
                       {file.fileType}
                     </span>
                     {previewUrl && (
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-xs h-7 gap-1 text-brand-primary hover:text-brand-primary/80"
+                        className="text-brand-primary hover:text-brand-primary/80 h-7 gap-1 text-xs"
                         onClick={() => window.open(previewUrl, "_blank")}
                       >
                         <ExternalLink className="size-3" />
@@ -392,7 +394,7 @@ export function FilePreviewSheet({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-emerald-400 gap-1.5"
+                    className="gap-1.5 text-emerald-400"
                     onClick={handleRestore}
                   >
                     <ArchiveRestore className="size-3.5" />
@@ -506,7 +508,7 @@ export function FilePreviewSheet({
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="size-7 p-0 text-muted-foreground hover:text-foreground"
+                              className="text-muted-foreground hover:text-foreground size-7 p-0"
                               title="Download this version"
                               onClick={() => handleDownload(version.versionId)}
                             >
@@ -591,8 +593,7 @@ export function FilePreviewSheet({
                   </ul>
                 )}
               </div>
-
-              </div>
+            </div>
 
             <ConfirmDialog
               open={dialog === "rename"}

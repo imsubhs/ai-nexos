@@ -16,12 +16,24 @@ import crypto from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const DB_URL = process.env.REHEARSAL_DATABASE_URL || "postgresql://postgres@localhost:5432/nexos_p43_rehearsal";
+const DB_URL =
+  process.env.REHEARSAL_DATABASE_URL ||
+  "postgresql://postgres@localhost:5432/nexos_p43_rehearsal";
 
 interface RehearsalCheck {
   id: string;
   name: string;
-  category: "MIGRATION" | "SCHEMA" | "BACKFILL" | "INVITATION" | "ACCEPTANCE" | "SECURITY" | "TRANSACTION" | "CONCURRENCY" | "ONBOARDING" | "ORGANIZATION";
+  category:
+    | "MIGRATION"
+    | "SCHEMA"
+    | "BACKFILL"
+    | "INVITATION"
+    | "ACCEPTANCE"
+    | "SECURITY"
+    | "TRANSACTION"
+    | "CONCURRENCY"
+    | "ONBOARDING"
+    | "ORGANIZATION";
   passed: boolean;
   evidence: string;
 }
@@ -41,10 +53,14 @@ function recordCheck(
 }
 
 async function runRehearsal() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — PHASE 4.3 REAL DATABASE REHEARSAL");
   console.log(`Target: ${DB_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   const sql = postgres(DB_URL, { prepare: false });
 
@@ -53,17 +69,33 @@ async function runRehearsal() {
     // SECTION 4: MIGRATION REHEARSAL (Clean 0000 -> 0015 -> 0016 -> 0017)
     // ------------------------------------------------------------------------
     console.log("--- SECTION 4: MIGRATION REHEARSAL ---");
-    
+
     // Check migrations on disk
     const migrationsFolder = join(process.cwd(), "database", "migrations");
-    const m0000 = readFileSync(join(migrationsFolder, "0000_init_platform_foundation.sql"), "utf8");
-    const m0015 = readFileSync(join(migrationsFolder, "0015_organization_code_prefix.sql"), "utf8");
-    const m0016 = readFileSync(join(migrationsFolder, "0016_organization_memberships.sql"), "utf8");
-    const m0017 = readFileSync(join(migrationsFolder, "0017_organization_invitations.sql"), "utf8");
+    const m0000 = readFileSync(
+      join(migrationsFolder, "0000_init_platform_foundation.sql"),
+      "utf8",
+    );
+    const m0015 = readFileSync(
+      join(migrationsFolder, "0015_organization_code_prefix.sql"),
+      "utf8",
+    );
+    const m0016 = readFileSync(
+      join(migrationsFolder, "0016_organization_memberships.sql"),
+      "utf8",
+    );
+    const m0017 = readFileSync(
+      join(migrationsFolder, "0017_organization_invitations.sql"),
+      "utf8",
+    );
 
     // Clean public schema
-    await sql.unsafe(`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`);
-    await sql.unsafe(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
+    await sql.unsafe(
+      `DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`,
+    );
+    await sql.unsafe(
+      `CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; CREATE EXTENSION IF NOT EXISTS pgcrypto;`,
+    );
 
     // 1. Apply 0000 baseline
     await sql.unsafe(m0000);
@@ -97,11 +129,13 @@ async function runRehearsal() {
     // SECTION 6 & 7: LEGACY USER FIXTURE MATRIX & BACKFILL PREPARATION
     // (Insert before 0016 to test migration 0016 backfill on real database)
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 6 & 7: LEGACY USER FIXTURE MATRIX & PHASE 3 BACKFILL ---");
-    
+    console.log(
+      "\n--- SECTION 6 & 7: LEGACY USER FIXTURE MATRIX & PHASE 3 BACKFILL ---",
+    );
+
     const orgAlphaId = "00000000-0000-4000-a000-000000000001";
     const orgBetaId = "00000000-0000-4000-a000-000000000002";
-    
+
     await sql`
       INSERT INTO organizations (organization_id, organization_name, slug, code_prefix, status)
       VALUES 
@@ -152,7 +186,7 @@ async function runRehearsal() {
 
     // 3. Apply 0016 organization memberships (performs Stage B backfill)
     await sql.unsafe(m0016);
-    
+
     // Verify backfilled memberships
     const memberships = await sql`
       SELECT user_id, organization_id, role_id, status, is_default, deleted_at 
@@ -171,7 +205,9 @@ async function runRehearsal() {
       "BF-USER-A",
       "User A (active) backfilled to active membership",
       "BACKFILL",
-      memA?.status === "active" && memA?.organization_id === orgAlphaId && memA?.is_default === true,
+      memA?.status === "active" &&
+        memA?.organization_id === orgAlphaId &&
+        memA?.is_default === true,
       `User A membership status=${memA?.status}, is_default=${memA?.is_default}`,
     );
 
@@ -247,7 +283,9 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     // SECTION 5 & 26: DATABASE CONSTRAINTS & METADATA INSPECTION
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 5 & 26: DATABASE CONSTRAINTS & METADATA INSPECTION ---");
+    console.log(
+      "\n--- SECTION 5 & 26: DATABASE CONSTRAINTS & METADATA INSPECTION ---",
+    );
 
     // Organizations code_prefix unique index
     const [uqCodePrefix] = await sql`
@@ -308,18 +346,43 @@ async function runRehearsal() {
         AND tc.table_name IN ('organization_memberships', 'organization_invitations')
     `;
 
-    const memUserFk = fks.find((f) => f.table_name === "organization_memberships" && f.column_name === "user_id");
-    const memOrgFk = fks.find((f) => f.table_name === "organization_memberships" && f.column_name === "organization_id");
-    const memRoleFk = fks.find((f) => f.table_name === "organization_memberships" && f.column_name === "role_id");
-    const invOrgFk = fks.find((f) => f.table_name === "organization_invitations" && f.column_name === "organization_id");
-    const invRoleFk = fks.find((f) => f.table_name === "organization_invitations" && f.column_name === "role_id");
-    const invInviterFk = fks.find((f) => f.table_name === "organization_invitations" && f.column_name === "invited_by_user_id");
+    const memUserFk = fks.find(
+      (f) =>
+        f.table_name === "organization_memberships" &&
+        f.column_name === "user_id",
+    );
+    const memOrgFk = fks.find(
+      (f) =>
+        f.table_name === "organization_memberships" &&
+        f.column_name === "organization_id",
+    );
+    const memRoleFk = fks.find(
+      (f) =>
+        f.table_name === "organization_memberships" &&
+        f.column_name === "role_id",
+    );
+    const invOrgFk = fks.find(
+      (f) =>
+        f.table_name === "organization_invitations" &&
+        f.column_name === "organization_id",
+    );
+    const invRoleFk = fks.find(
+      (f) =>
+        f.table_name === "organization_invitations" &&
+        f.column_name === "role_id",
+    );
+    const invInviterFk = fks.find(
+      (f) =>
+        f.table_name === "organization_invitations" &&
+        f.column_name === "invited_by_user_id",
+    );
 
     recordCheck(
       "SCHEMA-FK-CASCADE",
       "Memberships and invitations cascade on organization deletion",
       "SCHEMA",
-      memOrgFk?.delete_rule === "CASCADE" && invOrgFk?.delete_rule === "CASCADE",
+      memOrgFk?.delete_rule === "CASCADE" &&
+        invOrgFk?.delete_rule === "CASCADE",
       `memOrgFk delete_rule=${memOrgFk?.delete_rule}, invOrgFk delete_rule=${invOrgFk?.delete_rule}`,
     );
 
@@ -327,7 +390,8 @@ async function runRehearsal() {
       "SCHEMA-FK-RESTRICT",
       "Role deletion is RESTRICTED when referenced by membership or invitation",
       "SCHEMA",
-      memRoleFk?.delete_rule === "RESTRICT" && invRoleFk?.delete_rule === "RESTRICT",
+      memRoleFk?.delete_rule === "RESTRICT" &&
+        invRoleFk?.delete_rule === "RESTRICT",
       `memRoleFk delete_rule=${memRoleFk?.delete_rule}, invRoleFk delete_rule=${invRoleFk?.delete_rule}`,
     );
 
@@ -337,7 +401,10 @@ async function runRehearsal() {
     console.log("\n--- SECTION 8: VERIFY INVITATION DATABASE MODEL ---");
 
     const rawTokenAlice = crypto.randomBytes(32).toString("hex");
-    const tokenHashAlice = crypto.createHash("sha256").update(rawTokenAlice).digest("hex");
+    const tokenHashAlice = crypto
+      .createHash("sha256")
+      .update(rawTokenAlice)
+      .digest("hex");
     const expiresAlice = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     const [invAlice] = await sql`
@@ -379,7 +446,9 @@ async function runRehearsal() {
       "INV-MODEL-STATE",
       "Invitation created with pending status, normalized email, correct org and role",
       "INVITATION",
-      invAlice.status === "pending" && invAlice.email === "alice@example.com" && invAlice.organization_id === orgBetaId,
+      invAlice.status === "pending" &&
+        invAlice.email === "alice@example.com" &&
+        invAlice.organization_id === orgBetaId,
       `status=${invAlice.status}, email=${invAlice.email}, org=${invAlice.organization_id}`,
     );
 
@@ -397,11 +466,13 @@ async function runRehearsal() {
       const [invite] = await tx`
         SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashAlice}
       `;
-      if (!invite || invite.status !== "pending") throw new Error("Invalid invite");
+      if (!invite || invite.status !== "pending")
+        throw new Error("Invalid invite");
       if (invite.email !== aliceEmail) throw new Error("EMAIL_MISMATCH");
 
       // 2. Ensure public.users row exists FIRST so accepted_by_user_id FK constraint is satisfied
-      const [existingUser] = await tx`SELECT * FROM users WHERE user_id = ${aliceUserId}`;
+      const [existingUser] =
+        await tx`SELECT * FROM users WHERE user_id = ${aliceUserId}`;
       if (!existingUser) {
         await tx`
           INSERT INTO users (user_id, organization_id, role_id, first_name, email, status)
@@ -432,7 +503,8 @@ async function runRehearsal() {
     });
 
     // Verify in database
-    const [aliceDbInvite] = await sql`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashAlice}`;
+    const [aliceDbInvite] =
+      await sql`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashAlice}`;
     const [aliceDbMembership] = await sql`
       SELECT * FROM organization_memberships 
       WHERE user_id = ${aliceUserId} AND organization_id = ${orgBetaId}
@@ -455,7 +527,10 @@ async function runRehearsal() {
     console.log("\n--- SECTION 10: WRONG-ACCOUNT E2E TEST ---");
 
     const rawTokenCharlie = crypto.randomBytes(32).toString("hex");
-    const tokenHashCharlie = crypto.createHash("sha256").update(rawTokenCharlie).digest("hex");
+    const tokenHashCharlie = crypto
+      .createHash("sha256")
+      .update(rawTokenCharlie)
+      .digest("hex");
     await sql`
       INSERT INTO organization_invitations (
         organization_id, email, role_id, token_hash, status, expires_at, invited_by_user_id
@@ -470,7 +545,8 @@ async function runRehearsal() {
 
     try {
       await sql.begin(async (tx) => {
-        const [invite] = await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashCharlie}`;
+        const [invite] =
+          await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashCharlie}`;
         if (!invite) throw new Error("NOT_FOUND");
         if (invite.email !== bobEmail) {
           throw new Error("EMAIL_MISMATCH");
@@ -493,7 +569,9 @@ async function runRehearsal() {
       "WRONG-ACCOUNT-REJECT",
       "Bob cannot accept Charlie's invitation: EMAIL_MISMATCH thrown, no membership, invite remains pending",
       "SECURITY",
-      bobError === "EMAIL_MISMATCH" && bobMembership.count === 0 && charlieInviteStatus.status === "pending",
+      bobError === "EMAIL_MISMATCH" &&
+        bobMembership.count === 0 &&
+        charlieInviteStatus.status === "pending",
       `Error thrown="${bobError}", Bob memberships=${bobMembership.count}, invite status=${charlieInviteStatus.status}`,
     );
 
@@ -512,7 +590,10 @@ async function runRehearsal() {
 
     // Create invite for User F to Org B
     const rawTokenF = crypto.randomBytes(32).toString("hex");
-    const tokenHashF = crypto.createHash("sha256").update(rawTokenF).digest("hex");
+    const tokenHashF = crypto
+      .createHash("sha256")
+      .update(rawTokenF)
+      .digest("hex");
     await sql`
       INSERT INTO organization_invitations (
         organization_id, email, role_id, token_hash, status, expires_at, invited_by_user_id
@@ -523,7 +604,8 @@ async function runRehearsal() {
 
     // User F accepts invite to Org B
     await sql.begin(async (tx) => {
-      const [invite] = await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashF}`;
+      const [invite] =
+        await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashF}`;
       await tx`
         UPDATE organization_invitations 
         SET status = 'accepted', accepted_at = now(), accepted_by_user_id = ${userF_Id}
@@ -553,7 +635,9 @@ async function runRehearsal() {
       "MULTI-MEM-COUNT",
       "User F acquires 2 distinct active memberships across Org A and Org B",
       "ORGANIZATION",
-      userF_MemsBefore.count === 1 && userF_MemsAfter.length === 2 && userF_MemsAfter.every((m) => m.status === "active"),
+      userF_MemsBefore.count === 1 &&
+        userF_MemsAfter.length === 2 &&
+        userF_MemsAfter.every((m) => m.status === "active"),
       `Before count=${userF_MemsBefore.count}, After count=${userF_MemsAfter.length}, orgs=[${userF_MemsAfter.map((m) => m.organization_id).join(", ")}]`,
     );
 
@@ -561,7 +645,8 @@ async function runRehearsal() {
       "MULTI-MEM-LEGACY-PRESERVE",
       "User F legacy users.organization_id is PRESERVED and not overwritten",
       "ORGANIZATION",
-      userF_Before.organization_id === orgAlphaId && userF_After.organization_id === orgAlphaId,
+      userF_Before.organization_id === orgAlphaId &&
+        userF_After.organization_id === orgAlphaId,
       `Initial users.org=${userF_Before.organization_id}, After acceptance users.org=${userF_After.organization_id}`,
     );
 
@@ -605,7 +690,10 @@ async function runRehearsal() {
     console.log("\n--- SECTION 14: INVITATION ROLE TAMPERING ---");
 
     const rawTokenTamper = crypto.randomBytes(32).toString("hex");
-    const tokenHashTamper = crypto.createHash("sha256").update(rawTokenTamper).digest("hex");
+    const tokenHashTamper = crypto
+      .createHash("sha256")
+      .update(rawTokenTamper)
+      .digest("hex");
     await sql`
       INSERT INTO organization_invitations (
         organization_id, email, role_id, token_hash, status, expires_at, invited_by_user_id
@@ -629,7 +717,8 @@ async function runRehearsal() {
 
     // Authoritative execution ignores client inputs and uses invite.role_id and invite.organization_id
     await sql.begin(async (tx) => {
-      const [invite] = await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashTamper}`;
+      const [invite] =
+        await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashTamper}`;
       // Invariant: role comes strictly from invite, NEVER from client
       const authoritativeRoleId = invite.role_id;
       const authoritativeOrgId = invite.organization_id;
@@ -648,7 +737,8 @@ async function runRehearsal() {
       "ROLE-TAMPER-IMMUNITY",
       "Client-supplied roleId/organizationId discarded; membership role is strictly derived from invitation record",
       "SECURITY",
-      tamperMembership.role_id === roleBetaMemberId && tamperMembership.role_id !== maliciousInput.roleId,
+      tamperMembership.role_id === roleBetaMemberId &&
+        tamperMembership.role_id !== maliciousInput.roleId,
       `Resulting role_id=${tamperMembership.role_id} (invited member role), client attempted=${maliciousInput.roleId} (owner)`,
     );
 
@@ -661,7 +751,8 @@ async function runRehearsal() {
     try {
       await sql.begin(async (tx) => {
         // Attempt to accept Alice's already-accepted invitation
-        const [invite] = await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashAlice}`;
+        const [invite] =
+          await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashAlice}`;
         if (invite.status !== "pending") {
           throw new Error("INVITATION_ALREADY_ACCEPTED");
         }
@@ -684,7 +775,10 @@ async function runRehearsal() {
     console.log("\n--- SECTION 16: REVOCATION TEST ---");
 
     const rawTokenRevoke = crypto.randomBytes(32).toString("hex");
-    const tokenHashRevoke = crypto.createHash("sha256").update(rawTokenRevoke).digest("hex");
+    const tokenHashRevoke = crypto
+      .createHash("sha256")
+      .update(rawTokenRevoke)
+      .digest("hex");
     const [revokedInv] = await sql`
       INSERT INTO organization_invitations (
         organization_id, email, role_id, token_hash, status, expires_at, invited_by_user_id, revoked_at, revoked_by_user_id
@@ -697,7 +791,8 @@ async function runRehearsal() {
     let revokeError = "";
     try {
       await sql.begin(async (tx) => {
-        const [invite] = await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashRevoke}`;
+        const [invite] =
+          await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashRevoke}`;
         if (invite.status === "revoked") throw new Error("INVITATION_REVOKED");
       });
     } catch (e: any) {
@@ -718,7 +813,10 @@ async function runRehearsal() {
     console.log("\n--- SECTION 17: EXPIRATION TEST ---");
 
     const rawTokenExpired = crypto.randomBytes(32).toString("hex");
-    const tokenHashExpired = crypto.createHash("sha256").update(rawTokenExpired).digest("hex");
+    const tokenHashExpired = crypto
+      .createHash("sha256")
+      .update(rawTokenExpired)
+      .digest("hex");
     const pastExpires = new Date(Date.now() - 3600 * 1000); // 1 hour ago
     await sql`
       INSERT INTO organization_invitations (
@@ -731,8 +829,10 @@ async function runRehearsal() {
     let expiredError = "";
     try {
       await sql.begin(async (tx) => {
-        const [invite] = await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashExpired}`;
-        if (new Date(invite.expires_at) < new Date()) throw new Error("INVITATION_EXPIRED");
+        const [invite] =
+          await tx`SELECT * FROM organization_invitations WHERE token_hash = ${tokenHashExpired}`;
+        if (new Date(invite.expires_at) < new Date())
+          throw new Error("INVITATION_EXPIRED");
       });
     } catch (e: any) {
       expiredError = e.message;
@@ -752,7 +852,10 @@ async function runRehearsal() {
     console.log("\n--- SECTION 18: TRANSACTION ROLLBACK TEST ---");
 
     const rawTokenRollback = crypto.randomBytes(32).toString("hex");
-    const tokenHashRollback = crypto.createHash("sha256").update(rawTokenRollback).digest("hex");
+    const tokenHashRollback = crypto
+      .createHash("sha256")
+      .update(rawTokenRollback)
+      .digest("hex");
     await sql`
       INSERT INTO organization_invitations (
         organization_id, email, role_id, token_hash, status, expires_at, invited_by_user_id
@@ -805,7 +908,10 @@ async function runRehearsal() {
       "TX-ROLLBACK-INVITATION",
       "Invitation acceptance transaction aborts cleanly: invitation remains pending with no partial membership",
       "TRANSACTION",
-      txAborted && inviteAfterRollback.status === "pending" && inviteAfterRollback.accepted_at === null && membershipAfterRollback.count === 0,
+      txAborted &&
+        inviteAfterRollback.status === "pending" &&
+        inviteAfterRollback.accepted_at === null &&
+        membershipAfterRollback.count === 0,
       `Transaction aborted=${txAborted}, status=${inviteAfterRollback.status}, accepted_at=${inviteAfterRollback.accepted_at}, partial memberships=${membershipAfterRollback.count}`,
     );
 
@@ -815,7 +921,10 @@ async function runRehearsal() {
     console.log("\n--- SECTION 19: CONCURRENT ACCEPTANCE TEST ---");
 
     const rawTokenConcurrent = crypto.randomBytes(32).toString("hex");
-    const tokenHashConcurrent = crypto.createHash("sha256").update(rawTokenConcurrent).digest("hex");
+    const tokenHashConcurrent = crypto
+      .createHash("sha256")
+      .update(rawTokenConcurrent)
+      .digest("hex");
     await sql`
       INSERT INTO organization_invitations (
         organization_id, email, role_id, token_hash, status, expires_at, invited_by_user_id
@@ -872,14 +981,18 @@ async function runRehearsal() {
       "CONCURRENCY-ONE-WINNER",
       "Concurrent acceptance against same invitation: exactly ONE succeeds, other fails safely, exactly 1 membership in DB",
       "CONCURRENCY",
-      successes.length === 1 && failures.length === 1 && concurrentMemberships.count === 1,
+      successes.length === 1 &&
+        failures.length === 1 &&
+        concurrentMemberships.count === 1,
       `Successes=${successes.length}, Failures=${failures.length}, Memberships in DB=${concurrentMemberships.count}`,
     );
 
     // ------------------------------------------------------------------------
     // SECTION 22 & 23: ORGANIZATION CREATION E2E & CODE PREFIX VERIFICATION
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 22 & 23: ORGANIZATION CREATION E2E & CODE PREFIX ---");
+    console.log(
+      "\n--- SECTION 22 & 23: ORGANIZATION CREATION E2E & CODE PREFIX ---",
+    );
 
     const unaffiliatedCreatorId = "00000000-0000-4000-c000-000000000099";
     const newOrgId = "00000000-0000-4000-a000-000000000099";
@@ -916,7 +1029,8 @@ async function runRehearsal() {
       `;
     });
 
-    const [createdOrg] = await sql`SELECT * FROM organizations WHERE organization_id = ${newOrgId}`;
+    const [createdOrg] =
+      await sql`SELECT * FROM organizations WHERE organization_id = ${newOrgId}`;
     const [creatorMem] = await sql`
       SELECT m.*, r.role_key 
       FROM organization_memberships m
@@ -928,7 +1042,9 @@ async function runRehearsal() {
       "ORG-CREATION-E2E",
       "Unaffiliated user creates organization: org created with code_prefix, roles seeded, owner membership established",
       "ORGANIZATION",
-      createdOrg?.code_prefix === "ADL" && creatorMem?.role_key === "owner" && creatorMem?.status === "active",
+      createdOrg?.code_prefix === "ADL" &&
+        creatorMem?.role_key === "owner" &&
+        creatorMem?.status === "active",
       `Org code_prefix=${createdOrg?.code_prefix}, creator role=${creatorMem?.role_key}, membership status=${creatorMem?.status}`,
     );
 
@@ -954,12 +1070,18 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     // SUMMARY
     // ------------------------------------------------------------------------
-    console.log("\n================================================================================");
+    console.log(
+      "\n================================================================================",
+    );
     console.log("REHEARSAL SUMMARY");
-    console.log("================================================================================");
+    console.log(
+      "================================================================================",
+    );
     const passedCount = checks.filter((c) => c.passed).length;
     const failedCount = checks.filter((c) => !c.passed).length;
-    console.log(`Total checks: ${checks.length} | Passed: ${passedCount} | Failed: ${failedCount}`);
+    console.log(
+      `Total checks: ${checks.length} | Passed: ${passedCount} | Failed: ${failedCount}`,
+    );
 
     if (failedCount > 0) {
       console.error("\nSOME REHEARSAL CHECKS FAILED!");

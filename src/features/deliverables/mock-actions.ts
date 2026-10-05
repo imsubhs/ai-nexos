@@ -482,7 +482,9 @@ export async function getDeliverableFiles(
   );
 
   return matches.map((df: any) => {
-    const file = (store.files || []).find((f: any) => f.fileId === df.fileId) || {
+    const file = (store.files || []).find(
+      (f: any) => f.fileId === df.fileId,
+    ) || {
       fileId: df.fileId,
       title: "Demo File",
       fileType: "document",
@@ -514,9 +516,18 @@ export async function getDeliverableFiles(
 export async function linkFileToDeliverable(
   ...args: Parameters<typeof real_linkFileToDeliverable>
 ): Promise<Awaited<ReturnType<typeof real_linkFileToDeliverable>>> {
-  const deliverableId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).deliverableId : args[0];
-  const fileId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).fileId : args[1];
-  const revisionId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).revisionId : args[2];
+  const deliverableId =
+    typeof args[0] === "object" && args[0] !== null
+      ? (args[0] as any).deliverableId
+      : args[0];
+  const fileId =
+    typeof args[0] === "object" && args[0] !== null
+      ? (args[0] as any).fileId
+      : args[1];
+  const revisionId =
+    typeof args[0] === "object" && args[0] !== null
+      ? (args[0] as any).revisionId
+      : args[2];
   const store = getDemoStore();
   store.deliverableFiles = store.deliverableFiles || [];
 
@@ -534,7 +545,8 @@ export async function linkFileToDeliverable(
     );
   }
 
-  const targetRevisionId = revisionId || deliverable.currentRevisionId || nextDemoId(store);
+  const targetRevisionId =
+    revisionId || deliverable.currentRevisionId || nextDemoId(store);
 
   const existing = store.deliverableFiles.find(
     (df: any) =>
@@ -574,15 +586,29 @@ export async function linkFileToDeliverable(
     deliverable.projectId,
   );
 
-  return { success: true, deliverableId, fileId, revisionId: targetRevisionId } as any;
+  return {
+    success: true,
+    deliverableId,
+    fileId,
+    revisionId: targetRevisionId,
+  } as any;
 }
 
 export async function unlinkFileFromDeliverable(
   ...args: Parameters<typeof real_unlinkFileFromDeliverable>
 ): Promise<Awaited<ReturnType<typeof real_unlinkFileFromDeliverable>>> {
-  const deliverableId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).deliverableId : args[0];
-  const fileId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).fileId : args[1];
-  const revisionId = typeof args[0] === "object" && args[0] !== null ? (args[0] as any).revisionId : args[2];
+  const deliverableId =
+    typeof args[0] === "object" && args[0] !== null
+      ? (args[0] as any).deliverableId
+      : args[0];
+  const fileId =
+    typeof args[0] === "object" && args[0] !== null
+      ? (args[0] as any).fileId
+      : args[1];
+  const revisionId =
+    typeof args[0] === "object" && args[0] !== null
+      ? (args[0] as any).revisionId
+      : args[2];
   const store = getDemoStore();
   store.deliverableFiles = store.deliverableFiles || [];
 
@@ -682,11 +708,14 @@ export async function getPortalReviewData(
   );
 
   const revs = (store.deliverableRevisions || [])
-    .filter((r: any) => r.deliverableId === deliverable.deliverableId && !r.deletedAt)
+    .filter(
+      (r: any) => r.deliverableId === deliverable.deliverableId && !r.deletedAt,
+    )
     .sort((a: any, b: any) => b.versionNumber - a.versionNumber);
 
-  const targetRevision =
-    revs.find((r: any) => r.revisionId === shareLink.revisionId) ||
+  const targetRevision = revs.find(
+    (r: any) => r.revisionId === shareLink.revisionId,
+  ) ||
     revs.find((r: any) => r.revisionId === deliverable.currentRevisionId) ||
     revs[0] || {
       revisionId: shareLink.revisionId,
@@ -715,27 +744,37 @@ export async function getPortalReviewData(
 
   const approvalsList = (store.deliverableApprovals || [])
     .filter((a: any) => a.projectId === deliverable.projectId)
-    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 
   const commentsList = (store.deliverableReviewComments || [])
     .filter(
-      (c: any) =>
-        c.projectId === deliverable.projectId && !c.isInternalOnly,
+      (c: any) => c.projectId === deliverable.projectId && !c.isInternalOnly,
     )
-    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 
-  let currentStatus: "pending" | "in_review" | "approved" | "changes_requested" = "pending";
+  let currentStatus:
+    "pending" | "in_review" | "approved" | "changes_requested" = "pending";
   if (deliverable.status === "approved") {
     currentStatus = "approved";
   } else if (deliverable.status === "revision_requested") {
     currentStatus = "changes_requested";
-  } else if (deliverable.status === "in_review" || deliverable.status === "client_review") {
+  } else if (
+    deliverable.status === "in_review" ||
+    deliverable.status === "client_review"
+  ) {
     currentStatus = "in_review";
   }
 
   const latestApproval = approvalsList[0];
   const canApprove =
-    (shareLink.accessLevel === "approver" || shareLink.accessLevel === "full_access") &&
+    (shareLink.accessLevel === "approver" ||
+      shareLink.accessLevel === "full_access") &&
     !deliverable.isLocked &&
     deliverable.status !== "approved";
   const canRequestChanges =
@@ -762,14 +801,18 @@ export async function getPortalReviewData(
         versionNumber: targetRevision.versionNumber,
         reason: targetRevision.reason,
         status: targetRevision.status,
-        createdAt: targetRevision.createdAt ? new Date(targetRevision.createdAt).toISOString() : new Date().toISOString(),
+        createdAt: targetRevision.createdAt
+          ? new Date(targetRevision.createdAt).toISOString()
+          : new Date().toISOString(),
       },
       revisions: revs.map((r: any) => ({
         revisionId: r.revisionId,
         versionNumber: r.versionNumber,
         reason: r.reason,
         status: r.status,
-        createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
+        createdAt: r.createdAt
+          ? new Date(r.createdAt).toISOString()
+          : new Date().toISOString(),
       })),
       files: attachedFiles,
     },
@@ -777,8 +820,12 @@ export async function getPortalReviewData(
       currentStatus,
       canApprove,
       canRequestChanges,
-      approvedAt: latestApproval ? new Date(latestApproval.createdAt).toISOString() : null,
-      approvedBy: latestApproval ? latestApproval.clientApproverSignature : null,
+      approvedAt: latestApproval
+        ? new Date(latestApproval.createdAt).toISOString()
+        : null,
+      approvedBy: latestApproval
+        ? latestApproval.clientApproverSignature
+        : null,
       notes: latestApproval ? latestApproval.notes : null,
     },
     approvalHistory: approvalsList.map((a: any) => ({
@@ -787,13 +834,22 @@ export async function getPortalReviewData(
       approverName: a.clientApproverSignature,
       approverEmail: a.clientApproverEmail,
       notes: a.notes,
-      createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: a.createdAt
+        ? new Date(a.createdAt).toISOString()
+        : new Date().toISOString(),
     })),
     comments: commentsList.map((c: any) => ({
       commentId: c.commentId,
       authorName: c.clientAuthorName || "Reviewer",
-      content: typeof c.content === "object" && c.content !== null && "text" in c.content ? c.content.text : String(c.content),
-      createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : new Date().toISOString(),
+      content:
+        typeof c.content === "object" &&
+        c.content !== null &&
+        "text" in c.content
+          ? c.content.text
+          : String(c.content),
+      createdAt: c.createdAt
+        ? new Date(c.createdAt).toISOString()
+        : new Date().toISOString(),
     })),
   };
 
@@ -821,8 +877,13 @@ export async function submitPortalApproval(
     throw new Error("This review link has expired.");
   }
 
-  if (shareLink.accessLevel === "view_only" || shareLink.accessLevel === "comment_only") {
-    throw new Error("You do not have approval permissions for this deliverable.");
+  if (
+    shareLink.accessLevel === "view_only" ||
+    shareLink.accessLevel === "comment_only"
+  ) {
+    throw new Error(
+      "You do not have approval permissions for this deliverable.",
+    );
   }
 
   const deliverable = (store.deliverables || []).find(
@@ -926,7 +987,9 @@ export async function submitPortalChangeRequest(
   }
 
   if (shareLink.accessLevel === "view_only") {
-    throw new Error("You do not have permission to request changes for this deliverable.");
+    throw new Error(
+      "You do not have permission to request changes for this deliverable.",
+    );
   }
 
   const deliverable = (store.deliverables || []).find(
@@ -1055,7 +1118,9 @@ export async function submitPortalComment(
   }
 
   if (shareLink.accessLevel === "view_only") {
-    throw new Error("You do not have permission to comment on this deliverable.");
+    throw new Error(
+      "You do not have permission to comment on this deliverable.",
+    );
   }
 
   const commentId = nextDemoId(store);
@@ -1105,4 +1170,3 @@ export async function getPortalFileDownloadUrl(
     filename: file?.title || "downloaded-asset",
   };
 }
-

@@ -90,7 +90,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       );
       if (membership) {
         const org = store.organizations.find(
-          (o: { organizationId: string }) => o.organizationId === activeOrgCookie,
+          (o: { organizationId: string }) =>
+            o.organizationId === activeOrgCookie,
         );
         if (org) {
           return {
@@ -187,7 +188,10 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
     if (role && org) {
       // Dual-Read verification: log notice if membership tenant differs from legacy column
-      if (data.organization_id && data.organization_id !== activeMembership.organization_id) {
+      if (
+        data.organization_id &&
+        data.organization_id !== activeMembership.organization_id
+      ) {
         console.info(
           `[DUAL-READ] Active membership (${activeMembership.organization_id}) differs from legacy users.organization_id (${data.organization_id}) for user ${user.id}`,
         );
@@ -293,7 +297,10 @@ export async function requireCurrentUser(): Promise<CurrentUser> {
     .eq("user_id", user.id)
     .single();
 
-  if (userProfile && (userProfile.status !== "active" || userProfile.deleted_at)) {
+  if (
+    userProfile &&
+    (userProfile.status !== "active" || userProfile.deleted_at)
+  ) {
     redirect("/unauthorized");
   }
 

@@ -405,7 +405,8 @@ export async function getPendingInvitations(): Promise<PendingInvitation[]> {
     expiresAt: inv.expiresAt,
     createdAt: inv.createdAt,
     invitedByName: inv.invitedByUser
-      ? `${inv.invitedByUser.firstName ?? ""} ${inv.invitedByUser.lastName ?? ""}`.trim() || inv.invitedByUser.email
+      ? `${inv.invitedByUser.firstName ?? ""} ${inv.invitedByUser.lastName ?? ""}`.trim() ||
+        inv.invitedByUser.email
       : null,
   }));
 }

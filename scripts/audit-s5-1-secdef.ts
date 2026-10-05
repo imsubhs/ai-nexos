@@ -120,9 +120,15 @@ async function main() {
 
     console.log(`Found ${fns.length} SECURITY DEFINER functions:`);
     for (const fn of fns) {
-      console.log(`\n============================================================`);
-      console.log(`${fn.schema_name}.${fn.function_name}(${fn.arguments}) -> ${fn.return_type}`);
-      console.log(`Owner: ${fn.owner} | Volatility: ${fn.volatility} | Language: ${fn.language}`);
+      console.log(
+        `\n============================================================`,
+      );
+      console.log(
+        `${fn.schema_name}.${fn.function_name}(${fn.arguments}) -> ${fn.return_type}`,
+      );
+      console.log(
+        `Owner: ${fn.owner} | Volatility: ${fn.volatility} | Language: ${fn.language}`,
+      );
       console.log(`Config: ${JSON.stringify(fn.config)}`);
       console.log(`Definition:`);
       console.log(fn.full_def);
@@ -137,7 +143,6 @@ async function main() {
       `;
       console.log(`Grants:`, privs);
     }
-
   } finally {
     await sql.end();
   }

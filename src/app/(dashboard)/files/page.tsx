@@ -96,7 +96,9 @@ export default async function FilesPage({
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Creative Assets &amp; Files</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Creative Assets &amp; Files
+        </h1>
         <p className="text-muted-foreground text-sm">
           Every asset across all projects. Filter by project, type, and status.
         </p>

@@ -1,4 +1,5 @@
 # AI NEX OS — Phase 4A: Information Architecture Specification
+
 ## Current Baseline & Proposed Target Architecture
 
 > **Document Status:** CANONICAL INFORMATION ARCHITECTURE SPECIFICATION  
@@ -7,7 +8,7 @@
 > **Phase:** Phase 4A Baseline & Target Model  
 > **Product:** AI NEX OS — The Operating System for Creative Execution  
 > **Evaluation Date:** October 3, 2026  
-> **Implementation Status:** DESIGN SPECIFICATION ONLY (NO CODE EDITS AUTHORIZED)  
+> **Implementation Status:** DESIGN SPECIFICATION ONLY (NO CODE EDITS AUTHORIZED)
 
 ---
 
@@ -104,6 +105,7 @@ AI NEX OS (Root Domain: app.<domain> / Localhost:3000)
 ## 3. Structural Deficiencies of Current IA
 
 ### 3.1 Cognitive & Hierarchical Flaws
+
 1. **Misplaced Command Center (The "Dashboard in Workspace" Problem):**
    - In `src/config/navigation.ts`, Dashboard is nested under "Workspace" as item 1.
    - User feedback confirms this feels unprofessional: the dashboard is an overarching executive hub, not a workspace tool like "Tasks" or "Clients".
@@ -128,6 +130,7 @@ AI NEX OS (Root Domain: app.<domain> / Localhost:3000)
 ## 4. Proposed Target Information Architecture
 
 The **Target IA** is engineered around three core operational pillars:
+
 1. **Command & Executive Overview** (System-level navigation)
 2. **Creative Production Engine** (Project-centric execution: CRM, Projects, Tasks, Assets, Approvals)
 3. **Agency Operations & Workforce** (Consolidated staff directory, time tracking, and administration)
@@ -214,32 +217,32 @@ AI NEX OS (Operating System for Creative Execution)
 
 ## 5. Architectural Transformation Rationale
 
-| Area | Current State Issue | Target State Resolution | Phase |
-| :--- | :--- | :--- | :--- |
-| **Dashboard** | Nested inside Workspace; renders empty 4-card stub. | Elevated to root command center; integrates active project cards, assigned tasks, approval queues, and attendance widget. | Phase 4B / 4H |
-| **Projects & Assets** | Split into Workspace (Projects) vs. Production (Files/Deliverables). | Project Workspace unified with contextual tabs (Overview, Tasks, Timeline, Assets, Deliverables). Global `/assets` acts as cross-project DAM. | Phase 4E / 4F |
-| **Tasks** | Hardcoded to demo milestone UUID `00000000-0000-4000-8000-000000000322`. | Decoupled from mandatory milestone hierarchy; `/tasks` displays real user-assigned tasks across all projects with filters. | Phase 4E |
-| **Workforce** | 7 fragmented menu items crowding the sidebar. | Consolidated into 1 primary `Workforce` hub with tabbed sub-views (Directory, Attendance, Corrections). | Phase 4C |
-| **Invitations & Team**| No invite generator in Settings; only accessible during onboarding. | Direct `+ Invite Member` modal and copyable share link generator integrated directly into `Settings → Team & Invitations`. | Phase 4C |
-| **Search** | Hidden on mobile; no command palette. | Global `Cmd+K` Command Palette accessible on all viewport sizes with cross-entity search and quick actions. | Phase 4B |
-| **Calendar** | Separate top-level navigation item. | Unified into `/schedule` alongside Gantt Timeline as a switchable lens (Gantt vs Calendar). | Phase 4B / 4E |
-| **Disabled Items** | AI Workspace, Analytics, Reports show "Soon" badges in sidebar. | Removed from primary sidebar until functional. Ambient AI capabilities surfaced within task/project workflows. | Phase 4B / 4H |
+| Area                   | Current State Issue                                                      | Target State Resolution                                                                                                                       | Phase         |
+| :--------------------- | :----------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| **Dashboard**          | Nested inside Workspace; renders empty 4-card stub.                      | Elevated to root command center; integrates active project cards, assigned tasks, approval queues, and attendance widget.                     | Phase 4B / 4H |
+| **Projects & Assets**  | Split into Workspace (Projects) vs. Production (Files/Deliverables).     | Project Workspace unified with contextual tabs (Overview, Tasks, Timeline, Assets, Deliverables). Global `/assets` acts as cross-project DAM. | Phase 4E / 4F |
+| **Tasks**              | Hardcoded to demo milestone UUID `00000000-0000-4000-8000-000000000322`. | Decoupled from mandatory milestone hierarchy; `/tasks` displays real user-assigned tasks across all projects with filters.                    | Phase 4E      |
+| **Workforce**          | 7 fragmented menu items crowding the sidebar.                            | Consolidated into 1 primary `Workforce` hub with tabbed sub-views (Directory, Attendance, Corrections).                                       | Phase 4C      |
+| **Invitations & Team** | No invite generator in Settings; only accessible during onboarding.      | Direct `+ Invite Member` modal and copyable share link generator integrated directly into `Settings → Team & Invitations`.                    | Phase 4C      |
+| **Search**             | Hidden on mobile; no command palette.                                    | Global `Cmd+K` Command Palette accessible on all viewport sizes with cross-entity search and quick actions.                                   | Phase 4B      |
+| **Calendar**           | Separate top-level navigation item.                                      | Unified into `/schedule` alongside Gantt Timeline as a switchable lens (Gantt vs Calendar).                                                   | Phase 4B / 4E |
+| **Disabled Items**     | AI Workspace, Analytics, Reports show "Soon" badges in sidebar.          | Removed from primary sidebar until functional. Ambient AI capabilities surfaced within task/project workflows.                                | Phase 4B / 4H |
 
 ---
 
 ## 6. Route Scoping & Authorization Classification
 
-| Area / Route | Scope | Primary Entities | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `/dashboard` | Workspace-Scoped | Aggregates (Projects, Tasks, Approvals) | Authenticated Member |
-| `/projects` | Workspace-Scoped | `projects`, `clients`, `users` | `projects.read` |
-| `/projects/[id]` | Project-Scoped | `projects`, `tasks`, `timelines`, `files` | `projects.read` |
-| `/clients` | Workspace-Scoped | `clients`, `client_contacts` | `clients.read` |
-| `/clients/[id]` | Client-Scoped | `clients`, `projects`, `shares` | `clients.read` |
-| `/tasks` | User & Project | `tasks`, `projects`, `users` | `tasks.read` |
-| `/schedule` | Workspace-Scoped | `timelines`, `milestones`, `meetings` | `timeline.read` |
-| `/assets` | Workspace-Scoped | `files`, `deliverables`, `revisions` | `files.read` \| `deliverables.read` |
-| `/workforce` | Organization-Scoped | `attendance_records`, `users`, `departments` | `attendance.clock` \| `users.read` |
-| `/meetings` | Workspace-Scoped | `meetings`, `meeting_attendees` | `meetings.read` |
-| `/settings` | Organization-Scoped | `organizations`, `roles`, `memberships` | `settings.read` \| `roles.read` |
-| `/portal/s/[token]` | Client-Facing | `shares`, `deliverables`, `approvals` | Cryptographic Token Proof |
+| Area / Route        | Scope               | Primary Entities                             | Required Permission                 |
+| :------------------ | :------------------ | :------------------------------------------- | :---------------------------------- |
+| `/dashboard`        | Workspace-Scoped    | Aggregates (Projects, Tasks, Approvals)      | Authenticated Member                |
+| `/projects`         | Workspace-Scoped    | `projects`, `clients`, `users`               | `projects.read`                     |
+| `/projects/[id]`    | Project-Scoped      | `projects`, `tasks`, `timelines`, `files`    | `projects.read`                     |
+| `/clients`          | Workspace-Scoped    | `clients`, `client_contacts`                 | `clients.read`                      |
+| `/clients/[id]`     | Client-Scoped       | `clients`, `projects`, `shares`              | `clients.read`                      |
+| `/tasks`            | User & Project      | `tasks`, `projects`, `users`                 | `tasks.read`                        |
+| `/schedule`         | Workspace-Scoped    | `timelines`, `milestones`, `meetings`        | `timeline.read`                     |
+| `/assets`           | Workspace-Scoped    | `files`, `deliverables`, `revisions`         | `files.read` \| `deliverables.read` |
+| `/workforce`        | Organization-Scoped | `attendance_records`, `users`, `departments` | `attendance.clock` \| `users.read`  |
+| `/meetings`         | Workspace-Scoped    | `meetings`, `meeting_attendees`              | `meetings.read`                     |
+| `/settings`         | Organization-Scoped | `organizations`, `roles`, `memberships`      | `settings.read` \| `roles.read`     |
+| `/portal/s/[token]` | Client-Facing       | `shares`, `deliverables`, `approvals`        | Cryptographic Token Proof           |

@@ -23,13 +23,13 @@ export default function UnprovisionedPage() {
         Your account isn&apos;t set up yet
       </h1>
       <p className="text-muted-foreground max-w-sm text-sm text-balance">
-        You signed in successfully, but you are not currently an active member of any
-        {" " + APP_NAME} workspace. You can set up a new agency workspace or redeem an invitation.
+        You signed in successfully, but you are not currently an active member
+        of any
+        {" " + APP_NAME} workspace. You can set up a new agency workspace or
+        redeem an invitation.
       </p>
       <div className="mt-2 flex items-center gap-3">
-        <Button render={<Link href="/onboarding" />}>
-          Set Up Workspace
-        </Button>
+        <Button render={<Link href="/onboarding" />}>Set Up Workspace</Button>
         <form action={signOut}>
           <Button type="submit" variant="outline">
             Sign out

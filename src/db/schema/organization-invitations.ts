@@ -28,8 +28,7 @@ export const INVITATION_STATUSES = {
   EXPIRED: "expired",
 } as const;
 
-export type InvitationStatus =
-  (typeof invitationStatusEnum.enumValues)[number];
+export type InvitationStatus = (typeof invitationStatusEnum.enumValues)[number];
 
 /**
  * public.organization_invitations
@@ -66,20 +65,16 @@ export const organizationInvitations = pgTable(
       { onDelete: "set null" },
     ),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
-    revokedByUserId: uuid("revoked_by_user_id").references(
-      () => users.userId,
-      { onDelete: "set null" },
-    ),
+    revokedByUserId: uuid("revoked_by_user_id").references(() => users.userId, {
+      onDelete: "set null",
+    }),
     ...auditFields,
   },
   (table) => [
     uniqueIndex("uq_invitations_token_hash").on(table.tokenHash),
     index("idx_invitations_org").on(table.organizationId),
     index("idx_invitations_email").on(table.email),
-    index("idx_invitations_org_status").on(
-      table.organizationId,
-      table.status,
-    ),
+    index("idx_invitations_org_status").on(table.organizationId, table.status),
   ],
 );
 

@@ -35,8 +35,7 @@ export const MEMBERSHIP_STATUSES = {
   PENDING: "pending",
 } as const;
 
-export type MembershipStatus =
-  (typeof membershipStatusEnum.enumValues)[number];
+export type MembershipStatus = (typeof membershipStatusEnum.enumValues)[number];
 
 /**
  * public.organization_memberships
@@ -83,17 +82,11 @@ export const organizationMemberships = pgTable(
     ...auditFields,
   },
   (table) => [
-    uniqueIndex("uq_user_organization").on(
-      table.userId,
-      table.organizationId,
-    ),
+    uniqueIndex("uq_user_organization").on(table.userId, table.organizationId),
     index("idx_memberships_org").on(table.organizationId),
     index("idx_memberships_user").on(table.userId),
     index("idx_memberships_role").on(table.roleId),
-    index("idx_memberships_org_status").on(
-      table.organizationId,
-      table.status,
-    ),
+    index("idx_memberships_org_status").on(table.organizationId, table.status),
     index("idx_memberships_user_status").on(table.userId, table.status),
   ],
 );

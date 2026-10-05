@@ -34,7 +34,10 @@ export function ExecutivePulseSection({ pulse }: ExecutivePulseSectionProps) {
     {
       title: "Projects At Risk",
       value: pulse.projectsAtRisk,
-      description: pulse.projectsOverdue > 0 ? `${pulse.projectsOverdue} overdue` : "Deadline / SLA pressure",
+      description:
+        pulse.projectsOverdue > 0
+          ? `${pulse.projectsOverdue} overdue`
+          : "Deadline / SLA pressure",
       icon: AlertTriangle,
       href: "/projects",
       highlight: pulse.projectsAtRisk > 0 ? "destructive" : "default",
@@ -69,7 +72,8 @@ export function ExecutivePulseSection({ pulse }: ExecutivePulseSectionProps) {
       description: "Pending client sign-off",
       icon: FileCheck,
       href: "/deliverables",
-      highlight: pulse.deliverablesAwaitingClientReview > 3 ? "warning" : "default",
+      highlight:
+        pulse.deliverablesAwaitingClientReview > 3 ? "warning" : "default",
     },
     {
       title: "Requiring Changes",
@@ -124,10 +128,13 @@ export function ExecutivePulseSection({ pulse }: ExecutivePulseSectionProps) {
   return (
     <section className="space-y-3" aria-labelledby="pulse-heading">
       <div className="flex items-center justify-between">
-        <h2 id="pulse-heading" className="text-sm font-semibold tracking-wider uppercase text-foreground-muted">
+        <h2
+          id="pulse-heading"
+          className="text-foreground-muted text-sm font-semibold tracking-wider uppercase"
+        >
           Executive Pulse · Operational Snapshot
         </h2>
-        <span className="text-xs text-muted-foreground font-mono">
+        <span className="text-muted-foreground font-mono text-xs">
           Deterministic 12-Factor Gauge
         </span>
       </div>
@@ -147,19 +154,19 @@ export function ExecutivePulseSection({ pulse }: ExecutivePulseSectionProps) {
               className="group block focus-visible:outline-none"
             >
               <Card
-                className={`transition-all duration-150 hover:border-border-strong group-focus-visible:ring-2 group-focus-visible:ring-brand-primary/50 bg-surface-1/60 ${
+                className={`hover:border-border-strong group-focus-visible:ring-brand-primary/50 bg-surface-1/60 transition-all duration-150 group-focus-visible:ring-2 ${
                   isDestructive
                     ? "border-destructive/30 bg-destructive/5 hover:border-destructive/60"
                     : isWarning
-                    ? "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/60"
-                    : isSuccess
-                    ? "border-emerald-500/20 hover:border-emerald-500/40"
-                    : "border-border-subtle"
+                      ? "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/60"
+                      : isSuccess
+                        ? "border-emerald-500/20 hover:border-emerald-500/40"
+                        : "border-border-subtle"
                 }`}
               >
-                <CardContent className="p-3.5 space-y-1.5">
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span className="text-[11px] font-medium tracking-tight text-foreground-secondary truncate pr-1">
+                <CardContent className="space-y-1.5 p-3.5">
+                  <div className="text-muted-foreground flex items-center justify-between">
+                    <span className="text-foreground-secondary truncate pr-1 text-[11px] font-medium tracking-tight">
                       {c.title}
                     </span>
                     <Icon
@@ -167,28 +174,28 @@ export function ExecutivePulseSection({ pulse }: ExecutivePulseSectionProps) {
                         isDestructive
                           ? "text-destructive"
                           : isWarning
-                          ? "text-amber-400"
-                          : isSuccess
-                          ? "text-emerald-400"
-                          : "text-foreground-muted"
+                            ? "text-amber-400"
+                            : isSuccess
+                              ? "text-emerald-400"
+                              : "text-foreground-muted"
                       }`}
                     />
                   </div>
                   <div className="flex items-baseline justify-between">
                     <span
-                      className={`text-2xl font-bold font-mono tracking-tight tabular-nums ${
+                      className={`font-mono text-2xl font-bold tracking-tight tabular-nums ${
                         isDestructive
                           ? "text-destructive"
                           : isWarning
-                          ? "text-amber-400"
-                          : "text-foreground-heading"
+                            ? "text-amber-400"
+                            : "text-foreground-heading"
                       }`}
                     >
                       {c.value}
                     </span>
-                    <ArrowUpRight className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 text-brand-primary" />
+                    <ArrowUpRight className="text-muted-foreground text-brand-primary size-3 opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
-                  <p className="text-[11px] text-muted-foreground truncate">
+                  <p className="text-muted-foreground truncate text-[11px]">
                     {c.description}
                   </p>
                 </CardContent>

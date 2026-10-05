@@ -90,7 +90,9 @@ export function ClientContactDialog({
       form.reset();
       onSuccess?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save contact");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save contact",
+      );
     } finally {
       setIsPending(false);
     }
@@ -112,7 +114,10 @@ export function ClientContactDialog({
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="contact-name" className="text-xs text-foreground-secondary font-medium">
+            <Label
+              htmlFor="contact-name"
+              className="text-foreground-secondary text-xs font-medium"
+            >
               Full Name *
             </Label>
             <Input
@@ -128,15 +133,18 @@ export function ClientContactDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="contact-type" className="text-xs text-foreground-secondary font-medium">
+              <Label
+                htmlFor="contact-type"
+                className="text-foreground-secondary text-xs font-medium"
+              >
                 Contact Type
               </Label>
               <select
                 id="contact-type"
                 {...form.register("contactType")}
-                className="w-full h-8 px-2.5 rounded-md border border-border bg-surface-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer"
+                className="border-border bg-surface-2 text-foreground focus:ring-brand-primary h-8 w-full cursor-pointer rounded-md border px-2.5 text-sm focus:ring-2 focus:outline-none"
               >
                 <option value="primary">Primary Contact</option>
                 <option value="billing">Billing / Finance</option>
@@ -147,7 +155,10 @@ export function ClientContactDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="contact-designation" className="text-xs text-foreground-secondary font-medium">
+              <Label
+                htmlFor="contact-designation"
+                className="text-foreground-secondary text-xs font-medium"
+              >
                 Designation / Title
               </Label>
               <Input
@@ -159,9 +170,12 @@ export function ClientContactDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="contact-email" className="text-xs text-foreground-secondary font-medium">
+              <Label
+                htmlFor="contact-email"
+                className="text-foreground-secondary text-xs font-medium"
+              >
                 Email Address
               </Label>
               <Input
@@ -179,7 +193,10 @@ export function ClientContactDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="contact-phone" className="text-xs text-foreground-secondary font-medium">
+              <Label
+                htmlFor="contact-phone"
+                className="text-foreground-secondary text-xs font-medium"
+              >
                 Phone Number
               </Label>
               <Input
@@ -191,9 +208,12 @@ export function ClientContactDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="contact-linkedin" className="text-xs text-foreground-secondary font-medium">
+              <Label
+                htmlFor="contact-linkedin"
+                className="text-foreground-secondary text-xs font-medium"
+              >
                 LinkedIn URL
               </Label>
               <Input
@@ -210,13 +230,16 @@ export function ClientContactDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="contact-status" className="text-xs text-foreground-secondary font-medium">
+              <Label
+                htmlFor="contact-status"
+                className="text-foreground-secondary text-xs font-medium"
+              >
                 Status
               </Label>
               <select
                 id="contact-status"
                 {...form.register("status")}
-                className="w-full h-8 px-2.5 rounded-md border border-border bg-surface-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer"
+                className="border-border bg-surface-2 text-foreground focus:ring-brand-primary h-8 w-full cursor-pointer rounded-md border px-2.5 text-sm focus:ring-2 focus:outline-none"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -226,7 +249,10 @@ export function ClientContactDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="contact-notes" className="text-xs text-foreground-secondary font-medium">
+            <Label
+              htmlFor="contact-notes"
+              className="text-foreground-secondary text-xs font-medium"
+            >
               Notes & Preferences
             </Label>
             <textarea
@@ -234,11 +260,11 @@ export function ClientContactDialog({
               rows={3}
               placeholder="Communication preferences, timezone, availability notes..."
               {...form.register("notes")}
-              className="w-full rounded-md border border-border bg-surface-2 p-2.5 text-foreground text-sm placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              className="border-border bg-surface-2 text-foreground placeholder:text-foreground-muted focus:ring-brand-primary w-full rounded-md border p-2.5 text-sm focus:ring-2 focus:outline-none"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
+          <div className="border-border-subtle flex justify-end gap-2 border-t pt-3">
             <Button
               type="button"
               variant="outline"
@@ -249,7 +275,11 @@ export function ClientContactDialog({
               Cancel
             </Button>
             <Button type="submit" size="sm" disabled={isPending}>
-              {isPending ? "Saving..." : isEditing ? "Save Changes" : "Add Contact"}
+              {isPending
+                ? "Saving..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Add Contact"}
             </Button>
           </div>
         </form>

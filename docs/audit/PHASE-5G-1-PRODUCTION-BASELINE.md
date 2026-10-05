@@ -9,7 +9,7 @@
 **Production Database**: `PostgreSQL 17.6.1.155`  
 **Production State**: `ACTIVE / HEALTHY`  
 **Preflight Timestamp**: `2026-09-27T01:18:00+05:30` (UTC `2026-09-26T19:48:00Z`)  
-**Safety Protocol**: **READ-ONLY INSPECTION + LOCAL LOGICAL BACKUP — ZERO MUTATIONS / ZERO MIGRATIONS**  
+**Safety Protocol**: **READ-ONLY INSPECTION + LOCAL LOGICAL BACKUP — ZERO MUTATIONS / ZERO MIGRATIONS**
 
 ---
 
@@ -20,6 +20,7 @@ Phase 5G.1 executes the first live, read-only baseline verification of the AI NE
 All empirical data was retrieved directly from the live production database (`aws-0-ap-northeast-1.pooler.supabase.com:5432`), Supabase Storage, and the Supabase Management API using authorized environment credentials.
 
 ### Key Audit Highlights:
+
 1. **Production Identity**: Confirmed connection to project `gsgseacjcalkhhmunjhx` in Tokyo (`ap-northeast-1`), running PostgreSQL 17.6. Status is `ACTIVE_HEALTHY`.
 2. **Local Logical Backup Captured**: Full physical logical dump captured locally via `pg_dump` (Custom format `-F c`) and verified via `pg_restore --list`. Archive is **1,135,591 bytes (1.08 MB)** containing **2,300 TOC entries**.
 3. **Migration Graph Parity (0000–0014)**: Live table `drizzle.__drizzle_migrations` contains exactly **15 migrations**. All 15 SHA-256 hashes match the repository files byte-for-byte.
@@ -37,18 +38,18 @@ All empirical data was retrieved directly from the live production database (`aw
 
 Verified via read-only SQL connection and Supabase Management API:
 
-| Attribute | Verified Production Value | Expected Target | Status |
-| :--- | :--- | :--- | :---: |
-| **Supabase Project Ref** | `gsgseacjcalkhhmunjhx` | `gsgseacjcalkhhmunjhx` | **PASS** |
-| **Project Name** | `ai-nexos` | `ai-nexos` | **PASS** |
-| **Region** | `ap-northeast-1` (Tokyo, Japan) | `ap-northeast-1` | **PASS** |
-| **Database Host** | `aws-0-ap-northeast-1.pooler.supabase.com` | Tokyo Supabase Endpoint | **PASS** |
-| **Database Name** | `postgres` | `postgres` | **PASS** |
-| **PostgreSQL Version** | `PostgreSQL 17.6` (`17.6.1.155`) | PostgreSQL 17.x | **PASS** |
-| **Session Mode Port** | `5432` (`DIRECT_DATABASE_URL`) | Port 5432 (DDL-safe) | **PASS** |
-| **Pooler Mode Port** | `6543` (`DATABASE_URL`) | Port 6543 (Runtime) | **PASS** |
-| **Current State** | `ACTIVE_HEALTHY` | `ACTIVE_HEALTHY` | **PASS** |
-| **Staging Isolation** | Distinct from `shnzzbbtydmvfhgeoysg` | Strict Isolation | **PASS** |
+| Attribute                | Verified Production Value                  | Expected Target         |  Status  |
+| :----------------------- | :----------------------------------------- | :---------------------- | :------: |
+| **Supabase Project Ref** | `gsgseacjcalkhhmunjhx`                     | `gsgseacjcalkhhmunjhx`  | **PASS** |
+| **Project Name**         | `ai-nexos`                                 | `ai-nexos`              | **PASS** |
+| **Region**               | `ap-northeast-1` (Tokyo, Japan)            | `ap-northeast-1`        | **PASS** |
+| **Database Host**        | `aws-0-ap-northeast-1.pooler.supabase.com` | Tokyo Supabase Endpoint | **PASS** |
+| **Database Name**        | `postgres`                                 | `postgres`              | **PASS** |
+| **PostgreSQL Version**   | `PostgreSQL 17.6` (`17.6.1.155`)           | PostgreSQL 17.x         | **PASS** |
+| **Session Mode Port**    | `5432` (`DIRECT_DATABASE_URL`)             | Port 5432 (DDL-safe)    | **PASS** |
+| **Pooler Mode Port**     | `6543` (`DATABASE_URL`)                    | Port 6543 (Runtime)     | **PASS** |
+| **Current State**        | `ACTIVE_HEALTHY`                           | `ACTIVE_HEALTHY`        | **PASS** |
+| **Staging Isolation**    | Distinct from `shnzzbbtydmvfhgeoysg`       | Strict Isolation        | **PASS** |
 
 **Verdict: PASS**.
 
@@ -77,23 +78,23 @@ Prior to baseline evaluation, a full logical dump was captured from the producti
 
 Executed `SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY created_at ASC;` on `gsgseacjcalkhhmunjhx`:
 
-| ID | Applied Hash in Production | Matching Local Migration File | Local SHA-256 Digest | Status |
-| :---: | :--- | :--- | :--- | :---: |
-| `1` | `5abf5be3211a9734248f347c76bca3c55c184b2a954f526a07d29de3e9b22620` | `0000_init_platform_foundation.sql` | `5abf5be3211a9734248f347c76bca3c55c184b2a954f526a07d29de3e9b22620` | **MATCH** |
-| `2` | `40b7bb0e44c83009a09531de6aedd419665a50b93008d320055446b5946feb84` | `0001_security_rls_foundation.sql` | `40b7bb0e44c83009a09531de6aedd419665a50b93008d320055446b5946feb84` | **MATCH** |
-| `3` | `e7dc018da7273e629e67440fcec83b09863dcac158a9fba0ca6a0ffe726a1477` | `0002_lumpy_vertigo.sql` | `e7dc018da7273e629e67440fcec83b09863dcac158a9fba0ca6a0ffe726a1477` | **MATCH** |
-| `4` | `e0b841cc45fe5aa9db4811159b705af16e4b20095114438463d4f87015559199` | `0003_project_management.sql` | `e0b841cc45fe5aa9db4811159b705af16e4b20095114438463d4f87015559199` | **MATCH** |
-| `5` | `e0d75efdb0d2fd06e5fe61a7aafb1389a26f75f12be21ecd9ff29f7eaee733dc` | `0004_typical_wolfpack.sql` | `e0d75efdb0d2fd06e5fe61a7aafb1389a26f75f12be21ecd9ff29f7eaee733dc` | **MATCH** |
-| `6` | `fc07ab855ce256888c131d72e13cd54d3b44d2439b9400adacdf8fabb62f4a02` | `0005_reflective_king_cobra.sql` | `fc07ab855ce256888c131d72e13cd54d3b44d2439b9400adacdf8fabb62f4a02` | **MATCH** |
-| `7` | `5688afb7d1766ef06a2ba22926783ba7ce7e8b495bd0937eaa457c935248b478` | `0006_wooden_micromax.sql` | `5688afb7d1766ef06a2ba22926783ba7ce7e8b495bd0937eaa457c935248b478` | **MATCH** |
-| `8` | `815fae64d4cf06dc9215897c931e577cd2f7ecd185e93495da7d649d4b5d9e56` | `0007_remarkable_maximus.sql` | `815fae64d4cf06dc9215897c931e577cd2f7ecd185e93495da7d649d4b5d9e56` | **MATCH** |
-| `9` | `ea91db693e9438b3cbb57ab6bb691ba3a60e194af58577ef11b4da8b4cc3f3b8` | `0008_same_johnny_storm.sql` | `ea91db693e9438b3cbb57ab6bb691ba3a60e194af58577ef11b4da8b4cc3f3b8` | **MATCH** |
-| `10` | `cfe6650e3adf6c74a66b363c5aa032925d4ed669c825728882f4d6de9e4d3403` | `0009_mute_wallow.sql` | `cfe6650e3adf6c74a66b363c5aa032925d4ed669c825728882f4d6de9e4d3403` | **MATCH** |
-| `11` | `8ecc05f903d8fa2841c223ab2961000dafc8d282845af05916c1f6ae27e21847` | `0010_data_api_select_grants.sql` | `8ecc05f903d8fa2841c223ab2961000dafc8d282845af05916c1f6ae27e21847` | **MATCH** |
+|  ID  | Applied Hash in Production                                         | Matching Local Migration File             | Local SHA-256 Digest                                               |  Status   |
+| :--: | :----------------------------------------------------------------- | :---------------------------------------- | :----------------------------------------------------------------- | :-------: |
+| `1`  | `5abf5be3211a9734248f347c76bca3c55c184b2a954f526a07d29de3e9b22620` | `0000_init_platform_foundation.sql`       | `5abf5be3211a9734248f347c76bca3c55c184b2a954f526a07d29de3e9b22620` | **MATCH** |
+| `2`  | `40b7bb0e44c83009a09531de6aedd419665a50b93008d320055446b5946feb84` | `0001_security_rls_foundation.sql`        | `40b7bb0e44c83009a09531de6aedd419665a50b93008d320055446b5946feb84` | **MATCH** |
+| `3`  | `e7dc018da7273e629e67440fcec83b09863dcac158a9fba0ca6a0ffe726a1477` | `0002_lumpy_vertigo.sql`                  | `e7dc018da7273e629e67440fcec83b09863dcac158a9fba0ca6a0ffe726a1477` | **MATCH** |
+| `4`  | `e0b841cc45fe5aa9db4811159b705af16e4b20095114438463d4f87015559199` | `0003_project_management.sql`             | `e0b841cc45fe5aa9db4811159b705af16e4b20095114438463d4f87015559199` | **MATCH** |
+| `5`  | `e0d75efdb0d2fd06e5fe61a7aafb1389a26f75f12be21ecd9ff29f7eaee733dc` | `0004_typical_wolfpack.sql`               | `e0d75efdb0d2fd06e5fe61a7aafb1389a26f75f12be21ecd9ff29f7eaee733dc` | **MATCH** |
+| `6`  | `fc07ab855ce256888c131d72e13cd54d3b44d2439b9400adacdf8fabb62f4a02` | `0005_reflective_king_cobra.sql`          | `fc07ab855ce256888c131d72e13cd54d3b44d2439b9400adacdf8fabb62f4a02` | **MATCH** |
+| `7`  | `5688afb7d1766ef06a2ba22926783ba7ce7e8b495bd0937eaa457c935248b478` | `0006_wooden_micromax.sql`                | `5688afb7d1766ef06a2ba22926783ba7ce7e8b495bd0937eaa457c935248b478` | **MATCH** |
+| `8`  | `815fae64d4cf06dc9215897c931e577cd2f7ecd185e93495da7d649d4b5d9e56` | `0007_remarkable_maximus.sql`             | `815fae64d4cf06dc9215897c931e577cd2f7ecd185e93495da7d649d4b5d9e56` | **MATCH** |
+| `9`  | `ea91db693e9438b3cbb57ab6bb691ba3a60e194af58577ef11b4da8b4cc3f3b8` | `0008_same_johnny_storm.sql`              | `ea91db693e9438b3cbb57ab6bb691ba3a60e194af58577ef11b4da8b4cc3f3b8` | **MATCH** |
+| `10` | `cfe6650e3adf6c74a66b363c5aa032925d4ed669c825728882f4d6de9e4d3403` | `0009_mute_wallow.sql`                    | `cfe6650e3adf6c74a66b363c5aa032925d4ed669c825728882f4d6de9e4d3403` | **MATCH** |
+| `11` | `8ecc05f903d8fa2841c223ab2961000dafc8d282845af05916c1f6ae27e21847` | `0010_data_api_select_grants.sql`         | `8ecc05f903d8fa2841c223ab2961000dafc8d282845af05916c1f6ae27e21847` | **MATCH** |
 | `12` | `52cdeae6f68251159433437306dec05fbbc75d65379793fac4bb707a88df28b0` | `0011_revoke_blanket_data_api_grants.sql` | `52cdeae6f68251159433437306dec05fbbc75d65379793fac4bb707a88df28b0` | **MATCH** |
-| `13` | `8c897cb0aa178987f65bf65a65fe597c66d24a63dcc9c18621494e2814046f1a` | `0012_revoke_default_privileges.sql` | `8c897cb0aa178987f65bf65a65fe597c66d24a63dcc9c18621494e2814046f1a` | **MATCH** |
-| `14` | `9a0cdab16ccf03f10bdf8cf82ff1ed6ca4c3331479c6233ad60efa899379d6a0` | `0013_org_sequences_composite_pk.sql` | `9a0cdab16ccf03f10bdf8cf82ff1ed6ca4c3331479c6233ad60efa899379d6a0` | **MATCH** |
-| `15` | `78948fcdadf00f885a81ba8f618c6a34db81f4028547b5be8c81d122dc2728e6` | `0014_workforce_rls.sql` | `78948fcdadf00f885a81ba8f618c6a34db81f4028547b5be8c81d122dc2728e6` | **MATCH** |
+| `13` | `8c897cb0aa178987f65bf65a65fe597c66d24a63dcc9c18621494e2814046f1a` | `0012_revoke_default_privileges.sql`      | `8c897cb0aa178987f65bf65a65fe597c66d24a63dcc9c18621494e2814046f1a` | **MATCH** |
+| `14` | `9a0cdab16ccf03f10bdf8cf82ff1ed6ca4c3331479c6233ad60efa899379d6a0` | `0013_org_sequences_composite_pk.sql`     | `9a0cdab16ccf03f10bdf8cf82ff1ed6ca4c3331479c6233ad60efa899379d6a0` | **MATCH** |
+| `15` | `78948fcdadf00f885a81ba8f618c6a34db81f4028547b5be8c81d122dc2728e6` | `0014_workforce_rls.sql`                  | `78948fcdadf00f885a81ba8f618c6a34db81f4028547b5be8c81d122dc2728e6` | **MATCH** |
 
 - **Applied Migration Count**: Exactly **15**.
 - **Post-0014 Migrations in Production**: **0** (None).
@@ -108,9 +109,9 @@ Executed `SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY
 
 Executed `SELECT organization_id, organization_name, slug, created_at FROM organizations;`:
 
-| Organization ID | Organization Name | Slug | Code Prefix Column | Created At |
-| :--- | :--- | :--- | :---: | :--- |
-| `907adcd2-4a0b-409a-bcac-97aea702a337` | `AI NEXOS` | `ai-nexos` | *Column not yet present* | `2026-08-09 06:38:58 UTC` |
+| Organization ID                        | Organization Name | Slug       |    Code Prefix Column    | Created At                |
+| :------------------------------------- | :---------------- | :--------- | :----------------------: | :------------------------ |
+| `907adcd2-4a0b-409a-bcac-97aea702a337` | `AI NEXOS`        | `ai-nexos` | _Column not yet present_ | `2026-08-09 06:38:58 UTC` |
 
 - **Total Organizations**: Exactly **1**.
 - **`code_prefix` Column Existence**: Does **NOT** exist yet (verified pre-0015 state).
@@ -168,24 +169,24 @@ Audited `public.roles`:
 
 Row counts recorded for all domain and platform tables:
 
-| Table | Production Row Count | Migration Relevance |
-| :--- | :---: | :--- |
-| `organizations` | **1** | Primary tenant table (target of 0015) |
-| `users` | **2** | User accounts (source for 0016 backfill) |
-| `roles` | **7** | Organization roles (source for 0016 backfill) |
-| `departments` | **7** | Organization departments |
-| `clients` | **1** | Client directory |
-| `projects` | **0** | Target of 0018 RLS remediation |
-| `project_members` | **0** | Target of 0018 RLS helper |
-| `tasks` | **0** | Tasks directory |
-| `meetings` | **0** | Meetings table |
-| `deliverables` | **0** | Deliverables table |
-| `files` | **0** | File assets table |
-| `timelines` | **0** | Timelines table |
-| `attendance_records` | **2** | Workforce attendance |
-| `automation_workflows` | **0** | Workflow automations |
-| `storage.buckets` | **1** | `documents` bucket |
-| `storage.objects` | **0** | Storage assets |
+| Table                  | Production Row Count | Migration Relevance                           |
+| :--------------------- | :------------------: | :-------------------------------------------- |
+| `organizations`        |        **1**         | Primary tenant table (target of 0015)         |
+| `users`                |        **2**         | User accounts (source for 0016 backfill)      |
+| `roles`                |        **7**         | Organization roles (source for 0016 backfill) |
+| `departments`          |        **7**         | Organization departments                      |
+| `clients`              |        **1**         | Client directory                              |
+| `projects`             |        **0**         | Target of 0018 RLS remediation                |
+| `project_members`      |        **0**         | Target of 0018 RLS helper                     |
+| `tasks`                |        **0**         | Tasks directory                               |
+| `meetings`             |        **0**         | Meetings table                                |
+| `deliverables`         |        **0**         | Deliverables table                            |
+| `files`                |        **0**         | File assets table                             |
+| `timelines`            |        **0**         | Timelines table                               |
+| `attendance_records`   |        **2**         | Workforce attendance                          |
+| `automation_workflows` |        **0**         | Workflow automations                          |
+| `storage.buckets`      |        **1**         | `documents` bucket                            |
+| `storage.objects`      |        **0**         | Storage assets                                |
 
 **Verdict: PASS**.
 
@@ -195,12 +196,12 @@ Row counts recorded for all domain and platform tables:
 
 Verified that migration targets `0015`–`0018` have not been prematurely or partially applied:
 
-| Target Schema Object | Verified State | Target Expected | Status |
-| :--- | :--- | :--- | :---: |
-| `organizations.code_prefix` | **ABSENT** | NOT YET PRESENT | **PASS** |
-| `organization_memberships` table | **ABSENT** | NOT YET PRESENT | **PASS** |
-| `organization_invitations` table | **ABSENT** | NOT YET PRESENT | **PASS** |
-| `app.is_project_member` function | **ABSENT** | NOT YET PRESENT | **PASS** |
+| Target Schema Object             | Verified State | Target Expected |  Status  |
+| :------------------------------- | :------------- | :-------------- | :------: |
+| `organizations.code_prefix`      | **ABSENT**     | NOT YET PRESENT | **PASS** |
+| `organization_memberships` table | **ABSENT**     | NOT YET PRESENT | **PASS** |
+| `organization_invitations` table | **ABSENT**     | NOT YET PRESENT | **PASS** |
+| `app.is_project_member` function | **ABSENT**     | NOT YET PRESENT | **PASS** |
 
 **Verdict: PASS (Zero Schema Drift)**.
 
@@ -334,4 +335,4 @@ Prior to executing the production migration in the subsequent phase:
 
 # **STATUS A: PRODUCTION PREFLIGHT PASSED — READY FOR MIGRATION AUTHORIZATION**
 
-*(Note: Production migration was NOT executed in this phase. The system awaits explicit operator authorization to execute `npm run db:migrate -- --environment=production` in the next phase).*
+_(Note: Production migration was NOT executed in this phase. The system awaits explicit operator authorization to execute `npm run db:migrate -- --environment=production` in the next phase)._

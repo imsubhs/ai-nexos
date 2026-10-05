@@ -31,7 +31,9 @@ export interface GenerateCodeOptions {
 /**
  * Normalizes input entityType to canonical database entityType in organization_sequences.
  */
-function normalizeEntityType(entityType: CodeEntityType): "project_code" | "task_code" | "correction_code" {
+function normalizeEntityType(
+  entityType: CodeEntityType,
+): "project_code" | "task_code" | "correction_code" {
   switch (entityType) {
     case "project":
     case "project_code":

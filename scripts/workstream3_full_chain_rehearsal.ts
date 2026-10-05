@@ -30,10 +30,14 @@ interface StepResult {
 const results: StepResult[] = [];
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("WORKSTREAM 3 — LOCAL FULL-CHAIN REHEARSAL (0000 → 0018)");
   console.log(`Database: ${REHEARSAL_DB} on local PostgreSQL`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // Step 1: Create fresh database
   console.log("1. Creating fresh disposable database...");
@@ -108,7 +112,9 @@ async function main() {
         }
       }
       const dur = Date.now() - t0;
-      console.log(`  ✓ [${String(entry.idx).padStart(2, "0")}] ${filename} (${dur}ms)`);
+      console.log(
+        `  ✓ [${String(entry.idx).padStart(2, "0")}] ${filename} (${dur}ms)`,
+      );
       results.push({
         step: `Migration ${entry.idx}: ${entry.tag}`,
         status: "PASS",
@@ -186,7 +192,11 @@ async function main() {
     const userASeen = await sql.begin(async (tx) => {
       await tx`SELECT set_config('role', 'authenticated', true)`;
       await tx`SELECT set_config('search_path', 'public, app', true)`;
-      const jwt = JSON.stringify({ sub: userA, role: "authenticated", organization_id: orgA });
+      const jwt = JSON.stringify({
+        sub: userA,
+        role: "authenticated",
+        organization_id: orgA,
+      });
       await tx`SELECT set_config('request.jwt.claims', ${jwt}, true)`;
       await tx`SELECT set_config('request.jwt.claim.sub', ${userA}, true)`;
       await tx`SET LOCAL ROLE authenticated`;
@@ -197,9 +207,13 @@ async function main() {
     const seesOwn = userASeen.some((p) => p.project_id === projA);
     const seesForeign = userASeen.some((p) => p.project_id === projB);
 
-    console.log(`  User A saw ${userASeen.length} project(s). Own visible: ${seesOwn}, Foreign visible: ${seesForeign}`);
+    console.log(
+      `  User A saw ${userASeen.length} project(s). Own visible: ${seesOwn}, Foreign visible: ${seesForeign}`,
+    );
     if (!seesOwn || seesForeign) {
-      throw new Error(`Tenant isolation failure: seesOwn=${seesOwn}, seesForeign=${seesForeign}`);
+      throw new Error(
+        `Tenant isolation failure: seesOwn=${seesOwn}, seesForeign=${seesForeign}`,
+      );
     }
 
     // Anon blocked
@@ -235,9 +249,13 @@ async function main() {
     }
   }
 
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   console.log("WORKSTREAM 3 — REHEARSAL VERDICT: PASSED");
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 }
 
 main().catch((err) => {

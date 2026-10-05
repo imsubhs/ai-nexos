@@ -193,7 +193,8 @@ describe("rate limiter", () => {
   });
 
   it("handles Redis command timeout by degrading to MemoryStore for standard policies", async () => {
-    const { __setRateLimitRedisClient } = await import("@/lib/security/rate-limit");
+    const { __setRateLimitRedisClient } =
+      await import("@/lib/security/rate-limit");
 
     __setRateLimitRedisClient({
       async eval() {
@@ -201,7 +202,11 @@ describe("rate limiter", () => {
       },
     });
 
-    const result = await consumeRateLimit(policy, "timed-out-caller", WINDOW_START);
+    const result = await consumeRateLimit(
+      policy,
+      "timed-out-caller",
+      WINDOW_START,
+    );
     expect(result.storeMode).toBe("degraded");
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(2);
@@ -210,7 +215,8 @@ describe("rate limiter", () => {
   });
 
   it("handles Redis command timeout by failing closed for orgCreation", async () => {
-    const { __setRateLimitRedisClient, RATE_LIMITS } = await import("@/lib/security/rate-limit");
+    const { __setRateLimitRedisClient, RATE_LIMITS } =
+      await import("@/lib/security/rate-limit");
 
     __setRateLimitRedisClient({
       async eval() {
@@ -218,7 +224,11 @@ describe("rate limiter", () => {
       },
     });
 
-    const result = await consumeRateLimit(RATE_LIMITS.orgCreation, "timed-out-org", WINDOW_START);
+    const result = await consumeRateLimit(
+      RATE_LIMITS.orgCreation,
+      "timed-out-org",
+      WINDOW_START,
+    );
     expect(result.storeMode).toBe("degraded");
     expect(result.allowed).toBe(false);
     expect(result.reason).toBe("storage_unavailable_fail_closed");
@@ -227,7 +237,11 @@ describe("rate limiter", () => {
   });
 
   it("operates in clean memory storeMode when REDIS_URL is unconfigured", async () => {
-    const result = await consumeRateLimit(policy, "clean-memory-user", WINDOW_START);
+    const result = await consumeRateLimit(
+      policy,
+      "clean-memory-user",
+      WINDOW_START,
+    );
     expect(result.allowed).toBe(true);
     expect(result.storeMode).toBe("memory");
   });

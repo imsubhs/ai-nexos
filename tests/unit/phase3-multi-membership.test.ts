@@ -130,7 +130,8 @@ function extractStringParams(node: unknown, depth = 0): string[] {
   const found: string[] = [];
   if (!node || depth > 10) return found;
   if (Array.isArray(node)) {
-    for (const item of node) found.push(...extractStringParams(item, depth + 1));
+    for (const item of node)
+      found.push(...extractStringParams(item, depth + 1));
     return found;
   }
   if (typeof node === "object" && node !== null) {
@@ -168,7 +169,9 @@ vi.mock("@/db", () => {
           then: (resolve: (val: any) => any) => {
             if (matchedUserId) {
               resolve(
-                mockDbStore.memberships.filter((m) => m.userId === matchedUserId),
+                mockDbStore.memberships.filter(
+                  (m) => m.userId === matchedUserId,
+                ),
               );
             } else {
               resolve([]);
@@ -297,7 +300,9 @@ describe("AI NEX OS — Phase 3 Multi-Membership & Identity Foundation", () => {
       ),
       "utf8",
     );
-    expect(migrationSql).toContain('CREATE UNIQUE INDEX "uq_user_organization"');
+    expect(migrationSql).toContain(
+      'CREATE UNIQUE INDEX "uq_user_organization"',
+    );
     expect(migrationSql).toContain('"user_id"');
     expect(migrationSql).toContain('"organization_id"');
 
@@ -453,11 +458,15 @@ describe("AI NEX OS — Phase 3 Multi-Membership & Identity Foundation", () => {
     }
 
     const actionFiles = walk(SRC).filter((file) => {
-      const head = readFileSync(file, "utf8").split("\n").slice(0, 5).join("\n");
+      const head = readFileSync(file, "utf8")
+        .split("\n")
+        .slice(0, 5)
+        .join("\n");
       return /^\s*(["'])use server\1/m.test(head);
     });
 
-    const IDENTITY_PARAMS = /^(userId|organizationId|orgId|tenantId|currentUserId)$/;
+    const IDENTITY_PARAMS =
+      /^(userId|organizationId|orgId|tenantId|currentUserId)$/;
     const EXPORT_PATTERN =
       /export\s+(?:async\s+function|const)\s+(\w+)\s*(?:=\s*async\s*)?\(([^)]*)\)/g;
 
@@ -556,7 +565,9 @@ describe("AI NEX OS — Phase 3 Multi-Membership & Identity Foundation", () => {
       ),
       "utf8",
     );
-    expect(migrationSql).toContain('REFERENCES "users"("user_id") ON DELETE CASCADE');
+    expect(migrationSql).toContain(
+      'REFERENCES "users"("user_id") ON DELETE CASCADE',
+    );
     expect(migrationSql).toContain(
       'REFERENCES "organizations"("organization_id") ON DELETE CASCADE',
     );
@@ -647,7 +658,7 @@ describe("AI NEX OS — Phase 3 Multi-Membership & Identity Foundation", () => {
       "utf8",
     );
     expect(migrationSql).toContain(
-      "WHEN u.\"status\" = 'active' AND u.\"deleted_at\" IS NULL THEN 'active'::\"membership_status\"",
+      'WHEN u."status" = \'active\' AND u."deleted_at" IS NULL THEN \'active\'::"membership_status"',
     );
   });
 

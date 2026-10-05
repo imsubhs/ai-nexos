@@ -41,17 +41,25 @@ export default async function ProjectDashboardPage({
   const { projectId } = await params;
   const { tab } = await searchParams;
 
-  const [project, summary, timeline, tasks, orgUsers, clients, files, deliverables] =
-    await Promise.all([
-      getProjectById(projectId),
-      getProjectDashboardSummary(projectId).catch(() => null),
-      getProjectTimeline(projectId).catch(() => null),
-      getTasksByProject(projectId, 0, 500).catch(() => []),
-      getOrganizationMembers().catch(() => []),
-      getClients().catch(() => []),
-      getFiles({ projectId }, 0, 100).catch(() => []),
-      getDeliverables({ projectId }, 0, 100).catch(() => []),
-    ]);
+  const [
+    project,
+    summary,
+    timeline,
+    tasks,
+    orgUsers,
+    clients,
+    files,
+    deliverables,
+  ] = await Promise.all([
+    getProjectById(projectId),
+    getProjectDashboardSummary(projectId).catch(() => null),
+    getProjectTimeline(projectId).catch(() => null),
+    getTasksByProject(projectId, 0, 500).catch(() => []),
+    getOrganizationMembers().catch(() => []),
+    getClients().catch(() => []),
+    getFiles({ projectId }, 0, 100).catch(() => []),
+    getDeliverables({ projectId }, 0, 100).catch(() => []),
+  ]);
 
   if (!project) {
     notFound();
@@ -63,10 +71,7 @@ export default async function ProjectDashboardPage({
 
   const availableUsers = (orgUsers || []).map((u: any) => ({
     userId: u.userId,
-    name:
-      u.name ||
-      `${u.firstName || ""} ${u.lastName || ""}`.trim() ||
-      null,
+    name: u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim() || null,
     email: u.email,
   }));
 
@@ -90,4 +95,3 @@ export default async function ProjectDashboardPage({
     />
   );
 }
-

@@ -51,10 +51,14 @@ function recordCheck(
 const BASE_URL = "https://ai-nexos.antideploy.com";
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — PHASE 4G PRODUCTION SMOKE TEST");
   console.log(`Target Host: ${BASE_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // 1. Health Endpoint
   console.log("--- 1. Health Endpoint ---");
@@ -170,14 +174,20 @@ async function main() {
     "SMOKE-4G-PORTAL-02",
     "CLIENT PORTAL",
     "GET /portal/s/[invalid-token] renders secure deactivated message without leaking internal data",
-    portalHtml.includes("This review link is not active") || portalHtml.includes("AI NEX OS Client Review"),
+    portalHtml.includes("This review link is not active") ||
+      portalHtml.includes("AI NEX OS Client Review"),
     "Secure deactivated card or client review branding",
-    portalHtml.includes("This review link is not active") ? "This review link is not active" : "Rendered client portal shell",
+    portalHtml.includes("This review link is not active")
+      ? "This review link is not active"
+      : "Rendered client portal shell",
   );
 
   // 7. Database Verification: PostgreSQL 17.6 Schema Integrity
-  console.log("\n--- 7. Database Verification: PostgreSQL 17.6 Schema Integrity ---");
-  const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
+  console.log(
+    "\n--- 7. Database Verification: PostgreSQL 17.6 Schema Integrity ---",
+  );
+  const dbUrl =
+    process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
   const sql = postgres(dbUrl, { max: 1, prepare: false, ssl: "require" });
 
   try {
@@ -246,9 +256,12 @@ async function main() {
     }
 
     // Query sanity test for approvals & review comments
-    const approvalsCount = await sql`SELECT count(*)::int as count FROM public.deliverable_approvals;`;
-    const commentsCount = await sql`SELECT count(*)::int as count FROM public.deliverable_review_comments;`;
-    const shareLinksCount = await sql`SELECT count(*)::int as count FROM public.deliverable_share_links;`;
+    const approvalsCount =
+      await sql`SELECT count(*)::int as count FROM public.deliverable_approvals;`;
+    const commentsCount =
+      await sql`SELECT count(*)::int as count FROM public.deliverable_review_comments;`;
+    const shareLinksCount =
+      await sql`SELECT count(*)::int as count FROM public.deliverable_share_links;`;
     recordCheck(
       "SMOKE-4G-DB-SANITY",
       "DATABASE",
@@ -262,13 +275,19 @@ async function main() {
   }
 
   // Summary
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   const total = checks.length;
   const passed = checks.filter((c) => c.passed).length;
   const failed = checks.filter((c) => !c.passed).length;
 
-  console.log(`SMOKE TEST RESULTS: ${passed}/${total} checks passed (${failed} failed)`);
-  console.log("================================================================================");
+  console.log(
+    `SMOKE TEST RESULTS: ${passed}/${total} checks passed (${failed} failed)`,
+  );
+  console.log(
+    "================================================================================",
+  );
 
   if (failed > 0) {
     console.error(`[FAILURE] ${failed} Phase 4G smoke checks failed.`);

@@ -17,13 +17,19 @@ import postgres from "postgres";
 const target = prepareToolingTarget("forensic-s5-2-1-staging");
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — S5.2.1 STAGING RLS CATALOG FORENSIC QUERY");
   console.log(`Target: ${target.environment} (${target.projectRef})`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   if (target.projectRef !== "shnzzbbtydmvfhgeoysg") {
-    console.error(`FATAL: Unexpected projectRef ${target.projectRef}, expected shnzzbbtydmvfhgeoysg`);
+    console.error(
+      `FATAL: Unexpected projectRef ${target.projectRef}, expected shnzzbbtydmvfhgeoysg`,
+    );
     process.exit(1);
   }
 
@@ -37,12 +43,14 @@ async function main() {
 
   try {
     // 1. Raw Catalog Table Breakdown
-    const tables = await sql<{
-      relname: string;
-      relrowsecurity: boolean;
-      relforcerowsecurity: boolean;
-      policy_count: number;
-    }[]>`
+    const tables = await sql<
+      {
+        relname: string;
+        relrowsecurity: boolean;
+        relforcerowsecurity: boolean;
+        policy_count: number;
+      }[]
+    >`
       SELECT
         c.relname,
         c.relrowsecurity,
@@ -62,9 +70,9 @@ async function main() {
     `;
 
     const totalPublic = tables.length;
-    const rlsEnabled = tables.filter(t => t.relrowsecurity);
-    const rlsDisabled = tables.filter(t => !t.relrowsecurity);
-    const forceRls = tables.filter(t => t.relforcerowsecurity);
+    const rlsEnabled = tables.filter((t) => t.relrowsecurity);
+    const rlsDisabled = tables.filter((t) => !t.relrowsecurity);
+    const forceRls = tables.filter((t) => t.relforcerowsecurity);
 
     console.log("--- 1. AGGREGATE CATALOG METRICS ---");
     console.log(`Total Public Ordinary Tables:        ${totalPublic}`);
@@ -79,26 +87,40 @@ async function main() {
     console.log("--- 2. POLICY METRICS ---");
     console.log(`Total Policies in public schema:     ${policyTotal.count}`);
 
-    const tablesWithPolicies = tables.filter(t => t.policy_count > 0);
-    const tablesWithoutPolicies = tables.filter(t => t.policy_count === 0);
-    console.log(`Tables with >= 1 Policy:             ${tablesWithPolicies.length}`);
-    console.log(`Tables with 0 Policies:              ${tablesWithoutPolicies.length}\n`);
+    const tablesWithPolicies = tables.filter((t) => t.policy_count > 0);
+    const tablesWithoutPolicies = tables.filter((t) => t.policy_count === 0);
+    console.log(
+      `Tables with >= 1 Policy:             ${tablesWithPolicies.length}`,
+    );
+    console.log(
+      `Tables with 0 Policies:              ${tablesWithoutPolicies.length}\n`,
+    );
 
     // 3. Complete RLS-Enabled Table List
-    console.log(`--- 3. COMPLETE RLS-ENABLED TABLE LIST (${rlsEnabled.length}) ---`);
+    console.log(
+      `--- 3. COMPLETE RLS-ENABLED TABLE LIST (${rlsEnabled.length}) ---`,
+    );
     for (const t of rlsEnabled) {
-      console.log(`  - ${t.relname.padEnd(45)} | RLS: ${String(t.relrowsecurity).padEnd(5)} | FORCE: ${String(t.relforcerowsecurity).padEnd(5)} | Policies: ${t.policy_count}`);
+      console.log(
+        `  - ${t.relname.padEnd(45)} | RLS: ${String(t.relrowsecurity).padEnd(5)} | FORCE: ${String(t.relforcerowsecurity).padEnd(5)} | Policies: ${t.policy_count}`,
+      );
     }
 
     // 4. Complete Non-RLS Table List
-    console.log(`\n--- 4. COMPLETE NON-RLS TABLE LIST (${rlsDisabled.length}) ---`);
+    console.log(
+      `\n--- 4. COMPLETE NON-RLS TABLE LIST (${rlsDisabled.length}) ---`,
+    );
     for (const t of rlsDisabled) {
-      console.log(`  - ${t.relname.padEnd(45)} | RLS: ${String(t.relrowsecurity).padEnd(5)} | FORCE: ${String(t.relforcerowsecurity).padEnd(5)} | Policies: ${t.policy_count}`);
+      console.log(
+        `  - ${t.relname.padEnd(45)} | RLS: ${String(t.relrowsecurity).padEnd(5)} | FORCE: ${String(t.relforcerowsecurity).padEnd(5)} | Policies: ${t.policy_count}`,
+      );
     }
 
     // 5. Tables with RLS enabled but 0 policies
-    const rlsNoPolicies = rlsEnabled.filter(t => t.policy_count === 0);
-    console.log(`\n--- 5. RLS-ENABLED TABLES WITH 0 POLICIES (${rlsNoPolicies.length}) ---`);
+    const rlsNoPolicies = rlsEnabled.filter((t) => t.policy_count === 0);
+    console.log(
+      `\n--- 5. RLS-ENABLED TABLES WITH 0 POLICIES (${rlsNoPolicies.length}) ---`,
+    );
     for (const t of rlsNoPolicies) {
       console.log(`  - ${t.relname}`);
     }
@@ -106,9 +128,10 @@ async function main() {
     // 6. Policy distribution across tables
     console.log("\n--- 6. POLICY DISTRIBUTION BY TABLE ---");
     for (const t of tablesWithPolicies) {
-      console.log(`  - ${t.relname.padEnd(45)}: ${t.policy_count} policy/policies`);
+      console.log(
+        `  - ${t.relname.padEnd(45)}: ${t.policy_count} policy/policies`,
+      );
     }
-
   } finally {
     await sql.end();
   }

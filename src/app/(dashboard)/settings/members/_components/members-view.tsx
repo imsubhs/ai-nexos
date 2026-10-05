@@ -5,7 +5,10 @@ import { Users, Mail } from "lucide-react";
 import { MembersTable, type Member } from "./members-table";
 import { PendingInvitationsTable } from "./pending-invitations-table";
 import { InviteMemberDialog } from "./invite-member-dialog";
-import type { PendingInvitation, RoleRow } from "@/features/organizations/actions";
+import type {
+  PendingInvitation,
+  RoleRow,
+} from "@/features/organizations/actions";
 
 interface MembersViewProps {
   members: Member[];
@@ -34,36 +37,39 @@ export function MembersView({
   canUpdateRoles,
   systemRoles,
 }: MembersViewProps) {
-  const [activeTab, setActiveTab] = useState<"members" | "invitations">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "invitations">(
+    "members",
+  );
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-foreground text-2xl font-semibold tracking-tight">
             Members & Access
           </h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            Manage organization members, workspace roles, and pending onboarding invitations.
+          <p className="text-muted-foreground mt-0.5 text-sm">
+            Manage organization members, workspace roles, and pending onboarding
+            invitations.
           </p>
         </div>
 
         <InviteMemberDialog roles={roles} canInvite={canCreate} />
       </div>
 
-      <div className="flex items-center gap-2 border-b border-border">
+      <div className="border-border flex items-center gap-2 border-b">
         <button
           type="button"
           onClick={() => setActiveTab("members")}
-          className={`flex items-center gap-2 px-3.5 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+          className={`-mb-px flex items-center gap-2 border-b-2 px-3.5 py-2 text-sm font-medium transition-colors ${
             activeTab === "members"
               ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground border-transparent"
           }`}
         >
           <Users className="h-4 w-4" />
           Active Members
-          <span className="rounded-full bg-surface-3 px-2 py-0.5 text-xs font-mono text-muted-foreground">
+          <span className="bg-surface-3 text-muted-foreground rounded-full px-2 py-0.5 font-mono text-xs">
             {members.length}
           </span>
         </button>
@@ -71,16 +77,16 @@ export function MembersView({
         <button
           type="button"
           onClick={() => setActiveTab("invitations")}
-          className={`flex items-center gap-2 px-3.5 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+          className={`-mb-px flex items-center gap-2 border-b-2 px-3.5 py-2 text-sm font-medium transition-colors ${
             activeTab === "invitations"
               ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground border-transparent"
           }`}
         >
           <Mail className="h-4 w-4" />
           Pending Invitations
           {pendingInvitations.length > 0 && (
-            <span className="rounded-full bg-primary/20 text-primary px-2 py-0.5 text-xs font-mono">
+            <span className="bg-primary/20 text-primary rounded-full px-2 py-0.5 font-mono text-xs">
               {pendingInvitations.length}
             </span>
           )}

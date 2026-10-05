@@ -48,9 +48,9 @@ describe("Phase 4H: Executive Intelligence", () => {
         deliverables: ["read"],
       };
       expect(hasPermission(permissions, "analytics", "read")).toBe(false);
-      expect(() =>
-        requirePermission(permissions, "analytics", "read"),
-      ).toThrow(PermissionDeniedError);
+      expect(() => requirePermission(permissions, "analytics", "read")).toThrow(
+        PermissionDeniedError,
+      );
     });
 
     it("rejects guest / unauthenticated callers with null permissions", () => {
@@ -104,8 +104,7 @@ describe("Phase 4H: Executive Intelligence", () => {
 
     it("handles zero completed deliverables without division by zero", () => {
       const completed: any[] = [];
-      const rate =
-        completed.length > 0 ? (0 / completed.length) * 100 : null;
+      const rate = completed.length > 0 ? (0 / completed.length) * 100 : null;
       expect(rate).toBeNull();
     });
 
@@ -235,9 +234,7 @@ describe("Phase 4H: Executive Intelligence", () => {
           updatedAt: new Date("2026-10-03T10:00:00Z"),
         },
       ];
-      const revisions = [
-        { createdAt: new Date("2026-10-02T11:00:00Z") },
-      ];
+      const revisions = [{ createdAt: new Date("2026-10-02T11:00:00Z") }];
       const tasks = [
         {
           status: "completed",
@@ -301,22 +298,20 @@ describe("Phase 4H: Executive Intelligence", () => {
   describe("5. Multi-Tenant Isolation & Security Boundary", () => {
     it("ensures organizationId cannot be injected from client payload", async () => {
       // Import the real action modules and assert their parameter types
-      const realActions = await import(
-        "@/features/intelligence/real-actions"
-      );
+      const realActions = await import("@/features/intelligence/real-actions");
       expect(typeof realActions.getExecutiveIntelligence).toBe("function");
       expect(typeof realActions.getExecutiveRisks).toBe("function");
       expect(typeof realActions.getExecutiveAttentionQueue).toBe("function");
       expect(typeof realActions.getExecutivePulse).toBe("function");
 
       // Verify getExecutiveIntelligence takes only optional timeWindow, never organizationId
-      expect(realActions.getExecutiveIntelligence.length).toBeLessThanOrEqual(1);
+      expect(realActions.getExecutiveIntelligence.length).toBeLessThanOrEqual(
+        1,
+      );
     });
 
     it("ensures mock actions preserve the same public signature", async () => {
-      const mockActions = await import(
-        "@/features/intelligence/mock-actions"
-      );
+      const mockActions = await import("@/features/intelligence/mock-actions");
       expect(typeof mockActions.getExecutiveIntelligence).toBe("function");
       expect(typeof mockActions.getExecutiveRisks).toBe("function");
       expect(typeof mockActions.getExecutiveAttentionQueue).toBe("function");
@@ -344,12 +339,11 @@ describe("Phase 4H: Executive Intelligence", () => {
       };
 
       const now = new Date();
-      const isOverdue =
-        Boolean(
-          projectWithNullDate.estimatedEndDate &&
-            new Date(projectWithNullDate.estimatedEndDate).getTime() <
-              now.getTime(),
-        );
+      const isOverdue = Boolean(
+        projectWithNullDate.estimatedEndDate &&
+        new Date(projectWithNullDate.estimatedEndDate).getTime() <
+          now.getTime(),
+      );
 
       expect(isOverdue).toBe(false);
     });

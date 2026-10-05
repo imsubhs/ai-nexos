@@ -251,7 +251,9 @@ function setSession(organizationId: string, roleKey = "owner"): CurrentUser {
 }
 
 function makeProjectPayload(
-  overrides: Partial<z.infer<typeof insertProjectSchema>> & { projectName: string },
+  overrides: Partial<z.infer<typeof insertProjectSchema>> & {
+    projectName: string;
+  },
 ): z.infer<typeof insertProjectSchema> {
   return {
     priority: "medium",
@@ -291,7 +293,9 @@ describe("NEXOS-SEC-04: Cross-Tenant Project -> Client Authorization Gate", () =
     expect(result.organizationId).toBe(userA.organizationId);
 
     // Verify stored project
-    const created = state.projects.find((p) => p.projectId === result.projectId);
+    const created = state.projects.find(
+      (p) => p.projectId === result.projectId,
+    );
     expect(created).toBeDefined();
     expect(created?.clientId).toBeNull();
     expect(created?.organizationId).toBe(ORG_A);
@@ -318,7 +322,9 @@ describe("NEXOS-SEC-04: Cross-Tenant Project -> Client Authorization Gate", () =
     expect(result.organizationId).toBe(userA.organizationId);
 
     // Verify stored project in state
-    const created = state.projects.find((p) => p.projectId === result.projectId);
+    const created = state.projects.find(
+      (p) => p.projectId === result.projectId,
+    );
     expect(created).toBeDefined();
     expect(created?.clientId).toBe(CLIENT_A_ID);
     expect(created?.organizationId).toBe(ORG_A);
@@ -363,7 +369,9 @@ describe("NEXOS-SEC-04: Cross-Tenant Project -> Client Authorization Gate", () =
     ).rejects.toThrow("Client not found");
 
     // Explicitly verify zero projects associated with Org B's client exist in the database
-    const rogueProjects = state.projects.filter((p) => p.clientId === CLIENT_B_ID);
+    const rogueProjects = state.projects.filter(
+      (p) => p.clientId === CLIENT_B_ID,
+    );
     expect(rogueProjects).toHaveLength(0);
 
     // Also verify no project was created with name "Rogue Project Binding"

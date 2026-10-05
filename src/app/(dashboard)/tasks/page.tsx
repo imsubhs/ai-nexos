@@ -117,7 +117,7 @@ export default async function TasksPage(props: {
       {/* Header with real project and milestone scope */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground-heading">
+          <h1 className="text-foreground-heading text-2xl font-bold tracking-tight">
             Tasks Operations
           </h1>
           <p className="text-muted-foreground text-sm">
@@ -128,7 +128,11 @@ export default async function TasksPage(props: {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button render={<Link href="/projects" />} size="sm" variant="outline">
+          <Button
+            render={<Link href="/projects" />}
+            size="sm"
+            variant="outline"
+          >
             <FolderKanban className="size-3.5" />
             <span>Projects</span>
           </Button>
@@ -136,11 +140,11 @@ export default async function TasksPage(props: {
       </div>
 
       {/* Task Workspace or Honest Empty State */}
-      <div className="bg-card min-h-[500px] flex-1 overflow-hidden rounded-lg border border-border shadow-xs dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <div className="bg-card border-border min-h-[500px] flex-1 overflow-hidden rounded-lg border shadow-xs dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
         {scope ? (
           <Suspense
             fallback={
-              <div className="flex h-full w-full items-center justify-center p-12 text-sm text-muted-foreground animate-pulse">
+              <div className="text-muted-foreground flex h-full w-full animate-pulse items-center justify-center p-12 text-sm">
                 Loading task operations…
               </div>
             }

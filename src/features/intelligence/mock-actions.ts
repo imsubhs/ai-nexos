@@ -34,7 +34,8 @@ export async function getExecutiveIntelligence(
     health: {
       overallScore: 78,
       overallLevel: "HEALTHY",
-      summary: "Operations are stable with minor items requiring managerial review.",
+      summary:
+        "Operations are stable with minor items requiring managerial review.",
       projectHealth: {
         score: 67,
         level: "AT_RISK",
@@ -79,7 +80,8 @@ export async function getExecutiveIntelligence(
         priority: "CRITICAL",
         category: "OVERDUE",
         title: "Overdue Project: Nexus Brand Revamp",
-        reason: "Estimated completion date lapsed 3 days ago with 2 deliverables pending.",
+        reason:
+          "Estimated completion date lapsed 3 days ago with 2 deliverables pending.",
         context: "NEX-2026-004 · PM: Sarah Chen",
         recommendedAction: "Review Project Timeline",
         navigationTarget: "/projects",
@@ -99,7 +101,8 @@ export async function getExecutiveIntelligence(
         priority: "HIGH",
         category: "DEADLINE",
         title: "Revision Requested: Cybernetic Soundscape Pack",
-        reason: "Client feedback received; creative director requested vocal stem tweak.",
+        reason:
+          "Client feedback received; creative director requested vocal stem tweak.",
         context: "Deliverable Revisions",
         recommendedAction: "Review Client Changes",
         navigationTarget: "/deliverables",
@@ -122,9 +125,11 @@ export async function getExecutiveIntelligence(
         entityType: "PROJECT",
         entityId: "mock-p1",
         entityTitle: "NEX-2026-004 · Nexus Brand Revamp",
-        explanation: "Project is overdue by 3 days with 5 tasks remaining incomplete.",
+        explanation:
+          "Project is overdue by 3 days with 5 tasks remaining incomplete.",
         detectedAt: now.toISOString(),
-        recommendedAction: "Review task allocation and realign delivery milestone dates.",
+        recommendedAction:
+          "Review task allocation and realign delivery milestone dates.",
         navigationTarget: "/projects",
       },
       {
@@ -133,9 +138,11 @@ export async function getExecutiveIntelligence(
         entityType: "DELIVERABLE",
         entityId: "mock-d1",
         entityTitle: "Keynote 3D Hero Animation",
-        explanation: "Review session deadline passed 28 hours ago without client sign-off.",
+        explanation:
+          "Review session deadline passed 28 hours ago without client sign-off.",
         detectedAt: now.toISOString(),
-        recommendedAction: "Follow up with client approver or re-issue review reminder.",
+        recommendedAction:
+          "Follow up with client approver or re-issue review reminder.",
         navigationTarget: "/deliverables",
       },
       {
@@ -144,9 +151,11 @@ export async function getExecutiveIntelligence(
         entityType: "DELIVERABLE",
         entityId: "mock-d2",
         entityTitle: "Product Launch Pitch Deck v3",
-        explanation: "Deliverable has undergone 3 revision cycles with further changes requested.",
+        explanation:
+          "Deliverable has undergone 3 revision cycles with further changes requested.",
         detectedAt: now.toISOString(),
-        recommendedAction: "Convene creative alignment sync with client stakeholder.",
+        recommendedAction:
+          "Convene creative alignment sync with client stakeholder.",
         navigationTarget: "/deliverables",
       },
     ],
@@ -232,7 +241,9 @@ export async function getExecutiveIntelligence(
           status: "in_progress",
           healthStatus: "on_track",
           completionPercentage: 80,
-          dueDate: new Date(now.getTime() + 12 * 24 * 3600 * 1000).toISOString(),
+          dueDate: new Date(
+            now.getTime() + 12 * 24 * 3600 * 1000,
+          ).toISOString(),
           isOverdue: false,
           openTasksCount: 8,
           overdueTasksCount: 0,
@@ -364,7 +375,9 @@ export async function getExecutiveRisks(): Promise<RiskItemDto[]> {
   return full.risks;
 }
 
-export async function getExecutiveAttentionQueue(): Promise<ActionQueueItemDto[]> {
+export async function getExecutiveAttentionQueue(): Promise<
+  ActionQueueItemDto[]
+> {
   const full = await getExecutiveIntelligence();
   return full.actionQueue;
 }

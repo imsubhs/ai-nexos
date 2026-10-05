@@ -14,7 +14,8 @@ import {
   User,
 } from "lucide-react";
 
-export type ClientStatusType = "active" | "prospect" | "lead" | "inactive" | "archived" | string;
+export type ClientStatusType =
+  "active" | "prospect" | "lead" | "inactive" | "archived" | string;
 
 export function ClientStatusBadge({
   status,
@@ -30,8 +31,7 @@ export function ClientStatusBadge({
       "bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/15",
     prospect:
       "bg-sky-500/10 text-sky-400 border-sky-500/25 hover:bg-sky-500/15",
-    lead:
-      "bg-sky-500/10 text-sky-400 border-sky-500/25 hover:bg-sky-500/15",
+    lead: "bg-sky-500/10 text-sky-400 border-sky-500/25 hover:bg-sky-500/15",
     inactive:
       "bg-slate-500/10 text-slate-400 border-slate-500/25 hover:bg-slate-500/15",
     archived:
@@ -53,18 +53,22 @@ export function ClientStatusBadge({
     <Badge
       variant="outline"
       className={cn(
-        "font-medium text-[11px] tracking-wide uppercase px-2 py-0.5 rounded-[4px] border",
+        "rounded-[4px] border px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase",
         badgeStyle,
         className,
       )}
     >
-      <span className={cn(
-        "size-1.5 rounded-full mr-1.5 inline-block shrink-0",
-        normalized === "active" && "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]",
-        (normalized === "prospect" || normalized === "lead") && "bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.6)]",
-        normalized === "inactive" && "bg-slate-400",
-        normalized === "archived" && "bg-zinc-500"
-      )} />
+      <span
+        className={cn(
+          "mr-1.5 inline-block size-1.5 shrink-0 rounded-full",
+          normalized === "active" &&
+            "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]",
+          (normalized === "prospect" || normalized === "lead") &&
+            "bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.6)]",
+          normalized === "inactive" && "bg-slate-400",
+          normalized === "archived" && "bg-zinc-500",
+        )}
+      />
       {label}
     </Badge>
   );
@@ -118,12 +122,17 @@ export function ClientHealthBadge({
     <Badge
       variant="outline"
       className={cn(
-        "font-medium text-[11px] tracking-wide px-2 py-0.5 rounded-[4px] border inline-flex items-center",
+        "inline-flex items-center rounded-[4px] border px-2 py-0.5 text-[11px] font-medium tracking-wide",
         style,
         className,
       )}
     >
-      <span className={cn("size-1.5 rounded-full mr-1.5 shrink-0 inline-block", dotColor)} />
+      <span
+        className={cn(
+          "mr-1.5 inline-block size-1.5 shrink-0 rounded-full",
+          dotColor,
+        )}
+      />
       {label}
     </Badge>
   );
@@ -161,11 +170,11 @@ export function ClientCommunicationBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2 py-0.5 text-xs text-foreground-muted bg-surface-1 border border-border-subtle rounded-md",
+        "text-foreground-muted bg-surface-1 border-border-subtle inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs",
         className,
       )}
     >
-      <IconComponent className="size-3 text-brand-primary" />
+      <IconComponent className="text-brand-primary size-3" />
       <span>{labels[normalized] || channel}</span>
     </span>
   );
@@ -180,7 +189,10 @@ export function ClientContactTypeBadge({
 }) {
   const normalized = (type || "").toLowerCase();
 
-  const configs: Record<string, { label: string; icon: typeof User; style: string }> = {
+  const configs: Record<
+    string,
+    { label: string; icon: typeof User; style: string }
+  > = {
     primary: {
       label: "Primary",
       icon: Star,
@@ -225,7 +237,7 @@ export function ClientContactTypeBadge({
     <Badge
       variant="outline"
       className={cn(
-        "font-medium text-[11px] px-2 py-0.5 rounded-[4px] border inline-flex items-center gap-1",
+        "inline-flex items-center gap-1 rounded-[4px] border px-2 py-0.5 text-[11px] font-medium",
         config.style,
         className,
       )}

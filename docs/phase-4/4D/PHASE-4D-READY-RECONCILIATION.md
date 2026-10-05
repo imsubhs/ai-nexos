@@ -5,6 +5,7 @@
 This document establishes the authoritative technical blueprint and readiness gate for **Phase 4D: Client CRM & External Collaboration Experience** of **AI NEX OS**.
 
 Product positioning:
+
 > **The Operating System for Creative Execution**
 
 AI NEX OS is an agency-agnostic, multi-tenant B2B SaaS platform for creative agencies, production studios, video teams, and AI-native creative organizations. External collaboration is a first-class operational capability layer.
@@ -27,6 +28,7 @@ AI NEX OS is an agency-agnostic, multi-tenant B2B SaaS platform for creative age
 ## 3. Phase 4C Completed Capabilities
 
 Phase 4C successfully delivered and certified:
+
 1. **Organization Profile & Brand Controls** (`/settings/organization`):
    - Organization name, legal entity, workspace slug, country, address, contact details.
    - Primary and secondary brand color configuration.
@@ -45,6 +47,7 @@ Phase 4C successfully delivered and certified:
 ## 4. Phase 4D Existing Route Inventory
 
 The following routes currently exist in the codebase:
+
 - `/clients`: Primary clients directory overview.
 - `/clients/[clientId]`: Client details, associated projects, contacts drawer, and engagement activity.
 - `/portal`: Client-facing unauthenticated / token-bound portal route root.
@@ -57,6 +60,7 @@ The following routes currently exist in the codebase:
 The PostgreSQL schema contains dedicated tables for Client CRM:
 
 ### `public.clients`
+
 - `client_id` (UUID, PK)
 - `organization_id` (UUID, FK `organizations.organization_id`, indexed)
 - `company_name` (Text, NOT NULL)
@@ -70,6 +74,7 @@ The PostgreSQL schema contains dedicated tables for Client CRM:
 - Standard audit fields (`created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at`)
 
 ### `public.client_contacts`
+
 - `contact_id` (UUID, PK)
 - `client_id` (UUID, FK `clients.clientId`, indexed)
 - `name` (Text, NOT NULL)
@@ -79,6 +84,7 @@ The PostgreSQL schema contains dedicated tables for Client CRM:
 - Standard audit fields
 
 ### Relational Links
+
 - `public.projects.client_id` links projects directly to client accounts.
 - `public.shares` links external client review share tokens to clients and deliverables.
 
@@ -87,6 +93,7 @@ The PostgreSQL schema contains dedicated tables for Client CRM:
 ## 6. Existing Server Actions Inventory
 
 Implemented in `src/features/clients/actions.ts` (with dual real/mock execution):
+
 1. `getClients({ search?, status?, limit?, offset? })`: Returns tenant-scoped client list.
 2. `getClientById({ clientId })`: Returns client entity with associated contacts and active projects count.
 3. `getClientActivity({ clientId, limit? })`: Returns audit/activity log stream for client interactions.

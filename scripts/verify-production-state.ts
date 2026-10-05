@@ -47,9 +47,13 @@ function recordCheck(
 }
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — S7.14 PRODUCTION READINESS VERIFICATION");
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   console.log(`Target Environment:  ${target.environment}`);
   console.log(`Project Ref:         ${target.projectRef}`);
@@ -57,12 +61,16 @@ async function main() {
   console.log(`Config Source:       ${target.file}\n`);
 
   if (target.environment !== "production") {
-    console.error(`FATAL: Expected environment "production", got "${target.environment}". ABORTING.`);
+    console.error(
+      `FATAL: Expected environment "production", got "${target.environment}". ABORTING.`,
+    );
     process.exit(1);
   }
 
   if (target.projectRef !== "gsgseacjcalkhhmunjhx") {
-    console.error(`FATAL: Expected project ref "gsgseacjcalkhhmunjhx", got "${target.projectRef}". ABORTING.`);
+    console.error(
+      `FATAL: Expected project ref "gsgseacjcalkhhmunjhx", got "${target.projectRef}". ABORTING.`,
+    );
     process.exit(1);
   }
 
@@ -78,7 +86,9 @@ async function main() {
     // ========================================================================
     // STEP 3: DATABASE CONNECTIVITY & IDENTITY
     // ========================================================================
-    console.log("\n--- STEP 3: PRODUCTION DATABASE CONNECTIVITY & IDENTITY ---");
+    console.log(
+      "\n--- STEP 3: PRODUCTION DATABASE CONNECTIVITY & IDENTITY ---",
+    );
     const [dbInfo] = await sql`
       SELECT current_database() as database, current_user as db_user, version() as version;
     `;
@@ -136,7 +146,11 @@ async function main() {
     // ========================================================================
     console.log("\n--- STEP 4: MIGRATION RECONCILIATION ---");
 
-    let appliedMigrations: Array<{ id: number; hash: string; created_at: any }> = [];
+    let appliedMigrations: Array<{
+      id: number;
+      hash: string;
+      created_at: any;
+    }> = [];
     try {
       appliedMigrations = await sql`
         SELECT id, hash, created_at FROM "drizzle"."__drizzle_migrations" ORDER BY id ASC;
@@ -158,19 +172,31 @@ async function main() {
       appliedMigrations.length === 19,
       "19 applied migrations (0000 -> 0018)",
       `${appliedMigrations.length} migrations recorded`,
-      `Ledger IDs: ${appliedMigrations.map(m => m.id).join(", ")}`,
+      `Ledger IDs: ${appliedMigrations.map((m) => m.id).join(", ")}`,
     );
 
     const expectedHashes: Record<number, { tag: string; hash: string }> = {
-      16: { tag: "0015_organization_code_prefix", hash: "79e43d7f3ed66b6771fd5e768b9ebc8227700c8c2af04803f0ae0cfa953732f8" },
-      17: { tag: "0016_organization_memberships", hash: "bdb140752c92f33296938fce19c45098b43b7f38d485ebf882c89565b2f75c7e" },
-      18: { tag: "0017_organization_invitations", hash: "9c8ac5da7c4fbcdfb4000f1caf407de53f8231f8c65d0a1ef5be3d2bceaa479c" },
-      19: { tag: "0018_remediate_projects_rls_recursion", hash: "1357970f070c34d6d0e9acea8d9b547cff6e5195f8f0d474e754d2326cce6757" },
+      16: {
+        tag: "0015_organization_code_prefix",
+        hash: "79e43d7f3ed66b6771fd5e768b9ebc8227700c8c2af04803f0ae0cfa953732f8",
+      },
+      17: {
+        tag: "0016_organization_memberships",
+        hash: "bdb140752c92f33296938fce19c45098b43b7f38d485ebf882c89565b2f75c7e",
+      },
+      18: {
+        tag: "0017_organization_invitations",
+        hash: "9c8ac5da7c4fbcdfb4000f1caf407de53f8231f8c65d0a1ef5be3d2bceaa479c",
+      },
+      19: {
+        tag: "0018_remediate_projects_rls_recursion",
+        hash: "1357970f070c34d6d0e9acea8d9b547cff6e5195f8f0d474e754d2326cce6757",
+      },
     };
 
     for (const [idStr, spec] of Object.entries(expectedHashes)) {
       const id = Number(idStr);
-      const applied = appliedMigrations.find(m => m.id === id);
+      const applied = appliedMigrations.find((m) => m.id === id);
       const hashMatch = applied && applied.hash === spec.hash;
       recordCheck(
         `MIG-0${id}`,
@@ -178,7 +204,9 @@ async function main() {
         `Migration [${id}] ${spec.tag}`,
         Boolean(hashMatch),
         `Hash: ${spec.hash.slice(0, 16)}...`,
-        applied ? `Applied with hash ${applied.hash.slice(0, 16)}...` : "NOT FOUND",
+        applied
+          ? `Applied with hash ${applied.hash.slice(0, 16)}...`
+          : "NOT FOUND",
       );
     }
 
@@ -189,7 +217,9 @@ async function main() {
       "Migration Gate Verdict",
       isCurrent,
       "Database current at 0018 — DO NOT RUN MIGRATIONS",
-      isCurrent ? "CURRENT (0000 -> 0018) — NO MIGRATIONS REQUIRED" : "BEHIND — MIGRATION REQUIRED",
+      isCurrent
+        ? "CURRENT (0000 -> 0018) — NO MIGRATIONS REQUIRED"
+        : "BEHIND — MIGRATION REQUIRED",
     );
 
     // ========================================================================
@@ -225,7 +255,9 @@ async function main() {
       "Zero Data API exposure on server-only tables (defense-in-depth)",
       disabledWithGrants.length === 0,
       "0 tables granted to anon or authenticated",
-      disabledWithGrants.length === 0 ? "149 server-only tables strictly ungranted to client roles" : `Exposed: ${disabledWithGrants.map(t => t.relname).join(", ")}`,
+      disabledWithGrants.length === 0
+        ? "149 server-only tables strictly ungranted to client roles"
+        : `Exposed: ${disabledWithGrants.map((t) => t.relname).join(", ")}`,
     );
 
     const secDefFunctions = await sql`
@@ -235,7 +267,7 @@ async function main() {
       WHERE n.nspname IN ('app', 'public') AND p.prosecdef = true;
     `;
 
-    const unhardenedSecDefs = secDefFunctions.filter(f => {
+    const unhardenedSecDefs = secDefFunctions.filter((f) => {
       const configs = f.proconfig || [];
       return !configs.some((c: string) => c.startsWith("search_path="));
     });
@@ -246,8 +278,14 @@ async function main() {
       "All SECURITY DEFINER functions have fixed search_path",
       unhardenedSecDefs.length === 0,
       "0 unhardened functions",
-      unhardenedSecDefs.length === 0 ? `All ${secDefFunctions.length} SECDEF functions hardened (search_path=public)` : `Unhardened: ${unhardenedSecDefs.map(f => `${f.schema}.${f.proname}`).join(", ")}`,
-      secDefFunctions.map(f => `${f.schema}.${f.proname} (${(f.proconfig || []).join("; ")})`).join(", "),
+      unhardenedSecDefs.length === 0
+        ? `All ${secDefFunctions.length} SECDEF functions hardened (search_path=public)`
+        : `Unhardened: ${unhardenedSecDefs.map((f) => `${f.schema}.${f.proname}`).join(", ")}`,
+      secDefFunctions
+        .map(
+          (f) => `${f.schema}.${f.proname} (${(f.proconfig || []).join("; ")})`,
+        )
+        .join(", "),
     );
 
     const helperFunctions = await sql`
@@ -263,7 +301,9 @@ async function main() {
       "Helper functions exist with correct configuration",
       helperFunctions.length >= 2,
       "app.is_project_member and app.is_org_member present",
-      helperFunctions.map(f => `${f.schema}.${f.proname} (secdef=${f.prosecdef})`).join(", "),
+      helperFunctions
+        .map((f) => `${f.schema}.${f.proname} (secdef=${f.prosecdef})`)
+        .join(", "),
     );
 
     let recursionError: string | null = null;
@@ -288,13 +328,17 @@ async function main() {
       "Zero 42P17 Infinite Recursion on projects query",
       recursionError === null,
       "No 42P17 error",
-      recursionError === null ? "Clean execution under authenticated role — 0 recursion" : `Error: ${recursionError}`,
+      recursionError === null
+        ? "Clean execution under authenticated role — 0 recursion"
+        : `Error: ${recursionError}`,
     );
 
     // ========================================================================
     // STEP 6: PRODUCTION AUTHENTICATION & IDENTITY VERIFICATION
     // ========================================================================
-    console.log("\n--- STEP 6: PRODUCTION AUTHENTICATION & IDENTITY VERIFICATION ---");
+    console.log(
+      "\n--- STEP 6: PRODUCTION AUTHENTICATION & IDENTITY VERIFICATION ---",
+    );
 
     const authUsers = await sql`
       SELECT id, email, created_at, last_sign_in_at FROM auth.users ORDER BY created_at ASC;
@@ -307,17 +351,21 @@ async function main() {
       authUsers.length > 0,
       "> 0 registered auth users",
       `${authUsers.length} auth user(s) found`,
-      `Users: ${authUsers.map(u => u.email).join(", ")}`,
+      `Users: ${authUsers.map((u) => u.email).join(", ")}`,
     );
 
-    const operator = authUsers.find(u => u.email === "subsworkspace@gmail.com");
+    const operator = authUsers.find(
+      (u) => u.email === "subsworkspace@gmail.com",
+    );
     recordCheck(
       "AUTH-02",
       "STEP 6: AUTH",
       "Provisioned Operator Account in auth.users",
       Boolean(operator),
       "Operator subsworkspace@gmail.com present",
-      operator ? `Present (ID: ${operator.id}, Last sign-in: ${operator.last_sign_in_at})` : "MISSING",
+      operator
+        ? `Present (ID: ${operator.id}, Last sign-in: ${operator.last_sign_in_at})`
+        : "MISSING",
     );
 
     const publicUsers = await sql`
@@ -328,9 +376,9 @@ async function main() {
       "AUTH-03",
       "STEP 6: AUTH",
       "Operator in public.users",
-      publicUsers.some(u => u.email === "subsworkspace@gmail.com"),
+      publicUsers.some((u) => u.email === "subsworkspace@gmail.com"),
       "subsworkspace@gmail.com in public.users",
-      `${publicUsers.length} public user(s): ${publicUsers.map(u => u.email).join(", ")}`,
+      `${publicUsers.length} public user(s): ${publicUsers.map((u) => u.email).join(", ")}`,
     );
 
     const orgs = await sql`
@@ -343,7 +391,12 @@ async function main() {
       "Production organizations present",
       orgs.length >= 1,
       ">= 1 organization present",
-      orgs.map(o => `${o.organization_name} (slug: ${o.slug}, prefix: ${o.code_prefix})`).join(", "),
+      orgs
+        .map(
+          (o) =>
+            `${o.organization_name} (slug: ${o.slug}, prefix: ${o.code_prefix})`,
+        )
+        .join(", "),
     );
 
     const memberships = await sql`
@@ -352,18 +405,24 @@ async function main() {
       JOIN public.users u ON u.user_id = om.user_id;
     `;
 
-    const operatorMembership = memberships.find(m => m.email === "subsworkspace@gmail.com");
+    const operatorMembership = memberships.find(
+      (m) => m.email === "subsworkspace@gmail.com",
+    );
     recordCheck(
       "AUTH-05",
       "STEP 6: AUTH",
       "Operator membership in organization_memberships",
       Boolean(operatorMembership && operatorMembership.status === "active"),
       "Active membership for subsworkspace@gmail.com",
-      operatorMembership ? `Status: ${operatorMembership.status}, Default: ${operatorMembership.is_default}` : "MISSING",
+      operatorMembership
+        ? `Status: ${operatorMembership.status}, Default: ${operatorMembership.is_default}`
+        : "MISSING",
     );
 
-    const projs = await sql`SELECT project_id, project_name, project_code FROM public.projects;`;
-    const invitations = await sql`SELECT count(*)::int as count FROM public.organization_invitations;`;
+    const projs =
+      await sql`SELECT project_id, project_name, project_code FROM public.projects;`;
+    const invitations =
+      await sql`SELECT count(*)::int as count FROM public.organization_invitations;`;
 
     recordCheck(
       "DATA-01",
@@ -371,9 +430,8 @@ async function main() {
       "Production Data Integrity (Zero Synthetic Injections; 2 Operator Projects Verified)",
       invitations[0].count === 0,
       "Zero synthetic invitations, legitimate user projects preserved",
-      `Projects: ${projs.length} (${projs.map(p => `${p.project_name} [${p.project_code}]`).join(", ")}), Invitations: ${invitations[0].count}`,
+      `Projects: ${projs.length} (${projs.map((p) => `${p.project_name} [${p.project_code}]`).join(", ")}), Invitations: ${invitations[0].count}`,
     );
-
   } finally {
     await sql.end();
   }
@@ -384,9 +442,12 @@ async function main() {
   console.log("\n--- STEP 7: PRODUCTION APPLICATION HEALTH (CURRENT LIVE) ---");
 
   try {
-    const healthRes = await fetch("https://ai-nexos.antideploy.com/api/health", {
-      headers: { "User-Agent": "AI-NEXOS-S7.14-Verification" },
-    });
+    const healthRes = await fetch(
+      "https://ai-nexos.antideploy.com/api/health",
+      {
+        headers: { "User-Agent": "AI-NEXOS-S7.14-Verification" },
+      },
+    );
     const healthData = await healthRes.json();
 
     recordCheck(
@@ -428,14 +489,16 @@ async function main() {
     "NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET",
   ];
 
-  const missingVars = requiredProdVars.filter(v => !process.env[v]);
+  const missingVars = requiredProdVars.filter((v) => !process.env[v]);
   recordCheck(
     "ENV-01",
     "STEP 8: ENVIRONMENT",
     "All required production environment variables are configured",
     missingVars.length === 0,
     "12/12 required variables present",
-    missingVars.length === 0 ? "12/12 present" : `Missing: ${missingVars.join(", ")}`,
+    missingVars.length === 0
+      ? "12/12 present"
+      : `Missing: ${missingVars.join(", ")}`,
   );
 
   const redisUrl = process.env.REDIS_URL;
@@ -446,7 +509,11 @@ async function main() {
     "REDIS_URL topology invariant (absent or rediss://)",
     redisValid,
     "REDIS_URL absent (single-instance MemoryStore) OR TLS rediss://",
-    redisUrl ? (redisUrl.startsWith("rediss://") ? "TLS rediss:// configured" : "INVALID cleartext redis://") : "ABSENT (MemoryStore selected)",
+    redisUrl
+      ? redisUrl.startsWith("rediss://")
+        ? "TLS rediss:// configured"
+        : "INVALID cleartext redis://"
+      : "ABSENT (MemoryStore selected)",
   );
 
   const prodSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -457,7 +524,9 @@ async function main() {
     "No staging Supabase ref in production environment",
     !containsStagingRef,
     "No staging ref in production configuration",
-    containsStagingRef ? "LEAKED staging ref in production" : "Verified clean production ref",
+    containsStagingRef
+      ? "LEAKED staging ref in production"
+      : "Verified clean production ref",
   );
 
   // ==========================================================================
@@ -480,7 +549,8 @@ async function main() {
     `Remaining: ${testRateResult.remaining}, Allowed: ${testRateResult.allowed}`,
   );
 
-  const { ACTION_POLICY_REGISTRY } = await import("../src/lib/security/action-registry");
+  const { ACTION_POLICY_REGISTRY } =
+    await import("../src/lib/security/action-registry");
   const registryCount = Object.keys(ACTION_POLICY_REGISTRY).length;
 
   recordCheck(
@@ -495,18 +565,28 @@ async function main() {
   // ==========================================================================
   // SUMMARY
   // ==========================================================================
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   console.log("PRODUCTION GATE SUMMARY");
-  console.log("================================================================================");
-  const passedCount = checks.filter(c => c.passed).length;
-  const failedCount = checks.filter(c => !c.passed).length;
+  console.log(
+    "================================================================================",
+  );
+  const passedCount = checks.filter((c) => c.passed).length;
+  const failedCount = checks.filter((c) => !c.passed).length;
   console.log(`Total Checks:  ${checks.length}`);
   console.log(`Passed:        ${passedCount}`);
   console.log(`Failed:        ${failedCount}`);
 
   if (failedCount > 0) {
     console.error("\n❌ FAILED CHECKS:");
-    checks.filter(c => !c.passed).forEach(c => console.error(`  - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected}, Actual: ${c.actual})`));
+    checks
+      .filter((c) => !c.passed)
+      .forEach((c) =>
+        console.error(
+          `  - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected}, Actual: ${c.actual})`,
+        ),
+      );
     process.exit(1);
   } else {
     console.log("\n✅ ALL PRODUCTION GATES PASSED PERFECTLY!");
@@ -514,7 +594,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error("FATAL ERROR in production verification:", err);
   process.exit(1);
 });

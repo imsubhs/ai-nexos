@@ -18,10 +18,12 @@ import {
   ACTIVE_ORG_COOKIE,
   ACTIVE_ORG_COOKIE_MAX_AGE,
 } from "@/features/auth/membership-service";
-import { validateCodePrefix, slugify, deriveCodePrefixFromName } from "./schemas";
+import {
+  validateCodePrefix,
+  slugify,
+  deriveCodePrefixFromName,
+} from "./schemas";
 export { slugify, deriveCodePrefixFromName };
-
-
 
 export type OrganizationServiceErrorCode =
   | "AUTHENTICATION_REQUIRED"
@@ -82,7 +84,6 @@ export async function createOrganization(
 
   let callerId = input.creatorUserId ?? creatorUserIdOverride;
   let callerEmail = "";
-
 
   if (!callerId) {
     const identity = await getCurrentIdentity();
@@ -244,7 +245,8 @@ export async function createOrganization(
       .values(rolesToInsert)
       .returning();
 
-    const ownerRole = insertedRoles.find((r) => r.roleKey === "owner") ?? insertedRoles[0];
+    const ownerRole =
+      insertedRoles.find((r) => r.roleKey === "owner") ?? insertedRoles[0];
 
     // 3. Ensure user exists in public.users
     const [existingUser] = await tx
@@ -258,7 +260,7 @@ export async function createOrganization(
         email: callerEmail || `${callerId}@nexos.internal`,
         firstName: trimmedName.split(" ")[0] || "Owner",
         organizationId: newOrg.organizationId, // legacy fallback
-        roleId: ownerRole.roleId,             // legacy fallback
+        roleId: ownerRole.roleId, // legacy fallback
         status: "active",
       });
     }

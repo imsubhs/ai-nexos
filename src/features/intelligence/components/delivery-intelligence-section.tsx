@@ -10,7 +10,13 @@ import {
   ArrowRight,
   Info,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { DeliveryIntelligenceDto } from "../types";
 
@@ -34,7 +40,10 @@ export function DeliveryIntelligenceSection({
       value: delivery.deliverablesOverdue.toString(),
       subtext: "Past review SLA deadline",
       icon: ClockAlert,
-      color: delivery.deliverablesOverdue > 0 ? "text-destructive" : "text-foreground-heading",
+      color:
+        delivery.deliverablesOverdue > 0
+          ? "text-destructive"
+          : "text-foreground-heading",
     },
     {
       title: "On-Time Delivery Rate",
@@ -45,7 +54,8 @@ export function DeliveryIntelligenceSection({
       subtext: delivery.onTimeDeliveryStatusText,
       icon: Target,
       color:
-        delivery.onTimeDeliveryRate !== null && delivery.onTimeDeliveryRate >= 80
+        delivery.onTimeDeliveryRate !== null &&
+        delivery.onTimeDeliveryRate >= 80
           ? "text-emerald-400"
           : "text-amber-400",
     },
@@ -77,17 +87,28 @@ export function DeliveryIntelligenceSection({
           ? `${delivery.revisionFrequencyRate}% frequency rate`
           : "Active change requests",
       icon: FileSignature,
-      color: delivery.changeRequestCount > 0 ? "text-amber-400" : "text-foreground-heading",
+      color:
+        delivery.changeRequestCount > 0
+          ? "text-amber-400"
+          : "text-foreground-heading",
     },
   ];
 
   return (
     <section className="space-y-3" aria-labelledby="delivery-heading">
       <div className="flex items-center justify-between">
-        <h2 id="delivery-heading" className="text-sm font-semibold tracking-wider uppercase text-foreground-muted">
+        <h2
+          id="delivery-heading"
+          className="text-foreground-muted text-sm font-semibold tracking-wider uppercase"
+        >
           Delivery Intelligence · Throughput & Velocity
         </h2>
-        <Button render={<Link href="/deliverables" />} variant="ghost" size="sm" className="h-7 text-xs gap-1">
+        <Button
+          render={<Link href="/deliverables" />}
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1 text-xs"
+        >
           <span>Deliverables Hub</span>
           <ArrowRight className="size-3" />
         </Button>
@@ -97,18 +118,23 @@ export function DeliveryIntelligenceSection({
         {metrics.map((m) => {
           const Icon = m.icon;
           return (
-            <Card key={m.title} className="bg-surface-1/60 border-border-subtle">
-              <CardHeader className="p-3.5 pb-1 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-[11px] font-medium text-foreground-secondary truncate pr-1">
+            <Card
+              key={m.title}
+              className="bg-surface-1/60 border-border-subtle"
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3.5 pb-1">
+                <CardTitle className="text-foreground-secondary truncate pr-1 text-[11px] font-medium">
                   {m.title}
                 </CardTitle>
                 <Icon className={`size-3.5 shrink-0 ${m.color}`} />
               </CardHeader>
-              <CardContent className="p-3.5 pt-1 space-y-1">
-                <div className={`text-2xl font-bold font-mono tracking-tight tabular-nums ${m.color}`}>
+              <CardContent className="space-y-1 p-3.5 pt-1">
+                <div
+                  className={`font-mono text-2xl font-bold tracking-tight tabular-nums ${m.color}`}
+                >
                   {m.value}
                 </div>
-                <CardDescription className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                <CardDescription className="text-muted-foreground flex items-center gap-1 truncate text-[11px]">
                   <span>{m.subtext}</span>
                 </CardDescription>
               </CardContent>

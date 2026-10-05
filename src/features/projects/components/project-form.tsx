@@ -18,7 +18,6 @@ type ProjectFormProps = {
   onSuccess?: () => void;
 };
 
-
 export function ProjectForm({
   initialData,
   initialClientId,
@@ -28,7 +27,8 @@ export function ProjectForm({
   const [isPending, setIsPending] = useState(false);
 
   const defaultClientId =
-    initialData?.clientId || (initialClientId && initialClientId.length > 0 ? initialClientId : "");
+    initialData?.clientId ||
+    (initialClientId && initialClientId.length > 0 ? initialClientId : "");
 
   const form = useForm<z.input<typeof insertProjectSchema>>({
     resolver: zodResolver(insertProjectSchema),
@@ -49,11 +49,8 @@ export function ProjectForm({
           | "on_hold") || "planning",
       healthStatus:
         (initialData?.healthStatus as
-          | "on_track"
-          | "at_risk"
-          | "delayed"
-          | "blocked"
-          | "completed") || "on_track",
+          "on_track" | "at_risk" | "delayed" | "blocked" | "completed") ||
+        "on_track",
       visibility:
         (initialData?.visibility as "private" | "internal" | "client_shared") ||
         "internal",
@@ -72,7 +69,9 @@ export function ProjectForm({
       const payload = {
         ...data,
         clientId:
-          data.clientId && typeof data.clientId === "string" && data.clientId.trim() !== ""
+          data.clientId &&
+          typeof data.clientId === "string" &&
+          data.clientId.trim() !== ""
             ? data.clientId.trim()
             : null,
       };
@@ -99,7 +98,11 @@ export function ProjectForm({
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="projectName">Project Name *</Label>
-        <Input id="projectName" placeholder="e.g. Autumn Brand Campaign" {...form.register("projectName")} />
+        <Input
+          id="projectName"
+          placeholder="e.g. Autumn Brand Campaign"
+          {...form.register("projectName")}
+        />
         {form.formState.errors.projectName && (
           <p className="text-destructive text-sm">
             {form.formState.errors.projectName.message}
@@ -125,7 +128,11 @@ export function ProjectForm({
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Input id="description" placeholder="Brief project scope or overview" {...form.register("description")} />
+        <Input
+          id="description"
+          placeholder="Brief project scope or overview"
+          {...form.register("description")}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -197,7 +204,11 @@ export function ProjectForm({
 
         <div className="space-y-2">
           <Label htmlFor="estimatedEndDate">Target End Date</Label>
-          <Input id="estimatedEndDate" type="date" {...form.register("estimatedEndDate")} />
+          <Input
+            id="estimatedEndDate"
+            type="date"
+            {...form.register("estimatedEndDate")}
+          />
         </div>
       </div>
 
@@ -213,4 +224,3 @@ export function ProjectForm({
     </form>
   );
 }
-

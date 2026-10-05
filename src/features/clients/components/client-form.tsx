@@ -21,7 +21,9 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
   const [isPending, setIsPending] = useState(false);
   const [colorInput, setColorInput] = useState("");
   const [brandColors, setBrandColors] = useState<string[]>(
-    Array.isArray(initialData?.brandColors) ? (initialData.brandColors as string[]) : [],
+    Array.isArray(initialData?.brandColors)
+      ? (initialData.brandColors as string[])
+      : [],
   );
 
   const form = useForm<z.input<typeof insertClientSchema>>({
@@ -30,10 +32,14 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
       companyName: initialData?.companyName || "",
       industry: initialData?.industry || "",
       website: initialData?.website || "",
-      status: (initialData?.status as "active" | "prospect" | "archived") || "active",
-      clientHealth: (initialData?.clientHealth as "good" | "at_risk" | "critical") || "good",
+      status:
+        (initialData?.status as "active" | "prospect" | "archived") || "active",
+      clientHealth:
+        (initialData?.clientHealth as "good" | "at_risk" | "critical") ||
+        "good",
       preferredCommunication:
-        (initialData?.preferredCommunication as "email" | "slack" | "whatsapp" | "phone") || "email",
+        (initialData?.preferredCommunication as
+          "email" | "slack" | "whatsapp" | "phone") || "email",
       country: initialData?.country || "",
       address: initialData?.address || "",
       notes: initialData?.notes || "",
@@ -90,10 +96,16 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto px-1 pr-2">
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="max-h-[75vh] space-y-4 overflow-y-auto px-1 pr-2"
+    >
       {/* 1. Core Company Details */}
       <div className="space-y-1.5">
-        <Label htmlFor="companyName" className="text-xs text-foreground-secondary font-medium">
+        <Label
+          htmlFor="companyName"
+          className="text-foreground-secondary text-xs font-medium"
+        >
           Company Name *
         </Label>
         <Input
@@ -109,9 +121,12 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="industry" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="industry"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             Industry
           </Label>
           <Input
@@ -122,7 +137,10 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="website" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="website"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             Website URL
           </Label>
           <Input
@@ -140,15 +158,18 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
       </div>
 
       {/* 2. Relationship & Status */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <Label htmlFor="status" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="status"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             Status
           </Label>
           <select
             id="status"
             {...form.register("status")}
-            className="w-full h-8 px-2.5 rounded-md border border-border bg-surface-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer"
+            className="border-border bg-surface-2 text-foreground focus:ring-brand-primary h-8 w-full cursor-pointer rounded-md border px-2.5 text-sm focus:ring-2 focus:outline-none"
           >
             <option value="active">Active</option>
             <option value="prospect">Prospect / Lead</option>
@@ -157,13 +178,16 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="clientHealth" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="clientHealth"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             Client Health
           </Label>
           <select
             id="clientHealth"
             {...form.register("clientHealth")}
-            className="w-full h-8 px-2.5 rounded-md border border-border bg-surface-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer"
+            className="border-border bg-surface-2 text-foreground focus:ring-brand-primary h-8 w-full cursor-pointer rounded-md border px-2.5 text-sm focus:ring-2 focus:outline-none"
           >
             <option value="good">Good (Healthy)</option>
             <option value="at_risk">At Risk (Review)</option>
@@ -172,13 +196,16 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="preferredCommunication" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="preferredCommunication"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             Communication
           </Label>
           <select
             id="preferredCommunication"
             {...form.register("preferredCommunication")}
-            className="w-full h-8 px-2.5 rounded-md border border-border bg-surface-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer"
+            className="border-border bg-surface-2 text-foreground focus:ring-brand-primary h-8 w-full cursor-pointer rounded-md border px-2.5 text-sm focus:ring-2 focus:outline-none"
           >
             <option value="email">Email</option>
             <option value="slack">Slack</option>
@@ -189,9 +216,12 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
       </div>
 
       {/* 3. Location */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="country" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="country"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             Country / Region
           </Label>
           <Input
@@ -202,7 +232,10 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="address" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="address"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             HQ Address
           </Label>
           <Input
@@ -215,13 +248,13 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
       </div>
 
       {/* 4. Brand & Repositories */}
-      <div className="space-y-3 pt-2 border-t border-border-subtle">
-        <div className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+      <div className="border-border-subtle space-y-3 border-t pt-2">
+        <div className="text-foreground-muted text-xs font-semibold tracking-wider uppercase">
           Brand Guidelines & Assets
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs text-foreground-secondary font-medium">
+          <Label className="text-foreground-secondary text-xs font-medium">
             Brand Hex Colors
           </Label>
           <div className="flex items-center gap-2">
@@ -256,17 +289,17 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
               {brandColors.map((color) => (
                 <div
                   key={color}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-2 border border-border-subtle text-xs font-mono"
+                  className="bg-surface-2 border-border-subtle flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-xs"
                 >
                   <span
-                    className="size-3 rounded-full border border-white/20 shrink-0"
+                    className="size-3 shrink-0 rounded-full border border-white/20"
                     style={{ backgroundColor: color }}
                   />
                   <span>{color}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveColor(color)}
-                    className="hover:text-destructive cursor-pointer ml-1"
+                    className="hover:text-destructive ml-1 cursor-pointer"
                   >
                     <X className="size-3" />
                   </button>
@@ -276,9 +309,12 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="googleDriveFolderUrl" className="text-xs text-foreground-secondary font-medium">
+            <Label
+              htmlFor="googleDriveFolderUrl"
+              className="text-foreground-secondary text-xs font-medium"
+            >
               Google Drive Folder URL
             </Label>
             <Input
@@ -294,7 +330,10 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="brandAssetsUrl" className="text-xs text-foreground-secondary font-medium">
+            <Label
+              htmlFor="brandAssetsUrl"
+              className="text-foreground-secondary text-xs font-medium"
+            >
               Brand Assets / DAM URL
             </Label>
             <Input
@@ -312,7 +351,10 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="logoUrl" className="text-xs text-foreground-secondary font-medium">
+          <Label
+            htmlFor="logoUrl"
+            className="text-foreground-secondary text-xs font-medium"
+          >
             Company Logo URL
           </Label>
           <Input
@@ -330,8 +372,11 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
       </div>
 
       {/* 5. Notes */}
-      <div className="space-y-1.5 pt-2 border-t border-border-subtle">
-        <Label htmlFor="notes" className="text-xs text-foreground-secondary font-medium">
+      <div className="border-border-subtle space-y-1.5 border-t pt-2">
+        <Label
+          htmlFor="notes"
+          className="text-foreground-secondary text-xs font-medium"
+        >
           Executive Notes
         </Label>
         <textarea
@@ -339,16 +384,12 @@ export function ClientForm({ initialData, onSuccess }: ClientFormProps) {
           rows={3}
           placeholder="Client background, key relationships, high-level preferences..."
           {...form.register("notes")}
-          className="w-full rounded-md border border-border bg-surface-2 p-2.5 text-foreground text-sm placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-brand-primary"
+          className="border-border bg-surface-2 text-foreground placeholder:text-foreground-muted focus:ring-brand-primary w-full rounded-md border p-2.5 text-sm focus:ring-2 focus:outline-none"
         />
       </div>
 
-      <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
-        <Button
-          type="submit"
-          size="sm"
-          disabled={isPending}
-        >
+      <div className="border-border-subtle flex justify-end gap-2 border-t pt-3">
+        <Button type="submit" size="sm" disabled={isPending}>
           {isPending
             ? "Saving..."
             : initialData?.clientId

@@ -20,17 +20,18 @@ Due to the **`INACTIVE` (PAUSED)** status of the remote Supabase Staging project
 
 ## 2. Migration Inventory & Specifications
 
-| Migration File | Sequence Index | Purpose | Primary Entities Created / Altered | Constraints & Indexes | Backfill Logic |
-|---|---|---|---|---|---|
-| `0015_organization_code_prefix.sql` | `idx: 15` | Decouple entity codes from legacy 'AIC' prefix | Adds `code_prefix text NOT NULL DEFAULT 'NEX'` to `public.organizations` | `uq_organizations_code_prefix` UNIQUE INDEX on `(code_prefix)` | Backfills legacy organization with `'AIC'` for continuous identifier alignment |
-| `0016_organization_memberships.sql` | `idx: 16` | Decouple user identity from tenant organizations (M:N) | Creates enum `membership_status`; creates table `public.organization_memberships` | `uq_user_organization` UNIQUE INDEX on `(user_id, organization_id)`; FKs to users, orgs, roles, depts | Deterministic backfill: active users $\rightarrow$ `'active'`, inactive / deleted $\rightarrow$ `'suspended'` |
-| `0017_organization_invitations.sql` | `idx: 17` | Tokenized team member invitation workflow | Creates enum `invitation_status`; creates table `public.organization_invitations` | `uq_invitations_token_hash` UNIQUE INDEX on `(token_hash)`; FKs to orgs, roles, depts, users | N/A (Fresh table; raw tokens never stored, only SHA-256 hashes) |
+| Migration File                      | Sequence Index | Purpose                                                | Primary Entities Created / Altered                                                | Constraints & Indexes                                                                                 | Backfill Logic                                                                                                |
+| ----------------------------------- | -------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `0015_organization_code_prefix.sql` | `idx: 15`      | Decouple entity codes from legacy 'AIC' prefix         | Adds `code_prefix text NOT NULL DEFAULT 'NEX'` to `public.organizations`          | `uq_organizations_code_prefix` UNIQUE INDEX on `(code_prefix)`                                        | Backfills legacy organization with `'AIC'` for continuous identifier alignment                                |
+| `0016_organization_memberships.sql` | `idx: 16`      | Decouple user identity from tenant organizations (M:N) | Creates enum `membership_status`; creates table `public.organization_memberships` | `uq_user_organization` UNIQUE INDEX on `(user_id, organization_id)`; FKs to users, orgs, roles, depts | Deterministic backfill: active users $\rightarrow$ `'active'`, inactive / deleted $\rightarrow$ `'suspended'` |
+| `0017_organization_invitations.sql` | `idx: 17`      | Tokenized team member invitation workflow              | Creates enum `invitation_status`; creates table `public.organization_invitations` | `uq_invitations_token_hash` UNIQUE INDEX on `(token_hash)`; FKs to orgs, roles, depts, users          | N/A (Fresh table; raw tokens never stored, only SHA-256 hashes)                                               |
 
 ---
 
 ## 3. Schema & Constraint Definitions
 
 ### Table: `organization_memberships`
+
 ```sql
 CREATE TABLE IF NOT EXISTS "organization_memberships" (
   "membership_id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -60,6 +61,7 @@ CREATE TABLE IF NOT EXISTS "organization_memberships" (
 ```
 
 ### Table: `organization_invitations`
+
 ```sql
 CREATE TABLE IF NOT EXISTS "organization_invitations" (
   "invitation_id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -91,6 +93,7 @@ CREATE TABLE IF NOT EXISTS "organization_invitations" (
 ## 4. Idempotency & Safety Guarantees
 
 Every migration file is designed to be fully non-destructive and re-runnable without side effects:
+
 1. **Conditional Enums**: Uses `IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = ...)` blocks.
 2. **Conditional Columns**: Uses `information_schema.columns` checks before `ALTER TABLE ADD COLUMN`.
 3. **Conditional Indexes**: Uses `pg_indexes` checks before `CREATE INDEX` or `CREATE UNIQUE INDEX`.
@@ -101,6 +104,7 @@ Every migration file is designed to be fully non-destructive and re-runnable wit
 ## 5. Transaction Safety & Rollback Verification
 
 Database transactions were verified using `scripts/rehearsal-phase44.ts` on real PostgreSQL:
+
 - **`AUTH-011`**: Transaction Rollback on Authorization Violation $\rightarrow$ Verified. When an authorization violation occurred midway through a multi-table workflow, the transaction aborted cleanly; canary records were completely rolled back with 0 residual rows.
 - **`P4-044`**: Organization Creation Failure Rolls Back Atomically $\rightarrow$ Verified. If system role initialization fails, the newly inserted organization row is rolled back cleanly.
 - **`P4-037`**: Invitation Acceptance Transaction Rollback $\rightarrow$ Verified. If membership insertion fails during acceptance, the invitation status remains `'pending'` and the token remains unconsumed.
@@ -110,6 +114,7 @@ Database transactions were verified using `scripts/rehearsal-phase44.ts` on real
 ## 6. Staging Cloud Execution Roadmap
 
 Once the user unpauses project `shnzzbbtydmvfhgeoysg` in the Supabase console:
+
 1. **Connectivity Preflight**:
    ```bash
    npm run env:check -- --environment=staging --verify

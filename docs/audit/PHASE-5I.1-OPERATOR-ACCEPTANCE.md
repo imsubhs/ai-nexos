@@ -1,4 +1,5 @@
 # AI NEX OS — PHASE 5I.1
+
 # OPERATOR ACCEPTANCE & PRODUCTION FUNCTIONAL SIGN-OFF REPORT
 
 **System**: AI NEX OS (`ai-nexos`)  
@@ -11,7 +12,7 @@
 **Antideploy Deployment ID**: `c9bfc4fb-ea90-435c-a148-c3347fa79716`  
 **Production Host**: `https://ai-nexos.antideploy.com`  
 **Execution Timestamp**: `2026-09-27T02:35:00+05:30` (UTC `2026-09-26T21:05:00Z`)  
-**Certified Pre-Migration Backup**: `pre_migration_backup_gsgseacjcalkhhmunjhx_20260926194357.dump` (1,135,591 bytes)  
+**Certified Pre-Migration Backup**: `pre_migration_backup_gsgseacjcalkhhmunjhx_20260926194357.dump` (1,135,591 bytes)
 
 ---
 
@@ -20,6 +21,7 @@
 Phase 5I.1 evaluated the operational readiness and production functional acceptance of the deployed AI NEX OS application on Antideploy (`https://ai-nexos.antideploy.com`) connected to the production Supabase database (`gsgseacjcalkhhmunjhx`).
 
 In strict adherence to production safety rules, zero synthetic users, organizations, projects, or invitations were created. All non-interactive functional verifications passed with 100% compliance:
+
 1. **Production Runtime Health**: Verified clean startup and runtime execution across the Antideploy container cluster (0 unhandled exceptions, 0 database connection failures, 0 `42P17` errors, 0 5xx responses).
 2. **Login Surface & Identity Verification**: Verified live `/login` route renders clean UI, Google OAuth button, work email, and password form elements with 100% correct `AI NEX OS` branding and zero legacy branding.
 3. **Server-Side Membership Resolution & Account Audit**:
@@ -57,18 +59,18 @@ In strict adherence to production safety rules, zero synthetic users, organizati
   - Legacy Branding: Zero occurrences of "AI Collective".
 - **Live Google OAuth Analysis**:
   - Audit of `auth.users` confirmed two recent Google OAuth authentications:
-    1. `subsworkspace@gmail.com` (Subham Saha, ID `58e45455-fccd-4d51-948c-03e12d606cce`, signed in `2026-09-26T20:31:53Z`).  
-       - Linked 1:1 in `public.users` with active status.  
-       - Linked in `organization_memberships` to `AI NEXOS` with `Owner` role.  
+    1. `subsworkspace@gmail.com` (Subham Saha, ID `58e45455-fccd-4d51-948c-03e12d606cce`, signed in `2026-09-26T20:31:53Z`).
+       - Linked 1:1 in `public.users` with active status.
+       - Linked in `organization_memberships` to `AI NEXOS` with `Owner` role.
        - `getCurrentUser()` returns full tenant context; `requireCurrentUser()` routes directly to `/dashboard`.
-    2. `riansaha321@gmail.com` (ID `8ea90118-2f02-465f-b162-989d81094e41`, signed in `2026-09-26T20:33:12Z`).  
-       - Not present in `public.users` or `organization_memberships`.  
+    2. `riansaha321@gmail.com` (ID `8ea90118-2f02-465f-b162-989d81094e41`, signed in `2026-09-26T20:33:12Z`).
+       - Not present in `public.users` or `organization_memberships`.
        - Correctly treated as an authenticated unaffiliated user; `requireCurrentUser()` redirects to `/onboarding`.
 - **Onboarding Route Cause Analysis**:
   - If the browser session currently displays `/onboarding`, the reason is definitively established: the active browser session authenticated as `riansaha321@gmail.com` rather than the provisioned operator `subsworkspace@gmail.com`.
   - In accordance with the prompt's explicit instruction:
-    *Do NOT automatically create a production organization just because the browser reached onboarding.*
-    *If the operator's current account is not the legitimate production operator account, stop and classify:*  
+    _Do NOT automatically create a production organization just because the browser reached onboarding._
+    _If the operator's current account is not the legitimate production operator account, stop and classify:_  
     **OPERATOR ACCOUNT MISMATCH — OPERATOR ACTION REQUIRED**.
   - **Operator Action Required**: Sign in using `subsworkspace@gmail.com` to access the provisioned `AI NEXOS` workspace dashboard. If `riansaha321@gmail.com` is intended as a secondary team member, issue an invitation from `subsworkspace@gmail.com`.
 
@@ -201,23 +203,24 @@ In strict adherence to production safety rules, zero synthetic users, organizati
 
 Read-only verification of production database state:
 
-| Entity / Table | Phase 5H Baseline | Phase 5I Baseline | Current Count | Integrity Status |
-| :--- | :---: | :---: | :---: | :---: |
-| `drizzle.__drizzle_migrations` | 19 | 19 | 19 | **PASS** |
-| `organizations` | 1 | 1 | 1 | **PASS** |
-| `users` | 2 | 2 | 2 | **PASS** |
-| `roles` | 7 | 7 | 7 | **PASS** |
-| `departments` | 7 | 7 | 7 | **PASS** |
-| `clients` | 1 | 1 | 1 | **PASS** |
-| `projects` | 0 | 0 | 0 | **PASS** |
-| `project_members` | 0 | 0 | 0 | **PASS** |
-| `tasks` | 0 | 0 | 0 | **PASS** |
-| `organization_memberships` | 2 | 2 | 2 | **PASS** |
-| `organization_invitations` | 0 | 0 | 0 | **PASS** |
-| `storage.buckets` | 1 | 1 | 1 | **PASS** |
-| `storage.objects` | 0 | 0 | 0 | **PASS** |
+| Entity / Table                 | Phase 5H Baseline | Phase 5I Baseline | Current Count | Integrity Status |
+| :----------------------------- | :---------------: | :---------------: | :-----------: | :--------------: |
+| `drizzle.__drizzle_migrations` |        19         |        19         |      19       |     **PASS**     |
+| `organizations`                |         1         |         1         |       1       |     **PASS**     |
+| `users`                        |         2         |         2         |       2       |     **PASS**     |
+| `roles`                        |         7         |         7         |       7       |     **PASS**     |
+| `departments`                  |         7         |         7         |       7       |     **PASS**     |
+| `clients`                      |         1         |         1         |       1       |     **PASS**     |
+| `projects`                     |         0         |         0         |       0       |     **PASS**     |
+| `project_members`              |         0         |         0         |       0       |     **PASS**     |
+| `tasks`                        |         0         |         0         |       0       |     **PASS**     |
+| `organization_memberships`     |         2         |         2         |       2       |     **PASS**     |
+| `organization_invitations`     |         0         |         0         |       0       |     **PASS**     |
+| `storage.buckets`              |         1         |         1         |       1       |     **PASS**     |
+| `storage.objects`              |         0         |         0         |       0       |     **PASS**     |
 
 Additional Integrity Invariants Verified:
+
 - Orphaned users (invalid `organization_id`): **0**
 - Orphaned memberships (invalid `user_id`, `organization_id`, or `role_id`): **0**
 - Duplicate organization code prefixes: **0**
@@ -249,20 +252,20 @@ Additional Integrity Invariants Verified:
 
 ## 14. Sign-Off Matrix
 
-| Acceptance Area | Status | Evidence |
-| :--- | :---: | :--- |
-| **Operator Login** | **OPERATOR REQUIRED** | `subsworkspace@gmail.com` provisioned as Owner; session switch required if browser holds `riansaha321@gmail.com`. |
-| **Dashboard** | **PASS** | Unauthenticated requests redirect to `/login` (HTTP 307); server identity resolves to `AI NEXOS`. |
-| **Organization Context** | **PASS** | Production DB confirms `AI NEXOS` (slug `ai-nexos`, prefix `NEX`), 2 active memberships, role `Owner`. |
-| **Onboarding** | **PASS** | Renders HTTP 200; input validation and server-derived identity verified; zero client-controlled privileges. |
-| **Project Workflow** | **NOT TESTED** | Production currently has 0 projects; zero synthetic projects created per safety rules. |
-| **Positive RLS** | **NOT TESTED** | `42P17` eliminated; helper `app.is_project_member` verified; positive row filtering not observable with 0 project records. |
-| **Invitation** | **NOT TESTED** | Schema verified with SHA-256 hashing and wrong-account protection; zero synthetic invitations created per safety rules. |
-| **Multi-Membership** | **NOT APPLICABLE** | Only 1 organization exists in production; unit test suite verified 100%. |
-| **Tenant Authorization** | **PASS** | `audit:authz` confirms 0 unguarded actions and 0 untrusted `organizationId` parameters. |
-| **Runtime Health** | **PASS** | Antideploy container running healthy; 0 runtime errors, 0 5xx, `/api/health` HTTP 200. |
-| **Database Integrity** | **PASS** | 100% table count parity with Phase 5H baseline; 19/19 migrations applied; 0 orphaned rows. |
-| **Git Safety** | **PASS** | 0 commits, 0 pushes, 0 migration modifications. |
+| Acceptance Area          |        Status         | Evidence                                                                                                                   |
+| :----------------------- | :-------------------: | :------------------------------------------------------------------------------------------------------------------------- |
+| **Operator Login**       | **OPERATOR REQUIRED** | `subsworkspace@gmail.com` provisioned as Owner; session switch required if browser holds `riansaha321@gmail.com`.          |
+| **Dashboard**            |       **PASS**        | Unauthenticated requests redirect to `/login` (HTTP 307); server identity resolves to `AI NEXOS`.                          |
+| **Organization Context** |       **PASS**        | Production DB confirms `AI NEXOS` (slug `ai-nexos`, prefix `NEX`), 2 active memberships, role `Owner`.                     |
+| **Onboarding**           |       **PASS**        | Renders HTTP 200; input validation and server-derived identity verified; zero client-controlled privileges.                |
+| **Project Workflow**     |    **NOT TESTED**     | Production currently has 0 projects; zero synthetic projects created per safety rules.                                     |
+| **Positive RLS**         |    **NOT TESTED**     | `42P17` eliminated; helper `app.is_project_member` verified; positive row filtering not observable with 0 project records. |
+| **Invitation**           |    **NOT TESTED**     | Schema verified with SHA-256 hashing and wrong-account protection; zero synthetic invitations created per safety rules.    |
+| **Multi-Membership**     |  **NOT APPLICABLE**   | Only 1 organization exists in production; unit test suite verified 100%.                                                   |
+| **Tenant Authorization** |       **PASS**        | `audit:authz` confirms 0 unguarded actions and 0 untrusted `organizationId` parameters.                                    |
+| **Runtime Health**       |       **PASS**        | Antideploy container running healthy; 0 runtime errors, 0 5xx, `/api/health` HTTP 200.                                     |
+| **Database Integrity**   |       **PASS**        | 100% table count parity with Phase 5H baseline; 19/19 migrations applied; 0 orphaned rows.                                 |
+| **Git Safety**           |       **PASS**        | 0 commits, 0 pushes, 0 migration modifications.                                                                            |
 
 ---
 

@@ -1,15 +1,16 @@
 # AI NEX OS — Antideploy Security Warning Audit
+
 **Forensic Investigation of "ai-nexos is hackable" Warning**
 
-| Metadata | Details |
-|---|---|
-| **Product** | AI NEX OS (`ai-nexos`) |
-| **Production Target** | `https://ai-nexos.antideploy.com` |
-| **Commit Target** | `2d28256c09fc14de9f048e1fb559aeed10592f8f` (`phase-2-production-readiness`) |
-| **Auditor Role** | Senior Application Security Engineer & DevSecOps Forensic Reviewer |
-| **Date** | September 28, 2026 |
-| **Classification Status** | Read-Only Forensic Baseline Completed |
-| **Production State** | **Untouched** (No mutations, no migrations, no deployments executed) |
+| Metadata                  | Details                                                                     |
+| ------------------------- | --------------------------------------------------------------------------- |
+| **Product**               | AI NEX OS (`ai-nexos`)                                                      |
+| **Production Target**     | `https://ai-nexos.antideploy.com`                                           |
+| **Commit Target**         | `2d28256c09fc14de9f048e1fb559aeed10592f8f` (`phase-2-production-readiness`) |
+| **Auditor Role**          | Senior Application Security Engineer & DevSecOps Forensic Reviewer          |
+| **Date**                  | September 28, 2026                                                          |
+| **Classification Status** | Read-Only Forensic Baseline Completed                                       |
+| **Production State**      | **Untouched** (No mutations, no migrations, no deployments executed)        |
 
 ---
 
@@ -33,6 +34,7 @@ A security warning email with the subject **"ai-nexos is hackable"** and an exte
 ## 2. Triggering Warning
 
 ### Context and Analysis
+
 - **Subject**: "ai-nexos is hackable"
 - **Sender/Platform**: Antideploy hosting infrastructure.
 - **Payload**: Generic claim regarding vulnerabilities in AI-generated software with an embedded button: `Scan my app`.
@@ -50,39 +52,39 @@ A security warning email with the subject **"ai-nexos is hackable"** and an exte
 
 The audit covered all 31 investigative dimensions (A through AE) across commit `2d28256c09fc14de9f048e1fb559aeed10592f8f`:
 
-| Dimension | Description | Audited Component / File |
-|---|---|---|
-| **A** | Authentication | Supabase Auth, PKCE callback, session exchange, `src/app/auth/callback/route.ts` |
-| **B** | Authorization | `requireCurrentUser`, `requirePermission`, `scripts/audit-authorization.ts` |
-| **C** | Tenant Isolation | Organization boundary enforcement across all Drizzle queries |
-| **D** | Organization Switching | `setActiveOrganizationAction`, `nexos_active_org_id` cookie tamper validation |
-| **E** | Membership Escalation | `src/features/organizations/invitation-service.ts`, membership creation |
-| **F** | Role Escalation | Organization-scoped role validation in invitations and assignments |
-| **G** | Server Actions | 160+ exported actions across 12 modules |
-| **H** | Client-Controlled IDs | Foreign ID acceptance in mutations (`projectId`, `clientId`, `taskId`, etc.) |
-| **I** | Invitation Security | Token entropy, SHA-256 hashing, replay prevention, email binding |
-| **J** | Magic-Link Handling | Supabase OTP type validation, rate limiting, origin verification |
-| **K** | Supabase Configuration | Anon vs service-role key separation, `src/lib/supabase/*` |
-| **L** | Row Level Security (RLS) | Migrations `0000` through `0018`, policy coverage |
-| **M** | SECURITY DEFINER Functions | `app.is_org_member`, `app.is_project_member` (search_path fixed) |
-| **N** | API Routes | `/api/health`, `/api/approvals/verify`, `/api/v1/portal/*` |
-| **O** | File/Storage Access | Supabase Storage provider, signed URL generation |
-| **P** | Upload Authorization | `initializeFileUpload`, `finalizeFileUpload`, quota checks |
-| **Q** | Cross-Tenant Object Access | Project, task, client, meeting, deliverable queries |
-| **R** | Information Disclosure | Health endpoint leak checks, error handler sanitization |
-| **S** | IDOR / BOLA | Direct object references in server actions and route handlers |
-| **T** | SSRF | Outbound fetch controls, `EGRESS_ALLOWED_HOSTS` |
-| **U** | XSS | React JSX rendering, DOM insertion, `dangerouslySetInnerHTML` |
-| **V** | CSRF | Server actions origin and Host checks, SameSite cookies |
-| **W** | Open Redirects | `safeInternalPath` sanitization in login and auth callbacks |
-| **X** | Unsafe Redirects | External redirect prevention, protocol-relative URL bans |
-| **Y** | Secret Exposure | Server vs client environment variable isolation |
-| **Z** | Environment Variable Exposure | `NEXT_PUBLIC_*` audits, `ENV_MANIFEST` verification |
-| **AA** | Debug Endpoints | Demo mode guards in production, test route elimination |
-| **AB** | Error Leakage | Stack trace suppression in production error boundaries |
-| **AC** | Production Configuration | `assertProductionConfig` boot validation, TLS requirements |
-| **AD** | Next.js Security Patterns | Edge middleware / proxy, server action arguments, cache poisoning |
-| **AE** | Dependency Vulnerabilities | `npm audit`, `package.json`, CVE advisory evaluation |
+| Dimension | Description                   | Audited Component / File                                                         |
+| --------- | ----------------------------- | -------------------------------------------------------------------------------- |
+| **A**     | Authentication                | Supabase Auth, PKCE callback, session exchange, `src/app/auth/callback/route.ts` |
+| **B**     | Authorization                 | `requireCurrentUser`, `requirePermission`, `scripts/audit-authorization.ts`      |
+| **C**     | Tenant Isolation              | Organization boundary enforcement across all Drizzle queries                     |
+| **D**     | Organization Switching        | `setActiveOrganizationAction`, `nexos_active_org_id` cookie tamper validation    |
+| **E**     | Membership Escalation         | `src/features/organizations/invitation-service.ts`, membership creation          |
+| **F**     | Role Escalation               | Organization-scoped role validation in invitations and assignments               |
+| **G**     | Server Actions                | 160+ exported actions across 12 modules                                          |
+| **H**     | Client-Controlled IDs         | Foreign ID acceptance in mutations (`projectId`, `clientId`, `taskId`, etc.)     |
+| **I**     | Invitation Security           | Token entropy, SHA-256 hashing, replay prevention, email binding                 |
+| **J**     | Magic-Link Handling           | Supabase OTP type validation, rate limiting, origin verification                 |
+| **K**     | Supabase Configuration        | Anon vs service-role key separation, `src/lib/supabase/*`                        |
+| **L**     | Row Level Security (RLS)      | Migrations `0000` through `0018`, policy coverage                                |
+| **M**     | SECURITY DEFINER Functions    | `app.is_org_member`, `app.is_project_member` (search_path fixed)                 |
+| **N**     | API Routes                    | `/api/health`, `/api/approvals/verify`, `/api/v1/portal/*`                       |
+| **O**     | File/Storage Access           | Supabase Storage provider, signed URL generation                                 |
+| **P**     | Upload Authorization          | `initializeFileUpload`, `finalizeFileUpload`, quota checks                       |
+| **Q**     | Cross-Tenant Object Access    | Project, task, client, meeting, deliverable queries                              |
+| **R**     | Information Disclosure        | Health endpoint leak checks, error handler sanitization                          |
+| **S**     | IDOR / BOLA                   | Direct object references in server actions and route handlers                    |
+| **T**     | SSRF                          | Outbound fetch controls, `EGRESS_ALLOWED_HOSTS`                                  |
+| **U**     | XSS                           | React JSX rendering, DOM insertion, `dangerouslySetInnerHTML`                    |
+| **V**     | CSRF                          | Server actions origin and Host checks, SameSite cookies                          |
+| **W**     | Open Redirects                | `safeInternalPath` sanitization in login and auth callbacks                      |
+| **X**     | Unsafe Redirects              | External redirect prevention, protocol-relative URL bans                         |
+| **Y**     | Secret Exposure               | Server vs client environment variable isolation                                  |
+| **Z**     | Environment Variable Exposure | `NEXT_PUBLIC_*` audits, `ENV_MANIFEST` verification                              |
+| **AA**    | Debug Endpoints               | Demo mode guards in production, test route elimination                           |
+| **AB**    | Error Leakage                 | Stack trace suppression in production error boundaries                           |
+| **AC**    | Production Configuration      | `assertProductionConfig` boot validation, TLS requirements                       |
+| **AD**    | Next.js Security Patterns     | Edge middleware / proxy, server action arguments, cache poisoning                |
+| **AE**    | Dependency Vulnerabilities    | `npm audit`, `package.json`, CVE advisory evaluation                             |
 
 ---
 
@@ -106,6 +108,7 @@ The audit covered all 31 investigative dimensions (A through AE) across commit `
 ## 5. Authentication Audit
 
 ### Supabase Auth & Session Architecture
+
 - **Browser Client (`src/lib/supabase/client.ts`)**:
   Instantiates `@supabase/ssr` using `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Subject to PostgreSQL RLS on client queries.
 - **Server Client (`src/lib/supabase/server.ts`)**:
@@ -119,25 +122,26 @@ The audit covered all 31 investigative dimensions (A through AE) across commit `
 
 ### Secrets Configuration Status
 
-| Environment Variable | Target Exposure | Production Status | Classification |
-|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Public (Browser) | SET | EXPOSED (Safe by design) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public (Browser) | SET | EXPOSED (Safe by design) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server Only | SET | SERVER-ONLY (Protected) |
-| `DATABASE_URL` | Server Only | SET | SERVER-ONLY (Protected) |
-| `DIRECT_DATABASE_URL` | Tooling Only | SET | SERVER-ONLY (Protected) |
-| `JWT_SECRET` | Server Only | SET | SERVER-ONLY (Protected) |
-| `SHARE_JWT_SECRET` | Server Only | SET | SERVER-ONLY (Protected) |
-| `RESEND_API_KEY` | Server Only | SET | SERVER-ONLY (Protected) |
-| `REDIS_URL` | Server Only | NOT SET (Fallback to memory) | SERVER-ONLY (Protected) |
+| Environment Variable            | Target Exposure  | Production Status            | Classification           |
+| ------------------------------- | ---------------- | ---------------------------- | ------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Public (Browser) | SET                          | EXPOSED (Safe by design) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public (Browser) | SET                          | EXPOSED (Safe by design) |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Server Only      | SET                          | SERVER-ONLY (Protected)  |
+| `DATABASE_URL`                  | Server Only      | SET                          | SERVER-ONLY (Protected)  |
+| `DIRECT_DATABASE_URL`           | Tooling Only     | SET                          | SERVER-ONLY (Protected)  |
+| `JWT_SECRET`                    | Server Only      | SET                          | SERVER-ONLY (Protected)  |
+| `SHARE_JWT_SECRET`              | Server Only      | SET                          | SERVER-ONLY (Protected)  |
+| `RESEND_API_KEY`                | Server Only      | SET                          | SERVER-ONLY (Protected)  |
+| `REDIS_URL`                     | Server Only      | NOT SET (Fallback to memory) | SERVER-ONLY (Protected)  |
 
-*(No secret values printed. All verified server-only.)*
+_(No secret values printed. All verified server-only.)_
 
 ---
 
 ## 6. Authorization Audit
 
 ### Static AST Coverage Report (`npm run audit:authz`)
+
 ```text
 > ai-nexos@0.1.0 audit:authz
 > tsx scripts/audit-authorization.ts
@@ -147,6 +151,7 @@ The audit covered all 31 investigative dimensions (A through AE) across commit `
 ```
 
 ### Identity Derivation
+
 - `user.organizationId` is derived server-side via `requireCurrentUser()` (`src/features/auth/current-user.ts`).
 - `user.userId` is extracted from the verified Supabase auth session.
 - `user.roleKey` and `user.permissions` are resolved from `organization_memberships` joined with `roles`.
@@ -157,31 +162,33 @@ The audit covered all 31 investigative dimensions (A through AE) across commit `
 ## 7. Tenant Isolation Audit
 
 ### Drizzle Privileged Connection Reality
+
 > [!IMPORTANT]
 > The server-side Drizzle ORM client connects via `DATABASE_URL` as a privileged database role (`postgres`). **PostgreSQL RLS does NOT restrict Drizzle queries.** Tenant isolation for server actions rests entirely upon application-level WHERE predicates.
 
 ### Cross-Tenant Verification by Module
 
-| Module | Tenant Scoping Predicate | Result |
-|---|---|---|
-| **Projects** | `eq(projects.organizationId, user.organizationId)` on all CRUD | **Isolated** |
-| **Project Members** | Validates target `userId` belongs to active organization before insert; validates parent project belongs to org | **Isolated** |
-| **Tasks** | `validateTaskAccess` checks `organizationId` and private assignees | **Isolated** |
-| **Deliverables** | Checks `projectId`, `clientId`, `taskId` against `organizationId` | **Isolated** |
-| **Files / Folders** | `validateFileAccess` checks `organizationId` and project membership; quota checked per org | **Isolated** |
-| **Storage Deduplication**| Scoped strictly to `organizationId` (prevents cross-tenant existence oracle) | **Isolated** |
-| **Meetings** | `requireProjectInOrganization` and `loadMeetingForWrite` enforce org boundary | **Isolated** |
-| **Workforce Attendance**| Self-scoped commands (`userId = user.userId`), directory reads scoped by `user.organizationId` | **Isolated** |
-| **Workforce Corrections**| Validates correction request belongs to `user.organizationId` | **Isolated** |
-| **Invitations** | Scoped to active organization; validates `roleId` belongs to target org | **Isolated** |
-| **Clients** (`clients`) | `createClient`, `updateClient`, `archiveClient` check `organizationId` | **Isolated** |
-| **Client Contacts** (`client_contacts`) | `createContact`, `updateContact`, `archiveContact` lack tenant check | **VULNERABLE (NEXOS-SEC-01)** |
+| Module                                  | Tenant Scoping Predicate                                                                                        | Result                        |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| **Projects**                            | `eq(projects.organizationId, user.organizationId)` on all CRUD                                                  | **Isolated**                  |
+| **Project Members**                     | Validates target `userId` belongs to active organization before insert; validates parent project belongs to org | **Isolated**                  |
+| **Tasks**                               | `validateTaskAccess` checks `organizationId` and private assignees                                              | **Isolated**                  |
+| **Deliverables**                        | Checks `projectId`, `clientId`, `taskId` against `organizationId`                                               | **Isolated**                  |
+| **Files / Folders**                     | `validateFileAccess` checks `organizationId` and project membership; quota checked per org                      | **Isolated**                  |
+| **Storage Deduplication**               | Scoped strictly to `organizationId` (prevents cross-tenant existence oracle)                                    | **Isolated**                  |
+| **Meetings**                            | `requireProjectInOrganization` and `loadMeetingForWrite` enforce org boundary                                   | **Isolated**                  |
+| **Workforce Attendance**                | Self-scoped commands (`userId = user.userId`), directory reads scoped by `user.organizationId`                  | **Isolated**                  |
+| **Workforce Corrections**               | Validates correction request belongs to `user.organizationId`                                                   | **Isolated**                  |
+| **Invitations**                         | Scoped to active organization; validates `roleId` belongs to target org                                         | **Isolated**                  |
+| **Clients** (`clients`)                 | `createClient`, `updateClient`, `archiveClient` check `organizationId`                                          | **Isolated**                  |
+| **Client Contacts** (`client_contacts`) | `createContact`, `updateContact`, `archiveContact` lack tenant check                                            | **VULNERABLE (NEXOS-SEC-01)** |
 
 ---
 
 ## 8. RLS Audit
 
 ### PostgreSQL Migrations & Policies
+
 - **Migration `0001_security_rls_foundation.sql`**: Established core RLS policies.
 - **Migration `0011_revoke_blanket_data_api_grants.sql`**: Revoked unintended public grants.
 - **Migration `0012_revoke_default_privileges.sql`**: Revoked `DEFAULT PRIVILEGES` on `public` tables from `anon` and `authenticated`.
@@ -286,12 +293,13 @@ Audit of `src/app/auth/callback/route.ts`:
 ## 14. Dependency Audit
 
 Execution of `npm audit`:
+
 - **Summary**: 14 vulnerabilities (1 critical, 4 high, 9 moderate).
 - **Critical Finding**: `next 16.0.0 - 16.3.2` (installed: `16.3.0`).
   - `GHSA-p293-qw3h-jr36`: Unauthenticated RCE on Windows-hosted servers.
-    - *Evaluation in AI NEX OS*: **NOT EXPLOITABLE**. Antideploy production host is Linux.
+    - _Evaluation in AI NEX OS_: **NOT EXPLOITABLE**. Antideploy production host is Linux.
   - `GHSA-2xp9-vwfh-vxw4`: Unauthenticated RCE in Image Optimization API when AVIF files are used.
-    - *Evaluation in AI NEX OS*: **NOT EXPLOITABLE**. `next/image` is not imported or used anywhere in `src/`. No image loader or remote image patterns are configured in `next.config.ts`.
+    - _Evaluation in AI NEX OS_: **NOT EXPLOITABLE**. `next/image` is not imported or used anywhere in `src/`. No image loader or remote image patterns are configured in `next.config.ts`.
 - **Other Packages**:
   - `sharp <0.35.4`: libheif vulnerabilities. Not exposed to user uploads directly.
   - `fast-uri <=3.1.5`: URI normalization edge cases in validator internals.
@@ -303,6 +311,7 @@ Execution of `npm audit`:
 ## 15. Findings
 
 ### Finding NEXOS-SEC-01
+
 - **Title**: IDOR / Cross-Tenant Mutation in Client Contacts
 - **Finding ID**: `NEXOS-SEC-01`
 - **Severity**: **HIGH**
@@ -367,7 +376,13 @@ Execution of `npm audit`:
      const [client] = await db
        .select({ clientId: clients.clientId })
        .from(clients)
-       .where(and(eq(clients.clientId, parsed.clientId), eq(clients.organizationId, user.organizationId), isNull(clients.deletedAt)))
+       .where(
+         and(
+           eq(clients.clientId, parsed.clientId),
+           eq(clients.organizationId, user.organizationId),
+           isNull(clients.deletedAt),
+         ),
+       )
        .limit(1);
      if (!client) throw new Error("Client not found");
      ```
@@ -378,6 +393,7 @@ Execution of `npm audit`:
 ---
 
 ### Finding NEXOS-SEC-02
+
 - **Title**: Missing Explicit Row Level Security on Multi-Tenant Membership and Invitation Tables
 - **Finding ID**: `NEXOS-SEC-02`
 - **Severity**: **MEDIUM**
@@ -401,6 +417,7 @@ Execution of `npm audit`:
 ---
 
 ### Finding NEXOS-SEC-03
+
 - **Title**: In-Memory Rate Limiting Fallback on Multi-Instance Production Deployments
 - **Finding ID**: `NEXOS-SEC-03`
 - **Severity**: **LOW**
@@ -422,6 +439,7 @@ Execution of `npm audit`:
 ---
 
 ### Finding NEXOS-SEC-04
+
 - **Title**: Next.js 16.3.0 Vulnerability Advisory in Automated Scanners
 - **Finding ID**: `NEXOS-SEC-04`
 - **Severity**: **INFORMATIONAL** (Security Advisory), **MEDIUM** (Scanner Alert Noise)
@@ -471,9 +489,11 @@ Execution of `npm audit`:
 ## 18. Remediation Plan
 
 ### Phase 1: Minimal Safe Code Fix for NEXOS-SEC-01 (Immediate)
-*(Awaiting product owner authorization before applying)*
+
+_(Awaiting product owner authorization before applying)_
 
 #### Proposed Code Patch: `src/features/clients/real-actions.ts`
+
 ```diff
 --- a/src/features/clients/real-actions.ts
 +++ b/src/features/clients/real-actions.ts
@@ -549,6 +569,7 @@ Execution of `npm audit`:
 ---
 
 ### Phase 2: Defense-in-Depth RLS Migration for NEXOS-SEC-02 (Follow-up)
+
 - Author migration `0019_enable_memberships_invitations_rls.sql`:
   ```sql
   ALTER TABLE "organization_memberships" ENABLE ROW LEVEL SECURITY;
@@ -568,6 +589,7 @@ Execution of `npm audit`:
 ---
 
 ### Phase 3: Next.js Dependency Bump for NEXOS-SEC-04 (Follow-up)
+
 - Update `package.json` to bump `next` to `16.3.6`.
 - Run full unit (`npm test`) and E2E suites to confirm zero breaking changes.
 

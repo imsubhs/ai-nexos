@@ -16,10 +16,13 @@ export function ActivityIntelligenceSection({
     <section className="space-y-3" aria-labelledby="activity-heading">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 id="activity-heading" className="text-sm font-semibold tracking-wider uppercase text-foreground-muted">
+          <h2
+            id="activity-heading"
+            className="text-foreground-muted text-sm font-semibold tracking-wider uppercase"
+          >
             Activity & Change Intelligence
           </h2>
-          <span className="text-[11px] font-mono text-muted-foreground">
+          <span className="text-muted-foreground font-mono text-[11px]">
             Filtered Operational Feed
           </span>
         </div>
@@ -28,30 +31,30 @@ export function ActivityIntelligenceSection({
       <Card className="bg-surface-1/60 border-border-subtle overflow-hidden">
         <CardContent className="p-0">
           {activity.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted-foreground font-mono">
+            <div className="text-muted-foreground py-8 text-center font-mono text-xs">
               No recent high-level operational events recorded.
             </div>
           ) : (
-            <div className="divide-y divide-border-subtle/50">
+            <div className="divide-border-subtle/50 divide-y">
               {activity.slice(0, 10).map((item) => (
                 <div
                   key={item.id}
-                  className="p-3 flex items-center justify-between gap-3 text-xs transition-colors hover:bg-surface-2/30"
+                  className="hover:bg-surface-2/30 flex items-center justify-between gap-3 p-3 text-xs transition-colors"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="font-mono text-[10px] text-muted-foreground shrink-0 w-16">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="text-muted-foreground w-16 shrink-0 font-mono text-[10px]">
                       {new Date(item.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </span>
 
-                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono bg-surface-3 text-foreground-secondary border border-border-subtle shrink-0">
+                    <span className="py-0.2 bg-surface-3 text-foreground-secondary border-border-subtle inline-flex shrink-0 items-center rounded border px-1.5 font-mono text-[10px]">
                       {item.entityType}
                     </span>
 
                     <div className="truncate">
-                      <span className="font-medium text-foreground">
+                      <span className="text-foreground font-medium">
                         {item.description}
                       </span>
                       <span className="text-muted-foreground ml-1.5">
@@ -65,7 +68,7 @@ export function ActivityIntelligenceSection({
                       render={<Link href={item.navigationTarget} />}
                       variant="ghost"
                       size="sm"
-                      className="h-6 text-xs px-2 gap-1 text-brand-primary shrink-0"
+                      className="text-brand-primary h-6 shrink-0 gap-1 px-2 text-xs"
                     >
                       <span>View</span>
                       <ArrowRight className="size-3" />

@@ -496,7 +496,10 @@ export async function promoteActionItemToTask(
     (o: { organizationId: string }) => o.organizationId === DEMO_ORG_ID,
   );
   const codePrefix = org?.codePrefix ?? "NEX";
-  const taskCode = nextDemoCode(store, `${codePrefix}-T-${new Date().getFullYear()}`);
+  const taskCode = nextDemoCode(
+    store,
+    `${codePrefix}-T-${new Date().getFullYear()}`,
+  );
 
   const task = {
     taskId: nextDemoId(store),

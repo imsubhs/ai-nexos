@@ -16,7 +16,9 @@ describe("Phase 4B — Core Workspace & Global Navigation", () => {
     });
 
     it("consolidates Workforce into exactly 2 primary items: My Time and Team & People", () => {
-      const workforceSection = NAV_SECTIONS.find((s) => s.label === "Workforce");
+      const workforceSection = NAV_SECTIONS.find(
+        (s) => s.label === "Workforce",
+      );
       expect(workforceSection).toBeDefined();
       expect(workforceSection?.items.length).toBe(2);
 
@@ -25,7 +27,9 @@ describe("Phase 4B — Core Workspace & Global Navigation", () => {
     });
 
     it("preserves all 3 personal time-tracking routes under My Time", () => {
-      const workforceSection = NAV_SECTIONS.find((s) => s.label === "Workforce");
+      const workforceSection = NAV_SECTIONS.find(
+        (s) => s.label === "Workforce",
+      );
       const myTime = workforceSection?.items.find((i) => i.title === "My Time");
 
       expect(myTime?.children).toBeDefined();
@@ -43,7 +47,9 @@ describe("Phase 4B — Core Workspace & Global Navigation", () => {
     });
 
     it("preserves all 4 team/managerial routes under Team & People", () => {
-      const workforceSection = NAV_SECTIONS.find((s) => s.label === "Workforce");
+      const workforceSection = NAV_SECTIONS.find(
+        (s) => s.label === "Workforce",
+      );
       const teamAndPeople = workforceSection?.items.find(
         (i) => i.title === "Team & People",
       );
@@ -75,7 +81,9 @@ describe("Phase 4B — Core Workspace & Global Navigation", () => {
         corrections: ["create"],
       };
 
-      const workforceSection = NAV_SECTIONS.find((s) => s.label === "Workforce")!;
+      const workforceSection = NAV_SECTIONS.find(
+        (s) => s.label === "Workforce",
+      )!;
       const myTime = workforceSection.items.find((i) => i.title === "My Time")!;
       const teamAndPeople = workforceSection.items.find(
         (i) => i.title === "Team & People",
@@ -84,7 +92,11 @@ describe("Phase 4B — Core Workspace & Global Navigation", () => {
       // My Time should be accessible
       const myTimePermitted =
         !myTime.permission ||
-        hasPermission(memberPermissions, myTime.permission[0], myTime.permission[1]);
+        hasPermission(
+          memberPermissions,
+          myTime.permission[0],
+          myTime.permission[1],
+        );
       expect(myTimePermitted).toBe(true);
 
       // Team & People should NOT be accessible to standard contributor
@@ -106,7 +118,9 @@ describe("Phase 4B — Core Workspace & Global Navigation", () => {
         reports: ["read"],
       };
 
-      const workforceSection = NAV_SECTIONS.find((s) => s.label === "Workforce")!;
+      const workforceSection = NAV_SECTIONS.find(
+        (s) => s.label === "Workforce",
+      )!;
       const myTime = workforceSection.items.find((i) => i.title === "My Time")!;
       const teamAndPeople = workforceSection.items.find(
         (i) => i.title === "Team & People",
@@ -146,7 +160,9 @@ describe("Phase 4B — Core Workspace & Global Navigation", () => {
       expect(canReadProjects).toBe(false);
 
       // The guard pattern returns empty array rather than invoking getProjects() and throwing
-      const safeProjectRows = canReadProjects ? [{ projectId: "p1", projectName: "Project 1" }] : [];
+      const safeProjectRows = canReadProjects
+        ? [{ projectId: "p1", projectName: "Project 1" }]
+        : [];
       expect(safeProjectRows).toEqual([]);
     });
 

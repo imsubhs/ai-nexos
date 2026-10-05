@@ -104,7 +104,8 @@ export async function getCurrentIdentity() {
   if (isDemo) {
     const store = getDemoStore();
     const demoUser = store.users.find(
-      (u: { userId: string }) => u.userId === "00000000-0000-4000-8000-00000000f002",
+      (u: { userId: string }) =>
+        u.userId === "00000000-0000-4000-8000-00000000f002",
     );
     return {
       authUserId: "00000000-0000-4000-8000-00000000f002",
@@ -150,7 +151,8 @@ export async function getUserMemberships(
 
     return rows.map((m: any) => {
       const org = store.organizations.find(
-        (o: { organizationId: string }) => o.organizationId === m.organizationId,
+        (o: { organizationId: string }) =>
+          o.organizationId === m.organizationId,
       );
       const role = SYSTEM_ROLES.find(
         (r) => r.roleKey === (m.roleId?.replace("demo-role-", "") ?? "owner"),
@@ -254,9 +256,7 @@ export async function getMembership(
   if (!isValidUuid(userId) || !isValidUuid(organizationId)) return null;
 
   const memberships = await getUserMemberships(userId);
-  return (
-    memberships.find((m) => m.organizationId === organizationId) ?? null
-  );
+  return memberships.find((m) => m.organizationId === organizationId) ?? null;
 }
 
 /**

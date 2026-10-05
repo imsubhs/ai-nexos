@@ -50,10 +50,14 @@ function recordCheck(
 const BASE_URL = "https://ai-nexos.antideploy.com";
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — PHASE 4F PRODUCTION SMOKE TEST");
   console.log(`Target Host: ${BASE_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // 1. Health Endpoint
   console.log("--- 1. Health Endpoint ---");
@@ -149,7 +153,9 @@ async function main() {
   );
 
   // 6. Database Verification: Phase 4F Canonical Tables
-  console.log("\n--- 6. Database Verification: PostgreSQL 17.6 Schema Integrity ---");
+  console.log(
+    "\n--- 6. Database Verification: PostgreSQL 17.6 Schema Integrity ---",
+  );
   const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL!;
   const sql = postgres(dbUrl, { max: 1, prepare: false, ssl: "require" });
 
@@ -186,7 +192,9 @@ async function main() {
       "SMOKE-4F-DB-03",
       "DATABASE",
       "Canonical junction table public.deliverable_files exists",
-      Boolean(delivFilesTable && delivFilesTable.table_name === "deliverable_files"),
+      Boolean(
+        delivFilesTable && delivFilesTable.table_name === "deliverable_files",
+      ),
       "public.deliverable_files",
       delivFilesTable ? delivFilesTable.table_name : "MISSING",
     );
@@ -198,7 +206,9 @@ async function main() {
       "SMOKE-4F-DB-04",
       "DATABASE",
       "Canonical table public.file_versions exists",
-      Boolean(fileVersionsTable && fileVersionsTable.table_name === "file_versions"),
+      Boolean(
+        fileVersionsTable && fileVersionsTable.table_name === "file_versions",
+      ),
       "public.file_versions",
       fileVersionsTable ? fileVersionsTable.table_name : "MISSING",
     );
@@ -233,7 +243,9 @@ async function main() {
         "Operator has active organization membership",
         Boolean(membership && membership.organization_id),
         "Active org membership",
-        membership ? `${membership.organization_name} (${membership.organization_id})` : "NO MEMBERSHIP",
+        membership
+          ? `${membership.organization_name} (${membership.organization_id})`
+          : "NO MEMBERSHIP",
       );
 
       // Verify safe query against files and deliverables with organization filter
@@ -269,12 +281,18 @@ async function main() {
   }
 
   // Summary
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   const total = checks.length;
   const passed = checks.filter((c) => c.passed).length;
   const failed = total - passed;
-  console.log(`SMOKE TEST RESULTS: ${passed}/${total} checks passed (${failed} failed)`);
-  console.log("================================================================================");
+  console.log(
+    `SMOKE TEST RESULTS: ${passed}/${total} checks passed (${failed} failed)`,
+  );
+  console.log(
+    "================================================================================",
+  );
 
   if (failed > 0) {
     console.error(`\n[FATAL] ${failed} smoke check(s) failed.`);

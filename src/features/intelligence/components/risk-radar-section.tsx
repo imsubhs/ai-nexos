@@ -56,13 +56,17 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
 
   return (
     <section className="space-y-3" aria-labelledby="risk-radar-heading">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <h2 id="risk-radar-heading" className="text-sm font-semibold tracking-wider uppercase text-foreground-muted">
+          <h2
+            id="risk-radar-heading"
+            className="text-foreground-muted text-sm font-semibold tracking-wider uppercase"
+          >
             Risk Radar · Threat Matrix
           </h2>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-surface-2 border border-border-subtle text-foreground-secondary">
-            {risks.length} {risks.length === 1 ? "Threat Detected" : "Threats Detected"}
+          <span className="bg-surface-2 border-border-subtle text-foreground-secondary inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[11px] font-medium">
+            {risks.length}{" "}
+            {risks.length === 1 ? "Threat Detected" : "Threats Detected"}
           </span>
         </div>
 
@@ -72,7 +76,7 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
           aria-label="Filter risks by severity"
           className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0"
         >
-          <span className="text-[11px] text-muted-foreground mr-1 flex items-center gap-1">
+          <span className="text-muted-foreground mr-1 flex items-center gap-1 text-[11px]">
             <Filter className="size-3" aria-hidden="true" />
             Filter:
           </span>
@@ -88,7 +92,7 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
                 key={level}
                 onClick={() => setSeverityFilter(level)}
                 aria-pressed={isSelected}
-                className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors border outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
+                className={`focus-visible:ring-brand-primary rounded border px-2 py-0.5 font-mono text-[11px] transition-colors outline-none focus-visible:ring-2 ${
                   isSelected
                     ? "bg-brand-primary/20 text-brand-primary border-brand-primary/40 font-semibold"
                     : "bg-surface-2 text-muted-foreground border-border-subtle hover:text-foreground"
@@ -103,9 +107,9 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
 
       {filteredRisks.length === 0 ? (
         <Card className="border-border-subtle bg-surface-1/40">
-          <CardContent className="flex items-center gap-3 p-6 text-center justify-center">
+          <CardContent className="flex items-center justify-center gap-3 p-6 text-center">
             <CheckCircle2 className="size-5 text-emerald-400" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {severityFilter === "ALL"
                 ? "No operational risks detected across the business. All projects and deliverables on schedule."
                 : `No active risks categorized with ${severityFilter} severity.`}
@@ -118,36 +122,36 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
             return (
               <Card
                 key={risk.id}
-                className="bg-surface-1/70 border-border-subtle transition-all duration-150 hover:border-border-strong hover:bg-surface-2/60"
+                className="bg-surface-1/70 border-border-subtle hover:border-border-strong hover:bg-surface-2/60 transition-all duration-150"
               >
-                <CardContent className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="space-y-1.5 flex-1 min-w-0">
+                <CardContent className="flex flex-col justify-between gap-3 p-3.5 md:flex-row md:items-center">
+                  <div className="min-w-0 flex-1 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
-                        className={`inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-bold uppercase tracking-wider border ${getSeverityStyle(
+                        className={`py-0.2 inline-flex items-center rounded border px-1.5 font-mono text-[10px] font-bold tracking-wider uppercase ${getSeverityStyle(
                           risk.severity,
                         )}`}
                       >
                         {risk.severity}
                       </span>
                       <span
-                        className={`inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${getEntityTypeBadge(
+                        className={`py-0.2 inline-flex items-center rounded border px-1.5 font-mono text-[10px] font-medium ${getEntityTypeBadge(
                           risk.entityType,
                         )}`}
                       >
                         {risk.entityType}
                       </span>
-                      <span className="text-sm font-semibold text-foreground-heading truncate">
+                      <span className="text-foreground-heading truncate text-sm font-semibold">
                         {risk.entityTitle}
                       </span>
                     </div>
 
-                    <p className="text-xs text-foreground-secondary leading-relaxed">
+                    <p className="text-foreground-secondary text-xs leading-relaxed">
                       {risk.explanation}
                     </p>
 
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-0.5">
-                      <span className="font-medium text-foreground-muted">
+                    <div className="text-muted-foreground flex items-center gap-2 pt-0.5 text-[11px]">
+                      <span className="text-foreground-muted font-medium">
                         Recommended Action:
                       </span>
                       <span className="text-foreground-secondary italic">
@@ -156,8 +160,8 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
-                    <span className="text-[11px] font-mono text-muted-foreground hidden sm:inline">
+                  <div className="flex shrink-0 items-center gap-3 self-end md:self-center">
+                    <span className="text-muted-foreground hidden font-mono text-[11px] sm:inline">
                       {new Date(risk.detectedAt).toLocaleDateString()}
                     </span>
                     <Button
@@ -165,10 +169,13 @@ export function RiskRadarSection({ risks }: RiskRadarSectionProps) {
                       size="sm"
                       variant="outline"
                       aria-label={`Investigate ${risk.entityTitle} (${risk.severity} risk)`}
-                      className="h-7 text-xs px-2.5 gap-1.5 border-border-subtle hover:border-brand-primary/50"
+                      className="border-border-subtle hover:border-brand-primary/50 h-7 gap-1.5 px-2.5 text-xs"
                     >
                       <span>Investigate</span>
-                      <ArrowRight className="size-3 text-brand-primary" aria-hidden="true" />
+                      <ArrowRight
+                        className="text-brand-primary size-3"
+                        aria-hidden="true"
+                      />
                     </Button>
                   </div>
                 </CardContent>

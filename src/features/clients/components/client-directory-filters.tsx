@@ -20,7 +20,9 @@ interface ClientDirectoryFiltersProps {
   clients: ClientRow[];
 }
 
-export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps) {
+export function ClientDirectoryFilters({
+  clients,
+}: ClientDirectoryFiltersProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [healthFilter, setHealthFilter] = useState<string>("all");
@@ -65,17 +67,21 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
   const counts = useMemo(() => {
     return {
       all: clients.length,
-      active: clients.filter((c) => (c.status || "").toLowerCase() === "active").length,
+      active: clients.filter((c) => (c.status || "").toLowerCase() === "active")
+        .length,
       prospect: clients.filter(
         (c) =>
           (c.status || "").toLowerCase() === "prospect" ||
           (c.status || "").toLowerCase() === "lead",
       ).length,
-      archived: clients.filter((c) => (c.status || "").toLowerCase() === "archived").length,
+      archived: clients.filter(
+        (c) => (c.status || "").toLowerCase() === "archived",
+      ).length,
     };
   }, [clients]);
 
-  const hasFiltersActive = searchTerm !== "" || statusFilter !== "all" || healthFilter !== "all";
+  const hasFiltersActive =
+    searchTerm !== "" || statusFilter !== "all" || healthFilter !== "all";
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -86,21 +92,21 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
   return (
     <div className="space-y-6">
       {/* Filter toolbar: search bar + status pills + health selector */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-lg border border-border-subtle bg-surface-1">
+      <div className="border-border-subtle bg-surface-1 flex flex-col items-stretch justify-between gap-3 rounded-lg border p-2 sm:flex-row sm:items-center">
         {/* Search input */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-foreground-muted pointer-events-none" />
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="text-foreground-muted pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Filter clients by name, industry, or region..."
-            className="pl-8.5 pr-8 h-8 text-xs bg-surface-2 border-border-subtle"
+            className="bg-surface-2 border-border-subtle h-8 pr-8 pl-8.5 text-xs"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground cursor-pointer"
+              className="text-foreground-muted hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer"
             >
               <X className="size-3.5" />
             </button>
@@ -112,7 +118,7 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
           <button
             type="button"
             onClick={() => setStatusFilter("all")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "all"
                 ? "bg-surface-3 text-foreground font-semibold shadow-xs"
                 : "text-foreground-muted hover:text-foreground hover:bg-surface-2"
@@ -123,9 +129,9 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
           <button
             type="button"
             onClick={() => setStatusFilter("active")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "active"
-                ? "bg-surface-3 text-emerald-400 font-semibold shadow-xs"
+                ? "bg-surface-3 font-semibold text-emerald-400 shadow-xs"
                 : "text-foreground-muted hover:text-foreground hover:bg-surface-2"
             }`}
           >
@@ -134,9 +140,9 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
           <button
             type="button"
             onClick={() => setStatusFilter("prospect")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "prospect"
-                ? "bg-surface-3 text-sky-400 font-semibold shadow-xs"
+                ? "bg-surface-3 font-semibold text-sky-400 shadow-xs"
                 : "text-foreground-muted hover:text-foreground hover:bg-surface-2"
             }`}
           >
@@ -145,7 +151,7 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
           <button
             type="button"
             onClick={() => setStatusFilter("archived")}
-            className={`px-2.5 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors whitespace-nowrap ${
+            className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
               statusFilter === "archived"
                 ? "bg-surface-3 text-foreground font-semibold shadow-xs"
                 : "text-foreground-muted hover:text-foreground hover:bg-surface-2"
@@ -156,11 +162,11 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
         </div>
 
         {/* Health filter */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <select
             value={healthFilter}
             onChange={(e) => setHealthFilter(e.target.value)}
-            className="h-8 px-2 rounded-md border border-border-subtle bg-surface-2 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-brand-primary cursor-pointer"
+            className="border-border-subtle bg-surface-2 text-foreground focus:ring-brand-primary h-8 cursor-pointer rounded-md border px-2 text-xs focus:ring-1 focus:outline-none"
           >
             <option value="all">All Health</option>
             <option value="good">Good Health</option>
@@ -186,7 +192,9 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
       {filteredClients.length === 0 ? (
         <ClientEmptyState
           icon={Building2}
-          title={hasFiltersActive ? "No matching clients found" : "No clients yet"}
+          title={
+            hasFiltersActive ? "No matching clients found" : "No clients yet"
+          }
           description={
             hasFiltersActive
               ? "No client accounts match the active search or status filters. Try clearing your filters."
@@ -199,7 +207,7 @@ export function ClientDirectoryFilters({ clients }: ClientDirectoryFiltersProps)
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredClients.map((client) => (
             <ClientCard key={client.clientId} client={client} />
           ))}

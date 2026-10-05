@@ -4,7 +4,7 @@
 **Phase:** Phase 5B — Real Cloud Staging Execution & Integration Validation  
 **Date:** September 2026  
 **Auditor:** Senior Staff & Release-Validation Engineer  
-**Classification:** `BLOCKED` (Staging Database Credential Boundary — PostgreSQL 28P01)  
+**Classification:** `BLOCKED` (Staging Database Credential Boundary — PostgreSQL 28P01)
 
 ---
 
@@ -13,11 +13,12 @@
 ### **`BLOCKED` (CREDENTIAL BOUNDARY ENCOUNTERED)**
 
 The AI NEX OS Staging Supabase project (`shnzzbbtydmvfhgeoysg` in `ap-southeast-1`) is **`ACTIVE_HEALTHY`** following manual resumption by the user. Real cloud connectivity verification achieved the following empirical results:
+
 1. **Supabase REST & Storage API Connectivity**: **`PASS`** (Service-role key validated, bucket inspection returned HTTP 200 OK).
 2. **Production Project Status**: **`INACTIVE`** (Paused, 100% isolated, zero production connections).
 3. **Database Pooler Connectivity**: **`BLOCKED`** — Connection to `aws-0-ap-southeast-1.pooler.supabase.com:5432` / `:6543` failed with PostgreSQL error `28P01: password authentication failed for user "postgres"`.
 
-In accordance with **Non-Negotiable Safety Rule 15 & 23** (*"If a credential boundary is encountered, stop and give secure local instructions. Do not ask for secrets in chat"*), execution stopped immediately at this credential boundary.
+In accordance with **Non-Negotiable Safety Rule 15 & 23** (_"If a credential boundary is encountered, stop and give secure local instructions. Do not ask for secrets in chat"_), execution stopped immediately at this credential boundary.
 
 ---
 
@@ -70,6 +71,7 @@ AI NEX OS — environment check (test)
 ## 4. Root Cause of Database Block
 
 The database password stored in the local `.env.test.local` file (from August 2026) was rejected by the active Supabase PostgreSQL cluster (`PostgreSQL 28P01`). This commonly occurs when:
+
 1. The project was unpaused or restored with a different database password.
 2. The database password was reset in the Supabase Cloud console.
 3. Special characters in the password require percent-encoding in the URL.
@@ -98,9 +100,11 @@ Follow these steps locally on your machine:
 
 3. **Verify Connectivity**:
    Run in your terminal:
+
    ```bash
    npm run env:check -- --environment=staging --verify
    ```
+
    Both `database` and `storage` should show green `✓`.
 
 4. **Trigger Cloud Staging Execution**:
@@ -115,4 +119,4 @@ Follow these steps locally on your machine:
 
 # **`BLOCKED`**
 
-*(Staging Supabase project is ACTIVE; REST/Storage APIs verified; database authentication blocked awaiting local password sync in `.env.test.local`.)*
+_(Staging Supabase project is ACTIVE; REST/Storage APIs verified; database authentication blocked awaiting local password sync in `.env.test.local`.)_

@@ -33,7 +33,9 @@ function recordTest(
     result: passed ? "PASSED" : "FAILED",
   });
   const mark = passed ? "✓ PASS" : "✗ FAIL";
-  console.log(`[${mark}] ${test}\n       Expected: ${expected}\n       Actual:   ${actual}`);
+  console.log(
+    `[${mark}] ${test}\n       Expected: ${expected}\n       Actual:   ${actual}`,
+  );
 }
 
 async function asPostgresRole<T>(
@@ -59,12 +61,17 @@ async function asPostgresRole<T>(
 }
 
 async function runVerification() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("PHASE 5D — LIVE STAGING RLS & SECURITY VERIFICATION");
   console.log(`Target: ${target.environment} (${target.projectRef})`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
-  const connectionString = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL;
+  const connectionString =
+    process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL;
   if (!connectionString) throw new Error("Missing connection string");
 
   const sql = postgres(connectionString, {
@@ -110,12 +117,16 @@ async function runVerification() {
       FROM pg_policies
       WHERE tablename = 'projects' AND policyname = 'projects_select';
     `;
-    const policyUsesHelper = policyRecord && String(policyRecord.qual).includes("app.is_project_member");
+    const policyUsesHelper =
+      policyRecord &&
+      String(policyRecord.qual).includes("app.is_project_member");
 
     recordTest(
       "projects_select Policy Definition",
       "Uses app.is_project_member(project_id) without inline project_members subquery recursion",
-      policyRecord ? String(policyRecord.qual).slice(0, 100) + "..." : "Policy not found",
+      policyRecord
+        ? String(policyRecord.qual).slice(0, 100) + "..."
+        : "Policy not found",
       Boolean(policyUsesHelper),
     );
 
@@ -125,14 +136,18 @@ async function runVerification() {
     console.log("\n--- 2. IDENTIFYING STAGING TENANTS ---");
 
     // Fetch two distinct organizations from staging
-    const orgs = await sql<{ organization_id: string; organization_name: string }[]>`
+    const orgs = await sql<
+      { organization_id: string; organization_name: string }[]
+    >`
       SELECT organization_id, organization_name
       FROM organizations
       ORDER BY created_at ASC
       LIMIT 2;
     `;
     if (orgs.length < 2) {
-      throw new Error("Staging requires at least 2 organizations to test cross-tenant boundaries");
+      throw new Error(
+        "Staging requires at least 2 organizations to test cross-tenant boundaries",
+      );
     }
     const orgA = orgs[0].organization_id;
     const orgB = orgs[1].organization_id;
@@ -151,7 +166,9 @@ async function runVerification() {
       LIMIT 1;
     `;
     if (usersA.length === 0 || usersB.length === 0) {
-      throw new Error("Missing active users in Org A or Org B for RLS verification");
+      throw new Error(
+        "Missing active users in Org A or Org B for RLS verification",
+      );
     }
     const userA = usersA[0];
     const userB = usersB[0];
@@ -159,7 +176,9 @@ async function runVerification() {
     console.log(`User B: ${userB.email} (${userB.user_id})`);
 
     // Ensure at least one project exists in Org A and Org B
-    let [projA] = await sql<{ project_id: string; project_name: string; visibility: string }[]>`
+    let [projA] = await sql<
+      { project_id: string; project_name: string; visibility: string }[]
+    >`
       SELECT project_id, project_name, visibility FROM projects WHERE organization_id = ${orgA} LIMIT 1;
     `;
     if (!projA) {
@@ -171,7 +190,9 @@ async function runVerification() {
       `;
     }
 
-    let [projB] = await sql<{ project_id: string; project_name: string; visibility: string }[]>`
+    let [projB] = await sql<
+      { project_id: string; project_name: string; visibility: string }[]
+    >`
       SELECT project_id, project_name, visibility FROM projects WHERE organization_id = ${orgB} LIMIT 1;
     `;
     if (!projB) {
@@ -200,7 +221,8 @@ async function runVerification() {
       anonSelectBlocked = rows.length === 0;
       anonSelectDetails = `${rows.length} rows returned`;
     } catch (err: any) {
-      anonSelectBlocked = err.code === "42501" || err.message?.includes("permission denied");
+      anonSelectBlocked =
+        err.code === "42501" || err.message?.includes("permission denied");
       anonSelectDetails = `Blocked: code ${err.code}`;
     }
     recordTest(
@@ -257,11 +279,15 @@ async function runVerification() {
     );
 
     // D. Authenticated User A SELECT User B project
-    const leakedUserBProject = userAProjects.some((p) => p.project_id === projB.project_id);
+    const leakedUserBProject = userAProjects.some(
+      (p) => p.project_id === projB.project_id,
+    );
     recordTest(
       "D. authenticated User A SELECT User B project",
       "Denied / 0 rows (projB not visible to User A)",
-      leakedUserBProject ? "LEAKED: User A saw User B project" : "Filtered out (0 cross-tenant rows)",
+      leakedUserBProject
+        ? "LEAKED: User A saw User B project"
+        : "Filtered out (0 cross-tenant rows)",
       !leakedUserBProject,
     );
 
@@ -292,7 +318,8 @@ async function runVerification() {
     recordTest(
       "E. authenticated User A SELECT project_members",
       "Only authorized membership visibility (0 cross-tenant members)",
-      userAMembersErr || `Returned ${userAMembers.length} member(s), crossTenantLeak=${crossTenantMemberLeak}`,
+      userAMembersErr ||
+        `Returned ${userAMembers.length} member(s), crossTenantLeak=${crossTenantMemberLeak}`,
       !userAMembersErr && !crossTenantMemberLeak,
     );
 
@@ -311,7 +338,8 @@ async function runVerification() {
           `;
           if (res.length === 0) {
             crossUpdateBlocked = true;
-            crossUpdateDetails = "0 rows updated (mutation refused by RLS/tenancy)";
+            crossUpdateDetails =
+              "0 rows updated (mutation refused by RLS/tenancy)";
           } else {
             crossUpdateDetails = "LEAK: updated foreign project row";
           }
@@ -330,8 +358,7 @@ async function runVerification() {
 
     // G. Authenticated user executes the previously failing projects SELECT
     const had42P17 =
-      userASelectErr?.includes("42P17") ||
-      userAMembersErr?.includes("42P17");
+      userASelectErr?.includes("42P17") || userAMembersErr?.includes("42P17");
     recordTest(
       "G. previously failing projects SELECT error check",
       "NO 42P17 infinite recursion",
@@ -349,7 +376,9 @@ async function runVerification() {
     const serverSideProjects = await sql`
       SELECT project_id, organization_id FROM projects WHERE organization_id = ${orgA};
     `;
-    const serverSideAllMatch = serverSideProjects.every((p) => p.organization_id === orgA);
+    const serverSideAllMatch = serverSideProjects.every(
+      (p) => p.organization_id === orgA,
+    );
     recordTest(
       "Server-side tenant scoped project read",
       "All projects returned strictly belong to organizationId filter",
@@ -399,7 +428,8 @@ async function runVerification() {
       "authenticated",
       { sub: userA.user_id, organizationId: orgA },
       async (tx) => {
-        const [res] = await tx`SELECT app.is_project_member(${projB.project_id}) as is_member`;
+        const [res] =
+          await tx`SELECT app.is_project_member(${projB.project_id}) as is_member`;
         foreignHelperResult = res.is_member;
       },
     );
@@ -417,7 +447,8 @@ async function runVerification() {
       "authenticated",
       { sub: userA.user_id, organizationId: orgA },
       async (tx) => {
-        const [res] = await tx`SELECT app.is_project_member(${randomUUID()}) as is_member`;
+        const [res] =
+          await tx`SELECT app.is_project_member(${randomUUID()}) as is_member`;
         randomHelperResult = res.is_member;
       },
     );
@@ -432,10 +463,18 @@ async function runVerification() {
     // SUMMARY
     // ------------------------------------------------------------------------
     const allPassed = tableResults.every((t) => t.result === "PASSED");
-    console.log("\n================================================================================");
-    console.log(`STAGING VERIFICATION OVERALL VERDICT: ${allPassed ? "PASSED" : "FAILED"}`);
-    console.log(`Passed: ${tableResults.filter((t) => t.result === "PASSED").length}/${tableResults.length}`);
-    console.log("================================================================================\n");
+    console.log(
+      "\n================================================================================",
+    );
+    console.log(
+      `STAGING VERIFICATION OVERALL VERDICT: ${allPassed ? "PASSED" : "FAILED"}`,
+    );
+    console.log(
+      `Passed: ${tableResults.filter((t) => t.result === "PASSED").length}/${tableResults.length}`,
+    );
+    console.log(
+      "================================================================================\n",
+    );
 
     if (!allPassed) {
       process.exit(1);

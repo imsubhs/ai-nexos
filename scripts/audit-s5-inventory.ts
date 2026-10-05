@@ -197,7 +197,9 @@ async function main() {
       JSON.stringify(inventoryData, null, 2),
       "utf8",
     );
-    console.log(`Saved inventory: ${tables.length} tables, ${policies.length} policies, ${secDefFunctions.length} secdef functions.`);
+    console.log(
+      `Saved inventory: ${tables.length} tables, ${policies.length} policies, ${secDefFunctions.length} secdef functions.`,
+    );
   } finally {
     await sql.end();
   }

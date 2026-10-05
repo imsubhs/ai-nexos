@@ -30,7 +30,8 @@ export function CreateClientModal() {
         <DialogHeader>
           <DialogTitle>Register New Client Account</DialogTitle>
           <DialogDescription>
-            Create an executive client profile. Set company information, communication channels, and brand guidelines.
+            Create an executive client profile. Set company information,
+            communication channels, and brand guidelines.
           </DialogDescription>
         </DialogHeader>
         <ClientForm onSuccess={() => setOpen(false)} />

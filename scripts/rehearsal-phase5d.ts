@@ -50,7 +50,9 @@ function record(
 ) {
   verifications.push({ id, name, expected, actual, passed });
   const mark = passed ? "✓ PASS" : "✗ FAIL";
-  console.log(`[${mark}] ${id}: ${name}\n       Expected: ${expected}\n       Actual:   ${actual}`);
+  console.log(
+    `[${mark}] ${id}: ${name}\n       Expected: ${expected}\n       Actual:   ${actual}`,
+  );
 }
 
 let sqlClient: Sql;
@@ -78,10 +80,14 @@ async function asRole<T>(
 }
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("PHASE 5D — LOCAL REHEARSAL ON DISPOSABLE POSTGRESQL");
   console.log(`Target: ${LOCAL_DB_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   const sql = postgres(LOCAL_DB_URL, { prepare: false, onnotice: () => {} });
   sqlClient = sql;
@@ -95,7 +101,9 @@ async function main() {
       CREATE SCHEMA public;
       CREATE SCHEMA IF NOT EXISTS auth;
     `);
-    await sql.unsafe(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
+    await sql.unsafe(
+      `CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; CREATE EXTENSION IF NOT EXISTS pgcrypto;`,
+    );
 
     // Ensure roles exist
     await sql.unsafe(`
@@ -177,7 +185,9 @@ async function main() {
         await sql.unsafe(trimmed);
       }
     }
-    console.log(`  ✓ Successfully applied 0018_remediate_projects_rls_recursion.sql.`);
+    console.log(
+      `  ✓ Successfully applied 0018_remediate_projects_rls_recursion.sql.`,
+    );
 
     console.log("--- 4. Seeding Test Tenants & Matrix ---");
     const orgA = randomUUID();
@@ -255,14 +265,19 @@ async function main() {
     let a1Projects: string[] = [];
     let test1Error: string | null = null;
     try {
-      const rows = await asRole("authenticated", { sub: userA1, organizationId: orgA }, (tx) =>
-        tx`SELECT project_id FROM projects`
+      const rows = await asRole(
+        "authenticated",
+        { sub: userA1, organizationId: orgA },
+        (tx) => tx`SELECT project_id FROM projects`,
       );
       a1Projects = rows.map((r: any) => r.project_id);
     } catch (err: any) {
       test1Error = err.message;
     }
-    const test1Passed = !test1Error && a1Projects.length === 3 && a1Projects.includes(projA_internal);
+    const test1Passed =
+      !test1Error &&
+      a1Projects.length === 3 &&
+      a1Projects.includes(projA_internal);
     record(
       "CHK-01",
       "Authenticated user can read authorized projects",
@@ -278,7 +293,9 @@ async function main() {
       "CHK-02",
       "Authenticated user cannot read another tenant's project",
       "projB_internal is NOT visible to User A1",
-      seesTenantB ? "LEAKED: User A1 saw Org B project" : "Properly isolated (0 cross-tenant rows)",
+      seesTenantB
+        ? "LEAKED: User A1 saw Org B project"
+        : "Properly isolated (0 cross-tenant rows)",
       !seesTenantB,
     );
 
@@ -290,8 +307,10 @@ async function main() {
     let a2Projects: string[] = [];
     let test3Error: string | null = null;
     try {
-      const rows = await asRole("authenticated", { sub: userA2, organizationId: orgA }, (tx) =>
-        tx`SELECT project_id FROM projects`
+      const rows = await asRole(
+        "authenticated",
+        { sub: userA2, organizationId: orgA },
+        (tx) => tx`SELECT project_id FROM projects`,
       );
       a2Projects = rows.map((r: any) => r.project_id);
     } catch (err: any) {
@@ -299,13 +318,20 @@ async function main() {
     }
     const seesInternal = a2Projects.includes(projA_internal);
     const seesPrivateMember = a2Projects.includes(projA_private_member);
-    const seesPrivateUnauthorized = a2Projects.includes(projA_private_no_member);
-    const test3Passed = !test3Error && seesInternal && seesPrivateMember && !seesPrivateUnauthorized;
+    const seesPrivateUnauthorized = a2Projects.includes(
+      projA_private_no_member,
+    );
+    const test3Passed =
+      !test3Error &&
+      seesInternal &&
+      seesPrivateMember &&
+      !seesPrivateUnauthorized;
     record(
       "CHK-03",
       "Unauthorized project member access fails for private project",
       "User A2 sees internal + private member project, NOT unauthorized private project",
-      test3Error || `seesInternal=${seesInternal}, seesPrivateMember=${seesPrivateMember}, seesUnauthorizedPrivate=${seesPrivateUnauthorized}`,
+      test3Error ||
+        `seesInternal=${seesInternal}, seesPrivateMember=${seesPrivateMember}, seesUnauthorizedPrivate=${seesPrivateUnauthorized}`,
       test3Passed,
     );
 
@@ -314,13 +340,22 @@ async function main() {
     // User A3 (not a member of private project) cannot see members of projA_private_no_member
     let a2Members: any[] = [];
     let a3Members: any[] = [];
-    await asRole("authenticated", { sub: userA2, organizationId: orgA }, async (tx) => {
-      a2Members = await tx`SELECT member_id, project_id FROM project_members`;
-    });
-    await asRole("authenticated", { sub: userA3, organizationId: orgA }, async (tx) => {
-      a3Members = await tx`SELECT member_id, project_id FROM project_members`;
-    });
-    const test4Passed = a2Members.some((m) => m.member_id === mem1) && a3Members.length === 0;
+    await asRole(
+      "authenticated",
+      { sub: userA2, organizationId: orgA },
+      async (tx) => {
+        a2Members = await tx`SELECT member_id, project_id FROM project_members`;
+      },
+    );
+    await asRole(
+      "authenticated",
+      { sub: userA3, organizationId: orgA },
+      async (tx) => {
+        a3Members = await tx`SELECT member_id, project_id FROM project_members`;
+      },
+    );
+    const test4Passed =
+      a2Members.some((m) => m.member_id === mem1) && a3Members.length === 0;
     record(
       "CHK-04",
       "project_members visibility remains correctly scoped",
@@ -343,7 +378,8 @@ async function main() {
       "CHK-05",
       "Anonymous SELECT remains blocked",
       "Blocked by privilege or returns 0 rows",
-      anonSelectErr || (anonSelectBlocked ? "0 rows returned" : "Rows leaked to anon"),
+      anonSelectErr ||
+        (anonSelectBlocked ? "0 rows returned" : "Rows leaked to anon"),
       anonSelectBlocked,
     );
 
@@ -351,9 +387,12 @@ async function main() {
     let anonInsertBlocked = false;
     let anonInsertErr = "";
     try {
-      await asRole("anon", {}, (tx) =>
-        tx`INSERT INTO projects (project_id, organization_id, project_name, project_code)
-           VALUES (${randomUUID()}, ${orgA}, 'Anon Proj', 'ANP-01')`
+      await asRole(
+        "anon",
+        {},
+        (tx) =>
+          tx`INSERT INTO projects (project_id, organization_id, project_name, project_code)
+           VALUES (${randomUUID()}, ${orgA}, 'Anon Proj', 'ANP-01')`,
       );
     } catch (err: any) {
       anonInsertBlocked = true;
@@ -375,9 +414,12 @@ async function main() {
     let userA2InsertBlocked = false;
     let userA2InsertErr = "";
     try {
-      await asRole("authenticated", { sub: userA2, organizationId: orgA }, (tx) =>
-        tx`INSERT INTO projects (project_id, organization_id, project_name, project_code)
-           VALUES (${randomUUID()}, ${orgA}, 'Unauthorized Proj', 'UP-01')`
+      await asRole(
+        "authenticated",
+        { sub: userA2, organizationId: orgA },
+        (tx) =>
+          tx`INSERT INTO projects (project_id, organization_id, project_name, project_code)
+           VALUES (${randomUUID()}, ${orgA}, 'Unauthorized Proj', 'UP-01')`,
       );
     } catch (err: any) {
       userA2InsertBlocked = true;
@@ -396,17 +438,21 @@ async function main() {
     // User A1 attempting to update Org B project updates 0 rows
     let updateOwnSuccess = false;
     let updateCrossTenantZero = false;
-    await asRole("authenticated", { sub: userA1, organizationId: orgA }, async (tx) => {
-      const resOwn = await tx`
+    await asRole(
+      "authenticated",
+      { sub: userA1, organizationId: orgA },
+      async (tx) => {
+        const resOwn = await tx`
         UPDATE projects SET description = 'Updated by A1' WHERE project_id = ${projA_internal} RETURNING project_id
       `;
-      updateOwnSuccess = resOwn.length === 1;
+        updateOwnSuccess = resOwn.length === 1;
 
-      const resCross = await tx`
+        const resCross = await tx`
         UPDATE projects SET description = 'Hijacked by A1' WHERE project_id = ${projB_internal} RETURNING project_id
       `;
-      updateCrossTenantZero = resCross.length === 0;
-    });
+        updateCrossTenantZero = resCross.length === 0;
+      },
+    );
     record(
       "CHK-08",
       "UPDATE remains correctly scoped",
@@ -419,17 +465,21 @@ async function main() {
     // User A1 deletes own project; cross-tenant delete of Org B affects 0 rows
     let deleteOwnSuccess = false;
     let deleteCrossTenantZero = false;
-    await asRole("authenticated", { sub: userA1, organizationId: orgA }, async (tx) => {
-      const resCross = await tx`
+    await asRole(
+      "authenticated",
+      { sub: userA1, organizationId: orgA },
+      async (tx) => {
+        const resCross = await tx`
         DELETE FROM projects WHERE project_id = ${projB_internal} RETURNING project_id
       `;
-      deleteCrossTenantZero = resCross.length === 0;
+        deleteCrossTenantZero = resCross.length === 0;
 
-      const resOwn = await tx`
+        const resOwn = await tx`
         DELETE FROM projects WHERE project_id = ${projA_internal} RETURNING project_id
       `;
-      deleteOwnSuccess = resOwn.length === 1;
-    });
+        deleteOwnSuccess = resOwn.length === 1;
+      },
+    );
     record(
       "CHK-09",
       "DELETE remains correctly scoped",
@@ -453,10 +503,16 @@ async function main() {
     );
 
     const allPassed = verifications.every((v) => v.passed);
-    console.log("\n================================================================================");
+    console.log(
+      "\n================================================================================",
+    );
     console.log(`LOCAL REHEARSAL VERDICT: ${allPassed ? "PASSED" : "FAILED"}`);
-    console.log(`Passed: ${verifications.filter((v) => v.passed).length}/${verifications.length}`);
-    console.log("================================================================================\n");
+    console.log(
+      `Passed: ${verifications.filter((v) => v.passed).length}/${verifications.length}`,
+    );
+    console.log(
+      "================================================================================\n",
+    );
 
     if (!allPassed) {
       process.exit(1);

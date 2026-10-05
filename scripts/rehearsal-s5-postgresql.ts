@@ -26,7 +26,15 @@ const DB_URL = `postgresql://postgres@localhost:5432/${TARGET_DB}`;
 interface RehearsalCheck {
   id: string;
   name: string;
-  category: "MIGRATION" | "SECDEF_AUDIT" | "GRANTS_AUDIT" | "ANON_DENIAL" | "TENANT_ISOLATION" | "MEMBERSHIP_RLS" | "LIFECYCLE_GUARD" | "RECURSION_CHECK";
+  category:
+    | "MIGRATION"
+    | "SECDEF_AUDIT"
+    | "GRANTS_AUDIT"
+    | "ANON_DENIAL"
+    | "TENANT_ISOLATION"
+    | "MEMBERSHIP_RLS"
+    | "LIFECYCLE_GUARD"
+    | "RECURSION_CHECK";
   passed: boolean;
   evidence: string;
 }
@@ -46,10 +54,14 @@ function recordCheck(
 }
 
 async function runRehearsal() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — S5 RLS HARDENING DISPOSABLE POSTGRESQL REHEARSAL");
   console.log(`Target: ${DB_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // Step 1: Create fresh database
   const adminSql = postgres(ADMIN_URL, { prepare: false });
@@ -67,7 +79,9 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     // SECTION 1: MIGRATIONS (0000 → 0019)
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 1: APPLYING FULL MIGRATION CHAIN (0000 → 0019) ---");
+    console.log(
+      "\n--- SECTION 1: APPLYING FULL MIGRATION CHAIN (0000 → 0019) ---",
+    );
     await sql.unsafe(`
       DROP SCHEMA IF EXISTS public CASCADE;
       DROP SCHEMA IF EXISTS events CASCADE;
@@ -190,7 +204,9 @@ async function runRehearsal() {
     `;
 
     for (const fn of secDefFns) {
-      const hasSearchPath = Array.isArray(fn.config) && fn.config.some((c: string) => c.includes("search_path=public"));
+      const hasSearchPath =
+        Array.isArray(fn.config) &&
+        fn.config.some((c: string) => c.includes("search_path=public"));
       recordCheck(
         `SECDEF-${fn.function_name}`,
         `Search Path Pinned (${fn.function_name})`,
@@ -255,17 +271,17 @@ async function runRehearsal() {
     const roleAlphaMember = "33333333-3333-3333-3333-333333333332";
     const roleBetaAdmin = "44444444-4444-4444-4444-444444444441";
 
-    const userAlice = "55555555-5555-5555-5555-555555555551";   // Alpha Admin (Active)
+    const userAlice = "55555555-5555-5555-5555-555555555551"; // Alpha Admin (Active)
     const userCharlie = "55555555-5555-5555-5555-555555555552"; // Alpha Member (Active)
-    const userDavid = "55555555-5555-5555-5555-555555555553";   // Alpha Member (Inactive)
-    const userEve = "55555555-5555-5555-5555-555555555554";     // Alpha Member (Soft-deleted)
-    const userBob = "66666666-6666-6666-6666-666666666661";     // Beta Admin (Active)
-    const userFrank = "77777777-7777-7777-7777-777777777771";   // Dual-org member (Alpha + Beta)
+    const userDavid = "55555555-5555-5555-5555-555555555553"; // Alpha Member (Inactive)
+    const userEve = "55555555-5555-5555-5555-555555555554"; // Alpha Member (Soft-deleted)
+    const userBob = "66666666-6666-6666-6666-666666666661"; // Beta Admin (Active)
+    const userFrank = "77777777-7777-7777-7777-777777777771"; // Dual-org member (Alpha + Beta)
 
-    const pAlpha1 = "88888888-8888-8888-8888-888888888881";     // Alpha private project (Alice + Charlie members)
-    const pAlpha2 = "88888888-8888-8888-8888-888888888882";     // Alpha public/internal project
-    const pAlpha3 = "88888888-8888-8888-8888-888888888883";     // Alpha private project (Alice only member)
-    const pBeta1 = "99999999-9999-9999-9999-999999999991";      // Beta private project (Bob member)
+    const pAlpha1 = "88888888-8888-8888-8888-888888888881"; // Alpha private project (Alice + Charlie members)
+    const pAlpha2 = "88888888-8888-8888-8888-888888888882"; // Alpha public/internal project
+    const pAlpha3 = "88888888-8888-8888-8888-888888888883"; // Alpha private project (Alice only member)
+    const pBeta1 = "99999999-9999-9999-9999-999999999991"; // Beta private project (Bob member)
 
     await sql.unsafe(`
       -- Auth users
@@ -341,11 +357,23 @@ async function runRehearsal() {
     console.log("\n--- SECTION 5: ANONYMOUS ACCESS TESTS ---");
     const anonQueries = [
       { name: "SELECT projects", sql: "SELECT * FROM projects;" },
-      { name: "INSERT projects", sql: `INSERT INTO projects (project_id, organization_id, project_name, project_code) VALUES (gen_random_uuid(), '${orgAlpha}', 'Hack', 'HCK-01');` },
-      { name: "UPDATE projects", sql: "UPDATE projects SET project_name = 'Hacked';" },
+      {
+        name: "INSERT projects",
+        sql: `INSERT INTO projects (project_id, organization_id, project_name, project_code) VALUES (gen_random_uuid(), '${orgAlpha}', 'Hack', 'HCK-01');`,
+      },
+      {
+        name: "UPDATE projects",
+        sql: "UPDATE projects SET project_name = 'Hacked';",
+      },
       { name: "DELETE projects", sql: "DELETE FROM projects;" },
-      { name: "SELECT organization_memberships", sql: "SELECT * FROM organization_memberships;" },
-      { name: "SELECT organization_invitations", sql: "SELECT * FROM organization_invitations;" },
+      {
+        name: "SELECT organization_memberships",
+        sql: "SELECT * FROM organization_memberships;",
+      },
+      {
+        name: "SELECT organization_invitations",
+        sql: "SELECT * FROM organization_invitations;",
+      },
     ];
 
     for (const q of anonQueries) {
@@ -354,7 +382,13 @@ async function runRehearsal() {
           SET ROLE anon;
           ${q.sql}
         `);
-        recordCheck(`ANON-${q.name}`, `Anon ${q.name} Blocked`, "ANON_DENIAL", false, "UNEXPECTED ALLOW!");
+        recordCheck(
+          `ANON-${q.name}`,
+          `Anon ${q.name} Blocked`,
+          "ANON_DENIAL",
+          false,
+          "UNEXPECTED ALLOW!",
+        );
       } catch (err: any) {
         recordCheck(
           `ANON-${q.name}`,
@@ -373,8 +407,13 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     console.log("\n--- SECTION 6: TENANT ISOLATION MATRIX (ALICE VS BOB) ---");
     // Alice reads projects
-    const aliceProjects = await queryAsUser(userAlice, "SELECT project_id, project_name FROM projects;");
-    const aliceSawBeta = aliceProjects.some((p: any) => p.project_id === pBeta1);
+    const aliceProjects = await queryAsUser(
+      userAlice,
+      "SELECT project_id, project_name FROM projects;",
+    );
+    const aliceSawBeta = aliceProjects.some(
+      (p: any) => p.project_id === pBeta1,
+    );
     const aliceSawAlpha = aliceProjects.length === 3;
     recordCheck(
       "ISO-01",
@@ -385,7 +424,10 @@ async function runRehearsal() {
     );
 
     // Alice directly attempts to select Beta project by ID
-    const aliceDirectBeta = await queryAsUser(userAlice, `SELECT project_id FROM projects WHERE project_id = '${pBeta1}';`);
+    const aliceDirectBeta = await queryAsUser(
+      userAlice,
+      `SELECT project_id FROM projects WHERE project_id = '${pBeta1}';`,
+    );
     recordCheck(
       "ISO-02",
       "Alice Direct Query for Beta Project ID Denied",
@@ -395,9 +437,15 @@ async function runRehearsal() {
     );
 
     // Bob reads projects
-    const bobProjects = await queryAsUser(userBob, "SELECT project_id, project_name FROM projects;");
-    const bobSawAlpha = bobProjects.some((p: any) => p.project_id === pAlpha1 || p.project_id === pAlpha2);
-    const bobSawBeta = bobProjects.length === 1 && bobProjects[0].project_id === pBeta1;
+    const bobProjects = await queryAsUser(
+      userBob,
+      "SELECT project_id, project_name FROM projects;",
+    );
+    const bobSawAlpha = bobProjects.some(
+      (p: any) => p.project_id === pAlpha1 || p.project_id === pAlpha2,
+    );
+    const bobSawBeta =
+      bobProjects.length === 1 && bobProjects[0].project_id === pBeta1;
     recordCheck(
       "ISO-03",
       "Bob Sees Only Beta Projects",
@@ -408,8 +456,17 @@ async function runRehearsal() {
 
     // Direct mutation denial for authenticated
     try {
-      await queryAsUser(userAlice, `INSERT INTO projects (project_id, organization_id, project_name, project_code) VALUES (gen_random_uuid(), '${orgAlpha}', 'Direct Insert', 'ALP-99');`);
-      recordCheck("ISO-04", "Direct Authenticated INSERT Denied", "TENANT_ISOLATION", false, "UNEXPECTED ALLOW!");
+      await queryAsUser(
+        userAlice,
+        `INSERT INTO projects (project_id, organization_id, project_name, project_code) VALUES (gen_random_uuid(), '${orgAlpha}', 'Direct Insert', 'ALP-99');`,
+      );
+      recordCheck(
+        "ISO-04",
+        "Direct Authenticated INSERT Denied",
+        "TENANT_ISOLATION",
+        false,
+        "UNEXPECTED ALLOW!",
+      );
     } catch (err: any) {
       recordCheck(
         "ISO-04",
@@ -425,10 +482,16 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     console.log("\n--- SECTION 7: ORGANIZATION MEMBERSHIPS RLS AUDIT ---");
     // Alice reads organization_memberships
-    const aliceMemberships = await queryAsUser(userAlice, "SELECT user_id, organization_id FROM organization_memberships;");
-    const aliceSawBobMembership = aliceMemberships.some((m: any) => m.user_id === userBob);
-    const aliceSawOwnAndOrg = aliceMemberships.some((m: any) => m.user_id === userAlice) &&
-                              aliceMemberships.some((m: any) => m.user_id === userCharlie);
+    const aliceMemberships = await queryAsUser(
+      userAlice,
+      "SELECT user_id, organization_id FROM organization_memberships;",
+    );
+    const aliceSawBobMembership = aliceMemberships.some(
+      (m: any) => m.user_id === userBob,
+    );
+    const aliceSawOwnAndOrg =
+      aliceMemberships.some((m: any) => m.user_id === userAlice) &&
+      aliceMemberships.some((m: any) => m.user_id === userCharlie);
     recordCheck(
       "MEMB-01",
       "Alice Sees Org Alpha Memberships",
@@ -438,10 +501,16 @@ async function runRehearsal() {
     );
 
     // Bob reads organization_memberships
-    const bobMemberships = await queryAsUser(userBob, "SELECT user_id, organization_id FROM organization_memberships;");
-    const bobSawAlphaMemberships = bobMemberships.some((m: any) => m.user_id === userAlice || m.user_id === userCharlie);
-    const bobSawOwnAndBeta = bobMemberships.some((m: any) => m.user_id === userBob) &&
-                             bobMemberships.some((m: any) => m.user_id === userFrank);
+    const bobMemberships = await queryAsUser(
+      userBob,
+      "SELECT user_id, organization_id FROM organization_memberships;",
+    );
+    const bobSawAlphaMemberships = bobMemberships.some(
+      (m: any) => m.user_id === userAlice || m.user_id === userCharlie,
+    );
+    const bobSawOwnAndBeta =
+      bobMemberships.some((m: any) => m.user_id === userBob) &&
+      bobMemberships.some((m: any) => m.user_id === userFrank);
     recordCheck(
       "MEMB-02",
       "Bob Sees Org Beta Memberships",
@@ -451,9 +520,13 @@ async function runRehearsal() {
     );
 
     // Frank (dual org member) reads his own memberships
-    const frankMemberships = await queryAsUser(userFrank, "SELECT user_id, organization_id FROM organization_memberships WHERE user_id = auth.uid();");
-    const frankHasBothOrgs = frankMemberships.some((m: any) => m.organization_id === orgAlpha) &&
-                             frankMemberships.some((m: any) => m.organization_id === orgBeta);
+    const frankMemberships = await queryAsUser(
+      userFrank,
+      "SELECT user_id, organization_id FROM organization_memberships WHERE user_id = auth.uid();",
+    );
+    const frankHasBothOrgs =
+      frankMemberships.some((m: any) => m.organization_id === orgAlpha) &&
+      frankMemberships.some((m: any) => m.organization_id === orgBeta);
     recordCheck(
       "MEMB-03",
       "Dual Member Sees Own Memberships Across All Tenants",
@@ -465,12 +538,23 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     // SECTION 8: PROJECT MEMBERSHIP & OBJECT VISIBILITY
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 8: PROJECT VISIBILITY & MEMBERSHIP RESTRICTIONS ---");
+    console.log(
+      "\n--- SECTION 8: PROJECT VISIBILITY & MEMBERSHIP RESTRICTIONS ---",
+    );
     // Charlie has role "member" (permissions: {"projects": ["read"]})
-    const charlieProjects = await queryAsUser(userCharlie, "SELECT project_id, project_name, visibility FROM projects;");
-    const charlieSawP1 = charlieProjects.some((p: any) => p.project_id === pAlpha1); // private, member
-    const charlieSawP2 = charlieProjects.some((p: any) => p.project_id === pAlpha2); // internal, member of org
-    const charlieSawP3 = charlieProjects.some((p: any) => p.project_id === pAlpha3); // private, NON-member
+    const charlieProjects = await queryAsUser(
+      userCharlie,
+      "SELECT project_id, project_name, visibility FROM projects;",
+    );
+    const charlieSawP1 = charlieProjects.some(
+      (p: any) => p.project_id === pAlpha1,
+    ); // private, member
+    const charlieSawP2 = charlieProjects.some(
+      (p: any) => p.project_id === pAlpha2,
+    ); // internal, member of org
+    const charlieSawP3 = charlieProjects.some(
+      (p: any) => p.project_id === pAlpha3,
+    ); // private, NON-member
     recordCheck(
       "PROJ-01",
       "Member Sees Assigned Private Project",
@@ -497,7 +581,10 @@ async function runRehearsal() {
     // SECTION 9: USER LIFECYCLE STATES (INACTIVE & SOFT-DELETED)
     // ------------------------------------------------------------------------
     console.log("\n--- SECTION 9: USER LIFECYCLE GUARDS ---");
-    const davidProjects = await queryAsUser(userDavid, "SELECT project_id FROM projects;");
+    const davidProjects = await queryAsUser(
+      userDavid,
+      "SELECT project_id FROM projects;",
+    );
     recordCheck(
       "LIFE-01",
       "Inactive User Denied All RLS Reads",
@@ -506,7 +593,10 @@ async function runRehearsal() {
       `Inactive user David returned ${davidProjects.length} rows (expected 0)`,
     );
 
-    const eveProjects = await queryAsUser(userEve, "SELECT project_id FROM projects;");
+    const eveProjects = await queryAsUser(
+      userEve,
+      "SELECT project_id FROM projects;",
+    );
     recordCheck(
       "LIFE-02",
       "Soft-Deleted User Denied All RLS Reads",
@@ -518,7 +608,9 @@ async function runRehearsal() {
     // ------------------------------------------------------------------------
     // SECTION 10: 42P17 RECURSION CHECK ACROSS ALL 57 RLS TABLES
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 10: 42P17 RECURSION AUDIT ACROSS ALL 57 RLS TABLES ---");
+    console.log(
+      "\n--- SECTION 10: 42P17 RECURSION AUDIT ACROSS ALL 57 RLS TABLES ---",
+    );
     const rlsTables = await sql`
       SELECT c.relname as table_name
       FROM pg_class c
@@ -530,11 +622,20 @@ async function runRehearsal() {
     let recursionFree = true;
     for (const t of rlsTables) {
       try {
-        await queryAsUser(userAlice, `SELECT * FROM "${t.table_name}" LIMIT 1;`);
+        await queryAsUser(
+          userAlice,
+          `SELECT * FROM "${t.table_name}" LIMIT 1;`,
+        );
       } catch (err: any) {
         if (err.code === "42P17") {
           recursionFree = false;
-          recordCheck(`REC-${t.table_name}`, `Recursion Free (${t.table_name})`, "RECURSION_CHECK", false, `42P17 detected!`);
+          recordCheck(
+            `REC-${t.table_name}`,
+            `Recursion Free (${t.table_name})`,
+            "RECURSION_CHECK",
+            false,
+            `42P17 detected!`,
+          );
         }
       }
     }
@@ -546,7 +647,6 @@ async function runRehearsal() {
       recursionFree,
       `All ${rlsTables.length} RLS tables evaluated cleanly under authenticated role with zero recursion`,
     );
-
   } finally {
     await sql.unsafe("RESET ROLE;");
     await sql.end();
@@ -564,11 +664,15 @@ async function runRehearsal() {
   // --------------------------------------------------------------------------
   // SUMMARY
   // --------------------------------------------------------------------------
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   console.log("REHEARSAL SUMMARY");
-  console.log("================================================================================");
-  const passed = checks.filter(c => c.passed).length;
-  const failed = checks.filter(c => !c.passed).length;
+  console.log(
+    "================================================================================",
+  );
+  const passed = checks.filter((c) => c.passed).length;
+  const failed = checks.filter((c) => !c.passed).length;
   console.log(`Total Checks: ${checks.length}`);
   console.log(`Passed:       ${passed}`);
   console.log(`Failed:       ${failed}`);
@@ -577,7 +681,9 @@ async function runRehearsal() {
     console.error("\nREHEARSAL FAILED — Defect detected!");
     process.exit(1);
   } else {
-    console.log("\nREHEARSAL PASSED — Local PostgreSQL RLS Hardening Verified!");
+    console.log(
+      "\nREHEARSAL PASSED — Local PostgreSQL RLS Hardening Verified!",
+    );
   }
 }
 

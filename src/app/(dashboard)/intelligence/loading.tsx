@@ -3,9 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function ExecutiveIntelligenceLoading() {
   return (
-    <div className="flex flex-col gap-8 pb-12 animate-pulse">
+    <div className="flex animate-pulse flex-col gap-8 pb-12">
       {/* Top Header Bar Skeleton */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border-subtle pb-4">
+      <div className="border-border-subtle flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
           <Skeleton className="h-8 w-64 rounded-md" />
           <Skeleton className="h-4 w-96 rounded-md" />
@@ -22,7 +22,7 @@ export default function ExecutiveIntelligenceLoading() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {Array.from({ length: 12 }).map((_, i) => (
             <Card key={i} className="bg-surface-1/40 border-border-subtle">
-              <CardContent className="p-3.5 space-y-2">
+              <CardContent className="space-y-2 p-3.5">
                 <Skeleton className="h-3 w-20" />
                 <Skeleton className="h-7 w-12" />
                 <Skeleton className="h-3 w-28" />
@@ -38,7 +38,7 @@ export default function ExecutiveIntelligenceLoading() {
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="bg-surface-1/40 border-border-subtle h-36">
-              <CardContent className="p-4 space-y-2.5">
+              <CardContent className="space-y-2.5 p-4">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-5 w-48" />
                 <Skeleton className="h-4 w-full" />
@@ -52,7 +52,7 @@ export default function ExecutiveIntelligenceLoading() {
       <div className="space-y-4">
         <Skeleton className="h-4 w-52 rounded" />
         <Card className="bg-surface-1/40 border-border-subtle h-24">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <Skeleton className="h-10 w-96" />
             <Skeleton className="h-10 w-32" />
           </CardContent>
@@ -60,7 +60,7 @@ export default function ExecutiveIntelligenceLoading() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} className="bg-surface-1/40 border-border-subtle h-40">
-              <CardContent className="p-3.5 space-y-2">
+              <CardContent className="space-y-2 p-3.5">
                 <Skeleton className="h-4 w-28" />
                 <Skeleton className="h-8 w-16" />
                 <Skeleton className="h-3 w-full" />

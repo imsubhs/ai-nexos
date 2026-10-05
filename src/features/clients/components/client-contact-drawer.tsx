@@ -9,10 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import {
-  ClientContactTypeBadge,
-  ClientStatusBadge,
-} from "./client-badges";
+import { ClientContactTypeBadge, ClientStatusBadge } from "./client-badges";
 import { Mail, Phone, ExternalLink, Archive, Edit2 } from "lucide-react";
 import { archiveContact } from "../actions";
 import { toast } from "sonner";
@@ -48,7 +45,9 @@ export function ClientContactDrawer({
       onOpenChange(false);
       onArchived?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to archive contact");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to archive contact",
+      );
     } finally {
       setIsArchiving(false);
     }
@@ -56,36 +55,39 @@ export function ClientContactDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md bg-surface-2 border-border p-6 flex flex-col justify-between">
+      <SheetContent
+        side="right"
+        className="bg-surface-2 border-border flex w-full flex-col justify-between p-6 sm:max-w-md"
+      >
         <div className="space-y-6">
-          <SheetHeader className="p-0 space-y-1">
+          <SheetHeader className="space-y-1 p-0">
             <div className="flex items-center gap-2">
               <ClientContactTypeBadge type={contact.contactType} />
               {contact.status && <ClientStatusBadge status={contact.status} />}
             </div>
-            <SheetTitle className="text-xl font-bold text-foreground-heading mt-2">
+            <SheetTitle className="text-foreground-heading mt-2 text-xl font-bold">
               {contact.name}
             </SheetTitle>
             {contact.designation && (
-              <SheetDescription className="text-sm text-foreground-secondary">
+              <SheetDescription className="text-foreground-secondary text-sm">
                 {contact.designation}
               </SheetDescription>
             )}
           </SheetHeader>
 
-          <div className="border-t border-border-subtle pt-4 space-y-4">
+          <div className="border-border-subtle space-y-4 border-t pt-4">
             <div className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+              <div className="text-foreground-muted text-xs font-semibold tracking-wider uppercase">
                 Contact Channels
               </div>
 
               {contact.email ? (
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-1 border border-border-subtle text-sm">
-                  <div className="flex items-center gap-2 text-foreground truncate">
-                    <Mail className="size-4 text-brand-primary shrink-0" />
+                <div className="bg-surface-1 border-border-subtle flex items-center justify-between rounded-md border p-2.5 text-sm">
+                  <div className="text-foreground flex items-center gap-2 truncate">
+                    <Mail className="text-brand-primary size-4 shrink-0" />
                     <a
                       href={`mailto:${contact.email}`}
-                      className="truncate hover:text-brand-primary hover:underline"
+                      className="hover:text-brand-primary truncate hover:underline"
                     >
                       {contact.email}
                     </a>
@@ -102,16 +104,18 @@ export function ClientContactDrawer({
                   </Button>
                 </div>
               ) : (
-                <div className="text-xs text-foreground-muted italic">No email provided</div>
+                <div className="text-foreground-muted text-xs italic">
+                  No email provided
+                </div>
               )}
 
               {contact.phone && (
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-1 border border-border-subtle text-sm">
-                  <div className="flex items-center gap-2 text-foreground truncate">
-                    <Phone className="size-4 text-brand-primary shrink-0" />
+                <div className="bg-surface-1 border-border-subtle flex items-center justify-between rounded-md border p-2.5 text-sm">
+                  <div className="text-foreground flex items-center gap-2 truncate">
+                    <Phone className="text-brand-primary size-4 shrink-0" />
                     <a
                       href={`tel:${contact.phone}`}
-                      className="truncate hover:text-brand-primary hover:underline"
+                      className="hover:text-brand-primary truncate hover:underline"
                     >
                       {contact.phone}
                     </a>
@@ -130,14 +134,14 @@ export function ClientContactDrawer({
               )}
 
               {contact.linkedin && (
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-1 border border-border-subtle text-sm">
-                  <div className="flex items-center gap-2 text-foreground truncate">
-                    <ExternalLink className="size-4 text-brand-primary shrink-0" />
+                <div className="bg-surface-1 border-border-subtle flex items-center justify-between rounded-md border p-2.5 text-sm">
+                  <div className="text-foreground flex items-center gap-2 truncate">
+                    <ExternalLink className="text-brand-primary size-4 shrink-0" />
                     <a
                       href={contact.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="truncate hover:text-brand-primary hover:underline text-xs"
+                      className="hover:text-brand-primary truncate text-xs hover:underline"
                     >
                       {contact.linkedin.replace(/^https?:\/\/(www\.)?/, "")}
                     </a>
@@ -148,10 +152,10 @@ export function ClientContactDrawer({
 
             {contact.notes && (
               <div className="space-y-2 pt-2">
-                <div className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+                <div className="text-foreground-muted text-xs font-semibold tracking-wider uppercase">
                   Notes & Details
                 </div>
-                <div className="p-3 rounded-md bg-surface-1 border border-border-subtle text-xs text-foreground-secondary leading-relaxed whitespace-pre-wrap">
+                <div className="bg-surface-1 border-border-subtle text-foreground-secondary rounded-md border p-3 text-xs leading-relaxed whitespace-pre-wrap">
                   {contact.notes}
                 </div>
               </div>
@@ -159,7 +163,7 @@ export function ClientContactDrawer({
           </div>
         </div>
 
-        <div className="border-t border-border-subtle pt-4 flex items-center justify-between gap-3">
+        <div className="border-border-subtle flex items-center justify-between gap-3 border-t pt-4">
           <Button
             variant="destructive"
             size="sm"

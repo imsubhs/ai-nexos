@@ -64,8 +64,10 @@ const orgForeignId = "00000000-0000-4000-8000-00000000000c";
 
 const roleMemberId = "00000000-0000-4000-8000-000000000012";
 
-
-import { DEMO_SESSION_COOKIE, DEMO_SESSION_VALUE } from "@/features/auth/demo-session";
+import {
+  DEMO_SESSION_COOKIE,
+  DEMO_SESSION_VALUE,
+} from "@/features/auth/demo-session";
 import {
   getUserMemberships,
   resolveActiveOrganizationContext,
@@ -74,8 +76,10 @@ import {
 } from "@/features/auth/membership-service";
 import type { TenantContext } from "@/features/auth/membership-service";
 
-
-function mockTenantContext(organizationId: string, userId: string): TenantContext {
+function mockTenantContext(
+  organizationId: string,
+  userId: string,
+): TenantContext {
   return {
     organizationId,
     userId,
@@ -138,11 +142,12 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
     expect(userMembership.status).toBe("active");
     expect(userMembership.organizationId).toBe(orgAlphaId);
     // Tenant repository can be instantiated for active membership
-    const repo = createTenantRepository(mockTenantContext(orgAlphaId, userOwnerId));
+    const repo = createTenantRepository(
+      mockTenantContext(orgAlphaId, userOwnerId),
+    );
     expect(repo.organizationId).toBe(orgAlphaId);
     expect(repo.userId).toBe(userOwnerId);
   });
-
 
   // --------------------------------------------------------------------------
   // P4-002: Authenticated user with no membership routes to onboarding
@@ -171,11 +176,14 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
       },
     ];
 
-    const hasActive = memberships.some((m) => m.status === "active" && !m.deletedAt);
+    const hasActive = memberships.some(
+      (m) => m.status === "active" && !m.deletedAt,
+    );
     expect(hasActive).toBe(false);
 
     // The user has memberships, but NONE are active -> /unauthorized
-    const route = !hasActive && memberships.length > 0 ? "/unauthorized" : "/onboarding";
+    const route =
+      !hasActive && memberships.length > 0 ? "/unauthorized" : "/onboarding";
     expect(route).toBe("/unauthorized");
   });
 
@@ -183,9 +191,7 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
   // P4-004: Authenticated user cannot select arbitrary organization ID
   // --------------------------------------------------------------------------
   it("P4-004: Authenticated user cannot select arbitrary organization ID", () => {
-    const userMemberships = [
-      { organizationId: orgAlphaId, status: "active" },
-    ];
+    const userMemberships = [{ organizationId: orgAlphaId, status: "active" }];
     const arbitraryOrgId = orgForeignId;
 
     const isMember = userMemberships.some(
@@ -269,9 +275,24 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
   // --------------------------------------------------------------------------
   it("P4-008: Multiple memberships expose only organizations user actually belongs to", () => {
     const allMemberships = [
-      { userId: userOwnerId, organizationId: orgAlphaId, orgName: "Alpha Agency", status: "active" },
-      { userId: userOwnerId, organizationId: orgBetaId, orgName: "Beta Agency", status: "active" },
-      { userId: userOtherOrgId, organizationId: orgForeignId, orgName: "Foreign Agency", status: "active" },
+      {
+        userId: userOwnerId,
+        organizationId: orgAlphaId,
+        orgName: "Alpha Agency",
+        status: "active",
+      },
+      {
+        userId: userOwnerId,
+        organizationId: orgBetaId,
+        orgName: "Beta Agency",
+        status: "active",
+      },
+      {
+        userId: userOtherOrgId,
+        organizationId: orgForeignId,
+        orgName: "Foreign Agency",
+        status: "active",
+      },
     ];
 
     const userVisibleOrgs = allMemberships
@@ -325,9 +346,7 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
   // P4-011: Switching to another user's organization fails
   // --------------------------------------------------------------------------
   it("P4-011: Switching to another user's organization fails", () => {
-    const userMemberships = [
-      { organizationId: orgAlphaId, status: "active" },
-    ];
+    const userMemberships = [{ organizationId: orgAlphaId, status: "active" }];
     const targetOrgId = orgForeignId; // Belongs to userOtherOrgId
 
     const targetMembership = userMemberships.find(
@@ -394,7 +413,9 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
     // Revoke invitation
     await revokeInvitation(inv.invitationId, userOwnerId);
 
-    await expect(acceptInvitation(inv.rawToken)).rejects.toThrow(/revoked|pending/i);
+    await expect(acceptInvitation(inv.rawToken)).rejects.toThrow(
+      /revoked|pending/i,
+    );
   });
 
   // --------------------------------------------------------------------------
@@ -435,7 +456,9 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
     expect(unaffiliatedUser.memberships.length).toBe(0);
     expect(() => {
       if (unaffiliatedUser.memberships.length === 0) {
-        throw new SecurityViolationError("Unaffiliated user has no tenant workspace access");
+        throw new SecurityViolationError(
+          "Unaffiliated user has no tenant workspace access",
+        );
       }
     }).toThrow(SecurityViolationError);
   });
@@ -447,7 +470,9 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
     expect(() => {
       const userHasOrg = false;
       if (!userHasOrg) {
-        throw new SecurityViolationError("User not authorized for workforce domain");
+        throw new SecurityViolationError(
+          "User not authorized for workforce domain",
+        );
       }
     }).toThrow(SecurityViolationError);
   });
@@ -464,7 +489,9 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
 
     expect(() => {
       if (suspendedMembership.status !== "active") {
-        throw new SecurityViolationError("Suspended member cannot query tenant data");
+        throw new SecurityViolationError(
+          "Suspended member cannot query tenant data",
+        );
       }
     }).toThrow(SecurityViolationError);
   });
@@ -484,7 +511,9 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
     );
 
     // Fallback or rejection happens: forged cookie is completely ignored
-    const effectiveOrgId = validatedOrg ? validatedOrg.organizationId : userValidMemberships[0].organizationId;
+    const effectiveOrgId = validatedOrg
+      ? validatedOrg.organizationId
+      : userValidMemberships[0].organizationId;
     expect(effectiveOrgId).toBe(orgAlphaId);
     expect(effectiveOrgId).not.toBe(forgedCookieValue);
   });
@@ -704,13 +733,16 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
 
     // Invoking acceptInvitationAction uses strictly the authenticated server session
     // (In demo mode, cookie session belongs to DEMO_ADMIN_USER)
-    const actionResult = await acceptInvitationAction({ rawToken: parsed.rawToken });
+    const actionResult = await acceptInvitationAction({
+      rawToken: parsed.rawToken,
+    });
     expect(actionResult.success).toBe(true);
 
     // Membership was created for the authenticated caller (DEMO_ADMIN_USER), NOT userOtherOrgId
     const store = getDemoStore();
     const victimMembership = (store.organizationMemberships ?? []).find(
-      (m: any) => m.userId === userOtherOrgId && m.organizationId === orgAlphaId,
+      (m: any) =>
+        m.userId === userOtherOrgId && m.organizationId === orgAlphaId,
     );
     expect(victimMembership).toBeUndefined();
   });
@@ -781,11 +813,12 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
   // --------------------------------------------------------------------------
   describe("Security Attack Vectors & Exploit Prevention", () => {
     it("IDOR: Prevents cross-tenant resource access", () => {
-      const repoOrgA = createTenantRepository(mockTenantContext(orgAlphaId, userOwnerId));
+      const repoOrgA = createTenantRepository(
+        mockTenantContext(orgAlphaId, userOwnerId),
+      );
       expect(repoOrgA.organizationId).toBe(orgAlphaId);
       expect(repoOrgA.userId).toBe(userOwnerId);
     });
-
 
     it("Organization ID Tampering: Schema strictly enforces UUID format", () => {
       const maliciousInput = {
@@ -796,7 +829,8 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
     });
 
     it("Token Hash Security: Raw token is never stored in plaintext", () => {
-      const rawToken = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+      const rawToken =
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
       const hash1 = hashInvitationToken(rawToken);
       const hash2 = hashInvitationToken(rawToken);
 
@@ -827,7 +861,6 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
       expect(previewAfter.status).toBe("accepted");
       expect(previewAfter.valid).toBe(false);
     });
-
 
     it("Direct Server Action Parameter Injection: Disallows rogue fields", () => {
       const payload = {
@@ -896,7 +929,9 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
       const active = memberships.filter((m) => m.status === "active");
       expect(active.length).toBe(0);
 
-      const activeContext = await resolveActiveOrganizationContext(brandNewUnaffiliatedId);
+      const activeContext = await resolveActiveOrganizationContext(
+        brandNewUnaffiliatedId,
+      );
       expect(activeContext).toBeNull();
     });
 
@@ -926,7 +961,9 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
     // P4-034: Existing primary organization is preserved after secondary invitation
     it("P4-034: Existing primary organization is preserved after secondary invitation", async () => {
       const store = getDemoStore();
-      const userBefore = store.users.find((u: any) => u.userId === userMemberId);
+      const userBefore = store.users.find(
+        (u: any) => u.userId === userMemberId,
+      );
       expect(userBefore).toBeDefined();
       const primaryOrgBefore = userBefore.organizationId;
       expect(primaryOrgBefore).toBe(orgAlphaId);
@@ -967,9 +1004,7 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
         resolveActiveOrganizationContext(userMemberId, orgForeignId),
       ).rejects.toThrow();
 
-      await expect(
-        switchActiveOrganization(orgForeignId),
-      ).rejects.toThrow();
+      await expect(switchActiveOrganization(orgForeignId)).rejects.toThrow();
     });
 
     // P4-037: Invitation acceptance transaction rolls back on membership failure
@@ -1053,7 +1088,10 @@ describe("AI NEX OS — Phase 4.1 Self-Service Identity & Organization Onboardin
       };
 
       await expect(
-        resolveActiveOrganizationContext(userOwnerId, maliciousInput.organizationId),
+        resolveActiveOrganizationContext(
+          userOwnerId,
+          maliciousInput.organizationId,
+        ),
       ).rejects.toThrow();
     });
 

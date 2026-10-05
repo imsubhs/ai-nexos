@@ -62,7 +62,10 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       const shortCases = ["", "A", " 1 "];
       for (const prefix of shortCases) {
         const val = validateCodePrefix(prefix);
-        expect(val.valid, `Expected "${prefix}" to be rejected (too short)`).toBe(false);
+        expect(
+          val.valid,
+          `Expected "${prefix}" to be rejected (too short)`,
+        ).toBe(false);
 
         const parsed = codePrefixSchema.safeParse(prefix);
         expect(parsed.success).toBe(false);
@@ -73,7 +76,10 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       const longCases = ["TOOLONGA1", "VERYLONGAUX"];
       for (const prefix of longCases) {
         const val = validateCodePrefix(prefix);
-        expect(val.valid, `Expected "${prefix}" to be rejected (too long)`).toBe(false);
+        expect(
+          val.valid,
+          `Expected "${prefix}" to be rejected (too long)`,
+        ).toBe(false);
 
         const parsed = codePrefixSchema.safeParse(prefix);
         expect(parsed.success).toBe(false);
@@ -84,7 +90,10 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       const invalidChars = ["AC-ME", "AC_ME", "NEX!", "AC ME", "AC.ME"];
       for (const prefix of invalidChars) {
         const val = validateCodePrefix(prefix);
-        expect(val.valid, `Expected "${prefix}" to be rejected (invalid characters)`).toBe(false);
+        expect(
+          val.valid,
+          `Expected "${prefix}" to be rejected (invalid characters)`,
+        ).toBe(false);
 
         const parsed = codePrefixSchema.safeParse(prefix);
         expect(parsed.success).toBe(false);
@@ -102,7 +111,10 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
         expect(RESERVED_CODE_PREFIXES.has(prefix)).toBe(true);
 
         const val = validateCodePrefix(prefix);
-        expect(val.valid, `Expected reserved prefix "${prefix}" to be rejected`).toBe(false);
+        expect(
+          val.valid,
+          `Expected reserved prefix "${prefix}" to be rejected`,
+        ).toBe(false);
         expect(val.error).toContain("reserved");
 
         const parsed = codePrefixSchema.safeParse(prefix);
@@ -111,10 +123,21 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
     });
 
     it("rejects reserved prefixes case-insensitively", () => {
-      const mixedCases = ["sys", "Admin", "nexos", "api", "Root", "test", "demo"];
+      const mixedCases = [
+        "sys",
+        "Admin",
+        "nexos",
+        "api",
+        "Root",
+        "test",
+        "demo",
+      ];
       for (const prefix of mixedCases) {
         const val = validateCodePrefix(prefix);
-        expect(val.valid, `Expected "${prefix}" to be rejected as reserved`).toBe(false);
+        expect(
+          val.valid,
+          `Expected "${prefix}" to be rejected as reserved`,
+        ).toBe(false);
 
         const parsed = codePrefixSchema.safeParse(prefix);
         expect(parsed.success).toBe(false);
@@ -127,25 +150,43 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
   // ==========================================================================
   describe("TEST-P2-003: Code generation format", () => {
     it("formats project codes as {PREFIX}-{YYYY}-{XXXX}", () => {
-      expect(formatEntityCode("ACME", "project_code", 1, 2026)).toBe("ACME-2026-0001");
-      expect(formatEntityCode("ACME", "project", 42, 2026)).toBe("ACME-2026-0042");
-      expect(formatEntityCode("OGILVY", "project_code", 9999, 2026)).toBe("OGILVY-2026-9999");
+      expect(formatEntityCode("ACME", "project_code", 1, 2026)).toBe(
+        "ACME-2026-0001",
+      );
+      expect(formatEntityCode("ACME", "project", 42, 2026)).toBe(
+        "ACME-2026-0042",
+      );
+      expect(formatEntityCode("OGILVY", "project_code", 9999, 2026)).toBe(
+        "OGILVY-2026-9999",
+      );
     });
 
     it("formats task codes as {PREFIX}-T-{YYYY}-{XXXX}", () => {
-      expect(formatEntityCode("ACME", "task_code", 1, 2026)).toBe("ACME-T-2026-0001");
-      expect(formatEntityCode("ACME", "task", 42, 2026)).toBe("ACME-T-2026-0042");
-      expect(formatEntityCode("OGILVY", "task_code", 9999, 2026)).toBe("OGILVY-T-2026-9999");
+      expect(formatEntityCode("ACME", "task_code", 1, 2026)).toBe(
+        "ACME-T-2026-0001",
+      );
+      expect(formatEntityCode("ACME", "task", 42, 2026)).toBe(
+        "ACME-T-2026-0042",
+      );
+      expect(formatEntityCode("OGILVY", "task_code", 9999, 2026)).toBe(
+        "OGILVY-T-2026-9999",
+      );
     });
 
     it("formats correction codes as COR-{XXXX}", () => {
-      expect(formatEntityCode("ACME", "correction_code", 1, 2026)).toBe("COR-0001");
+      expect(formatEntityCode("ACME", "correction_code", 1, 2026)).toBe(
+        "COR-0001",
+      );
       expect(formatEntityCode("ANY", "correction", 42, 2026)).toBe("COR-0042");
     });
 
     it("widens beyond 4 digits without truncation to guarantee uniqueness", () => {
-      expect(formatEntityCode("ACME", "project_code", 10000, 2026)).toBe("ACME-2026-10000");
-      expect(formatEntityCode("ACME", "task_code", 100000, 2026)).toBe("ACME-T-2026-100000");
+      expect(formatEntityCode("ACME", "project_code", 10000, 2026)).toBe(
+        "ACME-2026-10000",
+      );
+      expect(formatEntityCode("ACME", "task_code", 100000, 2026)).toBe(
+        "ACME-T-2026-100000",
+      );
     });
   });
 
@@ -156,9 +197,10 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
     it("allocates strictly unique, monotonic identifiers under concurrent access", async () => {
       // Simulate atomic sequence allocator representing Postgres ON CONFLICT DO UPDATE
       const dbSequences = new Map<string, number>();
-      const orgPrefixes = new Map<string, { codePrefix: string; timezone: string }>([
-        ["org-acme", { codePrefix: "ACME", timezone: "UTC" }],
-      ]);
+      const orgPrefixes = new Map<
+        string,
+        { codePrefix: string; timezone: string }
+      >([["org-acme", { codePrefix: "ACME", timezone: "UTC" }]]);
 
       const mockClient = {
         select: () => ({
@@ -170,7 +212,13 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
           }),
         }),
         insert: () => ({
-          values: ({ organizationId, entityType }: { organizationId: string; entityType: string }) => ({
+          values: ({
+            organizationId,
+            entityType,
+          }: {
+            organizationId: string;
+            entityType: string;
+          }) => ({
             onConflictDoUpdate: () => ({
               returning: () => {
                 const key = `${organizationId}:${entityType}`;
@@ -212,7 +260,10 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
   describe("TEST-P2-005: Cross-tenant isolation", () => {
     it("keeps sequences completely isolated between different organizations", async () => {
       const dbSequences = new Map<string, number>();
-      const orgPrefixes = new Map<string, { codePrefix: string; timezone: string }>([
+      const orgPrefixes = new Map<
+        string,
+        { codePrefix: string; timezone: string }
+      >([
         ["org-alpha", { codePrefix: "ALPHA", timezone: "UTC" }],
         ["org-beta", { codePrefix: "BETA", timezone: "UTC" }],
       ]);
@@ -227,7 +278,13 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
           }),
         }),
         insert: () => ({
-          values: ({ organizationId, entityType }: { organizationId: string; entityType: string }) => ({
+          values: ({
+            organizationId,
+            entityType,
+          }: {
+            organizationId: string;
+            entityType: string;
+          }) => ({
             onConflictDoUpdate: () => ({
               returning: () => {
                 const key = `${organizationId}:${entityType}`;
@@ -241,10 +298,26 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
         }),
       });
 
-      const alpha1 = await generateProjectCode("org-alpha", createMockClient("org-alpha") as any, 2026);
-      const beta1 = await generateProjectCode("org-beta", createMockClient("org-beta") as any, 2026);
-      const alpha2 = await generateProjectCode("org-alpha", createMockClient("org-alpha") as any, 2026);
-      const beta2 = await generateProjectCode("org-beta", createMockClient("org-beta") as any, 2026);
+      const alpha1 = await generateProjectCode(
+        "org-alpha",
+        createMockClient("org-alpha") as any,
+        2026,
+      );
+      const beta1 = await generateProjectCode(
+        "org-beta",
+        createMockClient("org-beta") as any,
+        2026,
+      );
+      const alpha2 = await generateProjectCode(
+        "org-alpha",
+        createMockClient("org-alpha") as any,
+        2026,
+      );
+      const beta2 = await generateProjectCode(
+        "org-beta",
+        createMockClient("org-beta") as any,
+        2026,
+      );
 
       // Both start at sequence 0001 because their tenant namespaces are sovereign
       expect(alpha1).toBe("ALPHA-2026-0001");
@@ -259,9 +332,9 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
   // ==========================================================================
   describe("TEST-P2-006: Unauthorized / invalid organization access", () => {
     it("rejects code generation when organizationId is missing or empty", async () => {
-      await expect(
-        generateProjectCode("", {} as any),
-      ).rejects.toThrow("organizationId is required");
+      await expect(generateProjectCode("", {} as any)).rejects.toThrow(
+        "organizationId is required",
+      );
     });
 
     it("throws error when organization does not exist in the database", async () => {
@@ -288,7 +361,8 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       const mockClient = {
         select: () => ({
           from: () => ({
-            where: () => Promise.resolve([{ codePrefix: "ACME", timezone: "UTC" }]),
+            where: () =>
+              Promise.resolve([{ codePrefix: "ACME", timezone: "UTC" }]),
           }),
         }),
         insert: () => ({
@@ -304,11 +378,19 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       };
 
       // In December 2026
-      const code2026 = await generateProjectCode("org-1", mockClient as any, 2026);
+      const code2026 = await generateProjectCode(
+        "org-1",
+        mockClient as any,
+        2026,
+      );
       expect(code2026).toBe("ACME-2026-0042");
 
       // In January 2027 (sequence continues monotonically, year advances)
-      const code2027 = await generateProjectCode("org-1", mockClient as any, 2027);
+      const code2027 = await generateProjectCode(
+        "org-1",
+        mockClient as any,
+        2027,
+      );
       expect(code2027).toBe("ACME-2027-0043");
     });
 
@@ -331,7 +413,10 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       const mockClient = {
         select: () => ({
           from: () => ({
-            where: () => Promise.resolve([{ codePrefix: "AIC", timezone: "Asia/Kolkata" }]),
+            where: () =>
+              Promise.resolve([
+                { codePrefix: "AIC", timezone: "Asia/Kolkata" },
+              ]),
           }),
         }),
         insert: () => ({
@@ -343,10 +428,18 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
         }),
       };
 
-      const projectCode = await generateProjectCode("legacy-aic-org", mockClient as any, 2026);
+      const projectCode = await generateProjectCode(
+        "legacy-aic-org",
+        mockClient as any,
+        2026,
+      );
       expect(projectCode).toBe("AIC-2026-0001");
 
-      const taskCode = await generateTaskCode("legacy-aic-org", mockClient as any, 2026);
+      const taskCode = await generateTaskCode(
+        "legacy-aic-org",
+        mockClient as any,
+        2026,
+      );
       expect(taskCode).toBe("AIC-T-2026-0001");
     });
   });
@@ -360,7 +453,8 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       const mockTx = {
         select: () => ({
           from: () => ({
-            where: () => Promise.resolve([{ codePrefix: "NEX", timezone: "UTC" }]),
+            where: () =>
+              Promise.resolve([{ codePrefix: "NEX", timezone: "UTC" }]),
           }),
         }),
         insert: () => {
@@ -396,12 +490,20 @@ describe("PHASE 2 — Tenant Foundation & Organization Code Prefix", () => {
       );
 
       // Verify createProject calls requireCurrentUser and passes user.organizationId
-      expect(projectActionsContent).toContain("const user = await requireCurrentUser()");
-      expect(projectActionsContent).toContain("generateProjectCode(user.organizationId");
+      expect(projectActionsContent).toContain(
+        "const user = await requireCurrentUser()",
+      );
+      expect(projectActionsContent).toContain(
+        "generateProjectCode(user.organizationId",
+      );
 
       // Verify createTask calls requireCurrentUser and passes user.organizationId
-      expect(taskActionsContent).toContain("const user = await requireCurrentUser()");
-      expect(taskActionsContent).toContain("generateTaskCode(user.organizationId");
+      expect(taskActionsContent).toContain(
+        "const user = await requireCurrentUser()",
+      );
+      expect(taskActionsContent).toContain(
+        "generateTaskCode(user.organizationId",
+      );
     });
   });
 

@@ -16,10 +16,14 @@ const DRY_RUN_DB = "nexos_dry_run_phase5f";
 const DRY_RUN_URL = `postgresql://postgres@localhost:5432/${DRY_RUN_DB}`;
 
 async function runDryRun() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("PHASE 5F — WORKSTREAM 12: LOCAL PRODUCTION MIGRATION DRY-RUN");
   console.log(`Database: ${DRY_RUN_DB} on local PostgreSQL (port 5432)`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // Step 1: Create fresh disposable database
   console.log("1. Creating fresh disposable database...");
@@ -106,24 +110,33 @@ async function runDryRun() {
         VALUES (${entry.tag}, ${entry.when});
       `;
       const dur = Date.now() - t0;
-      console.log(`  ✓ [${String(entry.idx).padStart(2, "0")}] ${filename} (${dur}ms)`);
+      console.log(
+        `  ✓ [${String(entry.idx).padStart(2, "0")}] ${filename} (${dur}ms)`,
+      );
       migrationIdx++;
     }
 
     // Step 4: Audit Schema Metrics
     console.log("\n4. Auditing Schema Metrics...");
-    const [migrationsCount] = await sql`SELECT count(*)::int as count FROM drizzle.__drizzle_migrations;`;
-    const [tables] = await sql`SELECT count(*)::int as count FROM information_schema.tables WHERE table_schema = 'public';`;
-    const [indexes] = await sql`SELECT count(*)::int as count FROM pg_indexes WHERE schemaname = 'public';`;
-    const [constraints] = await sql`SELECT count(*)::int as count FROM information_schema.table_constraints WHERE table_schema = 'public';`;
-    const [policies] = await sql`SELECT count(*)::int as count FROM pg_policies WHERE schemaname = 'public';`;
+    const [migrationsCount] =
+      await sql`SELECT count(*)::int as count FROM drizzle.__drizzle_migrations;`;
+    const [tables] =
+      await sql`SELECT count(*)::int as count FROM information_schema.tables WHERE table_schema = 'public';`;
+    const [indexes] =
+      await sql`SELECT count(*)::int as count FROM pg_indexes WHERE schemaname = 'public';`;
+    const [constraints] =
+      await sql`SELECT count(*)::int as count FROM information_schema.table_constraints WHERE table_schema = 'public';`;
+    const [policies] =
+      await sql`SELECT count(*)::int as count FROM pg_policies WHERE schemaname = 'public';`;
     const [appFunctions] = await sql`
       SELECT count(*)::int as count
       FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid
       WHERE n.nspname = 'app';
     `;
 
-    console.log(`  Recorded Migrations:  ${migrationsCount.count} (Expected: 19)`);
+    console.log(
+      `  Recorded Migrations:  ${migrationsCount.count} (Expected: 19)`,
+    );
     console.log(`  Tables in public:     ${tables.count}`);
     console.log(`  Indexes in public:    ${indexes.count}`);
     console.log(`  Constraints in public:${constraints.count}`);
@@ -146,7 +159,9 @@ async function runDryRun() {
     `;
     if (!fnRecord) throw new Error("Function app.is_project_member not found");
     console.log(`  prosecdef:   ${fnRecord.prosecdef} (Expected: true)`);
-    console.log(`  proconfig:   ${JSON.stringify(fnRecord.proconfig)} (Expected: search_path=public)`);
+    console.log(
+      `  proconfig:   ${JSON.stringify(fnRecord.proconfig)} (Expected: search_path=public)`,
+    );
     console.log(`  anon_exec:   ${fnRecord.anon_exec} (Expected: false)`);
     console.log(`  auth_exec:   ${fnRecord.auth_exec} (Expected: true)`);
 
@@ -213,14 +228,28 @@ async function runDryRun() {
 
     const activeMember = memberships.find((m) => m.user_id === activeUserId);
     const deletedMember = memberships.find((m) => m.user_id === deletedUserId);
-    const inactiveMember = memberships.find((m) => m.user_id === inactiveUserId);
+    const inactiveMember = memberships.find(
+      (m) => m.user_id === inactiveUserId,
+    );
 
-    console.log(`  Active user membership status:   ${activeMember?.status} (Expected: active)`);
-    console.log(`  Deleted user membership status:  ${deletedMember?.status} (Expected: suspended)`);
-    console.log(`  Inactive user membership status: ${inactiveMember?.status} (Expected: suspended)`);
+    console.log(
+      `  Active user membership status:   ${activeMember?.status} (Expected: active)`,
+    );
+    console.log(
+      `  Deleted user membership status:  ${deletedMember?.status} (Expected: suspended)`,
+    );
+    console.log(
+      `  Inactive user membership status: ${inactiveMember?.status} (Expected: suspended)`,
+    );
 
-    if (activeMember?.status !== "active" || deletedMember?.status !== "suspended" || inactiveMember?.status !== "suspended") {
-      throw new Error("Membership backfill status mapping verification failed!");
+    if (
+      activeMember?.status !== "active" ||
+      deletedMember?.status !== "suspended" ||
+      inactiveMember?.status !== "suspended"
+    ) {
+      throw new Error(
+        "Membership backfill status mapping verification failed!",
+      );
     }
 
     // Step 7: Verify Invitation Schema (0017)
@@ -233,9 +262,12 @@ async function runDryRun() {
       SELECT count(*)::int as count FROM pg_indexes
       WHERE schemaname = 'public' AND tablename = 'organization_invitations';
     `;
-    console.log(`  Table organization_invitations exists: ${invTable.count === 1}`);
+    console.log(
+      `  Table organization_invitations exists: ${invTable.count === 1}`,
+    );
     console.log(`  Indexes on organization_invitations:   ${invIndexes.count}`);
-    if (invTable.count !== 1) throw new Error("organization_invitations table missing!");
+    if (invTable.count !== 1)
+      throw new Error("organization_invitations table missing!");
 
     // Step 8: Verify Project RLS and Zero 42P17
     console.log("\n8. Verifying Project RLS & Zero 42P17 (0018)...");
@@ -254,7 +286,11 @@ async function runDryRun() {
     const [projRead] = await sql.begin(async (tx) => {
       await tx`SELECT set_config('role', 'authenticated', true)`;
       await tx`SELECT set_config('search_path', 'public, app', true)`;
-      const jwt = JSON.stringify({ sub: activeUserId, role: "authenticated", organization_id: testOrgId });
+      const jwt = JSON.stringify({
+        sub: activeUserId,
+        role: "authenticated",
+        organization_id: testOrgId,
+      });
       await tx`SELECT set_config('request.jwt.claims', ${jwt}, true)`;
       await tx`SELECT set_config('request.jwt.claim.sub', ${activeUserId}, true)`;
       await tx`SET LOCAL ROLE authenticated`;
@@ -264,16 +300,25 @@ async function runDryRun() {
       `;
     });
 
-    console.log(`  Read project under authenticated RLS: ${projRead?.project_name ?? "NONE"}`);
+    console.log(
+      `  Read project under authenticated RLS: ${projRead?.project_name ?? "NONE"}`,
+    );
     if (!projRead) throw new Error("Authenticated project read failed!");
 
     // Step 9: Verify Re-Run Idempotency (Second Pass)
-    console.log("\n9. Testing Migration Re-Run Behavior (Idempotency Check)...");
-    const appliedBefore = await sql`SELECT count(*)::int as count FROM drizzle.__drizzle_migrations;`;
-    console.log(`  Applied migrations count before re-run check: ${appliedBefore[0].count}`);
+    console.log(
+      "\n9. Testing Migration Re-Run Behavior (Idempotency Check)...",
+    );
+    const appliedBefore =
+      await sql`SELECT count(*)::int as count FROM drizzle.__drizzle_migrations;`;
+    console.log(
+      `  Applied migrations count before re-run check: ${appliedBefore[0].count}`,
+    );
 
     // Simulate Drizzle migrator check: check all journal entries against recorded hashes
-    const recorded = await sql<{ hash: string }[]>`SELECT hash FROM drizzle.__drizzle_migrations;`;
+    const recorded = await sql<
+      { hash: string }[]
+    >`SELECT hash FROM drizzle.__drizzle_migrations;`;
     const recordedHashes = new Set(recorded.map((r) => r.hash));
     const pending = journal.entries.filter((e) => !recordedHashes.has(e.tag));
 
@@ -281,12 +326,18 @@ async function runDryRun() {
     if (pending.length === 0) {
       console.log("  ✓ Confirmed: NO NEW MIGRATIONS APPLIED on re-run.");
     } else {
-      throw new Error(`Expected 0 pending migrations on re-run, got ${pending.length}`);
+      throw new Error(
+        `Expected 0 pending migrations on re-run, got ${pending.length}`,
+      );
     }
 
-    console.log("\n================================================================================");
+    console.log(
+      "\n================================================================================",
+    );
     console.log("WORKSTREAM 12 RESULT: PASSED");
-    console.log("================================================================================\n");
+    console.log(
+      "================================================================================\n",
+    );
   } finally {
     await sql.end();
 

@@ -1,4 +1,5 @@
 # PHASE 5H PRODUCTION MIGRATION REPORT
+
 # CONTROLLED PRODUCTION MIGRATION EXECUTION & VERIFICATION
 
 **System**: AI NEX OS (`ai-nexos`)  
@@ -11,12 +12,14 @@
 **Database Name**: `postgres`  
 **PostgreSQL Version**: `17.6.1.155`  
 **Execution Timestamp**: `2026-09-27T01:26:13+05:30` (UTC `2026-09-26T19:56:13Z`)  
-**Certified Pre-Migration Backup**: `pre_migration_backup_gsgseacjcalkhhmunjhx_20260926194357.dump` (1,135,591 bytes)  
+**Certified Pre-Migration Backup**: `pre_migration_backup_gsgseacjcalkhhmunjhx_20260926194357.dump` (1,135,591 bytes)
 
 ---
 
 ## 1. Production Identity
+
 **PASS**
+
 - **Project Ref**: `gsgseacjcalkhhmunjhx` (Verified)
 - **Project Name**: `ai-nexos` (Verified)
 - **Region**: `ap-northeast-1` (Tokyo, Japan)
@@ -28,7 +31,9 @@
 ---
 
 ## 2. Pre-Migration Verification
+
 **PASS**
+
 - Fresh read-only verification (Phase 5H.0) confirmed:
   - Database: `postgres`
   - Current migration count: exactly **15** (`0000` through `0014`)
@@ -41,8 +46,10 @@
 ---
 
 ## 3. Migration File Integrity
+
 **PASS**
 Audited repository migration files against journal and verified hashes:
+
 - `0015_organization_code_prefix.sql`: `79e43d7f3ed66b6771fd5e768b9ebc8227700c8c2af04803f0ae0cfa953732f8` (**MATCH**)
 - `0016_organization_memberships.sql`: `bdb140752c92f33296938fce19c45098b43b7f38d485ebf882c89565b2f75c7e` (**MATCH**)
 - `0017_organization_invitations.sql`: `9c8ac5da7c4fbcdfb4000f1caf407de53f8231f8c65d0a1ef5be3d2bceaa479c` (**MATCH**)
@@ -52,7 +59,9 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 4. Migration Execution
+
 **PASS**
+
 - **Command Executed**: `npm run db:migrate -- --environment=production`
 - **Start Timestamp**: `2026-09-27T01:26:13+05:30`
 - **End Timestamp**: `2026-09-27T01:26:28+05:30` (Duration: 15s; migrator runtime: 11,367ms)
@@ -80,6 +89,7 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 5. Migration History
+
 - **Count Before**: **15**
 - **Count After**: **19**
 - **Full History in `drizzle.__drizzle_migrations`**:
@@ -106,7 +116,9 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 6. 0015 Verification
+
 **PASS**
+
 - **Column `code_prefix`**: Present in `organizations`, `is_nullable = NO`, default `'NEX'`.
 - **Assigned Prefix**: Organization `907adcd2-4a0b-409a-bcac-97aea702a337` (`AI NEXOS`) has `code_prefix = 'NEX'`.
 - **Unique Constraint**: Index `uq_organizations_code_prefix` exists on `organizations(code_prefix)`.
@@ -116,7 +128,9 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 7. 0016 Verification
+
 **PASS**
+
 - **Table `organization_memberships`**: Present with all 23 defined columns.
 - **Backfilled Records**: Exactly **2** memberships created:
   1. `membership_id: aaadf897-...`, `user_id: 8eb3f7ad-...`, `org_id: 907adcd2-...`, `role_id: 8793638d-...`, `status: active`, `is_default: true`
@@ -128,7 +142,9 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 8. 0017 Verification
+
 **PASS**
+
 - **Table `organization_invitations`**: Present with all expected columns (`invitation_id`, `organization_id`, `email`, `role_id`, `token_hash`, `status`, `expires_at`, `invited_by_user_id`).
 - **Security Storage**: Tokens are hashed with SHA-256 in `token_hash`; raw tokens are NOT stored in the database.
 - **Unique Index**: `uq_invitations_token_hash` on `(token_hash)`.
@@ -137,7 +153,9 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 9. 0018 Verification
+
 **PASS**
+
 - **Function `app.is_project_member(uuid)`**:
   - `SECURITY DEFINER`: **`true`**
   - `search_path`: **`['search_path=public']`**
@@ -156,7 +174,9 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 10. RLS Recursion Test
+
 **NOT FULLY TESTABLE (PASS ON ARCHITECTURE / ZERO 42P17 ERRORS)**
+
 - **Anonymous Access Test**: Blocked with `permission denied for table projects`.
 - **Authenticated Access Test**: Executed `SELECT project_id, project_name, visibility FROM projects` under authenticated claims: returned `0` rows with **zero `42P17` infinite recursion errors**.
 - **Function Invocation**: `app.is_project_member(dummy_uuid)` executed successfully under authenticated session and returned `false`.
@@ -165,33 +185,36 @@ Audited repository migration files against journal and verified hashes:
 ---
 
 ## 11. Data Integrity Regression
+
 **PASS**
 All critical counts match the pre-migration baseline 100%:
 
-| Entity / Table | Pre-Migration Baseline | Post-Migration Value | Integrity Status |
-| :--- | :---: | :---: | :---: |
-| `organizations` | 1 | 1 | **UNCHANGED** |
-| `users` | 2 | 2 | **UNCHANGED** |
-| `roles` | 7 | 7 | **UNCHANGED** |
-| `departments` | 7 | 7 | **UNCHANGED** |
-| `clients` | 1 | 1 | **UNCHANGED** |
-| `projects` | 0 | 0 | **UNCHANGED** |
-| `project_members` | 0 | 0 | **UNCHANGED** |
-| `tasks` | 0 | 0 | **UNCHANGED** |
-| `meetings` | 0 | 0 | **UNCHANGED** |
-| `deliverables` | 0 | 0 | **UNCHANGED** |
-| `files` | 0 | 0 | **UNCHANGED** |
-| `timelines` | 0 | 0 | **UNCHANGED** |
-| `attendance_records` | 2 | 2 | **UNCHANGED** |
-| `automation_workflows` | 0 | 0 | **UNCHANGED** |
-| `storage.buckets` | 1 | 1 | **UNCHANGED** |
-| `storage.objects` | 0 | 0 | **UNCHANGED** |
-| `organization_memberships` | 0 | **2** | **INTENDED BACKFILL** |
+| Entity / Table             | Pre-Migration Baseline | Post-Migration Value |   Integrity Status    |
+| :------------------------- | :--------------------: | :------------------: | :-------------------: |
+| `organizations`            |           1            |          1           |     **UNCHANGED**     |
+| `users`                    |           2            |          2           |     **UNCHANGED**     |
+| `roles`                    |           7            |          7           |     **UNCHANGED**     |
+| `departments`              |           7            |          7           |     **UNCHANGED**     |
+| `clients`                  |           1            |          1           |     **UNCHANGED**     |
+| `projects`                 |           0            |          0           |     **UNCHANGED**     |
+| `project_members`          |           0            |          0           |     **UNCHANGED**     |
+| `tasks`                    |           0            |          0           |     **UNCHANGED**     |
+| `meetings`                 |           0            |          0           |     **UNCHANGED**     |
+| `deliverables`             |           0            |          0           |     **UNCHANGED**     |
+| `files`                    |           0            |          0           |     **UNCHANGED**     |
+| `timelines`                |           0            |          0           |     **UNCHANGED**     |
+| `attendance_records`       |           2            |          2           |     **UNCHANGED**     |
+| `automation_workflows`     |           0            |          0           |     **UNCHANGED**     |
+| `storage.buckets`          |           1            |          1           |     **UNCHANGED**     |
+| `storage.objects`          |           0            |          0           |     **UNCHANGED**     |
+| `organization_memberships` |           0            |        **2**         | **INTENDED BACKFILL** |
 
 ---
 
 ## 12. Legacy Compatibility
+
 **PASS**
+
 - `users.organization_id`: Preserved unchanged for both production users.
 - `users.role_id`: Preserved unchanged for both production users.
 - Parity: Both users have exact 1-to-1 correspondence between legacy columns (`users.organization_id`, `users.role_id`) and new membership records (`organization_memberships.organization_id`, `organization_memberships.role_id`).
@@ -200,8 +223,10 @@ All critical counts match the pre-migration baseline 100%:
 ---
 
 ## 13. Production Runtime Health
+
 **PASS**
 Live web endpoints tested against `https://ai-nexos.antideploy.com`:
+
 - `GET /api/health`: **HTTP 200 OK**
 - `GET /login`: **HTTP 200 OK**
 - `GET /dashboard`: **HTTP 307 Temporary Redirect** $\rightarrow$ `/login?next=%2Fdashboard`
@@ -211,8 +236,10 @@ Live web endpoints tested against `https://ai-nexos.antideploy.com`:
 ---
 
 ## 14. Application Regression
+
 **PASS**
 All local quality gates passed:
+
 - `npm run typecheck`: **0 errors**
 - `npm run audit:authz`: **100% guarded** (0 unguarded actions)
 - `npx eslint src tests --quiet`: **0 errors, 0 warnings**
@@ -222,7 +249,9 @@ All local quality gates passed:
 ---
 
 ## 15. Certified Backup
+
 **PASS**
+
 - Certified pre-migration backup is safely preserved:
   - Path: `/Users/subhamsaha/.gemini/antigravity-ide/brain/54110a81-5319-4f23-be76-6d0c10853250/scratch/pre_migration_backup_gsgseacjcalkhhmunjhx_20260926194357.dump`
   - Size: 1,135,591 bytes (1.08 MB)
@@ -231,6 +260,7 @@ All local quality gates passed:
 ---
 
 ## 16. Production Mutation Audit
+
 - **Intended Migration DDL**: Exactly **4 migrations** (`0015`, `0016`, `0017`, `0018`) applied by runner.
 - **Intended Migration DML**: Exactly **2 membership rows** backfilled by migration 0016.
 - **Unexpected DML**: **0**.
@@ -241,6 +271,7 @@ All local quality gates passed:
 ---
 
 ## 17. Git Safety
+
 - **Commits Created**: **0**.
 - **Pushes Executed**: **0**.
 - **Migration SQL Files Modified**: **0**.
@@ -248,6 +279,7 @@ All local quality gates passed:
 ---
 
 ## 18. Problems / Warnings
+
 - **Positive Row Filtering Not Observable**: Because production currently has 0 project records, the RLS policy cannot be evaluated against positive rows. However, zero `42P17` errors were generated, and helper function execution was confirmed.
 - **Organization Code Prefix**: The single production organization has received `'NEX'` under migration 0015.
 
@@ -257,4 +289,4 @@ All local quality gates passed:
 
 # **A. PRODUCTION MIGRATION SUCCESSFUL — READY FOR POST-MIGRATION VALIDATION**
 
-*(Note: Application deployment was strictly NOT performed in this phase. Database migration and deployment remain intentionally decoupled).*
+_(Note: Application deployment was strictly NOT performed in this phase. Database migration and deployment remain intentionally decoupled)._

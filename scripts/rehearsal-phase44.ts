@@ -78,7 +78,9 @@ async function runRehearsal() {
       CREATE SCHEMA public;
     `);
     await sql.unsafe(`CREATE SCHEMA IF NOT EXISTS auth;`);
-    await sql.unsafe(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
+    await sql.unsafe(
+      `CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; CREATE EXTENSION IF NOT EXISTS pgcrypto;`,
+    );
     await sql.unsafe(`
       CREATE TABLE IF NOT EXISTS auth.users (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -301,7 +303,9 @@ async function runRehearsal() {
       "Tenant-Scoped Project Query Isolation",
       "TENANT_READ",
       alphaProjects.length === 2 &&
-        alphaProjects.every((p) => [projAlpha1, projAlpha2].includes(p.project_id)),
+        alphaProjects.every((p) =>
+          [projAlpha1, projAlpha2].includes(p.project_id),
+        ),
       `Alice in Org Alpha context retrieves exactly 2 Alpha projects (found=${alphaProjects.length})`,
     );
 
@@ -481,7 +485,9 @@ async function runRehearsal() {
         `;
 
         if (!foreignProject) {
-          throw new Error("SECURITY_VIOLATION: Cross-tenant project reference rejected");
+          throw new Error(
+            "SECURITY_VIOLATION: Cross-tenant project reference rejected",
+          );
         }
       });
     } catch (e: any) {
@@ -521,12 +527,18 @@ async function runRehearsal() {
       `0 memberships updated in Org Alpha; Charlie remains active in Org Gamma`,
     );
 
-    console.log("\n================================================================================");
+    console.log(
+      "\n================================================================================",
+    );
     console.log("REHEARSAL SUMMARY");
-    console.log("================================================================================");
+    console.log(
+      "================================================================================",
+    );
     const passed = checks.filter((c) => c.passed).length;
     const failed = checks.filter((c) => !c.passed).length;
-    console.log(`Total Checks: ${checks.length} | Passed: ${passed} | Failed: ${failed}\n`);
+    console.log(
+      `Total Checks: ${checks.length} | Passed: ${passed} | Failed: ${failed}\n`,
+    );
 
     if (failed > 0) {
       console.error("REHEARSAL FAILED");

@@ -1,20 +1,21 @@
 # AI NEX OS — Target SaaS Technical Architecture
+
 ## Phase 1C: System Architecture & Technical Design Specification
 
 ---
 
 ## Document Control
 
-| Attribute | Detail |
-| :--- | :--- |
-| **Document Path** | `docs/architecture/AI-NEX-OS-TARGET-ARCHITECTURE.md` |
-| **Version** | 1.0.0 (Phase 1C Implementation Architecture) |
-| **Status** | **APPROVED TECHNICAL DESIGN** |
-| **Date** | September 26, 2026 |
-| **Architects** | Principal Software Architect, Security Architect, Database Architect, SaaS Multi-Tenancy Architect |
-| **Repository Root** | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`) |
-| **Target Branch** | `phase-2-production-readiness` |
-| **Scope** | Complete target system architecture for transforming AI NEX OS into an agency-agnostic, multi-tenant B2B SaaS platform. |
+| Attribute           | Detail                                                                                                                  |
+| :------------------ | :---------------------------------------------------------------------------------------------------------------------- |
+| **Document Path**   | `docs/architecture/AI-NEX-OS-TARGET-ARCHITECTURE.md`                                                                    |
+| **Version**         | 1.0.0 (Phase 1C Implementation Architecture)                                                                            |
+| **Status**          | **APPROVED TECHNICAL DESIGN**                                                                                           |
+| **Date**            | September 26, 2026                                                                                                      |
+| **Architects**      | Principal Software Architect, Security Architect, Database Architect, SaaS Multi-Tenancy Architect                      |
+| **Repository Root** | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`)                                                                        |
+| **Target Branch**   | `phase-2-production-readiness`                                                                                          |
+| **Scope**           | Complete target system architecture for transforming AI NEX OS into an agency-agnostic, multi-tenant B2B SaaS platform. |
 
 ---
 
@@ -51,6 +52,7 @@ Capabilities (Resolved feature flags & execution gates)
 ```
 
 ### Absolute Implementation Invariants
+
 1. **Zero Downtime & Zero Regression**: Existing production users, organizations, project codes, tasks, and workforce records must remain operational throughout all phases.
 2. **The Tenant Is Never A Parameter**: No Server Action, Route Handler, or API endpoint may accept `organization_id` from client callers. Tenant context must be resolved strictly from the authenticated session and validated membership.
 3. **No Direct RLS Assumptions on Server Drizzle**: The server-side Drizzle ORM client operates over PgBouncer as the table owner (`postgres` role) and bypasses PostgreSQL RLS. Multi-tenancy must be enforced via a Four-Layer Defense-in-Depth model.
@@ -64,6 +66,7 @@ Capabilities (Resolved feature flags & execution gates)
 Before defining the target architecture, two foundational claims from Phase 1B.1 were independently audited against active repository code:
 
 ### Claim A: Drizzle Connection Role & RLS Bypass
+
 - **Phase 1B.1 Claim**: "The server-side Drizzle connection uses a PostgreSQL superuser or schema-owner role that bypasses ordinary RLS."
 - **Codebase Evidence**:
   - `src/db/index.ts` (L11): `NOTE: this connection runs as the postgres role and BYPASSES RLS.`
@@ -72,6 +75,7 @@ Before defining the target architecture, two foundational claims from Phase 1B.1
 - **Architectural Verification Finding**: **UNVERIFIED (AT LIVE CATALOG LEVEL)**. While application code comments and migration documentation establish that the Drizzle connection runs as the table owner (`postgres`) and is designed to bypass RLS, live catalog attributes (`pg_roles.rolsuper` and `pg_roles.rolbypassrls`) cannot be verified via static code inspection. Therefore, architecture must treat Drizzle RLS bypass as an **Application-Level Fact**, and mark the exact PostgreSQL engine privilege as **UNVERIFIED**. RLS must never be assumed to protect Drizzle queries.
 
 ### Claim B: Self-Service Registration Decision Status
+
 - **Phase 1B.1 Claim**: "ADR-008 describes self-service registration as deferred/admin approval."
 - **Codebase Evidence**:
   - `docs/product/AI-NEX-OS-ARCHITECTURE-DECISION-REGISTER.md` (ADR-008): Status is explicitly set to `DEFERRED`.
@@ -126,15 +130,15 @@ The target architecture defines seven discrete entities forming the tenancy hier
 
 ### Detailed Entity Specifications
 
-| Entity | Purpose | Identifier | Ownership | Lifecycle | Security Boundary | Uniqueness | Foreign Keys | Deletion / Archival | Audit Requirements |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Auth Identity** | Authentication credentials and session tokens | Supabase `auth.users.id` (UUID) | Supabase Auth Engine | Managed by Supabase Auth; created on signup | Global auth perimeter; validated via PKCE/JWT | Unique `id`, Unique `email` | None (Supabase internal) | Soft delete via Supabase Auth; cascades to profile | Supabase Auth logs |
-| **Application User** | Global human creator profile independent of tenants | `public.users.user_id` (UUID PK) | 1:1 mirror of `auth.users.id` | Created on initial login/signup; survives tenant removal | Global application perimeter | Global Unique `email` | `user_id → auth.users.id` (onDelete: cascade) | Soft delete via `deleted_at`; preserved for audit trail | Profile update logged to `activity_logs` |
-| **Organization Membership** | M:N bridge binding a user to an agency workspace | `membership_id` (UUID PK defaultRandom) | Owned by Organization; references User | `invited` → `active` → `suspended` → `removed` | Primary tenant authorization gate | Composite Unique `(user_id, organization_id)` where `deleted_at IS NULL` | `user_id → users.user_id`, `organization_id → organizations.organization_id`, `role_id → roles.role_id` | Soft delete via `deleted_at` & `removed_at`; never hard deleted | Membership state changes logged to `activity_logs` |
-| **Organization** | Sovereign agency tenant owning all operational data | `organization_id` (UUID PK defaultRandom) | Commercial subscriber | `trial` → `active` → `delinquent` → `suspended` → `archived` | Sovereign tenant data boundary | Unique `slug`, Unique `code_prefix` | None (Root entity) | Soft delete via `deleted_at`; data retention policy | Organization configuration changes logged |
-| **Role** | Tenancy-bound permission bundle | `role_id` (UUID PK defaultRandom) | Owned by Organization | Created during tenant provisioning or admin action | Tenant-scoped authorization boundary | Unique `(organization_id, role_key)` | `organization_id → organizations.organization_id` | System roles protected; custom roles soft deleted | Role permission mutations logged |
-| **Permission** | Module-by-action capability atom | String tuple `(module, action)` | System catalog & Role assignment | Static platform catalog; dynamically assigned | Fine-grained operation gate | Unique within role JSONB map | Embedded in `roles.permissions` | Immutable platform actions | Evaluated per request; authorization failures logged |
-| **Capability** | Feature flag and resource allowance gate | Feature key string (e.g., `ai_advanced`, `workforce_tracking`) | Subscription plan & Organization | Resolved dynamically from subscription & tenant state | Feature gating boundary | Unique per organization entitlement | Mapped to Subscription Tier | Revoked on subscription downgrade | Plan upgrades and threshold breaches logged |
+| Entity                      | Purpose                                             | Identifier                                                     | Ownership                              | Lifecycle                                                    | Security Boundary                             | Uniqueness                                                               | Foreign Keys                                                                                            | Deletion / Archival                                             | Audit Requirements                                   |
+| :-------------------------- | :-------------------------------------------------- | :------------------------------------------------------------- | :------------------------------------- | :----------------------------------------------------------- | :-------------------------------------------- | :----------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------- | :--------------------------------------------------- |
+| **Auth Identity**           | Authentication credentials and session tokens       | Supabase `auth.users.id` (UUID)                                | Supabase Auth Engine                   | Managed by Supabase Auth; created on signup                  | Global auth perimeter; validated via PKCE/JWT | Unique `id`, Unique `email`                                              | None (Supabase internal)                                                                                | Soft delete via Supabase Auth; cascades to profile              | Supabase Auth logs                                   |
+| **Application User**        | Global human creator profile independent of tenants | `public.users.user_id` (UUID PK)                               | 1:1 mirror of `auth.users.id`          | Created on initial login/signup; survives tenant removal     | Global application perimeter                  | Global Unique `email`                                                    | `user_id → auth.users.id` (onDelete: cascade)                                                           | Soft delete via `deleted_at`; preserved for audit trail         | Profile update logged to `activity_logs`             |
+| **Organization Membership** | M:N bridge binding a user to an agency workspace    | `membership_id` (UUID PK defaultRandom)                        | Owned by Organization; references User | `invited` → `active` → `suspended` → `removed`               | Primary tenant authorization gate             | Composite Unique `(user_id, organization_id)` where `deleted_at IS NULL` | `user_id → users.user_id`, `organization_id → organizations.organization_id`, `role_id → roles.role_id` | Soft delete via `deleted_at` & `removed_at`; never hard deleted | Membership state changes logged to `activity_logs`   |
+| **Organization**            | Sovereign agency tenant owning all operational data | `organization_id` (UUID PK defaultRandom)                      | Commercial subscriber                  | `trial` → `active` → `delinquent` → `suspended` → `archived` | Sovereign tenant data boundary                | Unique `slug`, Unique `code_prefix`                                      | None (Root entity)                                                                                      | Soft delete via `deleted_at`; data retention policy             | Organization configuration changes logged            |
+| **Role**                    | Tenancy-bound permission bundle                     | `role_id` (UUID PK defaultRandom)                              | Owned by Organization                  | Created during tenant provisioning or admin action           | Tenant-scoped authorization boundary          | Unique `(organization_id, role_key)`                                     | `organization_id → organizations.organization_id`                                                       | System roles protected; custom roles soft deleted               | Role permission mutations logged                     |
+| **Permission**              | Module-by-action capability atom                    | String tuple `(module, action)`                                | System catalog & Role assignment       | Static platform catalog; dynamically assigned                | Fine-grained operation gate                   | Unique within role JSONB map                                             | Embedded in `roles.permissions`                                                                         | Immutable platform actions                                      | Evaluated per request; authorization failures logged |
+| **Capability**              | Feature flag and resource allowance gate            | Feature key string (e.g., `ai_advanced`, `workforce_tracking`) | Subscription plan & Organization       | Resolved dynamically from subscription & tenant state        | Feature gating boundary                       | Unique per organization entitlement                                      | Mapped to Subscription Tier                                                                             | Revoked on subscription downgrade                               | Plan upgrades and threshold breaches logged          |
 
 ---
 
@@ -179,6 +183,7 @@ AI NEX OS maintains two distinct database access channels with completely differ
 ```
 
 ### The 8-Step Protected Server Action Execution Contract
+
 Every protected mutation or data fetch in the application layer must execute according to the following sequential contract:
 
 ```
@@ -224,12 +229,15 @@ Every protected mutation or data fetch in the application layer must execute acc
 ## 5. Active Organization Context & Switching Architecture
 
 ### Context Storage Strategy: Secure Session Cookie
+
 To preserve clean, professional dashboard URLs (`/projects`, `/tasks`, `/dashboard`) without forcing redundant URL slugs (`/org/acme/projects`), the application adopts **Secure Session Cookie Resolution (`nexos_active_org_id`)** for SaaS MVP:
+
 - **Cookie Name**: `nexos_active_org_id`
 - **Security Attributes**: `HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=31536000`
 - **Fallback Rule**: If the cookie is absent or invalid, the server automatically selects the user's marked default membership (`is_default = true`), or the oldest active membership.
 
 ### Organization Switching Workflow (Tenant A → Tenant B)
+
 When a user with multiple memberships selects a different workspace in the top-navigation organization switcher:
 
 ```mermaid
@@ -240,7 +248,7 @@ sequenceDiagram
     participant Action as switchActiveOrganization()
     participant DB as Postgres (Memberships)
     participant Cache as React Cache / Cookies
-    
+
     User->>Browser: Selects "Studio B" in Switcher
     Browser->>Action: invoke(targetOrgId = "org_b_uuid")
     Action->>Action: Validate caller authenticated
@@ -260,7 +268,8 @@ sequenceDiagram
 ```
 
 ### Critical Tenant Crossover Protections during Switching
-1. **Never Trust Cookie In isolation**: The cookie is treated as an *untrusted request hint*. The server must execute an authenticated SQL check verifying `organization_memberships` for every server action and page render.
+
+1. **Never Trust Cookie In isolation**: The cookie is treated as an _untrusted request hint_. The server must execute an authenticated SQL check verifying `organization_memberships` for every server action and page render.
 2. **Client-Side Cache Invalidation**: Switching workspaces must trigger `queryClient.clear()` in `@tanstack/react-query` to prevent in-memory caching of deliverables, clients, or tasks from Tenant A into Tenant B's UI.
 3. **Realtime Re-subscription**: All active Supabase Realtime channel subscriptions (`projects:org_a`, `notifications:org_a`) must be explicitly closed and re-opened for `org_b`.
 4. **Background Job Context**: Asynchronous workers and queue processors never read session cookies; they must receive an explicit, immutable `organization_id` embedded inside the job payload.
@@ -313,21 +322,27 @@ export function createTenantRepository(context: TenantContext) {
         });
       },
       async create(data: InsertProjectData) {
-        return db.insert(projects).values({
-          ...data,
-          organizationId, // Enforced by closure; impossible to override
-          createdBy: userId,
-        }).returning();
+        return db
+          .insert(projects)
+          .values({
+            ...data,
+            organizationId, // Enforced by closure; impossible to override
+            createdBy: userId,
+          })
+          .returning();
       },
       async update(projectId: string, data: UpdateProjectData) {
         // Enforces object-level tenant scoping before mutation
-        const result = await db.update(projects)
+        const result = await db
+          .update(projects)
           .set({ ...data, updatedAt: new Date() })
-          .where(and(
-            eq(projects.projectId, projectId),
-            eq(projects.organizationId, organizationId),
-            isNull(projects.deletedAt),
-          ))
+          .where(
+            and(
+              eq(projects.projectId, projectId),
+              eq(projects.organizationId, organizationId),
+              isNull(projects.deletedAt),
+            ),
+          )
           .returning();
         if (!result.length) throw new Error("PROJECT_NOT_FOUND_OR_FORBIDDEN");
         return result[0];
@@ -409,15 +424,15 @@ AI NEX OS provides external creative review portals (`portal.<domain>/s/{token}`
 
 ## 9. Tenant Isolation Across Distributed Components
 
-| Subsystem | Tenant Key / Partitioning Scheme | Isolation Mechanism | Stale Data / Leakage Risk Mitigation |
-| :--- | :--- | :--- | :--- |
-| **Search Engine** | `org:{orgId}:idx:{module}` | Lucene / Postgres FTS queries strictly filter `WHERE organization_id = :orgId` | Command palette (`Cmd+K`) indexes include `organization_id` in document ID prefix |
-| **Redis Cache** | `org:{orgId}:{resource}:{id}` | Key namespacing per tenant; no shared global keys | Organization switch purges request-scoped Redis keys; TTL capped at 300s |
-| **Client Portal Cache** | `portal:token:{tokenHash}` | Token-specific cache entries; zero tenant metadata exposed | Token revocation immediately deletes Redis cache entry |
-| **Supabase Storage** | `/{organizationId}/{bucket}/{path}` | Supabase Storage RLS policies validating caller organization prefix | Signed download URLs capped at 15-minute expiration; direct public URLs disabled |
-| **WebSockets (Realtime)** | `org:{orgId}:events` | Topic authorization via Postgres `app.is_org_member()` | Browser disconnects and clears channels upon workspace switch |
-| **Background Jobs** | Payload: `{ organizationId, ... }` | Worker runtime initializes `TenantContext` from job payload before running task | Worker rejects tasks missing valid `organization_id` |
-| **Outbound Webhooks** | Signed with tenant secret | HMAC-SHA256 signature calculated using `organization_settings.webhook_secret` | Webhook dispatch verifies payload belongs strictly to sending organization |
+| Subsystem                 | Tenant Key / Partitioning Scheme    | Isolation Mechanism                                                             | Stale Data / Leakage Risk Mitigation                                              |
+| :------------------------ | :---------------------------------- | :------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------- |
+| **Search Engine**         | `org:{orgId}:idx:{module}`          | Lucene / Postgres FTS queries strictly filter `WHERE organization_id = :orgId`  | Command palette (`Cmd+K`) indexes include `organization_id` in document ID prefix |
+| **Redis Cache**           | `org:{orgId}:{resource}:{id}`       | Key namespacing per tenant; no shared global keys                               | Organization switch purges request-scoped Redis keys; TTL capped at 300s          |
+| **Client Portal Cache**   | `portal:token:{tokenHash}`          | Token-specific cache entries; zero tenant metadata exposed                      | Token revocation immediately deletes Redis cache entry                            |
+| **Supabase Storage**      | `/{organizationId}/{bucket}/{path}` | Supabase Storage RLS policies validating caller organization prefix             | Signed download URLs capped at 15-minute expiration; direct public URLs disabled  |
+| **WebSockets (Realtime)** | `org:{orgId}:events`                | Topic authorization via Postgres `app.is_org_member()`                          | Browser disconnects and clears channels upon workspace switch                     |
+| **Background Jobs**       | Payload: `{ organizationId, ... }`  | Worker runtime initializes `TenantContext` from job payload before running task | Worker rejects tasks missing valid `organization_id`                              |
+| **Outbound Webhooks**     | Signed with tenant secret           | HMAC-SHA256 signature calculated using `organization_settings.webhook_secret`   | Webhook dispatch verifies payload belongs strictly to sending organization        |
 
 ---
 
@@ -426,7 +441,9 @@ AI NEX OS provides external creative review portals (`portal.<domain>/s/{token}`
 All application logging, error capturing, and security forensics must carry standardized correlation metadata while strictly censoring sensitive credentials:
 
 ### Mandatory Correlation Context
+
 Every log message must structure JSON telemetry with:
+
 - `req_id`: Unique request UUID generated at the edge proxy
 - `tenant_id`: Active `organization_id` (or `null` if unauthenticated)
 - `user_id`: Authenticated `user_id` (or `null` if unauthenticated)
@@ -434,7 +451,9 @@ Every log message must structure JSON telemetry with:
 - `role_key`: Active role key
 
 ### Strictly Redacted Information (Zero Logging)
+
 The following fields must NEVER appear in server logs, Sentry captures, or audit records:
+
 - Plaintext passwords and OTP tokens
 - Invitation tokens and share link secrets
 - Supabase session cookies and JWT bearer tokens

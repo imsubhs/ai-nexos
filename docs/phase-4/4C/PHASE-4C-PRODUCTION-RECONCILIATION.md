@@ -29,6 +29,7 @@ All changes have been validated against static and runtime gates, committed to G
 The approved **Deep Navy / Obsidian + Electric Sky** design system is active in production:
 
 ### Foundation Palette Tokens
+
 - **Surface 0 (Application Canvas)**: `#06141B`
 - **Surface 1 (Sidebar / Top Navigation Chrome)**: `#0E1820`
 - **Surface 2 (Cards / Workstation Tables)**: `#11212D`
@@ -36,17 +37,20 @@ The approved **Deep Navy / Obsidian + Electric Sky** design system is active in 
 - **Surface 4 (Elevated Dialogs / Command Palette)**: `#304554`
 
 ### Typographic Luminance Hierarchy
+
 - **Text Primary**: `#F5F7F8` (100% contrast, comfortable readability)
 - **Text Secondary**: `#CCD0CF` (Soft silver metadata)
 - **Text Muted**: `#9BA8AB` (Secondary descriptions)
 - **Text Subtle**: `#647783` (Structural hints / timestamps)
 
 ### Brand Accent
+
 - **Electric Sky**: `#0EA5E9` (Primary actions, active navigation border indicator, focus rings)
 - **Hover**: `#0284C7`
 - **Soft Glow**: `#38BDF8`
 
 ### Geometry & Hairline Outlines
+
 - **Base radius**: `4px`
 - **Inputs & Buttons**: `6px` (`rounded-md`)
 - **Cards & Data Tables**: `8px` (`rounded-lg`)
@@ -58,30 +62,32 @@ The approved **Deep Navy / Obsidian + Electric Sky** design system is active in 
 ## 4. Route Reconciliation & Documentation Correction
 
 ### Route Audit Matrix
-| Route | Classification | Live Status | Implementation Status |
-| :--- | :--- | :---: | :--- |
-| `/dashboard` | Workspace | HTTP 307 (Redirect to login) | Live in production (Deep Navy executive metrics ribbon) |
-| `/projects` | Workspace | HTTP 307 | Live in production |
-| `/projects/[projectId]` | Workspace | HTTP 307 | Live in production |
-| `/tasks` | Workspace | HTTP 307 | Live in production (Dynamic milestone resolution) |
-| `/timeline` | Workspace | HTTP 307 | Live in production |
-| `/calendar` | Workspace | HTTP 307 | Live in production |
-| `/deliverables` | Production | HTTP 307 | Live in production |
-| `/files` | Production | HTTP 307 | Live in production |
-| `/meetings` | Production | HTTP 307 | Live in production |
-| `/clients` | Client CRM | HTTP 307 | Live in production |
-| `/clients/[clientId]` | Client CRM | HTTP 307 | Live in production |
-| `/workforce/attendance` | Workforce | HTTP 307 | Live in production |
-| `/workforce/history` | Workforce | HTTP 307 | Live in production |
-| `/workforce/corrections/review` | Workforce | HTTP 307 | Live in production |
-| `/workforce/team` | Workforce | HTTP 307 | Live in production |
-| `/workforce/employees` | Workforce | HTTP 307 | Live in production |
-| `/settings/organization` | Settings | HTTP 307 | Live in production |
-| `/settings/members` | Settings | HTTP 307 | Live in production (Phase 4C Members & Invites) |
-| `/settings/billing` | Settings | HTTP 307 | Live in production (Billing & Compute) |
-| `/settings/security` | Settings | HTTP 307 | Live in production (Security Posture & Keys) |
+
+| Route                           | Classification |         Live Status          | Implementation Status                                   |
+| :------------------------------ | :------------- | :--------------------------: | :------------------------------------------------------ |
+| `/dashboard`                    | Workspace      | HTTP 307 (Redirect to login) | Live in production (Deep Navy executive metrics ribbon) |
+| `/projects`                     | Workspace      |           HTTP 307           | Live in production                                      |
+| `/projects/[projectId]`         | Workspace      |           HTTP 307           | Live in production                                      |
+| `/tasks`                        | Workspace      |           HTTP 307           | Live in production (Dynamic milestone resolution)       |
+| `/timeline`                     | Workspace      |           HTTP 307           | Live in production                                      |
+| `/calendar`                     | Workspace      |           HTTP 307           | Live in production                                      |
+| `/deliverables`                 | Production     |           HTTP 307           | Live in production                                      |
+| `/files`                        | Production     |           HTTP 307           | Live in production                                      |
+| `/meetings`                     | Production     |           HTTP 307           | Live in production                                      |
+| `/clients`                      | Client CRM     |           HTTP 307           | Live in production                                      |
+| `/clients/[clientId]`           | Client CRM     |           HTTP 307           | Live in production                                      |
+| `/workforce/attendance`         | Workforce      |           HTTP 307           | Live in production                                      |
+| `/workforce/history`            | Workforce      |           HTTP 307           | Live in production                                      |
+| `/workforce/corrections/review` | Workforce      |           HTTP 307           | Live in production                                      |
+| `/workforce/team`               | Workforce      |           HTTP 307           | Live in production                                      |
+| `/workforce/employees`          | Workforce      |           HTTP 307           | Live in production                                      |
+| `/settings/organization`        | Settings       |           HTTP 307           | Live in production                                      |
+| `/settings/members`             | Settings       |           HTTP 307           | Live in production (Phase 4C Members & Invites)         |
+| `/settings/billing`             | Settings       |           HTTP 307           | Live in production (Billing & Compute)                  |
+| `/settings/security`            | Settings       |           HTTP 307           | Live in production (Security Posture & Keys)            |
 
 ### Documentation Correction: AI Workspace vs. Billing
+
 - **Correction**: In previous drafts, Stitch Screen 17 was referenced with `/settings/billing`. That was a typographical error.
 - **Truth**:
   - `/settings/billing` is **Settings — Billing & Compute** (Stitch Screen 20), displaying asset storage usage, active seats, and compute quota overview.
@@ -92,12 +98,14 @@ The approved **Deep Navy / Obsidian + Electric Sky** design system is active in 
 ## 5. Phase 4C Functional & Security Audit
 
 ### 1. Active Members Management (`/settings/members`)
+
 - **Query**: `getOrganizationMembers()` loads active members joined with `users`, `roles`, and `departments`.
 - **Role Assignment**: Dynamic dropdown allowing users with `roles.update` to change roles among Owner, Admin, Manager, Member, Guest.
 - **Last Owner Guard**: Protected by `checkOwnerProtection` preventing demotion or deactivation of the last active owner in an organization.
 - **Deactivation/Reactivation**: Controlled via `deactivateUser` and `reactivateUser` server actions.
 
 ### 2. Invitations Lifecycle (`/settings/members`)
+
 - **Invite Member Dialog**:
   - Modal with email and workspace role selection.
   - Calls `inviteMemberAction({ email, roleId })`.
@@ -139,6 +147,7 @@ PHASE 4C CLOSURE GATE: PASS — PHASE 4C CLOSED
 ```
 
 All exit criteria satisfied:
+
 1. Working tree clean and synchronized at `ca38b2b`.
 2. Exact production commit `ca38b2b` live on Antideploy (`4793d1fa-e6e0-4231-9f6c-c2eec2fe0003`).
 3. Deep Navy / Obsidian design system verified live.

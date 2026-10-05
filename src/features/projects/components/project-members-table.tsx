@@ -50,28 +50,43 @@ export function ProjectMembersTable({ members }: { members: Member[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-surface-1 overflow-hidden">
+    <div className="border-border bg-surface-1 overflow-hidden rounded-xl border">
       <Table aria-label="Project members">
         <TableHeader>
           <TableRow className="border-border bg-surface-2/40">
-            <TableHead className="text-muted-foreground text-xs font-semibold">User</TableHead>
-            <TableHead className="text-muted-foreground text-xs font-semibold">Role</TableHead>
-            <TableHead className="text-muted-foreground text-xs font-semibold">Status</TableHead>
-            <TableHead className="text-right text-muted-foreground text-xs font-semibold">Actions</TableHead>
+            <TableHead className="text-muted-foreground text-xs font-semibold">
+              User
+            </TableHead>
+            <TableHead className="text-muted-foreground text-xs font-semibold">
+              Role
+            </TableHead>
+            <TableHead className="text-muted-foreground text-xs font-semibold">
+              Status
+            </TableHead>
+            <TableHead className="text-muted-foreground text-right text-xs font-semibold">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {members.map((member) => (
-            <TableRow key={member.memberId} className="border-border/60 hover:bg-surface-2/30">
-              <TableCell className="font-medium text-foreground">
-                {[member.user?.firstName, member.user?.lastName].filter(Boolean).join(" ") ||
+            <TableRow
+              key={member.memberId}
+              className="border-border/60 hover:bg-surface-2/30"
+            >
+              <TableCell className="text-foreground font-medium">
+                {[member.user?.firstName, member.user?.lastName]
+                  .filter(Boolean)
+                  .join(" ") ||
                   member.user?.email ||
                   "Team Member"}
                 <div className="text-muted-foreground text-xs font-normal">
                   {member.user?.email}
                 </div>
               </TableCell>
-              <TableCell className="capitalize text-foreground-secondary text-sm">{member.role}</TableCell>
+              <TableCell className="text-foreground-secondary text-sm capitalize">
+                {member.role}
+              </TableCell>
 
               <TableCell>
                 <Badge

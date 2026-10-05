@@ -46,11 +46,36 @@ const GROUP_ICONS: Record<string, typeof FolderKanban> = {
 };
 
 const QUICK_LINKS: SearchHit[] = [
-  { id: "ql-projects", title: "Projects", subtitle: "All agency projects", href: "/projects" },
-  { id: "ql-clients", title: "Clients", subtitle: "Client roster & relationships", href: "/clients" },
-  { id: "ql-deliverables", title: "Deliverables", subtitle: "Review & approval pipeline", href: "/deliverables" },
-  { id: "ql-tasks", title: "Tasks", subtitle: "Production task board", href: "/tasks" },
-  { id: "ql-files", title: "Files", subtitle: "Asset repository & storage", href: "/files" },
+  {
+    id: "ql-projects",
+    title: "Projects",
+    subtitle: "All agency projects",
+    href: "/projects",
+  },
+  {
+    id: "ql-clients",
+    title: "Clients",
+    subtitle: "Client roster & relationships",
+    href: "/clients",
+  },
+  {
+    id: "ql-deliverables",
+    title: "Deliverables",
+    subtitle: "Review & approval pipeline",
+    href: "/deliverables",
+  },
+  {
+    id: "ql-tasks",
+    title: "Tasks",
+    subtitle: "Production task board",
+    href: "/tasks",
+  },
+  {
+    id: "ql-files",
+    title: "Files",
+    subtitle: "Asset repository & storage",
+    href: "/files",
+  },
 ];
 
 export function GlobalSearch() {
@@ -68,7 +93,10 @@ export function GlobalSearch() {
   // Global keyboard shortcut: ⌘K or Ctrl+K opens the command palette.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if ((event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey)) {
+      if (
+        (event.key === "k" || event.key === "K") &&
+        (event.metaKey || event.ctrlKey)
+      ) {
         event.preventDefault();
         setOpen((prev) => {
           const next = !prev;
@@ -185,14 +213,16 @@ export function GlobalSearch() {
       <button
         type="button"
         onClick={() => handleOpenChange(true)}
-        className="bg-surface-2/60 hover:bg-surface-3 text-muted-foreground hover:text-foreground border border-border relative hidden h-9 w-full max-w-md items-center justify-between rounded-md px-3 text-sm transition-colors md:flex shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+        className="bg-surface-2/60 hover:bg-surface-3 text-muted-foreground hover:text-foreground border-border focus-visible:ring-ring relative hidden h-9 w-full max-w-md items-center justify-between rounded-md border px-3 text-sm shadow-xs transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none md:flex"
         aria-label="Search projects, clients, deliverables (Press ⌘K to open)"
       >
         <div className="flex items-center gap-2 overflow-hidden">
-          <Search className="size-4 shrink-0 text-brand-primary" />
-          <span className="truncate">Search projects, clients, deliverables…</span>
+          <Search className="text-brand-primary size-4 shrink-0" />
+          <span className="truncate">
+            Search projects, clients, deliverables…
+          </span>
         </div>
-        <kbd className="bg-surface-3 border border-border text-foreground-subtle pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded px-1.5 font-mono text-[10px] font-medium">
+        <kbd className="bg-surface-3 border-border text-foreground-subtle pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium select-none">
           <span className="text-xs">⌘</span>K
         </kbd>
       </button>
@@ -205,21 +235,21 @@ export function GlobalSearch() {
         aria-label="Open search dialog"
         className="md:hidden"
       >
-        <Search className="size-4 text-brand-primary" />
+        <Search className="text-brand-primary size-4" />
       </Button>
 
       {/* Accessible Command Palette Dialog */}
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           showCloseButton={false}
-          className="top-[18%] translate-y-0 max-w-xl p-0 gap-0 overflow-hidden rounded-xl border border-border-strong bg-surface-4 shadow-2xl backdrop-blur-xl"
+          className="border-border-strong bg-surface-4 top-[18%] max-w-xl translate-y-0 gap-0 overflow-hidden rounded-xl border p-0 shadow-2xl backdrop-blur-xl"
         >
           <DialogHeader className="sr-only">
             <DialogTitle>Global Command Palette</DialogTitle>
           </DialogHeader>
 
           {/* Search Input Bar */}
-          <div className="flex items-center gap-2.5 border-b border-border-subtle bg-surface-4/90 px-3.5 py-3">
+          <div className="border-border-subtle bg-surface-4/90 flex items-center gap-2.5 border-b px-3.5 py-3">
             <Search className="text-muted-foreground size-4 shrink-0" />
             <input
               ref={inputRef}
@@ -228,14 +258,16 @@ export function GlobalSearch() {
               onChange={(e) => runSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search projects, clients, deliverables, tasks, files…"
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="placeholder:text-muted-foreground flex-1 bg-transparent text-sm outline-none"
               aria-label="Search across the operating system"
               role="combobox"
               aria-expanded={true}
               aria-controls="command-palette-results"
               aria-autocomplete="list"
             />
-            {loading && <Loader2 className="text-muted-foreground size-4 animate-spin shrink-0" />}
+            {loading && (
+              <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" />
+            )}
             {term && (
               <button
                 type="button"
@@ -281,7 +313,8 @@ export function GlobalSearch() {
                 </p>
                 {QUICK_LINKS.map((hit, idx) => {
                   const isSelected = activeIndex === idx;
-                  const Icon = GROUP_ICONS[hit.id.replace("ql-", "")] || FolderKanban;
+                  const Icon =
+                    GROUP_ICONS[hit.id.replace("ql-", "")] || FolderKanban;
                   return (
                     <button
                       key={hit.id}
@@ -292,7 +325,7 @@ export function GlobalSearch() {
                       onMouseEnter={() => setActiveIndex(idx)}
                       className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left transition-colors ${
                         isSelected
-                          ? "bg-surface-3 text-foreground font-medium border-l-2 border-brand-primary"
+                          ? "bg-surface-3 text-foreground border-brand-primary border-l-2 font-medium"
                           : "hover:bg-surface-3/60 text-foreground"
                       }`}
                     >
@@ -300,7 +333,9 @@ export function GlobalSearch() {
                       <div className="flex flex-1 items-center justify-between overflow-hidden">
                         <span className="truncate">{hit.title}</span>
                         {hit.subtitle && (
-                          <span className="text-muted-foreground text-xs">{hit.subtitle}</span>
+                          <span className="text-muted-foreground text-xs">
+                            {hit.subtitle}
+                          </span>
                         )}
                       </div>
                     </button>
@@ -320,7 +355,9 @@ export function GlobalSearch() {
                       {group.label}
                     </p>
                     {group.hits.map((hit) => {
-                      const itemFlatIndex = allHits.findIndex((h) => h.id === hit.id);
+                      const itemFlatIndex = allHits.findIndex(
+                        (h) => h.id === hit.id,
+                      );
                       const isSelected = activeIndex === itemFlatIndex;
 
                       return (
@@ -333,7 +370,7 @@ export function GlobalSearch() {
                           onMouseEnter={() => setActiveIndex(itemFlatIndex)}
                           className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left transition-colors ${
                             isSelected
-                              ? "bg-surface-3 text-foreground font-medium border-l-2 border-brand-primary"
+                              ? "bg-surface-3 text-foreground border-brand-primary border-l-2 font-medium"
                               : "hover:bg-surface-3/60 text-foreground"
                           }`}
                         >
@@ -355,10 +392,17 @@ export function GlobalSearch() {
           </div>
 
           {/* Footer Guide */}
-          <div className="bg-surface-4/90 text-foreground-subtle border-t border-border-subtle flex items-center justify-between px-3.5 py-2 text-[11px]">
-            <span>Navigate with <kbd className="font-mono">↑</kbd> <kbd className="font-mono">↓</kbd></span>
-            <span>Select with <kbd className="font-mono">↵</kbd></span>
-            <span>Close with <kbd className="font-mono">esc</kbd></span>
+          <div className="bg-surface-4/90 text-foreground-subtle border-border-subtle flex items-center justify-between border-t px-3.5 py-2 text-[11px]">
+            <span>
+              Navigate with <kbd className="font-mono">↑</kbd>{" "}
+              <kbd className="font-mono">↓</kbd>
+            </span>
+            <span>
+              Select with <kbd className="font-mono">↵</kbd>
+            </span>
+            <span>
+              Close with <kbd className="font-mono">esc</kbd>
+            </span>
           </div>
         </DialogContent>
       </Dialog>

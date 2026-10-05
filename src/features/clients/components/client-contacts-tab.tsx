@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  ClientContactTypeBadge,
-  ClientStatusBadge,
-} from "./client-badges";
+import { ClientContactTypeBadge, ClientStatusBadge } from "./client-badges";
 import { ClientContactDrawer } from "./client-contact-drawer";
 import { ClientContactDialog, ContactData } from "./client-contact-dialog";
 import { NoContactsEmptyState } from "./client-empty-state";
-import { Mail, Phone, ExternalLink, Plus, Edit2, Archive, User } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  ExternalLink,
+  Plus,
+  Edit2,
+  Archive,
+  User,
+} from "lucide-react";
 import { archiveContact } from "../actions";
 import { toast } from "sonner";
 
@@ -24,10 +29,14 @@ export function ClientContactsTab({
   contacts,
   onRefresh,
 }: ClientContactsTabProps) {
-  const [selectedContact, setSelectedContact] = useState<ContactData | null>(null);
+  const [selectedContact, setSelectedContact] = useState<ContactData | null>(
+    null,
+  );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [editingContact, setEditingContact] = useState<ContactData | null>(null);
+  const [editingContact, setEditingContact] = useState<ContactData | null>(
+    null,
+  );
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   const handleOpenDrawer = (contact: ContactData) => {
@@ -49,7 +58,9 @@ export function ClientContactsTab({
       toast.success("Contact archived");
       onRefresh?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to archive contact");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to archive contact",
+      );
     }
   };
 
@@ -69,56 +80,66 @@ export function ClientContactsTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between text-xs text-foreground-muted px-1">
-        <span>{contacts.length} registered {contacts.length === 1 ? "contact" : "contacts"}</span>
-        <Button size="xs" variant="outline" onClick={() => setIsAddOpen(true)} className="gap-1">
+      <div className="text-foreground-muted flex items-center justify-between px-1 text-xs">
+        <span>
+          {contacts.length} registered{" "}
+          {contacts.length === 1 ? "contact" : "contacts"}
+        </span>
+        <Button
+          size="xs"
+          variant="outline"
+          onClick={() => setIsAddOpen(true)}
+          className="gap-1"
+        >
           <Plus className="size-3" />
           <span>Add Contact</span>
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {contacts.map((contact) => (
           <div
             key={contact.contactId}
-            className="group relative flex flex-col justify-between p-4 rounded-lg border border-border-subtle bg-surface-2 hover:border-brand-primary/40 hover:bg-surface-3/80 transition-all duration-150"
+            className="group border-border-subtle bg-surface-2 hover:border-brand-primary/40 hover:bg-surface-3/80 relative flex flex-col justify-between rounded-lg border p-4 transition-all duration-150"
           >
             <div>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2.5">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-surface-1 border border-border-subtle text-foreground-muted shrink-0">
-                    <User className="size-4 text-brand-primary" />
+                  <div className="bg-surface-1 border-border-subtle text-foreground-muted flex size-9 shrink-0 items-center justify-center rounded-lg border">
+                    <User className="text-brand-primary size-4" />
                   </div>
                   <div>
                     <button
                       type="button"
                       onClick={() => handleOpenDrawer(contact)}
-                      className="font-heading text-sm font-semibold text-foreground group-hover:text-brand-primary-soft hover:underline transition-colors text-left cursor-pointer"
+                      className="font-heading text-foreground group-hover:text-brand-primary-soft cursor-pointer text-left text-sm font-semibold transition-colors hover:underline"
                     >
                       {contact.name}
                     </button>
                     {contact.designation && (
-                      <p className="text-xs text-foreground-muted mt-0.5">
+                      <p className="text-foreground-muted mt-0.5 text-xs">
                         {contact.designation}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex shrink-0 items-center gap-1.5">
                   <ClientContactTypeBadge type={contact.contactType} />
-                  {contact.status && <ClientStatusBadge status={contact.status} />}
+                  {contact.status && (
+                    <ClientStatusBadge status={contact.status} />
+                  )}
                 </div>
               </div>
 
               {/* Channels */}
-              <div className="mt-3.5 space-y-1.5 text-xs text-foreground-secondary">
+              <div className="text-foreground-secondary mt-3.5 space-y-1.5 text-xs">
                 {contact.email && (
                   <div className="flex items-center gap-2 truncate">
-                    <Mail className="size-3.5 text-foreground-subtle shrink-0" />
+                    <Mail className="text-foreground-subtle size-3.5 shrink-0" />
                     <a
                       href={`mailto:${contact.email}`}
-                      className="truncate hover:text-brand-primary hover:underline"
+                      className="hover:text-brand-primary truncate hover:underline"
                     >
                       {contact.email}
                     </a>
@@ -127,10 +148,10 @@ export function ClientContactsTab({
 
                 {contact.phone && (
                   <div className="flex items-center gap-2 truncate">
-                    <Phone className="size-3.5 text-foreground-subtle shrink-0" />
+                    <Phone className="text-foreground-subtle size-3.5 shrink-0" />
                     <a
                       href={`tel:${contact.phone}`}
-                      className="truncate hover:text-brand-primary hover:underline"
+                      className="hover:text-brand-primary truncate hover:underline"
                     >
                       {contact.phone}
                     </a>
@@ -139,12 +160,12 @@ export function ClientContactsTab({
 
                 {contact.linkedin && (
                   <div className="flex items-center gap-2 truncate">
-                    <ExternalLink className="size-3.5 text-foreground-subtle shrink-0" />
+                    <ExternalLink className="text-foreground-subtle size-3.5 shrink-0" />
                     <a
                       href={contact.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="truncate hover:text-brand-primary hover:underline text-[11px]"
+                      className="hover:text-brand-primary truncate text-[11px] hover:underline"
                     >
                       {contact.linkedin.replace(/^https?:\/\/(www\.)?/, "")}
                     </a>
@@ -154,11 +175,11 @@ export function ClientContactsTab({
             </div>
 
             {/* Actions footer */}
-            <div className="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between">
+            <div className="border-border-subtle mt-4 flex items-center justify-between border-t pt-3">
               <button
                 type="button"
                 onClick={() => handleOpenDrawer(contact)}
-                className="text-xs text-foreground-subtle hover:text-foreground cursor-pointer font-medium"
+                className="text-foreground-subtle hover:text-foreground cursor-pointer text-xs font-medium"
               >
                 View Details →
               </button>
@@ -170,7 +191,7 @@ export function ClientContactsTab({
                   onClick={() => handleEdit(contact)}
                   aria-label="Edit contact"
                 >
-                  <Edit2 className="size-3 text-foreground-muted hover:text-foreground" />
+                  <Edit2 className="text-foreground-muted hover:text-foreground size-3" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -178,7 +199,7 @@ export function ClientContactsTab({
                   onClick={() => handleArchive(contact)}
                   aria-label="Archive contact"
                 >
-                  <Archive className="size-3 text-foreground-muted hover:text-destructive" />
+                  <Archive className="text-foreground-muted hover:text-destructive size-3" />
                 </Button>
               </div>
             </div>

@@ -1,7 +1,14 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LucideIcon, Building2, FolderKanban, Users, Palette, Activity } from "lucide-react";
+import {
+  LucideIcon,
+  Building2,
+  FolderKanban,
+  Users,
+  Palette,
+  Activity,
+} from "lucide-react";
 
 interface ClientEmptyStateProps {
   icon?: LucideIcon;
@@ -25,17 +32,17 @@ export function ClientEmptyState({
   return (
     <div
       className={cn(
-        "flex min-h-[220px] flex-col items-center justify-center rounded-lg border border-dashed border-border-strong bg-surface-1/40 p-8 text-center",
+        "border-border-strong bg-surface-1/40 flex min-h-[220px] flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center",
         className,
       )}
     >
-      <div className="flex size-11 items-center justify-center rounded-lg border border-border-subtle bg-surface-2 text-foreground-muted mb-3.5">
-        <Icon className="size-5 text-brand-primary" />
+      <div className="border-border-subtle bg-surface-2 text-foreground-muted mb-3.5 flex size-11 items-center justify-center rounded-lg border">
+        <Icon className="text-brand-primary size-5" />
       </div>
-      <h3 className="font-heading text-sm font-semibold text-foreground-heading">
+      <h3 className="font-heading text-foreground-heading text-sm font-semibold">
         {title}
       </h3>
-      <p className="mt-1 max-w-sm text-xs text-foreground-muted text-balance">
+      <p className="text-foreground-muted mt-1 max-w-sm text-xs text-balance">
         {description}
       </p>
       {action && (
@@ -53,46 +60,76 @@ export function ClientEmptyState({
   );
 }
 
-export function NoClientsEmptyState({ onAddClient }: { onAddClient?: () => void }) {
+export function NoClientsEmptyState({
+  onAddClient,
+}: {
+  onAddClient?: () => void;
+}) {
   return (
     <ClientEmptyState
       icon={Building2}
       title="No clients yet"
       description="Add your first client to start managing accounts, brand guidelines, contacts, and collaborative engagements."
-      action={onAddClient ? { label: "Add Client", onClick: onAddClient } : undefined}
+      action={
+        onAddClient ? { label: "Add Client", onClick: onAddClient } : undefined
+      }
     />
   );
 }
 
-export function NoProjectsEmptyState({ onCreateProject }: { onCreateProject?: () => void }) {
+export function NoProjectsEmptyState({
+  onCreateProject,
+}: {
+  onCreateProject?: () => void;
+}) {
   return (
     <ClientEmptyState
       icon={FolderKanban}
       title="No active projects for this client"
       description="There are currently no active project engagements linked to this client account."
-      action={onCreateProject ? { label: "Create Project", onClick: onCreateProject } : undefined}
+      action={
+        onCreateProject
+          ? { label: "Create Project", onClick: onCreateProject }
+          : undefined
+      }
     />
   );
 }
 
-export function NoContactsEmptyState({ onAddContact }: { onAddContact?: () => void }) {
+export function NoContactsEmptyState({
+  onAddContact,
+}: {
+  onAddContact?: () => void;
+}) {
   return (
     <ClientEmptyState
       icon={Users}
       title="No stakeholder contacts yet"
       description="Maintain client roster with primary, billing, creative, and technical stakeholder details."
-      action={onAddContact ? { label: "Add Contact", onClick: onAddContact } : undefined}
+      action={
+        onAddContact
+          ? { label: "Add Contact", onClick: onAddContact }
+          : undefined
+      }
     />
   );
 }
 
-export function NoBrandKitEmptyState({ onConfigureBrandKit }: { onConfigureBrandKit?: () => void }) {
+export function NoBrandKitEmptyState({
+  onConfigureBrandKit,
+}: {
+  onConfigureBrandKit?: () => void;
+}) {
   return (
     <ClientEmptyState
       icon={Palette}
       title="No brand kit configured yet"
       description="Store brand colors, typography guidelines, drive folders, and reference assets for team execution."
-      action={onConfigureBrandKit ? { label: "Configure Brand Kit", onClick: onConfigureBrandKit } : undefined}
+      action={
+        onConfigureBrandKit
+          ? { label: "Configure Brand Kit", onClick: onConfigureBrandKit }
+          : undefined
+      }
     />
   );
 }

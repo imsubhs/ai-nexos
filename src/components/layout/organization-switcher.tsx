@@ -86,7 +86,7 @@ export function OrganizationSwitcher({
         align="start"
         sideOffset={6}
       >
-        <DropdownMenuLabel className="text-muted-foreground px-2 py-1.5 text-xs font-medium uppercase tracking-wider">
+        <DropdownMenuLabel className="text-muted-foreground px-2 py-1.5 text-xs font-medium tracking-wider uppercase">
           Workspaces ({memberships.length || 1})
         </DropdownMenuLabel>
 
@@ -108,7 +108,9 @@ export function OrganizationSwitcher({
               <div className="flex items-center gap-2 overflow-hidden">
                 <Building2 className="text-muted-foreground size-4 shrink-0" />
                 <div className="grid leading-tight">
-                  <span className="truncate font-medium">{m.organizationName}</span>
+                  <span className="truncate font-medium">
+                    {m.organizationName}
+                  </span>
                   {m.roleName && (
                     <span className="text-muted-foreground truncate text-xs">
                       {m.roleName}

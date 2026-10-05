@@ -15,7 +15,11 @@ import {
   PermissionDeniedError,
 } from "@/features/permissions";
 import { storageService } from "@/lib/storage/SupabaseStorageProvider";
-import { RATE_LIMITS, consumeRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
+import {
+  RATE_LIMITS,
+  consumeRateLimit,
+  rateLimitHeaders,
+} from "@/lib/security/rate-limit";
 import { ApiError } from "@/lib/security/errors";
 import { eq, and, sql, desc, ilike, isNull } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -418,7 +422,10 @@ export async function initializeFileUpload(
   requirePermission(user.permissions, "files", "upload");
 
   const identifier = `${user.organizationId}:${user.userId}`;
-  const decision = await consumeRateLimit(RATE_LIMITS.resourceMutation, identifier);
+  const decision = await consumeRateLimit(
+    RATE_LIMITS.resourceMutation,
+    identifier,
+  );
   if (!decision.allowed) {
     throw new ApiError(
       "rate_limited",
@@ -1125,4 +1132,3 @@ export async function restoreFile(fileId: string) {
     return updated;
   });
 }
-

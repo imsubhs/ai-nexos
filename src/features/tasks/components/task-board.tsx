@@ -127,11 +127,11 @@ function BoardColumn({
   });
 
   return (
-    <div className="bg-surface-1/60 border border-border flex w-80 shrink-0 flex-col rounded-lg shadow-xs">
-      <div className="border-b border-border-subtle p-3 bg-surface-2/40 rounded-t-lg flex items-center justify-between">
+    <div className="bg-surface-1/60 border-border flex w-80 shrink-0 flex-col rounded-lg border shadow-xs">
+      <div className="border-border-subtle bg-surface-2/40 flex items-center justify-between rounded-t-lg border-b p-3">
         <h3 className="text-foreground text-sm font-semibold">
           {column.label}
-          <span className="text-muted-foreground ml-2 text-xs font-mono font-normal">
+          <span className="text-muted-foreground ml-2 font-mono text-xs font-normal">
             {tasks.length}
           </span>
         </h3>
@@ -156,7 +156,7 @@ function BoardColumn({
                 }}
               >
                 <div
-                  className={`bg-card rounded-md border border-border shadow-xs dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-border-strong transition-all ${
+                  className={`bg-card border-border hover:border-border-strong rounded-md border shadow-xs transition-all dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] ${
                     isMoving ? "opacity-50" : ""
                   }`}
                 >
@@ -169,7 +169,10 @@ function BoardColumn({
                     onClick={() => onTaskClick(task.taskId)}
                   >
                     <div className="flex w-full items-start justify-between gap-2">
-                      <Badge variant="outline" className="font-mono text-xs text-brand-primary border-brand-primary/30 bg-brand-primary/5">
+                      <Badge
+                        variant="outline"
+                        className="text-brand-primary border-brand-primary/30 bg-brand-primary/5 font-mono text-xs"
+                      >
                         {task.taskCode}
                       </Badge>
                       <span className="text-muted-foreground text-xs capitalize">
@@ -187,7 +190,7 @@ function BoardColumn({
                     </div>
                   </button>
 
-                  <div className="flex justify-end border-t border-border-subtle px-2 py-1 bg-surface-1/30 rounded-b-md">
+                  <div className="border-border-subtle bg-surface-1/30 flex justify-end rounded-b-md border-t px-2 py-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={

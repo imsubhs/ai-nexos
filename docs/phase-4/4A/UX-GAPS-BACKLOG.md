@@ -1,24 +1,26 @@
 # AI NEX OS — Phase 4A: UX Gaps Backlog
+
 **Product:** AI NEX OS — The Operating System for Creative Execution  
 **Phase:** 4A — Product Foundation & UX Audit  
 **Status:** COMPLETE / CANONICAL AUDIT BASELINE  
-**Classification Standard:** P0 (Critical/Blocking/Security-Tenant Risk), P1 (High/Usability/Structural), P2 (Medium/Refinement/Consistency)  
+**Classification Standard:** P0 (Critical/Blocking/Security-Tenant Risk), P1 (High/Usability/Structural), P2 (Medium/Refinement/Consistency)
 
 ---
 
 ## 1. Executive Summary & Triage Overview
 
-This backlog captures and prioritizes all empirical user experience, architectural, and information architecture deficiencies identified during the Phase 4A audit across the 38 production routes of AI NEX OS. 
+This backlog captures and prioritizes all empirical user experience, architectural, and information architecture deficiencies identified during the Phase 4A audit across the 38 production routes of AI NEX OS.
 
 Every finding is substantiated with exact source code citations, production route references, and visual correlation from verified production screenshots (`pages (1).png` through `pages (15).png`).
 
 ### Severity Breakdown
-| Severity | Definition | Count | Target Phase Allocation |
-|---|---|:---:|---|
-| **P0** | Blocks fundamental product usage, creates cross-tenant or permission crash vectors, or presents critical UX/authorization blind spots | 4 | Phase 4B (Workspace/Nav), Phase 4C (Workforce/Org), Phase 4E (Execution) |
-| **P1** | Major usability breakdown, structural fragmentation, dead ends, or disconnected core workflows | 8 | Phase 4B, Phase 4C, Phase 4D, Phase 4E, Phase 4F, Phase 4G, Phase 4H |
-| **P2** | Inconsistencies, missing visual feedback/states, accessibility gaps, or secondary polish items | 8 | Phase 4B, Phase 4D, Phase 4F, Phase 4H, Phase 4I |
-| **Total** | | **20** | |
+
+| Severity  | Definition                                                                                                                            | Count  | Target Phase Allocation                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- | :----: | ------------------------------------------------------------------------ |
+| **P0**    | Blocks fundamental product usage, creates cross-tenant or permission crash vectors, or presents critical UX/authorization blind spots |   4    | Phase 4B (Workspace/Nav), Phase 4C (Workforce/Org), Phase 4E (Execution) |
+| **P1**    | Major usability breakdown, structural fragmentation, dead ends, or disconnected core workflows                                        |   8    | Phase 4B, Phase 4C, Phase 4D, Phase 4E, Phase 4F, Phase 4G, Phase 4H     |
+| **P2**    | Inconsistencies, missing visual feedback/states, accessibility gaps, or secondary polish items                                        |   8    | Phase 4B, Phase 4D, Phase 4F, Phase 4H, Phase 4I                         |
+| **Total** |                                                                                                                                       | **20** |                                                                          |
 
 ---
 
@@ -27,9 +29,10 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-01: Hardcoded Milestone UUID & Inflexible Task Hierarchy Scope
+
 - **Area:** Task Management & Project Execution
 - **Severity:** `P0`
-- **Current State:** 
+- **Current State:**
   The global tasks page (`/tasks`) hardcodes a demo milestone UUID:
   `DEMO_TASK_SCOPE = { projectId: "00000000-0000-4000-8000-000000000300", milestoneId: "00000000-0000-4000-8000-000000000322" }`.
   It renders the fixed subtitle: `"Wireframes milestone · Website Redesign"` on live production (verified in `pages (6).png`). Creating or viewing tasks is locked to this single hardcoded milestone. Tasks cannot be viewed across all projects, nor can users switch project context from the `/tasks` route. Furthermore, the task domain model enforces a 5-level rigid hierarchy (`Organization → Project → Timeline → Phase → Milestone → Task`), preventing fast, direct task creation at the project level.
@@ -51,6 +54,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-02: Permission Cascade 500 Unhandled Server Crashes in Files, Deliverables, and Meetings
+
 - **Area:** Authorization / System States / Global Resilience
 - **Severity:** `P0`
 - **Current State:**
@@ -75,6 +79,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-03: Inverted Organization Invitation Flow (Settings Isolation)
+
 - **Area:** Organization & Membership UX
 - **Severity:** `P0`
 - **Current State:**
@@ -98,6 +103,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-04: Non-Functional Global Search Mock / Architectural Stub
+
 - **Area:** Global Navigation & Productivity
 - **Severity:** `P0`
 - **Current State:**
@@ -120,6 +126,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-05: Empty Dashboard Canvas / Lack of Operational Command Center
+
 - **Area:** Executive & Operational Dashboard
 - **Severity:** `P1`
 - **Current State:**
@@ -128,7 +135,7 @@ Every finding is substantiated with exact source code citations, production rout
   - Active Clients (e.g. `1`)
   - Open Tasks (e.g. `0`)
   - Pending Approvals (e.g. `0`)
-  Below these 4 cards, the entire viewport (approx. 80% of screen height) is completely blank dark canvas. None of the cards are clickable links. There is no list of recent projects, upcoming deadlines, urgent client approvals, or workforce activity.
+    Below these 4 cards, the entire viewport (approx. 80% of screen height) is completely blank dark canvas. None of the cards are clickable links. There is no list of recent projects, upcoming deadlines, urgent client approvals, or workforce activity.
 - **Evidence:**
   - Code: `src/app/(internal)/dashboard/page.tsx:1-120`
   - Screenshot: `pages (1).png`
@@ -146,6 +153,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-06: Workforce Navigation Over-Representation in Primary Sidebar
+
 - **Area:** Information Architecture & Navigation
 - **Severity:** `P1`
 - **Current State:**
@@ -157,7 +165,7 @@ Every finding is substantiated with exact source code citations, production rout
   - Team Attendance (`/attendance/team`)
   - Employees (`/workforce/employees`)
   - Reports (`/workforce/reports`)
-  Workforce items consume over 40% of the entire sidebar height. Furthermore, personal punch clocks (`/attendance`) are co-located alongside executive payroll/attendance reports (`/workforce/reports`), confusing individual contributors with HR managers.
+    Workforce items consume over 40% of the entire sidebar height. Furthermore, personal punch clocks (`/attendance`) are co-located alongside executive payroll/attendance reports (`/workforce/reports`), confusing individual contributors with HR managers.
 - **Evidence:**
   - Code: `src/components/dashboard/sidebar.tsx:48-96`
   - Screenshot: `pages (1).png`
@@ -177,6 +185,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-07: Disconnected Client Relationship Model (CRM vs. Production Silos)
+
 - **Area:** Client Management & Collaboration
 - **Severity:** `P1`
 - **Current State:**
@@ -207,13 +216,14 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-08: File Storage vs. Deliverable Conceptual Collision
+
 - **Area:** Creative Assets & Deliverables (DAM)
 - **Severity:** `P1`
 - **Current State:**
   The navigation groups "Files" and "Deliverables" under an ambiguous "Production" header.
   - `/files` (`pages (8).png`) displays raw files (source assets, reference PDFs, design templates) with upload dates, sizes, and project tags.
   - `/deliverables` (`pages (7).png`) displays client-facing milestones (e.g. "Brand Identity Package", "Homepage Design V1") with review statuses (`Draft`, `In Review`, `Approved`, `Rejected`).
-  However, deliverables do not link to their underlying stored asset files, and files cannot be promoted or attached to deliverables directly from the UI.
+    However, deliverables do not link to their underlying stored asset files, and files cannot be promoted or attached to deliverables directly from the UI.
 - **Evidence:**
   - Code: `src/app/(dashboard)/files/page.tsx:1-125`
   - Code: `src/app/(dashboard)/deliverables/page.tsx:1-118`
@@ -234,6 +244,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-09: Inactive Client Approval Portal Stub
+
 - **Area:** Client Portal & Approvals
 - **Severity:** `P1`
 - **Current State:**
@@ -256,6 +267,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-10: Lack of Scoped Project Workspace (Module Fragmentation)
+
 - **Area:** Project Experience & Creative Execution
 - **Severity:** `P1`
 - **Current State:**
@@ -282,6 +294,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-11: Timeline / Gantt Read-Only Static Visualization
+
 - **Area:** Timeline & Project Schedule
 - **Severity:** `P1`
 - **Current State:**
@@ -307,6 +320,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-12: Disconnected Notification Bell / Lack of Activity Center
+
 - **Area:** Global Navigation & User Feedback
 - **Severity:** `P1`
 - **Current State:**
@@ -329,13 +343,14 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-13: Uninformative "Soon" Badges in Intelligence Menu
+
 - **Area:** Intelligence & AI Capabilities
 - **Severity:** `P2`
 - **Current State:**
   The sidebar includes an "Intelligence" section containing:
   - AI Workspace (`/intelligence/ai-workspace`) — badged with a prominent `"Soon"` pill (verified in `pages (1).png`).
   - Analytics (`/intelligence/analytics`) — badged with `"Soon"`.
-  Clicking these links navigates to generic placeholder screens that explain neither what capabilities are coming nor when they will be enabled.
+    Clicking these links navigates to generic placeholder screens that explain neither what capabilities are coming nor when they will be enabled.
 - **Evidence:**
   - Code: `src/components/dashboard/sidebar.tsx:98-115`
   - Screenshot: `pages (1).png`
@@ -352,6 +367,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-14: Inconsistent Empty States & Lack of Explanatory CTAs
+
 - **Area:** System States & Onboarding
 - **Severity:** `P2`
 - **Current State:**
@@ -374,6 +390,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-15: Inconsistent Form Error Feedback (Alerts vs. Toasts vs. Inline)
+
 - **Area:** Form Ergonomics & Feedback
 - **Severity:** `P2`
 - **Current State:**
@@ -399,6 +416,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-16: Missing Keyboard Accessibility & Focus Trapping in Modals
+
 - **Area:** Accessibility (a11y)
 - **Severity:** `P2`
 - **Current State:**
@@ -419,6 +437,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-17: Table Viewport Breakdown on Mobile Devices (< 768px)
+
 - **Area:** Responsive UX
 - **Severity:** `P2`
 - **Current State:**
@@ -439,6 +458,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-18: Absence of Breadcrumbs in Deep Entity Routes
+
 - **Area:** Navigation & Wayfinding
 - **Severity:** `P2`
 - **Current State:**
@@ -460,6 +480,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-19: Unsaved Changes / Dirty Form State Loss
+
 - **Area:** Form Ergonomics & Data Integrity
 - **Severity:** `P2`
 - **Current State:**
@@ -480,6 +501,7 @@ Every finding is substantiated with exact source code citations, production rout
 ---
 
 ### UXG-20: Silent Session Expiry & Token Refresh Dropouts
+
 - **Area:** Authentication & Tenant Session UX
 - **Severity:** `P2`
 - **Current State:**
@@ -501,33 +523,34 @@ Every finding is substantiated with exact source code citations, production rout
 
 ## 3. Prioritized Resolution Matrix
 
-| ID | Issue Title | Severity | Area | Proposed Phase | Core Dependencies |
-|---|---|:---:|---|:---:|---|
-| **UXG-01** | Hardcoded Task Milestone Scope | `P0` | Tasks / Projects | Phase 4E | Project Context Provider |
-| **UXG-02** | Permission Cascade 500 Crashes | `P0` | Authorization | Phase 4B | Defensive Server Actions |
-| **UXG-03** | Inverted Member Invite Flow | `P0` | Organization UX | Phase 4C | Invitation Action Integration |
-| **UXG-04** | Non-Functional Global Search | `P0` | Navigation | Phase 4B | Multi-Entity Search Query |
-| **UXG-05** | Empty Dashboard Canvas | `P1` | Dashboard | Phase 4H (Init 4B) | Aggregated Executive Queries |
-| **UXG-06** | Workforce Sidebar Navigation Bloat | `P1` | Navigation / IA | Phase 4B / 4C | Role-Filtered Navigation Config |
-| **UXG-07** | Disconnected Client Relationships | `P1` | Client CRM | Phase 4D | Relational Client Projections |
-| **UXG-08** | File vs. Deliverable Collision | `P1` | Production / DAM | Phase 4F | Deliverable Attachment Schema |
-| **UXG-09** | Inactive Client Portal Stub | `P1` | Client Portal | Phase 4G | HMAC Portal Link Verification |
-| **UXG-10** | Missing Scoped Project Workspace | `P1` | Projects | Phase 4E | Nested Tab Routing |
-| **UXG-11** | Read-Only Static Timeline | `P1` | Timeline / Gantt | Phase 4E | Interactive Timeline Engine |
-| **UXG-12** | Disconnected Notification Bell | `P1` | Navigation | Phase 4H (Init 4B) | Real-time Notification Engine |
-| **UXG-13** | Uninformative "Soon" Badges | `P2` | Intelligence | Phase 4B / 4H | Nav Config & Feature Flags |
-| **UXG-14** | Inconsistent Empty States | `P2` | Design System | Phase 4B / 4I | Standardized EmptyState Component |
-| **UXG-15** | Inconsistent Form Error Feedback | `P2` | Form UX | Phase 4B / 4I | Inline Error Standard |
-| **UXG-16** | Focus Trapping & a11y Gaps | `P2` | Accessibility | Phase 4I | Base UI Primitive Hardening |
-| **UXG-17** | Table Viewport Breakdown on Mobile | `P2` | Responsive UX | Phase 4B / 4I | Responsive Card Table Wrapper |
-| **UXG-18** | Absence of Breadcrumbs | `P2` | Navigation | Phase 4B | Dynamic Breadcrumb Bar |
-| **UXG-19** | Unsaved Changes State Loss | `P2` | Form UX | Phase 4I | Modal Dirty-State Guard |
-| **UXG-20** | Silent Session Expiry Dropouts | `P2` | Auth / Session | Phase 4B / 4I | Session Watchdog |
+| ID         | Issue Title                        | Severity | Area             |   Proposed Phase   | Core Dependencies                 |
+| ---------- | ---------------------------------- | :------: | ---------------- | :----------------: | --------------------------------- |
+| **UXG-01** | Hardcoded Task Milestone Scope     |   `P0`   | Tasks / Projects |      Phase 4E      | Project Context Provider          |
+| **UXG-02** | Permission Cascade 500 Crashes     |   `P0`   | Authorization    |      Phase 4B      | Defensive Server Actions          |
+| **UXG-03** | Inverted Member Invite Flow        |   `P0`   | Organization UX  |      Phase 4C      | Invitation Action Integration     |
+| **UXG-04** | Non-Functional Global Search       |   `P0`   | Navigation       |      Phase 4B      | Multi-Entity Search Query         |
+| **UXG-05** | Empty Dashboard Canvas             |   `P1`   | Dashboard        | Phase 4H (Init 4B) | Aggregated Executive Queries      |
+| **UXG-06** | Workforce Sidebar Navigation Bloat |   `P1`   | Navigation / IA  |   Phase 4B / 4C    | Role-Filtered Navigation Config   |
+| **UXG-07** | Disconnected Client Relationships  |   `P1`   | Client CRM       |      Phase 4D      | Relational Client Projections     |
+| **UXG-08** | File vs. Deliverable Collision     |   `P1`   | Production / DAM |      Phase 4F      | Deliverable Attachment Schema     |
+| **UXG-09** | Inactive Client Portal Stub        |   `P1`   | Client Portal    |      Phase 4G      | HMAC Portal Link Verification     |
+| **UXG-10** | Missing Scoped Project Workspace   |   `P1`   | Projects         |      Phase 4E      | Nested Tab Routing                |
+| **UXG-11** | Read-Only Static Timeline          |   `P1`   | Timeline / Gantt |      Phase 4E      | Interactive Timeline Engine       |
+| **UXG-12** | Disconnected Notification Bell     |   `P1`   | Navigation       | Phase 4H (Init 4B) | Real-time Notification Engine     |
+| **UXG-13** | Uninformative "Soon" Badges        |   `P2`   | Intelligence     |   Phase 4B / 4H    | Nav Config & Feature Flags        |
+| **UXG-14** | Inconsistent Empty States          |   `P2`   | Design System    |   Phase 4B / 4I    | Standardized EmptyState Component |
+| **UXG-15** | Inconsistent Form Error Feedback   |   `P2`   | Form UX          |   Phase 4B / 4I    | Inline Error Standard             |
+| **UXG-16** | Focus Trapping & a11y Gaps         |   `P2`   | Accessibility    |      Phase 4I      | Base UI Primitive Hardening       |
+| **UXG-17** | Table Viewport Breakdown on Mobile |   `P2`   | Responsive UX    |   Phase 4B / 4I    | Responsive Card Table Wrapper     |
+| **UXG-18** | Absence of Breadcrumbs             |   `P2`   | Navigation       |      Phase 4B      | Dynamic Breadcrumb Bar            |
+| **UXG-19** | Unsaved Changes State Loss         |   `P2`   | Form UX          |      Phase 4I      | Modal Dirty-State Guard           |
+| **UXG-20** | Silent Session Expiry Dropouts     |   `P2`   | Auth / Session   |   Phase 4B / 4I    | Session Watchdog                  |
 
 ---
 
 ## 4. Phase 4A Audit Conclusion & Guardrail Notice
 
 This backlog represents the canonical defect and enhancement registry for the Phase 4 execution sequence.
+
 - **Implementation Status:** NOT AUTHORIZED. Zero code edits have been made during Phase 4A.
 - **Next Gate:** Resolution of P0 items (`UXG-02`, `UXG-04`) must be addressed immediately during **Phase 4B** (Core Workspace & Global Navigation).

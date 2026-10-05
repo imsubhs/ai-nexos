@@ -49,7 +49,8 @@ function extractStringParams(node: unknown, depth = 0): string[] {
   const found: string[] = [];
   if (!node || depth > 10) return found;
   if (Array.isArray(node)) {
-    for (const item of node) found.push(...extractStringParams(item, depth + 1));
+    for (const item of node)
+      found.push(...extractStringParams(item, depth + 1));
     return found;
   }
   if (typeof node === "object" && node !== null) {
@@ -148,7 +149,9 @@ describe("AI NEX OS — Phase 4.4 Tenant Authorization & Boundary Hardening", ()
   // --------------------------------------------------------------------------
   describe("P4-045: Cross-tenant project/resource read blocked", () => {
     it("returns null or empty when querying a resource belonging to another organization", async () => {
-      const repoAlpha = createTenantRepository(makeTenantContext(orgAlphaId, userAliceId));
+      const repoAlpha = createTenantRepository(
+        makeTenantContext(orgAlphaId, userAliceId),
+      );
       const orgBProjectId = "00000000-0000-4000-8000-000000000999";
 
       // TenantRepository injects eq(projects.organizationId, this.orgId)
@@ -158,7 +161,9 @@ describe("AI NEX OS — Phase 4.4 Tenant Authorization & Boundary Hardening", ()
     });
 
     it("withScope helper binds queries strictly to the authorized tenant", () => {
-      const repoAlpha = createTenantRepository(makeTenantContext(orgAlphaId, userAliceId));
+      const repoAlpha = createTenantRepository(
+        makeTenantContext(orgAlphaId, userAliceId),
+      );
       const dummyTable = { organizationId: "organization_id" };
       const scope = repoAlpha.withScope(dummyTable as any);
       expect(scope).toBeDefined();
@@ -171,11 +176,15 @@ describe("AI NEX OS — Phase 4.4 Tenant Authorization & Boundary Hardening", ()
   // --------------------------------------------------------------------------
   describe("P4-046: Cross-tenant project/resource mutation blocked", () => {
     it("prevents updating a resource belonging to another organization", async () => {
-      const repoAlpha = createTenantRepository(makeTenantContext(orgAlphaId, userAliceId));
+      const repoAlpha = createTenantRepository(
+        makeTenantContext(orgAlphaId, userAliceId),
+      );
       const orgBProjectId = "00000000-0000-4000-8000-000000000999";
 
       // TenantRepository update constrains by both resource ID and org ID
-      const updated = await repoAlpha.projects.update(orgBProjectId, { projectName: "Hijacked" });
+      const updated = await repoAlpha.projects.update(orgBProjectId, {
+        projectName: "Hijacked",
+      });
       expect(updated).toBeNull();
     });
   });
@@ -270,7 +279,9 @@ describe("AI NEX OS — Phase 4.4 Tenant Authorization & Boundary Hardening", ()
         },
       ];
 
-      const valid = activeMemberships.filter((m) => m.status === "active" && !m.deletedAt);
+      const valid = activeMemberships.filter(
+        (m) => m.status === "active" && !m.deletedAt,
+      );
       expect(valid.length).toBe(0);
     });
   });
@@ -333,7 +344,9 @@ describe("AI NEX OS — Phase 4.4 Tenant Authorization & Boundary Hardening", ()
       ];
 
       // Multi-membership context selects from memberships, not userRecord.organization_id
-      const selectedOrg = memberships.find((m) => m.organizationId === orgBetaId);
+      const selectedOrg = memberships.find(
+        (m) => m.organizationId === orgBetaId,
+      );
       expect(selectedOrg).toBeDefined();
       expect(selectedOrg?.organizationId).toBe(orgBetaId);
       expect(selectedOrg?.organizationId).not.toBe(userRecord.organization_id);
@@ -440,17 +453,29 @@ describe("AI NEX OS — Phase 4.4 Tenant Authorization & Boundary Hardening", ()
   describe("P4-056: Multi-member dashboard respects active organization", () => {
     it("isolates project counts between active organizations for a multi-member user", () => {
       const allProjects = [
-        { projectId: "p1", organizationId: orgAlphaId, title: "Alpha Project 1" },
-        { projectId: "p2", organizationId: orgAlphaId, title: "Alpha Project 2" },
+        {
+          projectId: "p1",
+          organizationId: orgAlphaId,
+          title: "Alpha Project 1",
+        },
+        {
+          projectId: "p2",
+          organizationId: orgAlphaId,
+          title: "Alpha Project 2",
+        },
         { projectId: "p3", organizationId: orgBetaId, title: "Beta Project 1" },
       ];
 
       // When active context is Org Alpha
-      const alphaProjects = allProjects.filter((p) => p.organizationId === orgAlphaId);
+      const alphaProjects = allProjects.filter(
+        (p) => p.organizationId === orgAlphaId,
+      );
       expect(alphaProjects.length).toBe(2);
 
       // When active context is switched to Org Beta
-      const betaProjects = allProjects.filter((p) => p.organizationId === orgBetaId);
+      const betaProjects = allProjects.filter(
+        (p) => p.organizationId === orgBetaId,
+      );
       expect(betaProjects.length).toBe(1);
     });
   });
@@ -462,7 +487,11 @@ describe("AI NEX OS — Phase 4.4 Tenant Authorization & Boundary Hardening", ()
     it("search queries filter strictly by active user.organizationId", () => {
       const allDeliverables = [
         { id: "d1", organizationId: orgAlphaId, title: "Brand Guidelines Q1" },
-        { id: "d2", organizationId: orgBetaId, title: "Brand Guidelines Q1 Confidential" },
+        {
+          id: "d2",
+          organizationId: orgBetaId,
+          title: "Brand Guidelines Q1 Confidential",
+        },
       ];
 
       const searchTerm = "Brand Guidelines";

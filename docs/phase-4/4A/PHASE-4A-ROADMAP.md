@@ -1,8 +1,9 @@
 # AI NEX OS — Phase 4A: Product Implementation Roadmap
+
 **Product:** AI NEX OS — The Operating System for Creative Execution  
 **Current Phase:** 4A — Product Foundation & UX Audit (COMPLETE)  
 **Execution Sequence:** 4B → 4C → 4D → 4E → 4F → 4G → 4H → 4I  
-**Implementation Status:** NOT AUTHORIZED YET (Audit Baseline Delivery Gate)  
+**Implementation Status:** NOT AUTHORIZED YET (Audit Baseline Delivery Gate)
 
 ---
 
@@ -11,6 +12,7 @@
 Following the completion of the Phase 4A Product Foundation & UX Audit, the transformation of AI NEX OS into the definitive "Operating System for Creative Execution" proceeds through a strictly sequenced, eight-phase implementation track.
 
 ### Guiding Principles:
+
 1. **No Speculative Architecture:** Every phase builds incrementally upon the verified Next.js 16.3.8 / React 19.2.4 / PostgreSQL 17.6 foundation.
 2. **Defensive Foundation First:** Core navigation, authorization error handling, and multi-tenant scoping (Phase 4B & 4C) must be secured before complex execution features are introduced.
 3. **Project-Centric Execution:** The Project remains the primary organizing unit of creative agency work; CRM, DAM, and Approvals anchor directly into project workflows.
@@ -24,6 +26,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4B — Core Workspace + Global Navigation
+
 - **Objective:** Modernize the application shell, establish defensive authorization boundaries, and deliver rapid wayfinding.
 - **UX Scope:**
   - Redesign top header with functional Command Palette (`⌘K` multi-entity search).
@@ -54,6 +57,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4C — Organization / Membership / Workforce UX
+
 - **Objective:** Streamline multi-tenant membership administration, onboarding invitations, and consolidated workforce management.
 - **UX Scope:**
   - Add in-context `+ Invite Member` action and modal directly within `/settings/members`.
@@ -80,6 +84,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4D — Client CRM + Collaboration
+
 - **Objective:** Transform the client list into an interconnected client relationship management hub.
 - **UX Scope:**
   - Re-architect `/clients/[id]` into a multi-tabbed client profile:
@@ -104,6 +109,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4E — Project Execution + Kanban + Gantt
+
 - **Objective:** Establish the Project as the central command hub of creative execution, decoupling tasks from rigid milestone UUIDs and adding interactive visual execution tools.
 - **UX Scope:**
   - Transform `/projects/[id]` into a comprehensive Project Workspace with nested tabs:
@@ -137,6 +143,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4F — Creative Assets + Deliverable Management / DAM
+
 - **Objective:** Establish clear operational boundaries and linking between raw working files and client-facing review deliverables.
 - **UX Scope:**
   - Redesign `/files` as a modern Digital Asset Management (DAM) repository: drag-and-drop multi-file upload zone, folder organization, search, file type filtering, and lightbox asset preview.
@@ -162,6 +169,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4G — Client Portal + Approval Chains
+
 - **Objective:** Launch the zero-login, secure external client review portal and structured approval workflow.
 - **UX Scope:**
   - Activate `/portal/s/[token]` with HMAC cryptographic token verification.
@@ -186,6 +194,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4H — Executive Dashboard + Operational Intelligence
+
 - **Objective:** Transform the main dashboard into an actionable operational command center and surface assistive AI capabilities.
 - **UX Scope:**
   - Re-architect `/dashboard`:
@@ -217,6 +226,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 ---
 
 ### Phase 4I — Accessibility + UX Hardening + Polish
+
 - **Objective:** Rigorous WCAG 2.1 AA accessibility audit, responsive mobile/tablet optimization, data integrity guards, and final production certification.
 - **UX Scope:**
   - Enforce keyboard focus trapping and ARIA labeling across all Base UI dialogs, drawers, and popovers.
@@ -269,6 +279,7 @@ Following the completion of the Phase 4A Product Foundation & UX Audit, the tran
 Phase 4A is complete. **Zero implementation is authorized at this time.**
 
 ### Conditions to Begin Phase 4B:
+
 1. Formal human review and acceptance of the Phase 4A Audit deliverables.
 2. Sign-off on the Phase 4B Core Workspace & Navigation specification.
 3. Explicit authorization to begin Phase 4B implementation.

@@ -12,7 +12,10 @@ import {
 import { isDemoMode } from "@/lib/env.server";
 import { getDemoStore } from "@/lib/demo/store";
 import { getCurrentIdentity } from "@/features/auth/membership-service";
-import { ACTIVE_ORG_COOKIE, ACTIVE_ORG_COOKIE_MAX_AGE } from "@/features/auth/membership-service";
+import {
+  ACTIVE_ORG_COOKIE,
+  ACTIVE_ORG_COOKIE_MAX_AGE,
+} from "@/features/auth/membership-service";
 
 export type InvitationErrorCode =
   | "INVITATION_NOT_FOUND"
@@ -104,7 +107,6 @@ export async function createInvitation(
     callerId = identity.authUserId;
   }
 
-
   if (isDemoMode()) {
     const invitationId = crypto.randomUUID();
     demoInvitations.push({
@@ -186,7 +188,6 @@ export async function createInvitation(
 export const previewInvitation = getInvitationByToken;
 
 export interface InvitationPreview {
-
   valid: boolean;
   invitationId: string;
   organizationId: string;
@@ -396,7 +397,6 @@ export interface AcceptInvitationResult {
   roleId?: string;
 }
 
-
 export interface AcceptInvitationOptions {
   userIdOverride?: string;
   userEmailOverride?: string;
@@ -417,7 +417,7 @@ export async function acceptInvitation(
   const options: AcceptInvitationOptions =
     typeof optionsOrUserId === "string"
       ? { userIdOverride: optionsOrUserId }
-      : optionsOrUserId ?? {};
+      : (optionsOrUserId ?? {});
 
   const tokenHash = hashInvitationToken(rawToken);
 
@@ -708,7 +708,6 @@ export async function acceptInvitation(
   };
 }
 
-
 /**
  * Revokes a pending invitation.
  */
@@ -735,7 +734,8 @@ export async function revokeInvitation(
         i.invitationId === invitationId &&
         (!targetOrganizationId || i.organizationId === targetOrganizationId),
     );
-    if (!invite) throw new InvitationError("INVITATION_NOT_FOUND", "Invitation not found");
+    if (!invite)
+      throw new InvitationError("INVITATION_NOT_FOUND", "Invitation not found");
     invite.status = "revoked";
     invite.revokedAt = new Date();
     invite.revokedByUserId = callerId;
@@ -760,6 +760,7 @@ export async function revokeInvitation(
     .where(and(...conditions))
     .returning();
 
-  if (!row) throw new InvitationError("INVITATION_NOT_FOUND", "Invitation not found");
+  if (!row)
+    throw new InvitationError("INVITATION_NOT_FOUND", "Invitation not found");
   return { success: true };
 }

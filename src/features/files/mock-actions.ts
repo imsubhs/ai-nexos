@@ -553,12 +553,8 @@ export async function getFiles(
         filters.folderId === undefined ||
         (f.folderId ?? null) === filters.folderId,
     )
-    .filter(
-      (f: any) => !filters.fileType || f.fileType === filters.fileType,
-    )
-    .filter(
-      (f: any) => !filters.status || f.status === filters.status,
-    )
+    .filter((f: any) => !filters.fileType || f.fileType === filters.fileType)
+    .filter((f: any) => !filters.status || f.status === filters.status)
     .sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(cursorOffset, cursorOffset + limit) as any;
 }
@@ -688,8 +684,8 @@ export async function getFileDownloadUrl(
   );
   const version = versionId
     ? versions.find((v: any) => v.versionId === versionId)
-    : (versions.find((v: any) => v.versionId === file.currentVersionId) ||
-       versions[0]);
+    : versions.find((v: any) => v.versionId === file.currentVersionId) ||
+      versions[0];
 
   return {
     downloadUrl:
@@ -750,4 +746,3 @@ export async function restoreFile(
 
   return file as any;
 }
-

@@ -58,8 +58,11 @@ export function ClientProjectList({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-xs text-foreground-muted px-1">
-        <span>{projects.length} linked {projects.length === 1 ? "engagement" : "engagements"}</span>
+      <div className="text-foreground-muted flex items-center justify-between px-1 text-xs">
+        <span>
+          {projects.length} linked{" "}
+          {projects.length === 1 ? "engagement" : "engagements"}
+        </span>
         {canCreateProject && (
           <Button
             size="xs"
@@ -76,7 +79,8 @@ export function ClientProjectList({
       <div className="grid grid-cols-1 gap-3">
         {projects.map((project) => {
           const managerName = project.manager
-            ? `${project.manager.firstName || ""} ${project.manager.lastName || ""}`.trim() || project.manager.email
+            ? `${project.manager.firstName || ""} ${project.manager.lastName || ""}`.trim() ||
+              project.manager.email
             : null;
 
           const endDateFormatted = project.estimatedEndDate
@@ -92,16 +96,16 @@ export function ClientProjectList({
           return (
             <div
               key={project.projectId}
-              className="group relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-lg border border-border-subtle bg-surface-2 hover:border-brand-primary/40 hover:bg-surface-3 transition-all duration-150"
+              className="group border-border-subtle bg-surface-2 hover:border-brand-primary/40 hover:bg-surface-3 relative flex flex-col justify-between gap-4 rounded-lg border p-4 transition-all duration-150 md:flex-row md:items-center"
             >
-              <div className="space-y-2 min-w-0">
+              <div className="min-w-0 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-[4px] bg-surface-1 border border-border text-brand-primary">
+                  <span className="bg-surface-1 border-border text-brand-primary rounded-[4px] border px-2 py-0.5 font-mono text-xs font-semibold">
                     {project.projectCode}
                   </span>
                   <Link
                     href={`/projects/${project.projectId}`}
-                    className="font-heading text-sm font-semibold text-foreground group-hover:text-brand-primary-soft transition-colors truncate"
+                    className="font-heading text-foreground group-hover:text-brand-primary-soft truncate text-sm font-semibold transition-colors"
                   >
                     {project.projectName}
                   </Link>
@@ -114,33 +118,35 @@ export function ClientProjectList({
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 text-xs text-foreground-muted">
+                <div className="text-foreground-muted flex flex-wrap items-center gap-4 text-xs">
                   {managerName && (
                     <div className="flex items-center gap-1.5">
-                      <User className="size-3.5 text-foreground-subtle" />
+                      <User className="text-foreground-subtle size-3.5" />
                       <span>{managerName}</span>
                     </div>
                   )}
 
                   {endDateFormatted && (
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="size-3.5 text-foreground-subtle" />
+                      <Calendar className="text-foreground-subtle size-3.5" />
                       <span>Due {endDateFormatted}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border-subtle">
+              <div className="border-border-subtle flex shrink-0 items-center gap-4 border-t pt-2 md:border-t-0 md:pt-0">
                 <div className="w-28 space-y-1">
-                  <div className="flex justify-between text-[11px] font-mono text-foreground-muted">
+                  <div className="text-foreground-muted flex justify-between font-mono text-[11px]">
                     <span>Progress</span>
                     <span>{progress}%</span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-surface-1 overflow-hidden">
+                  <div className="bg-surface-1 h-1.5 w-full overflow-hidden rounded-full">
                     <div
-                      className="h-full bg-brand-primary rounded-full transition-all"
-                      style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+                      className="bg-brand-primary h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, progress))}%`,
+                      }}
                     />
                   </div>
                 </div>

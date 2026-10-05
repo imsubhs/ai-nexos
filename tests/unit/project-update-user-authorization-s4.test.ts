@@ -145,7 +145,11 @@ vi.mock("@/db", () => {
         then: (resolve: (val: any) => any) => {
           const params = extractParams(whereCondition);
           state.recordedQueries.push({
-            table: isClientsTable ? "clients" : isUsersTable ? "users" : "unknown",
+            table: isClientsTable
+              ? "clients"
+              : isUsersTable
+                ? "users"
+                : "unknown",
             params,
           });
 
@@ -166,7 +170,9 @@ vi.mock("@/db", () => {
               (u) =>
                 u.userId === targetUserId &&
                 u.organizationId === targetOrgId &&
-                (targetStatus ? u.status === targetStatus : u.status === "active") &&
+                (targetStatus
+                  ? u.status === targetStatus
+                  : u.status === "active") &&
                 u.deletedAt === null,
             );
             return resolve(found ? [{ userId: found.userId }] : []);
@@ -636,7 +642,9 @@ describe("S4 Security Remediation: NEXOS-SEC-07 Project User-Assignment Authoriz
 
   // TEST 18: Attempt to modify server-controlled audit fields -> Client cannot control them
   it("TEST 18: Attempt to modify server-controlled audit fields -> Client cannot control them", async () => {
-    const originalProject = state.projects.find((p) => p.projectId === PROJECT_A_ID)!;
+    const originalProject = state.projects.find(
+      (p) => p.projectId === PROJECT_A_ID,
+    )!;
     const originalCreatedAt = originalProject.createdAt;
     const originalCreatedBy = originalProject.createdBy;
     const originalProjectCode = originalProject.projectCode;
@@ -687,7 +695,9 @@ describe("S4 Security Remediation: NEXOS-SEC-07 Project User-Assignment Authoriz
 
   // TEST 20: Failed foreign-user validation produces no partial mutation -> Project remains unchanged
   it("TEST 20: Failed foreign-user validation produces no partial mutation -> Project remains unchanged", async () => {
-    const originalProject = state.projects.find((p) => p.projectId === PROJECT_A_ID)!;
+    const originalProject = state.projects.find(
+      (p) => p.projectId === PROJECT_A_ID,
+    )!;
     const originalTitle = originalProject.projectName;
     const originalPriority = originalProject.priority;
 

@@ -18,9 +18,15 @@ import { join } from "node:path";
 const target = prepareToolingTarget("inspect-s5-2-staging");
 
 async function main() {
-  console.log("================================================================================");
-  console.log("AI NEX OS — S5.2 STAGING IDENTITY & MIGRATION BASELINE INSPECTOR");
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================",
+  );
+  console.log(
+    "AI NEX OS — S5.2 STAGING IDENTITY & MIGRATION BASELINE INSPECTOR",
+  );
+  console.log(
+    "================================================================================\n",
+  );
 
   console.log(`Target Environment:  ${target.environment}`);
   console.log(`Project Ref:         ${target.projectRef}`);
@@ -28,14 +34,18 @@ async function main() {
   console.log(`Config Source:       ${target.file}\n`);
 
   if (target.projectRef !== "shnzzbbtydmvfhgeoysg") {
-    console.error(`FATAL: Target projectRef is "${target.projectRef}", expected "shnzzbbtydmvfhgeoysg". ABORTING.`);
+    console.error(
+      `FATAL: Target projectRef is "${target.projectRef}", expected "shnzzbbtydmvfhgeoysg". ABORTING.`,
+    );
     process.exit(1);
   }
 
   // 1. Check PostgreSQL Database Connectivity
   const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL;
   if (!dbUrl) {
-    console.error("FATAL: Neither DIRECT_DATABASE_URL nor DATABASE_URL is set.");
+    console.error(
+      "FATAL: Neither DIRECT_DATABASE_URL nor DATABASE_URL is set.",
+    );
     process.exit(1);
   }
 
@@ -75,7 +85,9 @@ async function main() {
         const restRes = await fetch(`${supabaseUrl}/rest/v1/`, {
           headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
         });
-        console.log(`PostgREST Ingress:   Status ${restRes.status} (${restRes.ok ? "HEALTHY" : "STATUS " + restRes.status})`);
+        console.log(
+          `PostgREST Ingress:   Status ${restRes.status} (${restRes.ok ? "HEALTHY" : "STATUS " + restRes.status})`,
+        );
       } catch (err) {
         console.log(`PostgREST Ingress:   FAILED - ${(err as Error).message}`);
       }
@@ -85,7 +97,9 @@ async function main() {
         const authRes = await fetch(`${supabaseUrl}/auth/v1/health`, {
           headers: { apikey: anonKey },
         });
-        console.log(`Supabase Auth:       Status ${authRes.status} (${authRes.ok ? "HEALTHY" : "STATUS " + authRes.status})`);
+        console.log(
+          `Supabase Auth:       Status ${authRes.status} (${authRes.ok ? "HEALTHY" : "STATUS " + authRes.status})`,
+        );
       } catch (err) {
         console.log(`Supabase Auth:       FAILED - ${(err as Error).message}`);
       }
@@ -106,7 +120,9 @@ async function main() {
       return;
     }
 
-    const appliedMigrations = await sql<{ id: number; hash: string; created_at: string }[]>`
+    const appliedMigrations = await sql<
+      { id: number; hash: string; created_at: string }[]
+    >`
       SELECT id, hash, created_at
       FROM drizzle.__drizzle_migrations
       ORDER BY id ASC;
@@ -115,24 +131,50 @@ async function main() {
     console.log(`Total Remote Migrations: ${appliedMigrations.length}`);
 
     // Read local journal
-    const journalPath = join(process.cwd(), "database", "migrations", "meta", "_journal.json");
-    const journal = (JSON.parse(readFileSync(journalPath, "utf8")) as { entries: { idx: number; tag: string }[] }).entries;
+    const journalPath = join(
+      process.cwd(),
+      "database",
+      "migrations",
+      "meta",
+      "_journal.json",
+    );
+    const journal = (
+      JSON.parse(readFileSync(journalPath, "utf8")) as {
+        entries: { idx: number; tag: string }[];
+      }
+    ).entries;
 
     console.log("\nRemote vs Local Migration Matrix:");
-    for (let i = 0; i < Math.max(journal.length, appliedMigrations.length); i++) {
+    for (
+      let i = 0;
+      i < Math.max(journal.length, appliedMigrations.length);
+      i++
+    ) {
       const localEntry = journal[i];
       const remoteEntry = appliedMigrations[i];
-      const localTag = localEntry ? `${String(localEntry.idx).padStart(4, "0")}_${localEntry.tag}` : "<none>";
-      const remoteId = remoteEntry ? `${String(remoteEntry.id).padStart(4, "0")}` : "<none>";
-      const remoteHash = remoteEntry ? remoteEntry.hash.substring(0, 12) + "..." : "<none>";
+      const localTag = localEntry
+        ? `${String(localEntry.idx).padStart(4, "0")}_${localEntry.tag}`
+        : "<none>";
+      const remoteId = remoteEntry
+        ? `${String(remoteEntry.id).padStart(4, "0")}`
+        : "<none>";
+      const remoteHash = remoteEntry
+        ? remoteEntry.hash.substring(0, 12) + "..."
+        : "<none>";
       const remoteCreated = remoteEntry ? remoteEntry.created_at : "<none>";
 
-      console.log(`  [${String(i).padStart(2, "0")}] Local: ${localTag.padEnd(45)} | Remote ID: ${remoteId.padEnd(6)} | Hash: ${remoteHash.padEnd(16)} | Created: ${remoteCreated}`);
+      console.log(
+        `  [${String(i).padStart(2, "0")}] Local: ${localTag.padEnd(45)} | Remote ID: ${remoteId.padEnd(6)} | Hash: ${remoteHash.padEnd(16)} | Created: ${remoteCreated}`,
+      );
     }
 
     const latestRemote = appliedMigrations[appliedMigrations.length - 1];
-    console.log(`\nLatest Remote Migration ID:   ${latestRemote?.id ?? "NONE"}`);
-    console.log(`Latest Remote Migration Hash: ${latestRemote?.hash ?? "NONE"}`);
+    console.log(
+      `\nLatest Remote Migration ID:   ${latestRemote?.id ?? "NONE"}`,
+    );
+    console.log(
+      `Latest Remote Migration Hash: ${latestRemote?.hash ?? "NONE"}`,
+    );
 
     const has0015 = appliedMigrations.length > 15;
     const has0016 = appliedMigrations.length > 16;
@@ -148,7 +190,6 @@ async function main() {
     console.log(`  0018 (idx 18): ${has0018 ? "EXISTS" : "MISSING"}`);
     console.log(`  0019 (idx 19): ${has0019 ? "EXISTS" : "MISSING"}`);
     console.log(`  0020 (idx 20): ${has0020 ? "EXISTS" : "MISSING"}`);
-
   } finally {
     await sql.end();
   }

@@ -8,7 +8,7 @@
 **Backup Size**: `1,135,591 bytes` (1.08 MB)  
 **Disposable Target Database**: `nexos_backup_restore_rehearsal` on `localhost:5432`  
 **Rehearsal Timestamp**: `2026-09-27T01:22:30+05:30` (UTC `2026-09-26T19:52:30Z`)  
-**Safety Protocol**: **DISPOSABLE LOCAL RESTORE ONLY — ZERO PRODUCTION MUTATIONS**  
+**Safety Protocol**: **DISPOSABLE LOCAL RESTORE ONLY — ZERO PRODUCTION MUTATIONS**
 
 ---
 
@@ -19,6 +19,7 @@ Phase 5G.2 executes the production backup restore rehearsal to prove empirically
 The restore rehearsal was executed strictly against a local disposable database (`nexos_backup_restore_rehearsal`). Zero connections or write operations touched the live production cluster (`gsgseacjcalkhhmunjhx`).
 
 ### Key Rehearsal Results:
+
 1. **Backup Integrity (PASS)**: Certified archive verified at 1,135,591 bytes, valid PostgreSQL Custom archive format (`-F c`), containing 2,300 TOC entries.
 2. **Local Restore Execution (PASS)**: Restored into `nexos_backup_restore_rehearsal` via `pg_restore`. Non-critical notices/errors were limited strictly to the absence of the proprietary `supabase_vault` extension in local vanilla Homebrew PostgreSQL.
 3. **Migration History Parity (PASS)**: Table `drizzle.__drizzle_migrations` was restored with exactly **15 migrations** (`0000` through `0014`), with latest migration `0014_workforce_rls` (Hash: `78948fcdadf00f885a81ba8f618c6a34db81f4028547b5be8c81d122dc2728e6`).
@@ -64,26 +65,26 @@ The restore rehearsal was executed strictly against a local disposable database 
 
 ## 4. Post-Restore Baseline Verification
 
-| Inspection Item | Restored Local Value | Expected Production Baseline | Status |
-| :--- | :---: | :---: | :---: |
-| `drizzle.__drizzle_migrations` exists | **true** | `true` | **PASS** |
-| Total Applied Migrations | **15** | `15` | **PASS** |
-| Latest Migration Entry | **0014_workforce_rls** (ID: 15) | `0014_workforce_rls` | **PASS** |
-| `organizations` count | **1** | `1` | **PASS** |
-| `users` count | **2** | `2` | **PASS** |
-| `roles` count | **7** | `7` | **PASS** |
-| `clients` count | **1** | `1` | **PASS** |
-| `projects` count | **0** | `0` | **PASS** |
-| `project_members` count | **0** | `0` | **PASS** |
-| `tasks` count | **0** | `0` | **PASS** |
-| `meetings` count | **0** | `0` | **PASS** |
-| `deliverables` count | **0** | `0` | **PASS** |
-| `storage.buckets` count | **1** (`documents`) | `1` | **PASS** |
-| `storage.objects` count | **0** | `0` | **PASS** |
-| `organizations.code_prefix` exists | **false** | `false` | **PASS** |
-| `organization_memberships` exists | **false** | `false` | **PASS** |
-| `organization_invitations` exists | **false** | `false` | **PASS** |
-| `app.is_project_member` exists | **false** | `false` | **PASS** |
+| Inspection Item                       |      Restored Local Value       | Expected Production Baseline |  Status  |
+| :------------------------------------ | :-----------------------------: | :--------------------------: | :------: |
+| `drizzle.__drizzle_migrations` exists |            **true**             |            `true`            | **PASS** |
+| Total Applied Migrations              |             **15**              |             `15`             | **PASS** |
+| Latest Migration Entry                | **0014_workforce_rls** (ID: 15) |     `0014_workforce_rls`     | **PASS** |
+| `organizations` count                 |              **1**              |             `1`              | **PASS** |
+| `users` count                         |              **2**              |             `2`              | **PASS** |
+| `roles` count                         |              **7**              |             `7`              | **PASS** |
+| `clients` count                       |              **1**              |             `1`              | **PASS** |
+| `projects` count                      |              **0**              |             `0`              | **PASS** |
+| `project_members` count               |              **0**              |             `0`              | **PASS** |
+| `tasks` count                         |              **0**              |             `0`              | **PASS** |
+| `meetings` count                      |              **0**              |             `0`              | **PASS** |
+| `deliverables` count                  |              **0**              |             `0`              | **PASS** |
+| `storage.buckets` count               |       **1** (`documents`)       |             `1`              | **PASS** |
+| `storage.objects` count               |              **0**              |             `0`              | **PASS** |
+| `organizations.code_prefix` exists    |            **false**            |           `false`            | **PASS** |
+| `organization_memberships` exists     |            **false**            |           `false`            | **PASS** |
+| `organization_invitations` exists     |            **false**            |           `false`            | **PASS** |
+| `app.is_project_member` exists        |            **false**            |           `false`            | **PASS** |
 
 **Verdict: PASS (100% Schema & Data Parity)**.
 

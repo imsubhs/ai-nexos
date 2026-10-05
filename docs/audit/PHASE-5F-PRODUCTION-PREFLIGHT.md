@@ -5,10 +5,11 @@
 **Target Repository**: `/Users/subhamsaha/Downloads/My Docs /WebsiteCreation/NEXOS Comb /AIC NEXOS/ai-nexos`  
 **Current Branch**: `phase-2-production-readiness`  
 **HEAD**: `2d28256 docs(env): sanitize staging environment examples`  
-**Target Environments**:  
-- **Staging Project**: `shnzzbbtydmvfhgeoysg` (AWS `ap-southeast-1`, PostgreSQL 17.6)  
-- **Production Project**: `gsgseacjcalkhhmunjhx` (AWS `ap-northeast-1`, Tokyo) — **TOUCH-FREE & UNMUTATED**  
-- **Production URL**: `https://ai-nexos.antideploy.com`  
+**Target Environments**:
+
+- **Staging Project**: `shnzzbbtydmvfhgeoysg` (AWS `ap-southeast-1`, PostgreSQL 17.6)
+- **Production Project**: `gsgseacjcalkhhmunjhx` (AWS `ap-northeast-1`, Tokyo) — **TOUCH-FREE & UNMUTATED**
+- **Production URL**: `https://ai-nexos.antideploy.com`
 
 ---
 
@@ -19,6 +20,7 @@ Phase 5F executes a rigorous production-preflight and deployment-authorization a
 This audit evaluates the codebase, CLI tooling, migration graph (`0000` through `0018`), environment contracts, and operational recovery paths to determine whether AI NEX OS is authorized for production deployment.
 
 ### Key Audit Findings:
+
 1. **Repository & Codebase Integrity**: The repository is fully verified, type-safe, and passes all quality gates unconditionally:
    - TypeScript: **0 errors**.
    - Tenant Authorization Audit: **100% guarded** (0 unguarded actions/mutations).
@@ -79,29 +81,30 @@ The repository CLI and environment loader were audited against `scripts/lib/envi
 
 Audited all 19 entries in `database/migrations/meta/_journal.json` and matching SQL files in `database/migrations/`:
 
-| Index | Migration Tag / File | Nature | Dependencies | Status |
-| :---: | :--- | :---: | :--- | :---: |
-| `0` | `0000_init_platform_foundation.sql` | Baseline DDL | Base extensions & core tables | VERIFIED |
-| `1` | `0001_security_rls_foundation.sql` | Additive | RLS base policies & functions | VERIFIED |
-| `2` | `0002_lumpy_vertigo.sql` | Additive | Schema extensions | VERIFIED |
-| `3` | `0003_project_management.sql` | Additive | Projects & project members | VERIFIED |
-| `4` | `0004_typical_wolfpack.sql` | Additive | Project uniqueness constraints | VERIFIED |
-| `5` | `0005_reflective_king_cobra.sql` | Additive | Project policies & access control | VERIFIED |
-| `6` | `0006_wooden_micromax.sql` | Additive | Analytics views & tables | VERIFIED |
-| `7` | `0007_remarkable_maximus.sql` | Additive | Storage buckets, revisions, policies | VERIFIED |
-| `8` | `0008_same_johnny_storm.sql` | Additive | Hardening constraints | VERIFIED |
-| `9` | `0009_mute_wallow.sql` | Additive | Integrations & external schemas | VERIFIED |
-| `10` | `0010_data_api_select_grants.sql` | Permissions | Table SELECT grants | VERIFIED |
-| `11` | `0011_revoke_blanket_data_api_grants.sql` | Security | Revoke blanket anon grants | VERIFIED |
-| `12` | `0012_revoke_default_privileges.sql` | Security | Revoke default table privileges | VERIFIED |
-| `13` | `0013_org_sequences_composite_pk.sql` | Additive | Org sequence composite keys | VERIFIED |
-| `14` | `0014_workforce_rls.sql` | Additive | Workforce RLS policies | VERIFIED |
-| `15` | `0015_organization_code_prefix.sql` | Additive / Constraint | Adds `code_prefix`, unique index | VERIFIED |
-| `16` | `0016_organization_memberships.sql` | Additive + Backfill | Creates `organization_memberships`, backfill | VERIFIED |
-| `17` | `0017_organization_invitations.sql` | Additive | Creates `organization_invitations` | VERIFIED |
-| `18` | `0018_remediate_projects_rls_recursion.sql` | Additive / Fix | Replaces `projects_select`, adds helper | VERIFIED |
+| Index | Migration Tag / File                        |        Nature         | Dependencies                                 |  Status  |
+| :---: | :------------------------------------------ | :-------------------: | :------------------------------------------- | :------: |
+|  `0`  | `0000_init_platform_foundation.sql`         |     Baseline DDL      | Base extensions & core tables                | VERIFIED |
+|  `1`  | `0001_security_rls_foundation.sql`          |       Additive        | RLS base policies & functions                | VERIFIED |
+|  `2`  | `0002_lumpy_vertigo.sql`                    |       Additive        | Schema extensions                            | VERIFIED |
+|  `3`  | `0003_project_management.sql`               |       Additive        | Projects & project members                   | VERIFIED |
+|  `4`  | `0004_typical_wolfpack.sql`                 |       Additive        | Project uniqueness constraints               | VERIFIED |
+|  `5`  | `0005_reflective_king_cobra.sql`            |       Additive        | Project policies & access control            | VERIFIED |
+|  `6`  | `0006_wooden_micromax.sql`                  |       Additive        | Analytics views & tables                     | VERIFIED |
+|  `7`  | `0007_remarkable_maximus.sql`               |       Additive        | Storage buckets, revisions, policies         | VERIFIED |
+|  `8`  | `0008_same_johnny_storm.sql`                |       Additive        | Hardening constraints                        | VERIFIED |
+|  `9`  | `0009_mute_wallow.sql`                      |       Additive        | Integrations & external schemas              | VERIFIED |
+| `10`  | `0010_data_api_select_grants.sql`           |      Permissions      | Table SELECT grants                          | VERIFIED |
+| `11`  | `0011_revoke_blanket_data_api_grants.sql`   |       Security        | Revoke blanket anon grants                   | VERIFIED |
+| `12`  | `0012_revoke_default_privileges.sql`        |       Security        | Revoke default table privileges              | VERIFIED |
+| `13`  | `0013_org_sequences_composite_pk.sql`       |       Additive        | Org sequence composite keys                  | VERIFIED |
+| `14`  | `0014_workforce_rls.sql`                    |       Additive        | Workforce RLS policies                       | VERIFIED |
+| `15`  | `0015_organization_code_prefix.sql`         | Additive / Constraint | Adds `code_prefix`, unique index             | VERIFIED |
+| `16`  | `0016_organization_memberships.sql`         |  Additive + Backfill  | Creates `organization_memberships`, backfill | VERIFIED |
+| `17`  | `0017_organization_invitations.sql`         |       Additive        | Creates `organization_invitations`           | VERIFIED |
+| `18`  | `0018_remediate_projects_rls_recursion.sql` |    Additive / Fix     | Replaces `projects_select`, adds helper      | VERIFIED |
 
 **Graph Invariants**:
+
 - Monotonicity: Exactly indices `0` through `18` without skips or duplicates.
 - Hashes: All journal tags match migration filenames byte-for-byte.
 - Historical Integrity: Migrations `0000`–`0014` are completely untouched.
@@ -115,7 +118,9 @@ Audited all 19 entries in `database/migrations/meta/_journal.json` and matching 
 Because production cannot be contacted during Phase 5F, the following live checks must be executed by the authorized production operator prior to applying `npm run db:migrate -- --environment=production`:
 
 ### A. Database Migration Baseline
+
 The operator must verify production is currently at migration index `14` (`0014_workforce_rls`):
+
 ```sql
 SELECT count(*) AS total_migrations,
        max(created_at) AS latest_migration_time
@@ -124,7 +129,9 @@ FROM drizzle.__drizzle_migrations;
 ```
 
 ### B. Organization State Pre-Checks (Pre-0015)
+
 Migration `0015` adds column `code_prefix` and unique index `uq_organizations_code_prefix`. It updates `'ai-collective'` to `'AIC'`, leaving any remaining orgs with default `'NEX'`. If $>1$ organization exists in production, running `0015` will fail on unique constraint violation.
+
 ```sql
 SELECT organization_id, organization_name, slug, code_prefix
 FROM organizations;
@@ -133,7 +140,9 @@ FROM organizations;
 ```
 
 ### C. Legacy User Reference Pre-Checks (Pre-0016)
+
 Migration `0016` backfills `organization_memberships` from `users` where `organization_id IS NOT NULL` and `role_id IS NOT NULL`.
+
 ```sql
 -- 1. Check for orphaned organization references
 SELECT count(*) AS orphaned_org_users
@@ -182,6 +191,7 @@ Audited migration `0016_organization_memberships.sql` and the schema definition:
    - `ON CONFLICT ("user_id", "organization_id") DO NOTHING` ensures multiple runs do not create duplicate memberships.
 
 ### Post-Migration Verification Queries:
+
 ```sql
 -- 1. Verify unmigrated users = 0
 SELECT count(*) AS unmigrated_users
@@ -257,26 +267,26 @@ Audited migration `0018_remediate_projects_rls_recursion.sql`:
 
 Audited against `src/lib/env.server.ts` (`ENV_MANIFEST`) and `scripts/check-env.ts`:
 
-| Variable | Class | Classification | Secret? | Validation Script | Safe Verification Status |
-| :--- | :--- | :--- | :---: | :--- | :---: |
-| `NEXT_PUBLIC_SUPABASE_URL` | App | REQUIRED | No | `check-env.ts` | FORMAT VALID |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | App | REQUIRED | No | `check-env.ts` | FORMAT VALID |
-| `DATABASE_URL` | DB | REQUIRED (Port 6543) | **YES** | `check-env.ts` | **SECRET / SET ON HOST** |
-| `DIRECT_DATABASE_URL` | Tooling | REQUIRED (Port 5432) | **YES** | `scripts/migrate.ts` | **SECRET / REQUIRED FOR DDL** |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server | REQUIRED | **YES** | `check-env.ts` | **SECRET / SET ON HOST** |
-| `JWT_SECRET` | Security | REQUIRED ($\ge 32$ chars) | **YES** | `check-env.ts` | **SECRET / SET ON HOST** |
-| `SHARE_JWT_SECRET` | Security | REQUIRED ($\ge 32$ chars) | **YES** | `check-env.ts` | **SECRET / SET ON HOST** |
-| `NEXT_PUBLIC_APP_DOMAIN` | Routing | REQUIRED | No | `check-env.ts` | FORMAT VALID |
-| `NEXT_PUBLIC_PORTAL_DOMAIN` | Routing | REQUIRED | No | `check-env.ts` | FORMAT VALID |
-| `NEXT_PUBLIC_APP_URL` | Routing | REQUIRED (`https://`) | No | `check-env.ts` | FORMAT VALID |
-| `NEXT_PUBLIC_PORTAL_URL` | Routing | REQUIRED (`https://`) | No | `check-env.ts` | FORMAT VALID |
-| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | Storage | REQUIRED (`documents`)| No | `check-env.ts` | FORMAT VALID |
-| `RESEND_API_KEY` | Email | OPTIONAL | **YES** | Optional fallback | OPTIONAL |
-| `SENTRY_DSN` | Telemetry | OPTIONAL | No | Client/Server | OPTIONAL |
-| `REDIS_URL` | Cache | OPTIONAL (In-memory) | **YES** | In-memory fallback | OPTIONAL |
-| `DEMO_MODE` | Dev | DEVELOPMENT-ONLY | No | `check-env.ts` | **MUST BE UNSET IN PROD** |
+| Variable                              | Class     | Classification            | Secret? | Validation Script    |   Safe Verification Status    |
+| :------------------------------------ | :-------- | :------------------------ | :-----: | :------------------- | :---------------------------: |
+| `NEXT_PUBLIC_SUPABASE_URL`            | App       | REQUIRED                  |   No    | `check-env.ts`       |         FORMAT VALID          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`       | App       | REQUIRED                  |   No    | `check-env.ts`       |         FORMAT VALID          |
+| `DATABASE_URL`                        | DB        | REQUIRED (Port 6543)      | **YES** | `check-env.ts`       |   **SECRET / SET ON HOST**    |
+| `DIRECT_DATABASE_URL`                 | Tooling   | REQUIRED (Port 5432)      | **YES** | `scripts/migrate.ts` | **SECRET / REQUIRED FOR DDL** |
+| `SUPABASE_SERVICE_ROLE_KEY`           | Server    | REQUIRED                  | **YES** | `check-env.ts`       |   **SECRET / SET ON HOST**    |
+| `JWT_SECRET`                          | Security  | REQUIRED ($\ge 32$ chars) | **YES** | `check-env.ts`       |   **SECRET / SET ON HOST**    |
+| `SHARE_JWT_SECRET`                    | Security  | REQUIRED ($\ge 32$ chars) | **YES** | `check-env.ts`       |   **SECRET / SET ON HOST**    |
+| `NEXT_PUBLIC_APP_DOMAIN`              | Routing   | REQUIRED                  |   No    | `check-env.ts`       |         FORMAT VALID          |
+| `NEXT_PUBLIC_PORTAL_DOMAIN`           | Routing   | REQUIRED                  |   No    | `check-env.ts`       |         FORMAT VALID          |
+| `NEXT_PUBLIC_APP_URL`                 | Routing   | REQUIRED (`https://`)     |   No    | `check-env.ts`       |         FORMAT VALID          |
+| `NEXT_PUBLIC_PORTAL_URL`              | Routing   | REQUIRED (`https://`)     |   No    | `check-env.ts`       |         FORMAT VALID          |
+| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | Storage   | REQUIRED (`documents`)    |   No    | `check-env.ts`       |         FORMAT VALID          |
+| `RESEND_API_KEY`                      | Email     | OPTIONAL                  | **YES** | Optional fallback    |           OPTIONAL            |
+| `SENTRY_DSN`                          | Telemetry | OPTIONAL                  |   No    | Client/Server        |           OPTIONAL            |
+| `REDIS_URL`                           | Cache     | OPTIONAL (In-memory)      | **YES** | In-memory fallback   |           OPTIONAL            |
+| `DEMO_MODE`                           | Dev       | DEVELOPMENT-ONLY          |   No    | `check-env.ts`       |   **MUST BE UNSET IN PROD**   |
 
-*Note: Zero secret values were requested, inspected, or displayed.*
+_Note: Zero secret values were requested, inspected, or displayed._
 
 ---
 
@@ -313,7 +323,7 @@ Audited against `src/lib/env.server.ts` (`ENV_MANIFEST`) and `scripts/check-env.
    - Phase 4 hardened invitations to use SHA-256 hashed tokens stored in `organization_invitations`.
    - On creation, admin actions return `/invite/[token]` directly.
 2. **Resend Email Dependency**:
-   - `RESEND_API_KEY` is documented in `.env.example` as optional (*"email delivery — notifications are not built yet"*).
+   - `RESEND_API_KEY` is documented in `.env.example` as optional (_"email delivery — notifications are not built yet"_).
    - Automated email delivery is not implemented in the current build.
    - Invitations operate via out-of-band URL sharing.
 3. **Operational Impact**:
@@ -412,14 +422,14 @@ WORKSTREAM 12 RESULT: PASSED
 
 All quality gates passed with zero errors:
 
-| Quality Gate | Command | Result | Details |
-| :--- | :--- | :---: | :--- |
-| **Typecheck** | `npm run typecheck` | **PASS** | 0 TypeScript errors |
-| **Authorization Audit** | `npm run audit:authz` | **PASS** | 100% guarded |
-| **Lint** | `npx eslint src tests --quiet` | **PASS** | 0 errors, 0 warnings |
-| **Test Suite** | `npm test` | **PASS** | 55 files, 847 / 847 tests passed |
-| **Production Build** | `npm run build` | **PASS** | Compiled in 1,046ms (38 routes) |
-| **Environment Check** | `npm run env:check -- --environment=staging --verify` | **PASS** | Connected to Staging PG 17.6 |
+| Quality Gate            | Command                                               |  Result  | Details                          |
+| :---------------------- | :---------------------------------------------------- | :------: | :------------------------------- |
+| **Typecheck**           | `npm run typecheck`                                   | **PASS** | 0 TypeScript errors              |
+| **Authorization Audit** | `npm run audit:authz`                                 | **PASS** | 100% guarded                     |
+| **Lint**                | `npx eslint src tests --quiet`                        | **PASS** | 0 errors, 0 warnings             |
+| **Test Suite**          | `npm test`                                            | **PASS** | 55 files, 847 / 847 tests passed |
+| **Production Build**    | `npm run build`                                       | **PASS** | Compiled in 1,046ms (38 routes)  |
+| **Environment Check**   | `npm run env:check -- --environment=staging --verify` | **PASS** | Connected to Staging PG 17.6     |
 
 ---
 
@@ -437,6 +447,7 @@ All quality gates passed with zero errors:
 ## 17. Production Operator Checklist
 
 ### A. Blocking Pre-Checks (Must Pass Before Migration)
+
 - [ ] 1. **Project Verification**: Confirm target project is `gsgseacjcalkhhmunjhx` (Tokyo `ap-northeast-1`).
 - [ ] 2. **Backup / PITR**: Confirm PITR is enabled in Supabase Dashboard and record current timestamp.
 - [ ] 3. **Migration Baseline**: Execute `SELECT count(*) FROM drizzle.__drizzle_migrations;` $\rightarrow$ must equal `15`.
@@ -447,15 +458,18 @@ All quality gates passed with zero errors:
 - [ ] 8. **Storage Bucket**: Confirm bucket `documents` exists and is private in Supabase Storage.
 
 ### B. Required But Non-Blocking
+
 - [ ] 1. Out-of-band invitation URL sharing acknowledged by operations team.
 - [ ] 2. Redis cache fallback to in-memory accepted if `REDIS_URL` is omitted.
 
 ### C. Migration Execution
+
 ```bash
 npm run db:migrate -- --environment=production
 ```
 
 ### D. Post-Migration Verification
+
 - [ ] 1. `SELECT count(*) FROM drizzle.__drizzle_migrations;` $\rightarrow$ must equal `19`.
 - [ ] 2. `SELECT count(*) FROM organization_memberships;` $\rightarrow$ matches legacy user count.
 - [ ] 3. Verify unmigrated users $= 0$.
@@ -464,6 +478,7 @@ npm run db:migrate -- --environment=production
 - [ ] 6. Query `SELECT project_id, project_name FROM projects LIMIT 5;` $\rightarrow$ executes with zero `42P17` errors.
 
 ### E. Application Deployment & Post-Deploy Smoke Test
+
 - [ ] 1. Trigger production build on Antideploy.
 - [ ] 2. `GET /api/health` $\rightarrow$ `200 OK`.
 - [ ] 3. Log in as admin $\rightarrow$ dashboard renders with active organization context.
@@ -474,32 +489,32 @@ npm run db:migrate -- --environment=production
 
 ## 18. GREEN / YELLOW / RED Matrix
 
-| Audit Area | State | Evidence / Justification |
-| :--- | :---: | :--- |
-| **Git / Worktree State** | **GREEN** | Clean branch, 0 commits, 0 pushes, 0 untracked secrets |
-| **Migration Graph (0000–0018)** | **GREEN** | Strictly sequential, journal synchronized (19 entries), snapshots complete |
-| **0016 Membership Backfill** | **GREEN** | Safe CASE mapping (active vs suspended), verified in local dry run |
-| **0018 RLS Remediation** | **GREEN** | `app.is_project_member` `SECURITY DEFINER`, tested on staging & local dry run |
-| **Migration Runner Tooling** | **GREEN** | `npm run db:migrate` fail-closed, prefers session mode, verified |
-| **Quality Gates (Typecheck, Lint, Tests)** | **GREEN** | Typecheck (0), Authz Audit (100%), ESLint (0), Tests (847/847) |
-| **Production Build Artifact** | **GREEN** | Turbopack compiles 38 routes in 1,046ms |
-| **Staging Environment Validation** | **GREEN** | Verified connectivity and schema parity on Staging PG 17.6 |
-| **Invitation Architecture** | **GREEN** | Out-of-band token delivery verified in code and integration tests |
-| **Production Backup & PITR** | **YELLOW** | Must be verified in Supabase Dashboard by production operator |
-| **Production Schema Baseline (0014)** | **YELLOW** | Must be verified via SQL query on production database |
-| **Production Org Prefix Collision Check**| **YELLOW** | Must be verified via SQL query on production database |
-| **Production Host Secrets** | **YELLOW** | Must be verified in Antideploy environment dashboard |
-| **Production Supabase Auth Config** | **YELLOW** | Site URL & redirect URLs must be checked in Supabase Dashboard |
-| **Production Supabase Storage** | **YELLOW** | Bucket `documents` must be confirmed in Supabase Storage |
-| **Blocking Code / Migration Defect** | **NONE** | Zero blocking code or schema defects found |
+| Audit Area                                 |   State    | Evidence / Justification                                                      |
+| :----------------------------------------- | :--------: | :---------------------------------------------------------------------------- |
+| **Git / Worktree State**                   | **GREEN**  | Clean branch, 0 commits, 0 pushes, 0 untracked secrets                        |
+| **Migration Graph (0000–0018)**            | **GREEN**  | Strictly sequential, journal synchronized (19 entries), snapshots complete    |
+| **0016 Membership Backfill**               | **GREEN**  | Safe CASE mapping (active vs suspended), verified in local dry run            |
+| **0018 RLS Remediation**                   | **GREEN**  | `app.is_project_member` `SECURITY DEFINER`, tested on staging & local dry run |
+| **Migration Runner Tooling**               | **GREEN**  | `npm run db:migrate` fail-closed, prefers session mode, verified              |
+| **Quality Gates (Typecheck, Lint, Tests)** | **GREEN**  | Typecheck (0), Authz Audit (100%), ESLint (0), Tests (847/847)                |
+| **Production Build Artifact**              | **GREEN**  | Turbopack compiles 38 routes in 1,046ms                                       |
+| **Staging Environment Validation**         | **GREEN**  | Verified connectivity and schema parity on Staging PG 17.6                    |
+| **Invitation Architecture**                | **GREEN**  | Out-of-band token delivery verified in code and integration tests             |
+| **Production Backup & PITR**               | **YELLOW** | Must be verified in Supabase Dashboard by production operator                 |
+| **Production Schema Baseline (0014)**      | **YELLOW** | Must be verified via SQL query on production database                         |
+| **Production Org Prefix Collision Check**  | **YELLOW** | Must be verified via SQL query on production database                         |
+| **Production Host Secrets**                | **YELLOW** | Must be verified in Antideploy environment dashboard                          |
+| **Production Supabase Auth Config**        | **YELLOW** | Site URL & redirect URLs must be checked in Supabase Dashboard                |
+| **Production Supabase Storage**            | **YELLOW** | Bucket `documents` must be confirmed in Supabase Storage                      |
+| **Blocking Code / Migration Defect**       |  **NONE**  | Zero blocking code or schema defects found                                    |
 
 ---
 
 ## 19. Remaining Risks
 
-1. **Organization Prefix Collision Risk**: If production contains multiple organizations, migration `0015` will fail unless unique prefixes are assigned prior to migration. *Mitigated by Checklist Step A.4.*
-2. **Session Connection Requirement**: Migrations require `DIRECT_DATABASE_URL` (port 5432). Running DDL through the transaction pooler (port 6543) will fail. *Mitigated by `scripts/migrate.ts` connection selector.*
-3. **Out-of-band Invitations**: New users will not receive automated email notifications until an email provider (Resend) is fully integrated. *Mitigated by operational out-of-band link distribution.*
+1. **Organization Prefix Collision Risk**: If production contains multiple organizations, migration `0015` will fail unless unique prefixes are assigned prior to migration. _Mitigated by Checklist Step A.4._
+2. **Session Connection Requirement**: Migrations require `DIRECT_DATABASE_URL` (port 5432). Running DDL through the transaction pooler (port 6543) will fail. _Mitigated by `scripts/migrate.ts` connection selector._
+3. **Out-of-band Invitations**: New users will not receive automated email notifications until an email provider (Resend) is fully integrated. _Mitigated by operational out-of-band link distribution._
 
 ---
 

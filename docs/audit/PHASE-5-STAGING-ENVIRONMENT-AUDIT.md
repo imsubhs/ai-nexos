@@ -4,7 +4,7 @@
 **Phase:** Phase 5 — Cloud Staging / Pre-Production Validation  
 **Date:** September 2026  
 **Auditor:** Senior Staff & Release-Validation Engineer  
-**Classification:** STRICT AUDIT RECORD — ZERO SECRETS DISCLOSED  
+**Classification:** STRICT AUDIT RECORD — ZERO SECRETS DISCLOSED
 
 ---
 
@@ -13,6 +13,7 @@
 This audit assesses the environment variable configurations, isolation mechanisms, and project-targeting guards between **Local**, **Staging**, and **Production** environments for AI NEX OS.
 
 ### Key Findings
+
 1. **Strong Separation Architecture**: The repository implements an explicit environment selection architecture (`scripts/lib/environment.ts` and `scripts/lib/staging-guard.ts`). Tooling and migration commands refuse to run without an explicit `--environment=staging` or `--environment=production` flag, and runtime guards automatically block any staging execution that points to production project references.
 2. **Production vs. Staging Files**:
    - `.env.local` is configured with **Production** Supabase project reference (`gsgseacjcalkhhmunjhx`) in `ap-northeast-1`.
@@ -27,26 +28,26 @@ This audit assesses the environment variable configurations, isolation mechanism
 
 The table below catalogs all environment variables defined in the system manifest (`src/lib/env.server.ts`), `.env.example`, `.env.local`, and `.env.test.local`.
 
-| Variable Name | Exposure | Requirement Scope | Staging Relevance | Present in `.env.local` (Prod) | Present in `.env.test.local` (Staging) | Staging Configuration Status |
-|---|---|---|---|---|---|---|
-| `NODE_ENV` | Server | Optional (Platform) | Informational | Dynamic (`development`) | Dynamic (`test`) | Correctly set to `test` by tooling guard |
-| `NEXT_PUBLIC_SUPABASE_URL` | Public (Client) | Required | Critical | Yes (Points to Prod `gsgs…`) | Yes (Points to Staging `shnz…`) | Safely isolated; points to Staging |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public (Client) | Required | Critical | Yes | Yes | Safely isolated; points to Staging |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server Only | Production / Staging | Critical | Yes | Yes | Safely isolated; points to Staging |
-| `DATABASE_URL` | Server Only | Required | High (Pooler) | Yes (Points to Prod `gsgs…`) | Yes (Points to Staging `shnz…`) | Safely isolated; port 5432/6543 |
-| `DIRECT_DATABASE_URL` | Server Only | Tooling (DDL) | Critical (Migrations) | Yes (Points to Prod `gsgs…`) | Yes (Points to Staging `shnz…`) | Safely isolated; port 5432 session mode |
-| `INTEGRATION_ALLOWED_PROJECT_REFS` | Server Only | Tooling Guard | Critical (Safety) | Not present (N/A) | Yes (`shnzzbbtydmvfhgeoysg`) | Allow-list active and verified |
-| `JWT_SECRET` | Server Only | Production / Staging | Critical (Signing) | Yes (Valid length) | Yes (Valid length ≥ 32 chars) | Safely isolated; unique staging secret |
-| `SHARE_JWT_SECRET` | Server Only | Production / Staging | Critical (Portal) | Yes (Valid length) | Yes (Valid length ≥ 32 chars) | Safely isolated; unique staging secret |
-| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | Public (Client) | Production / Staging | Medium (Storage) | Yes (`documents`) | Yes (`documents`) | Matches standard bucket |
-| `NEXT_PUBLIC_APP_DOMAIN` | Public (Client) | Production / Staging | High (Routing) | Yes | **NOT SET** (Uses fallback) | Missing for full staging portal |
-| `NEXT_PUBLIC_PORTAL_DOMAIN` | Public (Client) | Production / Staging | High (Portal) | Yes | **NOT SET** (Uses fallback) | Missing for full staging portal |
-| `NEXT_PUBLIC_APP_URL` | Public (Client) | Production / Staging | High (Redirects) | Yes | **NOT SET** (Uses fallback) | Missing for full staging redirect |
-| `NEXT_PUBLIC_PORTAL_URL` | Public (Client) | Production / Staging | High (Share URLs) | Yes | **NOT SET** (Uses fallback) | Missing for full staging share |
-| `REDIS_URL` | Server Only | Optional | Low | Not set (In-memory fallback) | Not set (In-memory fallback) | Supported fallback active |
-| `RESEND_API_KEY` | Server Only | Optional / Feature | Medium (Email) | Not set | Not set | Email delivery unconfigured (mock/log) |
-| `LOG_LEVEL` | Server Only | Optional | Low | Not set | Yes (`warn`/`info`) | Configured |
-| `DEMO_MODE` | Server Only | Development | Critical (Bypass guard)| Yes (`false`) | Yes (`false`) | Disabled; real DB mode enforced |
+| Variable Name                         | Exposure        | Requirement Scope    | Staging Relevance       | Present in `.env.local` (Prod) | Present in `.env.test.local` (Staging) | Staging Configuration Status             |
+| ------------------------------------- | --------------- | -------------------- | ----------------------- | ------------------------------ | -------------------------------------- | ---------------------------------------- |
+| `NODE_ENV`                            | Server          | Optional (Platform)  | Informational           | Dynamic (`development`)        | Dynamic (`test`)                       | Correctly set to `test` by tooling guard |
+| `NEXT_PUBLIC_SUPABASE_URL`            | Public (Client) | Required             | Critical                | Yes (Points to Prod `gsgs…`)   | Yes (Points to Staging `shnz…`)        | Safely isolated; points to Staging       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`       | Public (Client) | Required             | Critical                | Yes                            | Yes                                    | Safely isolated; points to Staging       |
+| `SUPABASE_SERVICE_ROLE_KEY`           | Server Only     | Production / Staging | Critical                | Yes                            | Yes                                    | Safely isolated; points to Staging       |
+| `DATABASE_URL`                        | Server Only     | Required             | High (Pooler)           | Yes (Points to Prod `gsgs…`)   | Yes (Points to Staging `shnz…`)        | Safely isolated; port 5432/6543          |
+| `DIRECT_DATABASE_URL`                 | Server Only     | Tooling (DDL)        | Critical (Migrations)   | Yes (Points to Prod `gsgs…`)   | Yes (Points to Staging `shnz…`)        | Safely isolated; port 5432 session mode  |
+| `INTEGRATION_ALLOWED_PROJECT_REFS`    | Server Only     | Tooling Guard        | Critical (Safety)       | Not present (N/A)              | Yes (`shnzzbbtydmvfhgeoysg`)           | Allow-list active and verified           |
+| `JWT_SECRET`                          | Server Only     | Production / Staging | Critical (Signing)      | Yes (Valid length)             | Yes (Valid length ≥ 32 chars)          | Safely isolated; unique staging secret   |
+| `SHARE_JWT_SECRET`                    | Server Only     | Production / Staging | Critical (Portal)       | Yes (Valid length)             | Yes (Valid length ≥ 32 chars)          | Safely isolated; unique staging secret   |
+| `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` | Public (Client) | Production / Staging | Medium (Storage)        | Yes (`documents`)              | Yes (`documents`)                      | Matches standard bucket                  |
+| `NEXT_PUBLIC_APP_DOMAIN`              | Public (Client) | Production / Staging | High (Routing)          | Yes                            | **NOT SET** (Uses fallback)            | Missing for full staging portal          |
+| `NEXT_PUBLIC_PORTAL_DOMAIN`           | Public (Client) | Production / Staging | High (Portal)           | Yes                            | **NOT SET** (Uses fallback)            | Missing for full staging portal          |
+| `NEXT_PUBLIC_APP_URL`                 | Public (Client) | Production / Staging | High (Redirects)        | Yes                            | **NOT SET** (Uses fallback)            | Missing for full staging redirect        |
+| `NEXT_PUBLIC_PORTAL_URL`              | Public (Client) | Production / Staging | High (Share URLs)       | Yes                            | **NOT SET** (Uses fallback)            | Missing for full staging share           |
+| `REDIS_URL`                           | Server Only     | Optional             | Low                     | Not set (In-memory fallback)   | Not set (In-memory fallback)           | Supported fallback active                |
+| `RESEND_API_KEY`                      | Server Only     | Optional / Feature   | Medium (Email)          | Not set                        | Not set                                | Email delivery unconfigured (mock/log)   |
+| `LOG_LEVEL`                           | Server Only     | Optional             | Low                     | Not set                        | Yes (`warn`/`info`)                    | Configured                               |
+| `DEMO_MODE`                           | Server Only     | Development          | Critical (Bypass guard) | Yes (`false`)                  | Yes (`false`)                          | Disabled; real DB mode enforced          |
 
 ---
 
@@ -85,6 +86,7 @@ The project enforces ironclad isolation through three distinct layers:
 ```
 
 ### Isolation Audit Findings
+
 - **Deny-List Protection**: Verified. Attempting to run staging tooling against the project in `.env.local` is trapped and aborted by `assertStagingTarget`.
 - **Ref Match Verification**: Verified. Both the Supabase API URL and the PostgreSQL connection string in `.env.test.local` target project ref `shnzzbbtydmvfhgeoysg`.
 - **No Production Fallback**: Verified. If `.env.test.local` is deleted or missing, staging commands immediately throw `EnvironmentGuardError` rather than falling back to `.env.local`.

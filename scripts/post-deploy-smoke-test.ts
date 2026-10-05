@@ -52,10 +52,14 @@ function recordCheck(
 const BASE_URL = "https://ai-nexos.antideploy.com";
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — POST-DEPLOYMENT PRODUCTION SMOKE TEST");
   console.log(`Target Host: ${BASE_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // 1. GET /api/health
   console.log("--- 1. Health Endpoint ---");
@@ -104,7 +108,10 @@ async function main() {
     "SMOKE-ROOT-01",
     "PUBLIC",
     "GET / redirects unauthenticated visitor to /login",
-    (rootRes.status === 307 || rootRes.status === 302 || rootRes.status === 308) && rootLocation.includes("/login"),
+    (rootRes.status === 307 ||
+      rootRes.status === 302 ||
+      rootRes.status === 308) &&
+      rootLocation.includes("/login"),
     "HTTP 307/302 redirect to /login",
     `HTTP ${rootRes.status}, location: ${rootLocation}`,
   );
@@ -227,7 +234,9 @@ async function main() {
   );
 
   // 7. Database & Server-Side Operator Resolution
-  console.log("\n--- 6. Server-Side Operator Identity & Multi-Tenant Resolution ---");
+  console.log(
+    "\n--- 6. Server-Side Operator Identity & Multi-Tenant Resolution ---",
+  );
   const dbUrl = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL!;
   const sql = postgres(dbUrl, { max: 1, prepare: false, ssl: "require" });
 
@@ -262,28 +271,42 @@ async function main() {
       "SMOKE-AUTH-02",
       "AUTHORIZATION",
       "Operator active organization membership resolves to Owner",
-      memberships.some(m => m.status === "active" && m.role_name === "Owner"),
+      memberships.some((m) => m.status === "active" && m.role_name === "Owner"),
       "Active Owner role on assigned organization",
-      memberships.map(m => `${m.organization_name} [${m.code_prefix}] - ${m.role_name} (${m.status}, default: ${m.is_default})`).join("; "),
+      memberships
+        .map(
+          (m) =>
+            `${m.organization_name} [${m.code_prefix}] - ${m.role_name} (${m.status}, default: ${m.is_default})`,
+        )
+        .join("; "),
     );
-
   } finally {
     await sql.end();
   }
 
   // Summary
-  console.log("\n================================================================================");
+  console.log(
+    "\n================================================================================",
+  );
   console.log("SMOKE TEST SUMMARY");
-  console.log("================================================================================");
-  const passedCount = checks.filter(c => c.passed).length;
-  const failedCount = checks.filter(c => !c.passed).length;
+  console.log(
+    "================================================================================",
+  );
+  const passedCount = checks.filter((c) => c.passed).length;
+  const failedCount = checks.filter((c) => !c.passed).length;
   console.log(`Total Checks:  ${checks.length}`);
   console.log(`Passed:        ${passedCount}`);
   console.log(`Failed:        ${failedCount}`);
 
   if (failedCount > 0) {
     console.error("\n❌ SMOKE TEST FAILURES:");
-    checks.filter(c => !c.passed).forEach(c => console.error(`  - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected}, Actual: ${c.actual})`));
+    checks
+      .filter((c) => !c.passed)
+      .forEach((c) =>
+        console.error(
+          `  - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected}, Actual: ${c.actual})`,
+        ),
+      );
     process.exit(1);
   } else {
     console.log("\n✅ ALL POST-DEPLOYMENT SMOKE TESTS PASSED PERFECTLY!");
@@ -291,7 +314,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error("FATAL ERROR in smoke tests:", err);
   process.exit(1);
 });

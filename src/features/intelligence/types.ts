@@ -44,11 +44,7 @@ export interface ExecutiveHealthDto {
 
 export type RiskSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type RiskEntityType =
-  | "PROJECT"
-  | "DELIVERABLE"
-  | "TASK"
-  | "CLIENT"
-  | "MILESTONE";
+  "PROJECT" | "DELIVERABLE" | "TASK" | "CLIENT" | "MILESTONE";
 
 export interface RiskItemDto {
   id: string;

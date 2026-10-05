@@ -58,12 +58,13 @@ export function TimelineDashboard({
 
   if (!initialTimeline) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-2/40 p-12 text-center">
-        <h3 className="mb-2 text-base font-semibold text-foreground-heading">
+      <div className="border-border bg-surface-2/40 flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+        <h3 className="text-foreground-heading mb-2 text-base font-semibold">
           No Timeline Created
         </h3>
-        <p className="max-w-sm text-center text-xs text-foreground-muted">
-          This project does not have a timeline yet. Work with milestones and phases to track delivery schedules.
+        <p className="text-foreground-muted max-w-sm text-center text-xs">
+          This project does not have a timeline yet. Work with milestones and
+          phases to track delivery schedules.
         </p>
       </div>
     );
@@ -85,16 +86,22 @@ export function TimelineDashboard({
       {/* Header & Controls */}
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-lg font-bold tracking-tight text-foreground-heading">Project Timeline</h2>
-          <p className="text-xs text-foreground-muted">
-            Overall Progress: <span className="font-mono font-medium text-foreground">{timeline.overallProgress}%</span> · Status:{" "}
-            <span className="capitalize text-foreground-secondary">
+          <h2 className="text-foreground-heading text-lg font-bold tracking-tight">
+            Project Timeline
+          </h2>
+          <p className="text-foreground-muted text-xs">
+            Overall Progress:{" "}
+            <span className="text-foreground font-mono font-medium">
+              {timeline.overallProgress}%
+            </span>{" "}
+            · Status:{" "}
+            <span className="text-foreground-secondary capitalize">
               {timeline.status.replace("_", " ")}
             </span>
           </p>
         </div>
 
-        <div className="flex items-center rounded-lg bg-surface-1 border border-border-subtle p-1 gap-1">
+        <div className="bg-surface-1 border-border-subtle flex items-center gap-1 rounded-lg border p-1">
           {(
             [
               ["gantt", "Gantt"],
@@ -119,7 +126,7 @@ export function TimelineDashboard({
       </div>
 
       {isLoading && milestones.length === 0 ? (
-        <div className="p-12 text-center text-xs text-foreground-muted animate-pulse">
+        <div className="text-foreground-muted animate-pulse p-12 text-center text-xs">
           Loading milestones…
         </div>
       ) : view === "gantt" ? (
@@ -129,42 +136,42 @@ export function TimelineDashboard({
       ) : view === "calendar" ? (
         <CalendarView timeline={timeline} />
       ) : (
-        <div className="rounded-xl border border-border bg-card p-5 shadow-xs">
-          <h3 className="mb-4 text-sm font-semibold text-foreground-heading uppercase tracking-wide">
+        <div className="border-border bg-card rounded-xl border p-5 shadow-xs">
+          <h3 className="text-foreground-heading mb-4 text-sm font-semibold tracking-wide uppercase">
             Milestone List
           </h3>
           <div className="space-y-6">
             {timeline.phases.map((phase: PhaseData) => (
               <div key={phase.phaseId} className="space-y-2">
-                <h4 className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+                <h4 className="text-foreground-muted text-xs font-semibold tracking-wider uppercase">
                   {phase.name.replace("_", " ")}
                 </h4>
                 <div className="grid gap-2">
                   {phase.milestones.length === 0 ? (
-                    <div className="py-2 text-xs text-foreground-subtle italic">
+                    <div className="text-foreground-subtle py-2 text-xs italic">
                       No milestones in this phase.
                     </div>
                   ) : (
                     phase.milestones.map((milestone: MilestoneData) => (
                       <div
                         key={milestone.milestoneId}
-                        className="flex items-center justify-between rounded-lg border border-border-subtle bg-surface-1/40 p-3 transition-colors hover:border-border"
+                        className="border-border-subtle bg-surface-1/40 hover:border-border flex items-center justify-between rounded-lg border p-3 transition-colors"
                       >
                         <div>
-                          <div className="text-sm font-medium text-foreground">
+                          <div className="text-foreground text-sm font-medium">
                             {milestone.name}
                           </div>
-                          <div className="mt-0.5 text-xs text-foreground-muted capitalize">
+                          <div className="text-foreground-muted mt-0.5 text-xs capitalize">
                             Status: {milestone.status.replace("_", " ")}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="text-xs font-mono text-foreground-secondary">
+                          <div className="text-foreground-secondary font-mono text-xs">
                             {milestone.progress}%
                           </div>
-                          <div className="h-1.5 w-20 overflow-hidden rounded-full bg-surface-3">
+                          <div className="bg-surface-3 h-1.5 w-20 overflow-hidden rounded-full">
                             <div
-                              className="h-full bg-brand-primary transition-all duration-300"
+                              className="bg-brand-primary h-full transition-all duration-300"
                               style={{ width: `${milestone.progress}%` }}
                             />
                           </div>

@@ -25,7 +25,12 @@ const DB_URL = `postgresql://postgres@localhost:5432/${TARGET_DB}`;
 interface RehearsalCheck {
   id: string;
   name: string;
-  category: "MIGRATION" | "S4_USER_AUTH" | "S4_TENANT_GUARD" | "S4_MASS_ASSIGNMENT" | "S4_TRANSACTION";
+  category:
+    | "MIGRATION"
+    | "S4_USER_AUTH"
+    | "S4_TENANT_GUARD"
+    | "S4_MASS_ASSIGNMENT"
+    | "S4_TRANSACTION";
   passed: boolean;
   evidence: string;
 }
@@ -45,10 +50,14 @@ function recordCheck(
 }
 
 async function runRehearsal() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — S4 DISPOSABLE POSTGRESQL REHEARSAL");
   console.log(`Target: ${DB_URL}`);
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   // Step 1: Create fresh database
   const adminSql = postgres(ADMIN_URL, { prepare: false });
@@ -205,7 +214,13 @@ async function runRehearsal() {
         (${projectB}, ${orgB}, 'Project Beta Baseline', 'BET-001', 'planning', 'medium', ${userBPm}, ${userBPm}, '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z');
     `;
 
-    recordCheck("SEED", "Ephemeral Fixtures Inserted", "MIGRATION", true, "Orgs, roles, users, clients, projects seeded.");
+    recordCheck(
+      "SEED",
+      "Ephemeral Fixtures Inserted",
+      "MIGRATION",
+      true,
+      "Orgs, roles, users, clients, projects seeded.",
+    );
 
     // ------------------------------------------------------------------------
     // SECTION 3: S4 AUTHORIZATION SCENARIOS (10 VERIFICATIONS)
@@ -229,7 +244,10 @@ async function runRehearsal() {
       "S4-01",
       "Same-org active user assignment succeeds",
       "S4_USER_AUTH",
-      s4ValidPm.length === 1 && s4ValidCd.length === 1 && updatedP1.project_manager === userAPm && updatedP1.creative_director === userACd,
+      s4ValidPm.length === 1 &&
+        s4ValidCd.length === 1 &&
+        updatedP1.project_manager === userAPm &&
+        updatedP1.creative_director === userACd,
       `Assigned PM=${updatedP1?.project_manager} CD=${updatedP1?.creative_director}`,
     );
 
@@ -331,13 +349,15 @@ async function runRehearsal() {
 
     // 9. Failed validation produces no partial mutation (transaction rollback)
     let rollbackVerified = false;
-    const preMutation = await sql`SELECT project_name FROM projects WHERE project_id = ${projectA}`;
+    const preMutation =
+      await sql`SELECT project_name FROM projects WHERE project_id = ${projectA}`;
     try {
       await sql.begin(async (tx) => {
         // Step 1: Update name
         await tx`UPDATE projects SET project_name = 'Dirty Intermediate Name' WHERE project_id = ${projectA}`;
         // Step 2: Validate foreign user -> fails!
-        const check = await tx`SELECT user_id FROM users WHERE user_id = ${userBPm} AND organization_id = ${orgA} AND status = 'active' AND deleted_at IS NULL`;
+        const check =
+          await tx`SELECT user_id FROM users WHERE user_id = ${userBPm} AND organization_id = ${orgA} AND status = 'active' AND deleted_at IS NULL`;
         if (check.length === 0) {
           throw new Error("User not found");
         }
@@ -347,18 +367,21 @@ async function runRehearsal() {
         rollbackVerified = true;
       }
     }
-    const postMutation = await sql`SELECT project_name FROM projects WHERE project_id = ${projectA}`;
+    const postMutation =
+      await sql`SELECT project_name FROM projects WHERE project_id = ${projectA}`;
     recordCheck(
       "S4-09",
       "Failed user validation rolls back transaction (zero partial mutation)",
       "S4_TRANSACTION",
-      rollbackVerified && postMutation[0].project_name === preMutation[0].project_name,
+      rollbackVerified &&
+        postMutation[0].project_name === preMutation[0].project_name,
       `Original='${preMutation[0].project_name}', Post='${postMutation[0].project_name}'`,
     );
 
     // 10. Server-controlled fields cannot be mass-assigned
     // Ensure that immutable fields (project_code, created_by, created_at) are preserved
-    const [beforeMass] = await sql`SELECT project_code, created_by, created_at FROM projects WHERE project_id = ${projectA}`;
+    const [beforeMass] =
+      await sql`SELECT project_code, created_by, created_at FROM projects WHERE project_id = ${projectA}`;
     // Application update whitelists only editable fields
     const whitelistedFields = {
       project_name: "Safe Renamed Project",
@@ -369,27 +392,37 @@ async function runRehearsal() {
       SET project_name = ${whitelistedFields.project_name}, priority = ${whitelistedFields.priority}
       WHERE project_id = ${projectA} AND organization_id = ${orgA} AND deleted_at IS NULL
     `;
-    const [afterMass] = await sql`SELECT project_code, created_by, created_at, project_name FROM projects WHERE project_id = ${projectA}`;
+    const [afterMass] =
+      await sql`SELECT project_code, created_by, created_at, project_name FROM projects WHERE project_id = ${projectA}`;
     recordCheck(
       "S4-10",
       "Server-controlled fields preserved against mass-assignment",
       "S4_MASS_ASSIGNMENT",
       beforeMass.project_code === afterMass.project_code &&
-      beforeMass.created_by === afterMass.created_by &&
-      beforeMass.created_at.toISOString() === afterMass.created_at.toISOString() &&
-      afterMass.project_name === "Safe Renamed Project",
+        beforeMass.created_by === afterMass.created_by &&
+        beforeMass.created_at.toISOString() ===
+          afterMass.created_at.toISOString() &&
+        afterMass.project_name === "Safe Renamed Project",
       `Immutable fields intact: code=${afterMass.project_code}, created_by=${afterMass.created_by}`,
     );
 
     // Summary
     const totalChecks = checks.length;
     const passedChecks = checks.filter((c) => c.passed).length;
-    console.log("\n================================================================================");
-    console.log(`S4 REHEARSAL RESULT: ${passedChecks}/${totalChecks} CHECKS PASSED`);
-    console.log("================================================================================\n");
+    console.log(
+      "\n================================================================================",
+    );
+    console.log(
+      `S4 REHEARSAL RESULT: ${passedChecks}/${totalChecks} CHECKS PASSED`,
+    );
+    console.log(
+      "================================================================================\n",
+    );
 
     if (passedChecks !== totalChecks) {
-      throw new Error(`Rehearsal failed: ${totalChecks - passedChecks} checks failed`);
+      throw new Error(
+        `Rehearsal failed: ${totalChecks - passedChecks} checks failed`,
+      );
     }
   } finally {
     await sql.end();
@@ -398,7 +431,9 @@ async function runRehearsal() {
     const adminSqlCleanup = postgres(ADMIN_URL, { prepare: false });
     try {
       await adminSqlCleanup.unsafe(`DROP DATABASE IF EXISTS ${TARGET_DB};`);
-      console.log(`Dropped disposable database ${TARGET_DB}. Zero lingering state.`);
+      console.log(
+        `Dropped disposable database ${TARGET_DB}. Zero lingering state.`,
+      );
     } finally {
       await adminSqlCleanup.end();
     }

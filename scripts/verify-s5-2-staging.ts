@@ -34,7 +34,9 @@ function recordCheck(
 ) {
   checks.push({ id, name, category, passed, expected, actual });
   const status = passed ? "✓ PASS" : "✗ FAIL";
-  console.log(`[${status}] [${category}] ${id}: ${name}\n       Expected: ${expected}\n       Actual:   ${actual}`);
+  console.log(
+    `[${status}] [${category}] ${id}: ${name}\n       Expected: ${expected}\n       Actual:   ${actual}`,
+  );
 }
 
 async function asPostgresRole<T>(
@@ -60,9 +62,13 @@ async function asPostgresRole<T>(
 }
 
 async function main() {
-  console.log("================================================================================");
+  console.log(
+    "================================================================================",
+  );
   console.log("AI NEX OS — S5.2 LIVE STAGING VERIFICATION HARNESS");
-  console.log("================================================================================\n");
+  console.log(
+    "================================================================================\n",
+  );
 
   console.log(`Target Environment:  ${target.environment}`);
   console.log(`Project Ref:         ${target.projectRef}`);
@@ -70,7 +76,9 @@ async function main() {
   console.log(`Config Source:       ${target.file}\n`);
 
   if (target.projectRef !== "shnzzbbtydmvfhgeoysg") {
-    console.error(`FATAL: Target projectRef is "${target.projectRef}", expected "shnzzbbtydmvfhgeoysg". ABORTING.`);
+    console.error(
+      `FATAL: Target projectRef is "${target.projectRef}", expected "shnzzbbtydmvfhgeoysg". ABORTING.`,
+    );
     process.exit(1);
   }
 
@@ -126,27 +134,48 @@ async function main() {
 
     let authOk = false;
     try {
-      const authRes = await fetch(`${supabaseUrl}/auth/v1/health`, { headers: { apikey: anonKey } });
+      const authRes = await fetch(`${supabaseUrl}/auth/v1/health`, {
+        headers: { apikey: anonKey },
+      });
       authOk = authRes.ok;
     } catch {}
-    recordCheck("SVC-01", "Supabase Auth Health", "SERVICE", authOk, "Status 200 OK", authOk ? "200 OK" : "FAILED");
+    recordCheck(
+      "SVC-01",
+      "Supabase Auth Health",
+      "SERVICE",
+      authOk,
+      "Status 200 OK",
+      authOk ? "200 OK" : "FAILED",
+    );
 
     let postgrestOk = false;
     try {
-      const restRes = await fetch(`${supabaseUrl}/rest/v1/projects?select=count`, {
-        headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-      });
+      const restRes = await fetch(
+        `${supabaseUrl}/rest/v1/projects?select=count`,
+        {
+          headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+        },
+      );
       // PostgREST is healthy when it correctly rejects anon table access with 401 / 42501
       const body = await restRes.json();
       postgrestOk = restRes.status === 401 && body.code === "42501";
     } catch {}
-    recordCheck("SVC-02", "PostgREST Ingress & Security Gate", "SERVICE", postgrestOk, "401/42501 (denied for anon)", postgrestOk ? "401/42501" : "FAILED");
+    recordCheck(
+      "SVC-02",
+      "PostgREST Ingress & Security Gate",
+      "SERVICE",
+      postgrestOk,
+      "401/42501 (denied for anon)",
+      postgrestOk ? "401/42501" : "FAILED",
+    );
 
     // ------------------------------------------------------------------------
     // SECTION 6, 7 & 8: MIGRATION BASELINE & HASH FIDELITY
     // ------------------------------------------------------------------------
     console.log("\n--- SECTION 2: MIGRATION HISTORY & HASH FIDELITY ---");
-    const migrations = await sql<{ id: number; hash: string; created_at: string }[]>`
+    const migrations = await sql<
+      { id: number; hash: string; created_at: string }[]
+    >`
       SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id ASC;
     `;
 
@@ -163,11 +192,26 @@ async function main() {
     const m0020 = migrations[20]; // index 20 is 0020
 
     // Compute local file hashes
-    const m0019Content = readFileSync(join(process.cwd(), "database", "migrations", "0019_rls_hardening.sql"), "utf8");
-    const m0019ExpectedHash = createHash("sha256").update(m0019Content).digest("hex");
+    const m0019Content = readFileSync(
+      join(process.cwd(), "database", "migrations", "0019_rls_hardening.sql"),
+      "utf8",
+    );
+    const m0019ExpectedHash = createHash("sha256")
+      .update(m0019Content)
+      .digest("hex");
 
-    const m0020Content = readFileSync(join(process.cwd(), "database", "migrations", "0020_harden_security_definer_search_paths.sql"), "utf8");
-    const m0020ExpectedHash = createHash("sha256").update(m0020Content).digest("hex");
+    const m0020Content = readFileSync(
+      join(
+        process.cwd(),
+        "database",
+        "migrations",
+        "0020_harden_security_definer_search_paths.sql",
+      ),
+      "utf8",
+    );
+    const m0020ExpectedHash = createHash("sha256")
+      .update(m0020Content)
+      .digest("hex");
 
     recordCheck(
       "MIG-02",
@@ -237,15 +281,25 @@ async function main() {
     // ------------------------------------------------------------------------
     // SECTION 10 & 11: MEMBERSHIPS & INVITATIONS POLICIES AND GRANTS
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 4: MEMBERSHIPS & INVITATIONS POLICIES & GRANTS ---");
+    console.log(
+      "\n--- SECTION 4: MEMBERSHIPS & INVITATIONS POLICIES & GRANTS ---",
+    );
     const targetPolicies = await sql`
       SELECT tablename, policyname, roles, cmd, qual
       FROM pg_policies
       WHERE tablename IN ('organization_memberships', 'organization_invitations');
     `;
 
-    const membPolicy = targetPolicies.find(p => p.tablename === "organization_memberships" && p.policyname === "organization_memberships_select");
-    const invPolicy = targetPolicies.find(p => p.tablename === "organization_invitations" && p.policyname === "organization_invitations_select");
+    const membPolicy = targetPolicies.find(
+      (p) =>
+        p.tablename === "organization_memberships" &&
+        p.policyname === "organization_memberships_select",
+    );
+    const invPolicy = targetPolicies.find(
+      (p) =>
+        p.tablename === "organization_invitations" &&
+        p.policyname === "organization_invitations_select",
+    );
 
     recordCheck(
       "POL-01",
@@ -273,13 +327,39 @@ async function main() {
         AND table_name IN ('organization_memberships', 'organization_invitations');
     `;
 
-    const membAuthSelect = targetGrants.some(g => g.table_name === "organization_memberships" && g.grantee === "authenticated" && g.privilege_type === "SELECT");
-    const membAnonAny = targetGrants.some(g => g.table_name === "organization_memberships" && g.grantee === "anon");
-    const membAuthWrite = targetGrants.some(g => g.table_name === "organization_memberships" && g.grantee === "authenticated" && ["INSERT", "UPDATE", "DELETE"].includes(g.privilege_type));
+    const membAuthSelect = targetGrants.some(
+      (g) =>
+        g.table_name === "organization_memberships" &&
+        g.grantee === "authenticated" &&
+        g.privilege_type === "SELECT",
+    );
+    const membAnonAny = targetGrants.some(
+      (g) =>
+        g.table_name === "organization_memberships" && g.grantee === "anon",
+    );
+    const membAuthWrite = targetGrants.some(
+      (g) =>
+        g.table_name === "organization_memberships" &&
+        g.grantee === "authenticated" &&
+        ["INSERT", "UPDATE", "DELETE"].includes(g.privilege_type),
+    );
 
-    const invAuthSelect = targetGrants.some(g => g.table_name === "organization_invitations" && g.grantee === "authenticated" && g.privilege_type === "SELECT");
-    const invAnonAny = targetGrants.some(g => g.table_name === "organization_invitations" && g.grantee === "anon");
-    const invAuthWrite = targetGrants.some(g => g.table_name === "organization_invitations" && g.grantee === "authenticated" && ["INSERT", "UPDATE", "DELETE"].includes(g.privilege_type));
+    const invAuthSelect = targetGrants.some(
+      (g) =>
+        g.table_name === "organization_invitations" &&
+        g.grantee === "authenticated" &&
+        g.privilege_type === "SELECT",
+    );
+    const invAnonAny = targetGrants.some(
+      (g) =>
+        g.table_name === "organization_invitations" && g.grantee === "anon",
+    );
+    const invAuthWrite = targetGrants.some(
+      (g) =>
+        g.table_name === "organization_invitations" &&
+        g.grantee === "authenticated" &&
+        ["INSERT", "UPDATE", "DELETE"].includes(g.privilege_type),
+    );
 
     recordCheck(
       "GRANT-01",
@@ -302,7 +382,9 @@ async function main() {
     // ------------------------------------------------------------------------
     // SECTION 12 & 13: SECURITY DEFINER FUNCTIONS & SEARCH_PATH PINNING
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 5: SECURITY DEFINER FUNCTIONS & SEARCH_PATH PINNING ---");
+    console.log(
+      "\n--- SECTION 5: SECURITY DEFINER FUNCTIONS & SEARCH_PATH PINNING ---",
+    );
     const secDefFns = await sql`
       SELECT
         p.proname as name,
@@ -333,9 +415,12 @@ async function main() {
     );
 
     for (const fnName of expectedFns) {
-      const fn = secDefFns.find(f => f.name === fnName);
-      const isPinned = Array.isArray(fn?.config) && fn.config.some((c: string) => c.startsWith("search_path="));
-      const hasEmptySearchPath = isPinned && fn.config.includes('search_path=""');
+      const fn = secDefFns.find((f) => f.name === fnName);
+      const isPinned =
+        Array.isArray(fn?.config) &&
+        fn.config.some((c: string) => c.startsWith("search_path="));
+      const hasEmptySearchPath =
+        isPinned && fn.config.includes('search_path=""');
 
       recordCheck(
         `SECDEF-SP-${fnName}`,
@@ -393,13 +478,18 @@ async function main() {
     `;
 
     try {
-      await asPostgresRole(sql, "authenticated", { sub: testUser.user_id, organizationId: testUser.organization_id }, async (tx) => {
-        // Query projects and project_members explicitly
-        await tx`SELECT count(*) FROM public.projects;`;
-        await tx`SELECT count(*) FROM public.project_members;`;
-        await tx`SELECT count(*) FROM public.organization_memberships;`;
-        await tx`SELECT count(*) FROM public.organization_invitations;`;
-      });
+      await asPostgresRole(
+        sql,
+        "authenticated",
+        { sub: testUser.user_id, organizationId: testUser.organization_id },
+        async (tx) => {
+          // Query projects and project_members explicitly
+          await tx`SELECT count(*) FROM public.projects;`;
+          await tx`SELECT count(*) FROM public.project_members;`;
+          await tx`SELECT count(*) FROM public.organization_memberships;`;
+          await tx`SELECT count(*) FROM public.organization_invitations;`;
+        },
+      );
     } catch (err: any) {
       recursionError = err.message;
     }
@@ -410,15 +500,21 @@ async function main() {
       "RECURSION",
       recursionError === null,
       "Query succeeds with 0 errors",
-      recursionError ? `42P17 error: ${recursionError}` : "Zero recursion detected",
+      recursionError
+        ? `42P17 error: ${recursionError}`
+        : "Zero recursion detected",
     );
 
     // ------------------------------------------------------------------------
     // SECTION 15, 16, 17: TENANT ISOLATION, MEMBERSHIP, INVITATIONS RLS
     // ------------------------------------------------------------------------
-    console.log("\n--- SECTION 7: STAGING TENANT ISOLATION & RLS EVALUATION ---");
+    console.log(
+      "\n--- SECTION 7: STAGING TENANT ISOLATION & RLS EVALUATION ---",
+    );
     // Identify two distinct organizations and their active users
-    const orgs = await sql<{ organization_id: string; organization_name: string }[]>`
+    const orgs = await sql<
+      { organization_id: string; organization_name: string }[]
+    >`
       SELECT organization_id, organization_name FROM public.organizations LIMIT 2;
     `;
 
@@ -439,10 +535,17 @@ async function main() {
 
       if (userA && userB) {
         // Test Tenant Isolation on Projects
-        const projectsSeenByA = await asPostgresRole(sql, "authenticated", { sub: userA.user_id, organizationId: userA.organization_id }, async (tx) => {
-          return tx`SELECT project_id, organization_id FROM public.projects;`;
-        });
-        const foreignProjectsSeenByA = projectsSeenByA.filter((p: any) => p.organization_id === orgB);
+        const projectsSeenByA = await asPostgresRole(
+          sql,
+          "authenticated",
+          { sub: userA.user_id, organizationId: userA.organization_id },
+          async (tx) => {
+            return tx`SELECT project_id, organization_id FROM public.projects;`;
+          },
+        );
+        const foreignProjectsSeenByA = projectsSeenByA.filter(
+          (p: any) => p.organization_id === orgB,
+        );
 
         recordCheck(
           "ISO-01",
@@ -454,11 +557,20 @@ async function main() {
         );
 
         // Test Membership Visibility (Section 16)
-        const membershipsSeenByA = await asPostgresRole(sql, "authenticated", { sub: userA.user_id, organizationId: userA.organization_id }, async (tx) => {
-          return tx`SELECT membership_id, user_id, organization_id FROM public.organization_memberships;`;
-        });
-        const foreignMembershipsSeenByA = membershipsSeenByA.filter((m: any) => m.organization_id === orgB && m.user_id !== userA.user_id);
-        const ownMembershipVisible = membershipsSeenByA.some((m: any) => m.user_id === userA.user_id);
+        const membershipsSeenByA = await asPostgresRole(
+          sql,
+          "authenticated",
+          { sub: userA.user_id, organizationId: userA.organization_id },
+          async (tx) => {
+            return tx`SELECT membership_id, user_id, organization_id FROM public.organization_memberships;`;
+          },
+        );
+        const foreignMembershipsSeenByA = membershipsSeenByA.filter(
+          (m: any) => m.organization_id === orgB && m.user_id !== userA.user_id,
+        );
+        const ownMembershipVisible = membershipsSeenByA.some(
+          (m: any) => m.user_id === userA.user_id,
+        );
 
         recordCheck(
           "MEMB-01",
@@ -474,10 +586,17 @@ async function main() {
         const [hasOrgUpdate] = await sql`
           SELECT app.has_permission('organization', 'update') as has_perm;
         `;
-        const invitationsSeenByA = await asPostgresRole(sql, "authenticated", { sub: userA.user_id, organizationId: userA.organization_id }, async (tx) => {
-          return tx`SELECT invitation_id, organization_id FROM public.organization_invitations;`;
-        });
-        const foreignInvitationsSeen = invitationsSeenByA.filter((i: any) => i.organization_id === orgB);
+        const invitationsSeenByA = await asPostgresRole(
+          sql,
+          "authenticated",
+          { sub: userA.user_id, organizationId: userA.organization_id },
+          async (tx) => {
+            return tx`SELECT invitation_id, organization_id FROM public.organization_invitations;`;
+          },
+        );
+        const foreignInvitationsSeen = invitationsSeenByA.filter(
+          (i: any) => i.organization_id === orgB,
+        );
 
         recordCheck(
           "INV-01",
@@ -488,7 +607,9 @@ async function main() {
           `${foreignInvitationsSeen.length} foreign invitations visible`,
         );
       } else {
-        console.log("Could not find active users in both orgs for isolation test.");
+        console.log(
+          "Could not find active users in both orgs for isolation test.",
+        );
       }
     }
 
@@ -496,7 +617,12 @@ async function main() {
     // SECTION 18: ANONYMOUS ACCESS RESTRICTIONS
     // ------------------------------------------------------------------------
     console.log("\n--- SECTION 8: ANONYMOUS ACCESS RESTRICTIONS ---");
-    const testTables = ["projects", "project_members", "organization_memberships", "organization_invitations"];
+    const testTables = [
+      "projects",
+      "project_members",
+      "organization_memberships",
+      "organization_invitations",
+    ];
 
     for (const tbl of testTables) {
       let anonDenied = false;
@@ -556,9 +682,14 @@ async function main() {
       let writeDenied = false;
       let errorCode = "";
       try {
-        await asPostgresRole(sql, "authenticated", { sub: testUser.user_id, organizationId: testUser.organization_id }, async (tx) => {
-          await tx.unsafe(wt.sql);
-        });
+        await asPostgresRole(
+          sql,
+          "authenticated",
+          { sub: testUser.user_id, organizationId: testUser.organization_id },
+          async (tx) => {
+            await tx.unsafe(wt.sql);
+          },
+        );
       } catch (err: any) {
         writeDenied = err.code === "42501";
         errorCode = err.code ?? "UNKNOWN";
@@ -577,12 +708,16 @@ async function main() {
     // ------------------------------------------------------------------------
     // SUMMARY
     // ------------------------------------------------------------------------
-    console.log("\n================================================================================");
+    console.log(
+      "\n================================================================================",
+    );
     console.log("S5.2 LIVE STAGING VERIFICATION SUMMARY");
-    console.log("================================================================================");
+    console.log(
+      "================================================================================",
+    );
     const total = checks.length;
-    const passed = checks.filter(c => c.passed).length;
-    const failed = checks.filter(c => !c.passed).length;
+    const passed = checks.filter((c) => c.passed).length;
+    const failed = checks.filter((c) => !c.passed).length;
 
     console.log(`Total Checks:  ${total}`);
     console.log(`Passed:        ${passed}`);
@@ -590,14 +725,17 @@ async function main() {
 
     if (failed > 0) {
       console.log("\nFAILED CHECKS:");
-      checks.filter(c => !c.passed).forEach(c => {
-        console.log(`  - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected} | Actual: ${c.actual})`);
-      });
+      checks
+        .filter((c) => !c.passed)
+        .forEach((c) => {
+          console.log(
+            `  - [${c.category}] ${c.id}: ${c.name} (Expected: ${c.expected} | Actual: ${c.actual})`,
+          );
+        });
       process.exit(1);
     } else {
       console.log("\nALL S5.2 LIVE STAGING VERIFICATION CHECKS PASSED!");
     }
-
   } finally {
     await sql.end();
   }

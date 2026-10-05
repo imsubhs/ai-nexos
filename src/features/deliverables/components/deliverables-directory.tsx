@@ -97,8 +97,8 @@ export function DeliverablesDirectory({
       header: "Deliverable Title",
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <FileText className="size-4 text-brand-primary shrink-0" />
-          <span className="font-medium text-foreground">{row.title}</span>
+          <FileText className="text-brand-primary size-4 shrink-0" />
+          <span className="text-foreground font-medium">{row.title}</span>
         </div>
       ),
     },
@@ -108,7 +108,7 @@ export function DeliverablesDirectory({
       cell: (row) => {
         const proj = projects.find((p) => p.projectId === row.projectId);
         return (
-          <span className="text-muted-foreground text-sm flex items-center gap-1.5">
+          <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
             <FolderOpen className="size-3.5 shrink-0 opacity-70" />
             <span className="truncate">{proj?.projectName || "—"}</span>
           </span>
@@ -143,7 +143,7 @@ export function DeliverablesDirectory({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+        <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2">
           {/* Search bar */}
           <div className="relative w-full max-w-xs">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -151,7 +151,7 @@ export function DeliverablesDirectory({
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Search deliverables by title…"
-              className="pl-8 h-9"
+              className="h-9 pl-8"
               aria-label="Search deliverables"
             />
           </div>
@@ -161,14 +161,17 @@ export function DeliverablesDirectory({
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="sm" className="h-9">
-                  <span className="truncate max-w-[130px]">
+                  <span className="max-w-[130px] truncate">
                     {activeProjectName ? activeProjectName : "All Projects"}
                   </span>
-                  <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
+                  <ChevronDown className="ml-1 h-4 w-4 opacity-70" />
                 </Button>
               }
             />
-            <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-64 overflow-y-auto"
+            >
               <DropdownMenuItem
                 onClick={() => setParams({ projectId: null, page: null })}
               >
@@ -195,11 +198,14 @@ export function DeliverablesDirectory({
                   <span>
                     {activeType ? humanizeToken(activeType) : "All Types"}
                   </span>
-                  <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
+                  <ChevronDown className="ml-1 h-4 w-4 opacity-70" />
                 </Button>
               }
             />
-            <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-64 overflow-y-auto"
+            >
               <DropdownMenuItem
                 onClick={() => setParams({ type: null, page: null })}
               >
@@ -226,11 +232,14 @@ export function DeliverablesDirectory({
                       ? humanizeToken(activeStatus)
                       : "All Statuses"}
                   </span>
-                  <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
+                  <ChevronDown className="ml-1 h-4 w-4 opacity-70" />
                 </Button>
               }
             />
-            <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-64 overflow-y-auto"
+            >
               <DropdownMenuItem
                 onClick={() => setParams({ status: null, page: null })}
               >
@@ -252,7 +261,7 @@ export function DeliverablesDirectory({
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground h-9"
+              className="text-muted-foreground hover:text-foreground h-9 text-xs"
               onClick={() =>
                 setParams({
                   projectId: null,

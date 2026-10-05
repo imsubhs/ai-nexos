@@ -6,7 +6,7 @@
 > **Date:** October 3, 2026  
 > **Certified Preceding Baseline:** Phase S7.14 Final Production Gate (`S6 PASS`, `S7 PASS`, `PRODUCTION DEPLOYMENT CERTIFIED`)  
 > **Next Authorized Phase:** Phase 4.0 Product/UX Implementation Track  
-> **Classification:** STRICT PROJECT BOUNDARY ISOLATION  
+> **Classification:** STRICT PROJECT BOUNDARY ISOLATION
 
 ---
 
@@ -23,9 +23,11 @@ This document establishes the **authoritative project boundary correction**, for
 ## 2. Boundary Incident Analysis & Archaeology
 
 ### 2.1 The Separate Game Architecture Incident
+
 In conversation `c751ee75-042d-476b-8bcb-abc24e4b421c` ("Documentation Reconciliation Architecture Audit"), an automated assistant was instructed to reconcile Phase 4 documentation. However, due to open workspace contexts or prior session histories spanning sibling directories outside `NEXOS Comb/`, the assistant hallucinated that AI NEX OS Phase 4 was synonymous with "Phase 20.1 / 20.1.1" of a 2-player couples relationship game.
 
 The hallucinated architecture consisted of:
+
 ```text
 [UNRELATED EXTERNAL GAME ARCHITECTURE]
 Authoritative Game Engine (server/game.mjs)
@@ -41,7 +43,9 @@ Google Gemini (Hardcoded gemini-3.8-flash)
 ```
 
 ### 2.2 Proof of Complete Architectural Disconnection
+
 An exhaustive empirical audit of the `ai-nexos` repository confirms that:
+
 1. **Zero Source Code Exists**: There is no `server/` directory, no `server/game.mjs`, no `server/store.mjs`, no `server/oracle.mjs`, no `server/content.mjs`, and no `server/wsframe.mjs` in `ai-nexos`.
 2. **Zero Game Data Models Exist**: The 52 Drizzle ORM schema definitions and 21 PostgreSQL migrations contain zero references to game rooms, player seats (`host`/`guest`), turns, rounds, questions, decks, or scoring.
 3. **Zero WebSocket Game Logic Exists**: The real-time layers in `ai-nexos` are built for multi-tenant notifications, shift punch-clock presence, and Supabase Postgres CDC, not RFC 6455 multiplayer turn loops.
@@ -55,32 +59,36 @@ Under the governing context isolation policy (`AGENTS.md`), **AI NEX OS and the 
 
 The following concepts, terminology, and modules are **STRICTLY PROHIBITED** from being migrated, copied, merged, adapted, referenced, or implemented within AI NEX OS:
 
-| Prohibited Concept / Term | Originating Project | Rationale for Exclusion |
-| :--- | :--- | :--- |
-| **Phase 20.x, 20.1, 20.1.1, 20.2** | Couple Game Prototype | External numbering schema unrelated to AI NEX OS roadmap (Phases 1–7). |
-| **Relationship / Couples Game** | Couple Game Prototype | AI NEX OS is a B2B SaaS operating system for creative agencies, not a 2-player game. |
-| **BUBU / DUDU** | Couple Game Prototype | External character IP and brand identity. |
-| **Authoritative Game Engine** | `server/game.mjs` | AI NEX OS has no game loop, turn states, or synchronous answer reveal logic. |
-| **RoomStore / Room TTL / Sweepers** | `server/store.mjs` | In-memory socket room maps do not belong in a stateless Next.js 16 container SaaS. |
-| **LocalOracle** | `server/oracle.mjs` | Deterministic couple question pattern detection has zero agency utility. |
-| **Question AI / Personalisation AI / Report AI** | Couple Game Prototype | Game-specific prompt wrappers for couple quizzes and relationship reports. |
-| **Player Seats (`host`/`guest`), Turns, Scoring**| Couple Game Prototype | AI NEX OS uses RBAC (`owner`, `pm`, `team_member`) across tenant workspaces. |
-| **Hardcoded Gemini (`gemini-3.8-flash`) Game AI**| Couple Game Prototype | AI NEX OS uses a multi-provider pluggable abstraction; Gemini is not a mandatory dependency. |
+| Prohibited Concept / Term                         | Originating Project   | Rationale for Exclusion                                                                      |
+| :------------------------------------------------ | :-------------------- | :------------------------------------------------------------------------------------------- |
+| **Phase 20.x, 20.1, 20.1.1, 20.2**                | Couple Game Prototype | External numbering schema unrelated to AI NEX OS roadmap (Phases 1–7).                       |
+| **Relationship / Couples Game**                   | Couple Game Prototype | AI NEX OS is a B2B SaaS operating system for creative agencies, not a 2-player game.         |
+| **BUBU / DUDU**                                   | Couple Game Prototype | External character IP and brand identity.                                                    |
+| **Authoritative Game Engine**                     | `server/game.mjs`     | AI NEX OS has no game loop, turn states, or synchronous answer reveal logic.                 |
+| **RoomStore / Room TTL / Sweepers**               | `server/store.mjs`    | In-memory socket room maps do not belong in a stateless Next.js 16 container SaaS.           |
+| **LocalOracle**                                   | `server/oracle.mjs`   | Deterministic couple question pattern detection has zero agency utility.                     |
+| **Question AI / Personalisation AI / Report AI**  | Couple Game Prototype | Game-specific prompt wrappers for couple quizzes and relationship reports.                   |
+| **Player Seats (`host`/`guest`), Turns, Scoring** | Couple Game Prototype | AI NEX OS uses RBAC (`owner`, `pm`, `team_member`) across tenant workspaces.                 |
+| **Hardcoded Gemini (`gemini-3.8-flash`) Game AI** | Couple Game Prototype | AI NEX OS uses a multi-provider pluggable abstraction; Gemini is not a mandatory dependency. |
 
 ---
 
 ## 4. Contaminated Artifact Disposition
 
 The file located at:
+
 ```text
 docs/phase-4/20.1.1-CORRECTION-RECONCILIATION.md
 ```
+
 is formally classified as:
+
 ```text
 CLASSIFICATION: CATEGORY C — INCORRECT GAME-PROJECT CONTAMINATION
 ```
 
 ### Required Action:
+
 - In accordance with safety rules prohibiting automatic file deletion, the file is **RETAINED** as an evidentiary audit artifact but marked **DEPRECATED, INVALID, AND SUPERSEDED**.
 - No roadmap item, task, implementation step, or architectural decision in AI NEX OS shall cite, depend upon, or execute items from `20.1.1-CORRECTION-RECONCILIATION.md`.
 - The canonical specifications for Phase 4 are exclusively established by:
@@ -106,6 +114,7 @@ STACK:            Next.js 16.3.8 (Turbopack), React 19.2.4, Supabase, Drizzle OR
 ```
 
 ### The Core Entity Hierarchy:
+
 ```text
 Organization (Legal Tenant)
     └── Workspace (Agency Execution Environment)
@@ -123,6 +132,7 @@ Organization (Legal Tenant)
 ```
 
 ### The Role of AI in AI NEX OS:
+
 - AI is an **assistive operational capability layer** (meeting summarization, client revision parsing, task breakdown suggestions, project risk flags, and token cost governance).
 - AI is **NEVER** the customer identity.
 - AI is **NEVER** a hard dependency (the platform remains 100% operational during external provider outages).
@@ -133,6 +143,7 @@ Organization (Legal Tenant)
 ## 6. Certified Production Baseline (S6 / S7 Invariants)
 
 Phase 4 planning must strictly preserve the verified S6/S7 engineering invariants:
+
 1. **S6 Rate Limiting**: 192 registered server actions protected by in-memory sliding-window rate limiters (`MemoryStore`) with zero unmapped actions; optional distributed Redis adapter retained for future multi-instance clustering.
 2. **S7 Next.js 16.3.8 & Security**: Next.js 16.3.8, React 19.2.4, 965/965 passing tests, 159/159 AST authorization guards, zero TypeScript errors, zero ESLint warnings, 38/38 routes compiled, and live production deployment certification at `https://ai-nexos.antideploy.com`.
 3. **Database Immobility**: Migrations `0000` through `0020` are immutable. No database mutations, schema alterations, or Supabase config adjustments are permitted during this boundary gate.

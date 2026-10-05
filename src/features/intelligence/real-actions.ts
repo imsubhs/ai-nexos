@@ -68,7 +68,9 @@ export async function getExecutiveRisks(): Promise<RiskItemDto[]> {
 /**
  * Fetch "What Needs My Attention?" executive action queue.
  */
-export async function getExecutiveAttentionQueue(): Promise<ActionQueueItemDto[]> {
+export async function getExecutiveAttentionQueue(): Promise<
+  ActionQueueItemDto[]
+> {
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "analytics", "read");
 

@@ -90,11 +90,12 @@ export function ClientActivityFeed({ activities }: ClientActivityFeedProps) {
 
   return (
     <div className="space-y-4">
-      <div className="text-xs text-foreground-muted">
-        {activities.length} logged {activities.length === 1 ? "event" : "events"}
+      <div className="text-foreground-muted text-xs">
+        {activities.length} logged{" "}
+        {activities.length === 1 ? "event" : "events"}
       </div>
 
-      <div className="relative border-l border-border-subtle ml-3 space-y-6 pl-6 py-2">
+      <div className="border-border-subtle relative ml-3 space-y-6 border-l py-2 pl-6">
         {sorted.map((item, idx) => {
           const config = getActionConfig(item.action);
           const Icon = config.icon;
@@ -110,41 +111,47 @@ export function ClientActivityFeed({ activities }: ClientActivityFeedProps) {
           });
 
           return (
-            <div key={item.activityId || item.id || idx} className="relative group">
+            <div
+              key={item.activityId || item.id || idx}
+              className="group relative"
+            >
               {/* Timeline marker */}
-              <div className="absolute -left-[31px] top-1 flex size-6 items-center justify-center rounded-full border border-border bg-surface-2 group-hover:border-brand-primary/50 group-hover:scale-105 transition-all">
-                <Icon className="size-3 text-brand-primary" />
+              <div className="border-border bg-surface-2 group-hover:border-brand-primary/50 absolute top-1 -left-[31px] flex size-6 items-center justify-center rounded-full border transition-all group-hover:scale-105">
+                <Icon className="text-brand-primary size-3" />
               </div>
 
-              <div className="rounded-lg border border-border-subtle bg-surface-2 p-3.5 hover:border-brand-primary/30 transition-colors">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+              <div className="border-border-subtle bg-surface-2 hover:border-brand-primary/30 rounded-lg border p-3.5 transition-colors">
+                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
-                      className={cn("text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-[3px]", config.style)}
+                      className={cn(
+                        "rounded-[3px] px-1.5 py-0.5 font-mono text-[10px] uppercase",
+                        config.style,
+                      )}
                     >
                       {config.badge}
                     </Badge>
-                    <span className="text-xs font-semibold text-foreground">
+                    <span className="text-foreground text-xs font-semibold">
                       {item.action}
                     </span>
                   </div>
-                  <div className="text-[11px] font-mono text-foreground-muted">
+                  <div className="text-foreground-muted font-mono text-[11px]">
                     {formattedDate} at {formattedTime}
                   </div>
                 </div>
 
-                <p className="text-xs text-foreground-secondary leading-relaxed">
+                <p className="text-foreground-secondary text-xs leading-relaxed">
                   {item.description}
                 </p>
 
                 {item.metadata && Object.keys(item.metadata).length > 0 && (
-                  <div className="mt-2.5 pt-2 border-t border-border-subtle/50">
-                    <details className="text-[11px] text-foreground-muted cursor-pointer">
+                  <div className="border-border-subtle/50 mt-2.5 border-t pt-2">
+                    <details className="text-foreground-muted cursor-pointer text-[11px]">
                       <summary className="hover:text-foreground font-mono">
                         View event details
                       </summary>
-                      <pre className="mt-1.5 p-2 rounded bg-surface-1 border border-border-subtle font-mono text-[10px] text-foreground-subtle overflow-x-auto">
+                      <pre className="bg-surface-1 border-border-subtle text-foreground-subtle mt-1.5 overflow-x-auto rounded border p-2 font-mono text-[10px]">
                         {JSON.stringify(item.metadata, null, 2)}
                       </pre>
                     </details>

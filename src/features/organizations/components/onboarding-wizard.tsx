@@ -19,8 +19,10 @@ import {
   acceptInvitationAction,
   previewInvitationAction,
 } from "@/features/organizations/onboarding-actions";
-import { slugify, deriveCodePrefixFromName } from "@/features/organizations/schemas";
-
+import {
+  slugify,
+  deriveCodePrefixFromName,
+} from "@/features/organizations/schemas";
 
 interface OnboardingWizardProps {
   initialInviteToken?: string;
@@ -34,7 +36,9 @@ export function OnboardingWizard({
   hasExistingOrganizations = false,
 }: OnboardingWizardProps) {
   const router = useRouter();
-  const [tab, setTab] = useState<"create" | "join">(initialInviteToken ? "join" : "create");
+  const [tab, setTab] = useState<"create" | "join">(
+    initialInviteToken ? "join" : "create",
+  );
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -67,7 +71,6 @@ export function OnboardingWizard({
       setCodePrefix(deriveCodePrefixFromName(val));
     }
   };
-
 
   // If initial token present, load preview
   useEffect(() => {
@@ -147,7 +150,9 @@ export function OnboardingWizard({
     startTransition(async () => {
       const res = await acceptInvitationAction({ rawToken: token });
       if (res.success) {
-        setSuccessMessage("Invitation accepted! Welcome to the workspace. Redirecting...");
+        setSuccessMessage(
+          "Invitation accepted! Welcome to the workspace. Redirecting...",
+        );
         router.push("/dashboard");
       } else {
         setErrorMessage(res.error ?? "Failed to accept invitation");
@@ -224,9 +229,14 @@ export function OnboardingWizard({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="slug" className="flex items-center justify-between text-xs">
+            <Label
+              htmlFor="slug"
+              className="flex items-center justify-between text-xs"
+            >
               <span>Workspace Identifier (Slug)</span>
-              <span className="text-muted-foreground">app.domain/{slug || "workspace"}</span>
+              <span className="text-muted-foreground">
+                app.domain/{slug || "workspace"}
+              </span>
             </Label>
             <Input
               id="slug"
@@ -241,9 +251,14 @@ export function OnboardingWizard({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="codePrefix" className="flex items-center justify-between text-xs">
+            <Label
+              htmlFor="codePrefix"
+              className="flex items-center justify-between text-xs"
+            >
               <span>Entity Code Prefix</span>
-              <span className="text-muted-foreground">e.g. {codePrefix || "VCS"}-2026-0001</span>
+              <span className="text-muted-foreground">
+                e.g. {codePrefix || "VCS"}-2026-0001
+              </span>
             </Label>
             <Input
               id="codePrefix"
@@ -261,7 +276,7 @@ export function OnboardingWizard({
             </p>
           </div>
 
-          <Button type="submit" className="w-full mt-2" disabled={isPending}>
+          <Button type="submit" className="mt-2 w-full" disabled={isPending}>
             {isPending ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -307,7 +322,7 @@ export function OnboardingWizard({
           </div>
 
           {invitePreview?.valid && (
-            <div className="border-border/80 bg-muted/40 rounded-xl border p-4 space-y-2">
+            <div className="border-border/80 bg-muted/40 space-y-2 rounded-xl border p-4">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <ShieldCheck className="text-primary size-5" />
                 <span>Verified Invitation</span>
@@ -333,7 +348,7 @@ export function OnboardingWizard({
 
           <Button
             type="submit"
-            className="w-full mt-2"
+            className="mt-2 w-full"
             disabled={isPending || isLoadingPreview || !inviteToken.trim()}
           >
             {isPending ? (
@@ -352,8 +367,8 @@ export function OnboardingWizard({
       )}
 
       {hasExistingOrganizations && (
-        <div className="mt-6 pt-4 border-t text-center">
-          <p className="text-muted-foreground text-xs mb-2">
+        <div className="mt-6 border-t pt-4 text-center">
+          <p className="text-muted-foreground mb-2 text-xs">
             Already have an active workspace?
           </p>
           <Button

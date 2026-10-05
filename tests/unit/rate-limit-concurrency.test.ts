@@ -52,7 +52,11 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
 
       __setRateLimitRedisClient(mockRedisClient);
 
-      const result = await consumeRateLimit(testPolicy, "user-lua", WINDOW_START);
+      const result = await consumeRateLimit(
+        testPolicy,
+        "user-lua",
+        WINDOW_START,
+      );
 
       expect(evalCalled).toBe(true);
       expect(evaluatedScript).toBe(REDIS_HIT_LUA_SCRIPT);
@@ -109,7 +113,11 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
       // Send 8 requests at the tail end of window 1 (limit is 10)
       const nearEnd = WINDOW_START + 59_000;
       for (let i = 0; i < 8; i++) {
-        const res = await consumeRateLimit(testPolicy, "boundary-tester", nearEnd);
+        const res = await consumeRateLimit(
+          testPolicy,
+          "boundary-tester",
+          nearEnd,
+        );
         expect(res.allowed).toBe(true);
       }
 
@@ -119,19 +127,35 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
       const earlyWindow2 = WINDOW_START + 60_000 + 10_000;
 
       // First request in window 2: current = 1, weighted = 1 + 6.67 = 7.67 <= 10 (allowed)
-      const r1 = await consumeRateLimit(testPolicy, "boundary-tester", earlyWindow2);
+      const r1 = await consumeRateLimit(
+        testPolicy,
+        "boundary-tester",
+        earlyWindow2,
+      );
       expect(r1.allowed).toBe(true);
 
       // Second request in window 2: current = 2, weighted = 2 + 6.67 = 8.67 <= 10 (allowed)
-      const r2 = await consumeRateLimit(testPolicy, "boundary-tester", earlyWindow2);
+      const r2 = await consumeRateLimit(
+        testPolicy,
+        "boundary-tester",
+        earlyWindow2,
+      );
       expect(r2.allowed).toBe(true);
 
       // Third request in window 2: current = 3, weighted = 3 + 6.67 = 9.67 <= 10 (allowed)
-      const r3 = await consumeRateLimit(testPolicy, "boundary-tester", earlyWindow2);
+      const r3 = await consumeRateLimit(
+        testPolicy,
+        "boundary-tester",
+        earlyWindow2,
+      );
       expect(r3.allowed).toBe(true);
 
       // Fourth request: current = 4, weighted = 4 + 6.67 = 10.67 > 10 (rejected!)
-      const r4 = await consumeRateLimit(testPolicy, "boundary-tester", earlyWindow2);
+      const r4 = await consumeRateLimit(
+        testPolicy,
+        "boundary-tester",
+        earlyWindow2,
+      );
       expect(r4.allowed).toBe(false);
       expect(r4.remaining).toBe(0);
     });
@@ -143,12 +167,20 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
       }
 
       // Check immediate rejection
-      const rejected = await consumeRateLimit(testPolicy, "aged-tester", WINDOW_START + 1000);
+      const rejected = await consumeRateLimit(
+        testPolicy,
+        "aged-tester",
+        WINDOW_START + 1000,
+      );
       expect(rejected.allowed).toBe(false);
 
       // Advance by 2 full windows: previous window weight is 0
       const futureTime = WINDOW_START + 2 * 60_000 + 5000;
-      const allowedAgain = await consumeRateLimit(testPolicy, "aged-tester", futureTime);
+      const allowedAgain = await consumeRateLimit(
+        testPolicy,
+        "aged-tester",
+        futureTime,
+      );
       expect(allowedAgain.allowed).toBe(true);
       expect(allowedAgain.remaining).toBe(9);
     });
@@ -164,12 +196,20 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
       };
       __setRateLimitRedisClient(mockClient);
 
-      const normalResult = await consumeRateLimit(testPolicy, "mode-test", WINDOW_START);
+      const normalResult = await consumeRateLimit(
+        testPolicy,
+        "mode-test",
+        WINDOW_START,
+      );
       expect(normalResult.storeMode).toBe("normal");
 
       // Degraded mode (Redis disconnected)
       __simulateRedisFailure();
-      const degradedResult = await consumeRateLimit(testPolicy, "mode-test", WINDOW_START);
+      const degradedResult = await consumeRateLimit(
+        testPolicy,
+        "mode-test",
+        WINDOW_START,
+      );
       expect(degradedResult.storeMode).toBe("degraded");
 
       __setRateLimitRedisClient(null);
@@ -178,7 +218,11 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
     it("enforces FAIL-CLOSED for critical policies like orgCreation on Redis failure", async () => {
       __simulateRedisFailure();
 
-      const result = await consumeRateLimit(failClosedPolicy, "attacker", WINDOW_START);
+      const result = await consumeRateLimit(
+        failClosedPolicy,
+        "attacker",
+        WINDOW_START,
+      );
 
       expect(result.allowed).toBe(false);
       expect(result.storeMode).toBe("degraded");
@@ -200,18 +244,30 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
       };
 
       // 1st request allowed under degradedLimit = 2
-      const r1 = await consumeRateLimit(degradePolicy, "local-user", WINDOW_START);
+      const r1 = await consumeRateLimit(
+        degradePolicy,
+        "local-user",
+        WINDOW_START,
+      );
       expect(r1.allowed).toBe(true);
       expect(r1.storeMode).toBe("degraded");
       expect(r1.remaining).toBe(1);
 
       // 2nd request allowed
-      const r2 = await consumeRateLimit(degradePolicy, "local-user", WINDOW_START);
+      const r2 = await consumeRateLimit(
+        degradePolicy,
+        "local-user",
+        WINDOW_START,
+      );
       expect(r2.allowed).toBe(true);
       expect(r2.remaining).toBe(0);
 
       // 3rd request rejected under degradedLimit = 2
-      const r3 = await consumeRateLimit(degradePolicy, "local-user", WINDOW_START);
+      const r3 = await consumeRateLimit(
+        degradePolicy,
+        "local-user",
+        WINDOW_START,
+      );
       expect(r3.allowed).toBe(false);
       expect(r3.storeMode).toBe("degraded");
 
@@ -236,11 +292,19 @@ describe("Rate Limiting Concurrency & Failure Semantics", () => {
       expect(results.every((r) => r.allowed)).toBe(true);
 
       // Attempting 11th request for tenant-alpha must be rejected
-      const overAlpha = await consumeRateLimit(testPolicy, "tenant-alpha", WINDOW_START);
+      const overAlpha = await consumeRateLimit(
+        testPolicy,
+        "tenant-alpha",
+        WINDOW_START,
+      );
       expect(overAlpha.allowed).toBe(false);
 
       // But a request for a new tenant-delta must be allowed
-      const newDelta = await consumeRateLimit(testPolicy, "tenant-delta", WINDOW_START);
+      const newDelta = await consumeRateLimit(
+        testPolicy,
+        "tenant-delta",
+        WINDOW_START,
+      );
       expect(newDelta.allowed).toBe(true);
     });
   });

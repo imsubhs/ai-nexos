@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Users, Shield, Building2, CreditCard, KeyRound } from "lucide-react";
+import {
+  User,
+  Users,
+  Shield,
+  Building2,
+  CreditCard,
+  KeyRound,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -33,11 +40,11 @@ export function SettingsNav() {
             className={cn(
               "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
               isActive
-                ? "bg-surface-3 text-brand-primary border-l-2 border-brand-primary"
+                ? "bg-surface-3 text-brand-primary border-brand-primary border-l-2"
                 : "text-muted-foreground hover:bg-surface-3/50 hover:text-foreground",
             )}
           >
-            <Icon className="mr-3 h-4 w-4 shrink-0 text-brand-primary" />
+            <Icon className="text-brand-primary mr-3 h-4 w-4 shrink-0" />
             {item.title}
           </Link>
         );

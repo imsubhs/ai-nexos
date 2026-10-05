@@ -72,31 +72,35 @@ export function ClientCommandHeader({
     ? client.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
     : null;
 
-  const displayLocation = [client.address, client.country].filter(Boolean).join(", ");
+  const displayLocation = [client.address, client.country]
+    .filter(Boolean)
+    .join(", ");
 
-  const primaryContact = client.contacts?.find((c) => c.contactType === "primary") || client.contacts?.[0];
+  const primaryContact =
+    client.contacts?.find((c) => c.contactType === "primary") ||
+    client.contacts?.[0];
 
   return (
     <div className="space-y-4">
       {/* Main command card */}
-      <div className="rounded-xl border border-border bg-surface-2 p-6 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="border-border bg-surface-2 rounded-xl border p-6 shadow-xs">
+        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
           {/* Identity & Details */}
           <div className="flex items-start gap-4">
-            <Avatar className="size-16 rounded-xl border border-border bg-surface-1 shadow-xs shrink-0">
+            <Avatar className="border-border bg-surface-1 size-16 shrink-0 rounded-xl border shadow-xs">
               <AvatarImage
                 src={client.logoUrl || undefined}
                 alt={client.companyName}
                 className="object-contain p-1.5"
               />
-              <AvatarFallback className="rounded-xl bg-surface-3 text-brand-primary font-mono font-bold text-lg border border-border-subtle">
+              <AvatarFallback className="bg-surface-3 text-brand-primary border-border-subtle rounded-xl border font-mono text-lg font-bold">
                 {getInitials(client.companyName)}
               </AvatarFallback>
             </Avatar>
 
-            <div className="space-y-1.5 min-w-0">
+            <div className="min-w-0 space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground-heading">
+                <h1 className="font-heading text-foreground-heading text-2xl font-bold tracking-tight">
                   {client.companyName}
                 </h1>
                 <ClientStatusBadge status={client.status} />
@@ -105,7 +109,7 @@ export function ClientCommandHeader({
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-foreground-muted">
+              <div className="text-foreground-muted flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
                 {client.industry && (
                   <span className="text-foreground-secondary font-medium">
                     {client.industry}
@@ -114,7 +118,7 @@ export function ClientCommandHeader({
 
                 {displayWebsite && (
                   <div className="flex items-center gap-1.5 font-mono">
-                    <Globe className="size-3.5 text-foreground-subtle" />
+                    <Globe className="text-foreground-subtle size-3.5" />
                     <a
                       href={client.website!}
                       target="_blank"
@@ -128,32 +132,41 @@ export function ClientCommandHeader({
 
                 {displayLocation && (
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="size-3.5 text-foreground-subtle" />
+                    <MapPin className="text-foreground-subtle size-3.5" />
                     <span>{displayLocation}</span>
                   </div>
                 )}
 
                 {client.preferredCommunication && (
-                  <ClientCommunicationBadge channel={client.preferredCommunication} />
+                  <ClientCommunicationBadge
+                    channel={client.preferredCommunication}
+                  />
                 )}
 
                 {activeProjectsCount !== undefined && (
                   <div className="flex items-center gap-1.5 font-mono">
-                    <FolderKanban className="size-3.5 text-foreground-subtle" />
+                    <FolderKanban className="text-foreground-subtle size-3.5" />
                     <span>
-                      {activeProjectsCount} active {activeProjectsCount === 1 ? "project" : "projects"}
+                      {activeProjectsCount} active{" "}
+                      {activeProjectsCount === 1 ? "project" : "projects"}
                     </span>
                   </div>
                 )}
               </div>
 
               {primaryContact && (
-                <div className="pt-1 flex items-center gap-1.5 text-xs text-foreground-secondary">
-                  <Star className="size-3 text-amber-400 fill-amber-400" />
-                  <span className="text-foreground-muted">Primary Stakeholder:</span>
-                  <span className="font-medium text-foreground">{primaryContact.name}</span>
+                <div className="text-foreground-secondary flex items-center gap-1.5 pt-1 text-xs">
+                  <Star className="size-3 fill-amber-400 text-amber-400" />
+                  <span className="text-foreground-muted">
+                    Primary Stakeholder:
+                  </span>
+                  <span className="text-foreground font-medium">
+                    {primaryContact.name}
+                  </span>
                   {primaryContact.designation && (
-                    <span className="text-foreground-subtle">({primaryContact.designation})</span>
+                    <span className="text-foreground-subtle">
+                      ({primaryContact.designation})
+                    </span>
                   )}
                 </div>
               )}
@@ -161,12 +174,14 @@ export function ClientCommandHeader({
           </div>
 
           {/* Quick Action Ribbon */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-border-subtle">
+          <div className="border-border-subtle flex shrink-0 flex-wrap items-center gap-2.5 border-t pt-2 lg:border-t-0 lg:pt-0">
             <Button
               size="sm"
               className="gap-1.5 shadow-xs"
               render={
-                <Link href={`/projects?create=true&clientId=${client.clientId}`}>
+                <Link
+                  href={`/projects?create=true&clientId=${client.clientId}`}
+                >
                   <Plus className="size-3.5" />
                   <span>New Project</span>
                 </Link>
@@ -211,7 +226,8 @@ export function ClientCommandHeader({
           <DialogHeader>
             <DialogTitle>Edit Client Account</DialogTitle>
             <DialogDescription>
-              Update corporate metadata, brand guidelines, and communication preferences.
+              Update corporate metadata, brand guidelines, and communication
+              preferences.
             </DialogDescription>
           </DialogHeader>
           <ClientForm

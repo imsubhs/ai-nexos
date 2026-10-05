@@ -29,7 +29,9 @@ export function PendingInvitationsTable({
   const [activeRevokeId, setActiveRevokeId] = useState<string | null>(null);
 
   const handleRevoke = (invitationId: string, email: string) => {
-    if (!confirm(`Are you sure you want to revoke the invitation for ${email}?`)) {
+    if (
+      !confirm(`Are you sure you want to revoke the invitation for ${email}?`)
+    ) {
       return;
     }
 
@@ -47,21 +49,24 @@ export function PendingInvitationsTable({
 
   if (invitations.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
-        <Mail className="h-8 w-8 text-muted-foreground/60 mb-2" />
-        <h4 className="text-sm font-medium text-foreground">No Pending Invitations</h4>
-        <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-          All sent invitations have been accepted or expired. Use the Invite Member button to invite new colleagues.
+      <div className="border-border flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+        <Mail className="text-muted-foreground/60 mb-2 h-8 w-8" />
+        <h4 className="text-foreground text-sm font-medium">
+          No Pending Invitations
+        </h4>
+        <p className="text-muted-foreground mt-1 max-w-sm text-xs">
+          All sent invitations have been accepted or expired. Use the Invite
+          Member button to invite new colleagues.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface-2 overflow-hidden shadow-xs">
+    <div className="border-border bg-surface-2 overflow-hidden rounded-lg border shadow-xs">
       <Table>
         <TableHeader>
-          <TableRow className="border-b border-border/80 bg-surface-1/50 hover:bg-transparent">
+          <TableRow className="border-border/80 bg-surface-1/50 border-b hover:bg-transparent">
             <TableHead className="w-[300px]">Invitee Email</TableHead>
             <TableHead>Assigned Role</TableHead>
             <TableHead>Created</TableHead>
@@ -71,16 +76,19 @@ export function PendingInvitationsTable({
         </TableHeader>
         <TableBody>
           {invitations.map((inv) => (
-            <TableRow key={inv.invitationId} className="border-b border-border/50 hover:bg-surface-3/30 transition-colors">
+            <TableRow
+              key={inv.invitationId}
+              className="border-border/50 hover:bg-surface-3/30 border-b transition-colors"
+            >
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-3 text-muted-foreground border border-border">
+                  <div className="bg-surface-3 text-muted-foreground border-border flex h-7 w-7 items-center justify-center rounded-full border">
                     <Mail className="h-3.5 w-3.5" />
                   </div>
                   <div>
-                    <div className="text-sm text-foreground">{inv.email}</div>
+                    <div className="text-foreground text-sm">{inv.email}</div>
                     {inv.invitedByName && (
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-muted-foreground text-[11px]">
                         Invited by {inv.invitedByName}
                       </div>
                     )}
@@ -90,14 +98,17 @@ export function PendingInvitationsTable({
 
               <TableCell>
                 <div className="flex items-center gap-1.5">
-                  <Shield className="h-3.5 w-3.5 text-primary" />
-                  <Badge variant="outline" className="font-mono text-[11px] border-border bg-surface-1 text-secondary">
+                  <Shield className="text-primary h-3.5 w-3.5" />
+                  <Badge
+                    variant="outline"
+                    className="border-border bg-surface-1 text-secondary font-mono text-[11px]"
+                  >
                     {inv.roleName}
                   </Badge>
                 </div>
               </TableCell>
 
-              <TableCell className="text-xs text-muted-foreground">
+              <TableCell className="text-muted-foreground text-xs">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
                   {new Date(inv.createdAt).toLocaleDateString(undefined, {
@@ -108,7 +119,7 @@ export function PendingInvitationsTable({
                 </div>
               </TableCell>
 
-              <TableCell className="text-xs text-muted-foreground">
+              <TableCell className="text-muted-foreground text-xs">
                 {new Date(inv.expiresAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",

@@ -1,4 +1,5 @@
 # AI NEX OS — Phase 4F Production Reconciliation & Certification
+
 ## Creative Assets + Deliverable Management / DAM
 
 **Document Version**: `1.0.0`  
@@ -17,6 +18,7 @@
 Phase 4F establishes the production-grade **Creative Asset & Deliverable Management (DAM)** layer for AI NEX OS, connecting creative work directly to project execution without introducing a bloated generic cloud drive or unmanageable enterprise sprawl.
 
 The core relationship implemented and enforced is:
+
 ```text
 Organization (Tenant Boundary)
     ↓
@@ -34,6 +36,7 @@ Attached Files (Deliverable Revisions & Mapped Assets)
 ```
 
 ### Core Tenets Maintained:
+
 1. **Zero Database Migrations**: Thorough audit of migrations `0000` through `0018` confirmed that canonical tables (`files`, `file_versions`, `file_folders`, `file_relations`, `deliverables`, `deliverable_revisions`, `deliverable_files`) fully and natively support creative asset and deliverable management. Zero migrations were added.
 2. **Strict Project Isolation & Data Integrity**: Cross-project asset assignment is blocked at the server level (`file.projectId !== deliverable.projectId` throws an explicit authorization error). Deliverables and assets remain strictly tenant-bound to the authenticated user's organization.
 3. **Storage Security & Presigned URLs**: Direct public access to private organizational creative assets is forbidden. Supabase Storage bucket `documents` utilizes isolated path conventions (`${organizationId}/${projectId}/${fileId}/${versionId}.${extension}`). File downloads require server-authorized 15-minute signed URLs generated through `getFileDownloadUrl`.
@@ -46,15 +49,18 @@ Attached Files (Deliverable Revisions & Mapped Assets)
 ## 2. Canonical Data Model & Schema Decisions
 
 ### Canonical Asset Entity: `public.files` & `public.file_versions`
+
 - **File Record (`files`)**: Tracks identity (`id`), organization tenant (`organization_id`), project relationship (`project_id`), folder hierarchy (`folder_id`), display name (`name`), file type category (`file_type`: image, video, audio, document, archive, etc.), current version ID (`current_version_id`), and lifecycle status (`status`: active, archived, deleted).
 - **Version Record (`file_versions`)**: Immutable record of physical file instances (`storage_path`, `storage_bucket`, `mime_type`, `byte_size`, `checksum_sha256`, `uploaded_by`, `version_number`).
 
 ### Canonical Deliverable Entity: `public.deliverables`, `public.deliverable_revisions`, & `public.deliverable_files`
+
 - **Deliverable Record (`deliverables`)**: Tracks defined project output (`name`, `description`, `project_id`, `client_id`, `owner_id`, `status`: draft, in_review, approved, rejected, archived, `type`: design, copy, video, code, other, `target_due_date`).
 - **Revision Record (`deliverable_revisions`)**: Tracks revision iterations (`revision_number`, `status`, `summary`, `created_at`).
 - **Junction Mapping (`deliverable_files` & `file_relations`)**: Connects specific file versions or assets to a deliverable revision without duplicating files in storage.
 
 ### Versioning Architecture Decision
+
 - File versioning leverages the existing `file_versions` table.
 - Deliverable revisions leverage `deliverable_revisions`.
 - Both are immutable once published, ensuring an audit trail of deliverables across project execution.
@@ -64,10 +70,13 @@ Attached Files (Deliverable Revisions & Mapped Assets)
 ## 3. Storage Architecture & Security
 
 ### Path Scoping Convention
+
 Storage objects in the Supabase `documents` bucket follow a strict tenant-isolated hierarchy:
+
 ```text
 ${organizationId}/${projectId}/${fileId}/${versionId}.${extension}
 ```
+
 - **Bucket**: `documents`
 - **Access Pattern**: Private. Direct bucket listing and public URL retrieval are disabled.
 - **Signed URL TTL**: 900 seconds (15 minutes), generated dynamically via `getFileDownloadUrl` after verifying:
@@ -76,6 +85,7 @@ ${organizationId}/${projectId}/${fileId}/${versionId}.${extension}
   3. If project-scoped, user has project clearance.
 
 ### Upload Workflow
+
 - Client calculates SHA-256 hash client-side before upload.
 - Presigned upload or authenticated server action `performFileUpload` registers the file in `public.files` and initial version in `public.file_versions`.
 - MIME type and file size validation enforced prior to registration.
@@ -85,6 +95,7 @@ ${organizationId}/${projectId}/${fileId}/${versionId}.${extension}
 ## 4. Surfaces & Workspaces Implemented
 
 ### A. Asset Management Workspace (`/files`)
+
 - **Interactive Filtering & Search**:
   - Live query search across filenames.
   - Project filter dropdown (resolves tenant projects).
@@ -99,6 +110,7 @@ ${organizationId}/${projectId}/${fileId}/${versionId}.${extension}
   - Deep Navy modal with file selector, project association dropdown, file category selection, and instant checksum calculation.
 
 ### B. Deliverables Directory (`/deliverables`)
+
 - **Directory Filtering**:
   - Search by deliverable name.
   - Project selector filter.
@@ -111,12 +123,14 @@ ${organizationId}/${projectId}/${fileId}/${versionId}.${extension}
   - Deliverable lifecycle actions (Archive / Restore).
 
 ### C. Project Command Center Integration (`/projects/[projectId]`)
+
 - Integrated the **7th Execution Tab: "Assets & Deliverables"** (`tab=assets`):
   - **Project Deliverables Section**: High-level status cards for all deliverables tied to the project, with direct "New Deliverable" modal launcher.
   - **Project Assets Section**: Asset grid displaying creative files uploaded specifically for this project, with direct "Upload Asset" launcher.
   - **Folder Browser Shortcut**: Direct navigation link to the hierarchical file browser scoped to the active project.
 
 ### D. Global Command Palette Integration (`⌘K`)
+
 - Global search supports searching across projects, tasks, clients, team members, deliverables, and creative assets.
 - Selecting an asset opens the `/files` workspace; selecting a deliverable opens the `/deliverables` workspace.
 
@@ -125,7 +139,9 @@ ${organizationId}/${projectId}/${fileId}/${versionId}.${extension}
 ## 5. Security & Rate Limiting Verification
 
 ### Action Policy Registry Expansion
+
 All 7 newly introduced Phase 4F server actions are registered in `src/lib/security/action-registry.ts` under their respective policies:
+
 1. `getFileDownloadUrl` → `file:download` (50 req / 60s per user)
 2. `archiveFile` → `resource:mutation` (30 req / 60s per user)
 3. `restoreFile` → `resource:mutation` (30 req / 60s per user)
@@ -137,6 +153,7 @@ All 7 newly introduced Phase 4F server actions are registered in `src/lib/securi
 **Total Registered & Guarded Server Actions**: **201 / 201** (100% policy enforcement).
 
 ### Tenant Isolation Gate
+
 - All file and deliverable queries and mutations enforce `organizationId = user.organizationId`.
 - Cross-project file attachment is forbidden: `linkFileToDeliverable` verifies `file.projectId === deliverable.projectId`.
 
@@ -144,19 +161,19 @@ All 7 newly introduced Phase 4F server actions are registered in `src/lib/securi
 
 ## 6. Quality & Verification Gates
 
-| Quality Gate | Requirement | Measured Result | Status |
-| :--- | :--- | :--- | :--- |
-| **Unit & Integration Tests** | 100% passing | 1011 tests passed across 68 test files | `PASS` |
-| **Phase 4F Target Suite** | `tests/unit/phase-4f-dam-assets.test.ts` | 12/12 passing | `PASS` |
-| **Action Registry Tests** | `tests/unit/rate-limiting-action-registry.test.ts` | 4/4 passing | `PASS` |
-| **TypeScript Typecheck** | 0 errors (`tsc --noEmit`) | 0 errors | `PASS` |
-| **ESLint Static Analysis** | 0 errors across modified files | 0 errors | `PASS` |
-| **Production Build** | `next build` success | 40/40 routes generated | `PASS` |
-| **Authorization Audit** | 100% guarded actions | 201/201 registered actions guarded | `PASS` |
-| **Tenant Isolation Gate** | 0 cross-tenant data leaks | 0 violations | `PASS` |
-| **Database Migrations** | Zero migrations | 0 migrations generated (schema at `0018`) | `PASS` |
-| **Production Deployment** | Antideploy `live` | Deployment `48727581-46ea-4de8-8d73-5c413b01d052` | `PASS` |
-| **Post-Deploy Smoke Test** | 100% passing | Verified against `https://ai-nexos.antideploy.com` | `PASS` |
+| Quality Gate                 | Requirement                                        | Measured Result                                    | Status |
+| :--------------------------- | :------------------------------------------------- | :------------------------------------------------- | :----- |
+| **Unit & Integration Tests** | 100% passing                                       | 1011 tests passed across 68 test files             | `PASS` |
+| **Phase 4F Target Suite**    | `tests/unit/phase-4f-dam-assets.test.ts`           | 12/12 passing                                      | `PASS` |
+| **Action Registry Tests**    | `tests/unit/rate-limiting-action-registry.test.ts` | 4/4 passing                                        | `PASS` |
+| **TypeScript Typecheck**     | 0 errors (`tsc --noEmit`)                          | 0 errors                                           | `PASS` |
+| **ESLint Static Analysis**   | 0 errors across modified files                     | 0 errors                                           | `PASS` |
+| **Production Build**         | `next build` success                               | 40/40 routes generated                             | `PASS` |
+| **Authorization Audit**      | 100% guarded actions                               | 201/201 registered actions guarded                 | `PASS` |
+| **Tenant Isolation Gate**    | 0 cross-tenant data leaks                          | 0 violations                                       | `PASS` |
+| **Database Migrations**      | Zero migrations                                    | 0 migrations generated (schema at `0018`)          | `PASS` |
+| **Production Deployment**    | Antideploy `live`                                  | Deployment `48727581-46ea-4de8-8d73-5c413b01d052`  | `PASS` |
+| **Post-Deploy Smoke Test**   | 100% passing                                       | Verified against `https://ai-nexos.antideploy.com` | `PASS` |
 
 ---
 
@@ -180,6 +197,7 @@ All 7 newly introduced Phase 4F server actions are registered in `src/lib/securi
 Executed via `scripts/smoke-test-4f.ts` and `scripts/post-deploy-smoke-test.ts` against `https://ai-nexos.antideploy.com`:
 
 ### A. Phase 4F Dedicated Smoke Test (`scripts/smoke-test-4f.ts`)
+
 ```text
 ================================================================================
 AI NEX OS — PHASE 4F PRODUCTION SMOKE TEST
@@ -245,6 +263,7 @@ SMOKE TEST RESULTS: 13/13 checks passed (0 failed)
 ```
 
 ### B. Platform Baseline Smoke Test (`scripts/post-deploy-smoke-test.ts`)
+
 ```text
 ================================================================================
 AI NEX OS — POST-DEPLOYMENT PRODUCTION SMOKE TEST

@@ -147,7 +147,7 @@ export function MembersTable({
   }
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden shadow-xs">
+    <div className="bg-card border-border overflow-hidden rounded-lg border shadow-xs">
       <Table aria-label="Organization members">
         <TableHeader>
           <TableRow>
@@ -172,18 +172,20 @@ export function MembersTable({
               <TableRow key={member.userId}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 border border-border">
+                    <Avatar className="border-border h-9 w-9 border">
                       <AvatarImage
                         src={member.avatarUrl ?? ""}
                         alt={fullName}
                       />
-                      <AvatarFallback className="bg-surface-3 text-brand-primary font-semibold">{initials}</AvatarFallback>
+                      <AvatarFallback className="bg-surface-3 text-brand-primary font-semibold">
+                        {initials}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="font-medium text-foreground-heading">
+                      <span className="text-foreground-heading font-medium">
                         {fullName || member.email}{" "}
                         {isSelf && (
-                          <span className="text-muted-foreground font-normal text-xs">
+                          <span className="text-muted-foreground text-xs font-normal">
                             (You)
                           </span>
                         )}
@@ -197,13 +199,15 @@ export function MembersTable({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Shield className="text-brand-primary h-4 w-4" />
-                    <span className="text-sm font-medium">{member.role?.roleName ?? "No Role"}</span>
+                    <span className="text-sm font-medium">
+                      {member.role?.roleName ?? "No Role"}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={member.status} />
                 </TableCell>
-                <TableCell className="text-muted-foreground text-xs font-mono">
+                <TableCell className="text-muted-foreground font-mono text-xs">
                   {member.lastActiveAt
                     ? new Date(member.lastActiveAt).toLocaleDateString()
                     : "Never"}

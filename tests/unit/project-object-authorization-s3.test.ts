@@ -142,7 +142,11 @@ vi.mock("@/db", () => {
         then: (resolve: (val: any) => any) => {
           const params = extractParams(whereCondition);
           state.recordedQueries.push({
-            table: isClientsTable ? "clients" : isUsersTable ? "users" : "unknown",
+            table: isClientsTable
+              ? "clients"
+              : isUsersTable
+                ? "users"
+                : "unknown",
             params,
           });
 
@@ -163,7 +167,9 @@ vi.mock("@/db", () => {
               (u) =>
                 u.userId === targetUserId &&
                 u.organizationId === targetOrgId &&
-                (targetStatus ? u.status === targetStatus : u.status === "active") &&
+                (targetStatus
+                  ? u.status === targetStatus
+                  : u.status === "active") &&
                 u.deletedAt === null,
             );
             return resolve(found ? [{ userId: found.userId }] : []);
@@ -406,7 +412,9 @@ function setSession(organizationId: string, roleKey = "owner"): CurrentUser {
 }
 
 function makeProjectPayload(
-  overrides: Partial<z.infer<typeof insertProjectSchema>> & { projectName: string },
+  overrides: Partial<z.infer<typeof insertProjectSchema>> & {
+    projectName: string;
+  },
 ): z.infer<typeof insertProjectSchema> {
   return {
     priority: "medium",
@@ -562,7 +570,9 @@ describe("S3 Security Remediation: NEXOS-SEC-05 & NEXOS-SEC-06", () => {
       expect(project.projectManager).toBe(USER_A_PM);
       expect(project.organizationId).toBe(userA.organizationId);
 
-      const saved = state.projects.find((p) => p.projectId === project.projectId);
+      const saved = state.projects.find(
+        (p) => p.projectId === project.projectId,
+      );
       expect(saved?.projectManager).toBe(USER_A_PM);
     });
 
@@ -581,7 +591,9 @@ describe("S3 Security Remediation: NEXOS-SEC-05 & NEXOS-SEC-06", () => {
       expect(project.creativeDirector).toBe(USER_A_CD);
       expect(project.organizationId).toBe(userA.organizationId);
 
-      const saved = state.projects.find((p) => p.projectId === project.projectId);
+      const saved = state.projects.find(
+        (p) => p.projectId === project.projectId,
+      );
       expect(saved?.creativeDirector).toBe(USER_A_CD);
     });
 
@@ -599,7 +611,9 @@ describe("S3 Security Remediation: NEXOS-SEC-05 & NEXOS-SEC-06", () => {
       ).rejects.toThrow("User not found");
 
       // Verify no project was created
-      const rogue = state.projects.find((p) => p.projectName === "Foreign PM Project");
+      const rogue = state.projects.find(
+        (p) => p.projectName === "Foreign PM Project",
+      );
       expect(rogue).toBeUndefined();
     });
 
@@ -616,7 +630,9 @@ describe("S3 Security Remediation: NEXOS-SEC-05 & NEXOS-SEC-06", () => {
         ),
       ).rejects.toThrow("User not found");
 
-      const rogue = state.projects.find((p) => p.projectName === "Foreign CD Project");
+      const rogue = state.projects.find(
+        (p) => p.projectName === "Foreign CD Project",
+      );
       expect(rogue).toBeUndefined();
     });
 

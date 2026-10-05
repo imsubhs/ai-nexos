@@ -330,7 +330,9 @@ describe("assertProductionConfig", () => {
       ...BASE_ENV,
       REDIS_URL: "redis://localhost:6379",
     });
-    expect(() => assertProductionConfig()).toThrow(/must use rediss:\/\/ \(TLS\) in production/);
+    expect(() => assertProductionConfig()).toThrow(
+      /must use rediss:\/\/ \(TLS\) in production/,
+    );
   });
 });
 

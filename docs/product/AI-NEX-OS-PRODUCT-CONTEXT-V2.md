@@ -1,4 +1,5 @@
 # AI NEX OS — Canonical Product Context Specification (v2.0)
+
 ## The Operating System for Creative Execution
 
 **Document Path:** `docs/product/AI-NEX-OS-PRODUCT-CONTEXT-V2.md`  
@@ -8,11 +9,12 @@
 **Category:** Agency Operating System (Agency OS)  
 **Tagline:** The Operating System for Creative Execution.  
 **Auditor / Architect:** Antigravity AI Engineering Assistant  
-**Supersedes:** `DOCS/AIC NexOS (PRD).md`, `DOCS/AIC Nex OS (SDS).md`, `DOCS/AIC Nex OS (TRD) .md`, `DOCS/AIC Nex OS (DBD).md`  
+**Supersedes:** `DOCS/AIC NexOS (PRD).md`, `DOCS/AIC Nex OS (SDS).md`, `DOCS/AIC Nex OS (TRD) .md`, `DOCS/AIC Nex OS (DBD).md`
 
 ---
 
 ## Table of Contents
+
 1. [Product Identity](#1-product-identity)
 2. [Product Category](#2-product-category)
 3. [Product Vision](#3-product-vision)
@@ -73,6 +75,7 @@
 AI NEX OS is not a generic project management tool (like Asana, Monday, or ClickUp), nor a generic communications suite (like Slack or Teams), nor an isolated time-clock (like Toggl or Harvest). It is a unified **Agency Operating System** purpose-built for the high-velocity, high-iteration operational realities of modern creative production.
 
 It unifies three traditionally fragmented agency dimensions:
+
 1. **Work Management**: Projects, tasks, milestones, deliverables, timelines, and revisions.
 2. **Client Collaboration**: Frictionless, zero-login, tokenized client portals for review and legal approval.
 3. **Workforce Operations**: Time-tracking, verified attendance, department structure, and capacity planning.
@@ -116,6 +119,7 @@ To replace the fragile web of spreadsheets, disparate messaging apps, detached c
 ## 6. Target Organizations
 
 AI NEX OS is designed for businesses whose primary deliverable is creative, visual, strategic, or digital craft:
+
 1. **Creative & Advertising Agencies:** Brand strategy, multi-channel campaigns, copywriting, art direction.
 2. **Design & Branding Studios:** Visual identity systems, typography, design systems, UI/UX production.
 3. **Video Production & Animation Companies:** Storyboarding, post-production, VFX, video editing pipelines.
@@ -129,35 +133,37 @@ AI NEX OS is designed for businesses whose primary deliverable is creative, visu
 ## 7. Primary Personas
 
 ### 7.1 Internal Agency Personas
+
 - **Agency Owner / Partner (`owner`):**
-  - *Needs:* Macro visibility over agency margin, client satisfaction, operational throughput, and team capacity.
-  - *Authority:* Full administrative and destructive authority across the entire organization.
+  - _Needs:_ Macro visibility over agency margin, client satisfaction, operational throughput, and team capacity.
+  - _Authority:_ Full administrative and destructive authority across the entire organization.
 - **Super Administrator (`super_admin`):**
-  - *Needs:* User provisioning, department management, billing configuration, security compliance, audit log oversight.
-  - *Authority:* Comprehensive operational configuration excluding sole-owner destruction.
+  - _Needs:_ User provisioning, department management, billing configuration, security compliance, audit log oversight.
+  - _Authority:_ Comprehensive operational configuration excluding sole-owner destruction.
 - **Creative Director (`creative_director`):**
-  - *Needs:* Quality control, aesthetic direction, deliverable approvals, revision triage, and creative assignment.
-  - *Authority:* Project, deliverable, and revision governance; full review authority.
+  - _Needs:_ Quality control, aesthetic direction, deliverable approvals, revision triage, and creative assignment.
+  - _Authority:_ Project, deliverable, and revision governance; full review authority.
 - **Project Manager (`project_manager`):**
-  - *Needs:* Deadlines, timeline dependencies, task assignment, budget tracking, client communication, meeting minutes.
-  - *Authority:* Project, task, timeline, and share link management.
+  - _Needs:_ Deadlines, timeline dependencies, task assignment, budget tracking, client communication, meeting minutes.
+  - _Authority:_ Project, task, timeline, and share link management.
 - **Creative Team Member (`team_member`):**
-  - *Needs:* Clear task priorities, brief clarity, asset downloads, revision checklists, time recording, and clock-in/out.
-  - *Authority:* Read assigned resources; update task progress; upload revisions; log personal time.
+  - _Needs:_ Clear task priorities, brief clarity, asset downloads, revision checklists, time recording, and clock-in/out.
+  - _Authority:_ Read assigned resources; update task progress; upload revisions; log personal time.
 - **HR / Operations Manager (`hr`):**
-  - *Needs:* Employee directory, attendance compliance, shift correction review, leave/absence tracking.
-  - *Authority:* Attendance oversight, correction queue approval, employee record administration.
+  - _Needs:_ Employee directory, attendance compliance, shift correction review, leave/absence tracking.
+  - _Authority:_ Attendance oversight, correction queue approval, employee record administration.
 - **Finance Lead (`finance`):**
-  - *Needs:* Billable hour verification, project time logs, invoicing data, and budget utilization.
-  - *Authority:* Financial reporting, time audit logs, read access to clients and projects.
+  - _Needs:_ Billable hour verification, project time logs, invoicing data, and budget utilization.
+  - _Authority:_ Financial reporting, time audit logs, read access to clients and projects.
 
 ### 7.2 External Client Personas
+
 - **Client Executive / Stakeholder:**
-  - *Needs:* High-level milestone visibility, deadline tracking, milestone sign-off.
-  - *Interaction:* Zero-login web portal via cryptographic share link.
+  - _Needs:_ High-level milestone visibility, deadline tracking, milestone sign-off.
+  - _Interaction:_ Zero-login web portal via cryptographic share link.
 - **Client Creative Reviewer:**
-  - *Needs:* Asset inspection, video/image review, timestamped annotations, revision requests.
-  - *Interaction:* Interactive review session via share link.
+  - _Needs:_ Asset inspection, video/image review, timestamped annotations, revision requests.
+  - _Interaction:_ Interactive review session via share link.
 
 ---
 
@@ -362,6 +368,7 @@ Platform Core
 ## 21. Organization Model
 
 The **Organization** (`public.organizations`) represents a legal, commercial tenant:
+
 - **Core Attributes:** Name, Legal Name, URL Slug (unique), Timezone, Currency, Country, Address.
 - **Branding Attributes:** `brand_primary_color`, `brand_secondary_color`, `logo_url`, `favicon_url`.
 - **System Config:** `code_prefix` (e.g., `NEX`, `ACME` - governing project/task/employee code formats).
@@ -390,9 +397,9 @@ The **Organization** (`public.organizations`) represents a legal, commercial ten
 
 - **Logical Isolation:** Shared database infrastructure with strict logical isolation enforced on every operational table via `organization_id`.
 - **Defense in Depth:**
-  - *Layer 1 (PostgreSQL RLS):* `app.is_org_member(organization_id)` restricts data access at the database engine level for Supabase client queries.
-  - *Layer 2 (Application Scoping):* All Drizzle ORM queries explicitly predicate on `eq(table.organizationId, user.organizationId)`.
-  - *Layer 3 (Static Safety Gate):* Automated AST test `tenant-identity-surface.test.ts` rejects any server action accepting caller-supplied tenant arguments.
+  - _Layer 1 (PostgreSQL RLS):_ `app.is_org_member(organization_id)` restricts data access at the database engine level for Supabase client queries.
+  - _Layer 2 (Application Scoping):_ All Drizzle ORM queries explicitly predicate on `eq(table.organizationId, user.organizationId)`.
+  - _Layer 3 (Static Safety Gate):_ Automated AST test `tenant-identity-surface.test.ts` rejects any server action accepting caller-supplied tenant arguments.
 
 ---
 
@@ -417,7 +424,7 @@ The **Membership Model** (`organization_memberships`) establishes the multi-work
                                     └── is_default
 ```
 
-- **Multi-Agency Access:** A freelancer or contractor can belong to "Agency A" as a *Team Member* and "Agency B" as a *Creative Director* using a single login.
+- **Multi-Agency Access:** A freelancer or contractor can belong to "Agency A" as a _Team Member_ and "Agency B" as a _Creative Director_ using a single login.
 - **Active Workspace Context:** Current organization is maintained in the authenticated session state; users switch organizations using a header dropdown without re-authenticating.
 
 ---
@@ -425,6 +432,7 @@ The **Membership Model** (`organization_memberships`) establishes the multi-work
 ## 25. Role Model
 
 Seven canonical system roles are seeded per organization:
+
 1. **Owner (`owner`):** Unrestricted platform governance and administrative control.
 2. **Super Admin (`super_admin`):** General management across all departments and settings.
 3. **HR (`hr`):** Employee directory, attendance oversight, and shift correction approvals.
@@ -441,8 +449,8 @@ Seven canonical system roles are seeded per organization:
 - **Matrix:** 22 Modules × 15 Actions.
 - **Wildcard Syntax:** `{"*": ["*"]}` grants total access; `{"projects": ["*"]}` grants all project actions; `{"deliverables": ["read", "review"]}` grants specific actions.
 - **Dual Evaluation Parity:**
-  - *TypeScript:* `hasPermission(permissions, module, action)` in `@/features/permissions/engine`.
-  - *PostgreSQL:* `app.has_permission(p_module text, p_action text)` in database functions.
+  - _TypeScript:_ `hasPermission(permissions, module, action)` in `@/features/permissions/engine`.
+  - _PostgreSQL:_ `app.has_permission(p_module text, p_action text)` in database functions.
 
 ---
 
@@ -477,6 +485,7 @@ sequenceDiagram
 The platform accommodates three distinct initial states for authenticated users:
 
 ### State A: Member of One or More Workspaces
+
 ```
 Authenticate
      ↓
@@ -488,6 +497,7 @@ Single Membership? ── Yes ──► Enter Workspace
 ```
 
 ### State B: Authenticated User with No Workspace
+
 ```
 Authenticate
      ↓
@@ -499,6 +509,7 @@ Onboarding Choice Screen
 ```
 
 ### State C: User with Pending Invitation
+
 ```
 Authenticate via Invitation Link
      ↓
@@ -534,6 +545,7 @@ Accept Invitation ──► Membership Created ──► Role Assigned ──►
 ## 31. Auditability
 
 Every critical operation creates an immutable entry in `activity_logs`:
+
 - **Captured Attributes:** `organization_id`, `user_id`, `module`, `action`, `entity_type`, `entity_id`, `description`, `metadata` (JSONB diff), `created_at`.
 - **Protected Logs:** `activity_logs` is append-only in PostgreSQL RLS; `UPDATE` and `DELETE` policies are deliberately absent.
 
@@ -576,27 +588,27 @@ Every critical operation creates an immutable entry in `activity_logs`:
 
 The following capabilities are fully verified and operational in code:
 
-| Module / Capability | Status | Implementation Reference |
-| :--- | :--- | :--- |
-| **Authentication (Password, Magic Link, Google OAuth)** | `[IMPLEMENTED]` | `src/features/auth/real-actions.ts` |
-| **Edge Proxy & Session Refresh (Next.js 16)** | `[IMPLEMENTED]` | `src/proxy.ts` |
-| **Dual-Domain Routing (App vs. Client Portal)** | `[IMPLEMENTED]` | `src/proxy.ts` |
-| **Organizations CRUD & Sequence Generator** | `[IMPLEMENTED]` | `src/features/organizations/real-actions.ts` |
-| **Project Management (CRUD, Members, Codes)** | `[IMPLEMENTED]` | `src/features/projects/real-actions.ts` |
-| **Client CRM (Companies, Contacts, Projects)** | `[IMPLEMENTED]` | `src/features/clients/real-actions.ts` |
-| **Task Management (Kanban, Assignees, Timers)** | `[IMPLEMENTED]` | `src/features/tasks/real-actions.ts` |
-| **Timelines & Milestones (Visual Gantt, Phases)** | `[IMPLEMENTED]` | `src/features/timelines/real-actions.ts` |
-| **Deliverables & Version Revisions** | `[IMPLEMENTED]` | `src/features/deliverables/real-actions.ts` |
-| **File Asset Manager (Buckets, Folders, Versions)** | `[IMPLEMENTED]` | `src/features/files/real-actions.ts` |
-| **Meetings Hub (Agenda, Decisions, Action Items)** | `[IMPLEMENTED]` | `src/features/meetings/real-actions.ts` |
-| **Workforce Attendance (Clock-In, Breaks, Clock-Out)** | `[IMPLEMENTED]` | `src/features/workforce/attendance/real-repository.ts` |
-| **Attendance Punch Corrections & Review Queue** | `[IMPLEMENTED]` | `src/features/workforce/corrections/real-repository.ts` |
-| **Team Live Attendance Board** | `[IMPLEMENTED]` | `src/features/workforce/attendance/` |
-| **Work Validation Calculation Engines** | `[IMPLEMENTED]` | `src/features/workforce/work-validation/` |
-| **RBAC Engine (7 Roles, 22 Modules, 15 Actions)** | `[IMPLEMENTED]` | `src/features/permissions/engine.ts` |
-| **PostgreSQL RLS Multi-Tenant Policies** | `[IMPLEMENTED]` | `database/migrations/0001_security_rls_foundation.sql` |
-| **Immutable Activity Logging** | `[IMPLEMENTED]` | `src/features/organizations/real-actions.ts` |
-| **In-App Notification Dispatcher** | `[IMPLEMENTED]` | `src/features/notifications/real-actions.ts` |
+| Module / Capability                                     | Status          | Implementation Reference                                |
+| :------------------------------------------------------ | :-------------- | :------------------------------------------------------ |
+| **Authentication (Password, Magic Link, Google OAuth)** | `[IMPLEMENTED]` | `src/features/auth/real-actions.ts`                     |
+| **Edge Proxy & Session Refresh (Next.js 16)**           | `[IMPLEMENTED]` | `src/proxy.ts`                                          |
+| **Dual-Domain Routing (App vs. Client Portal)**         | `[IMPLEMENTED]` | `src/proxy.ts`                                          |
+| **Organizations CRUD & Sequence Generator**             | `[IMPLEMENTED]` | `src/features/organizations/real-actions.ts`            |
+| **Project Management (CRUD, Members, Codes)**           | `[IMPLEMENTED]` | `src/features/projects/real-actions.ts`                 |
+| **Client CRM (Companies, Contacts, Projects)**          | `[IMPLEMENTED]` | `src/features/clients/real-actions.ts`                  |
+| **Task Management (Kanban, Assignees, Timers)**         | `[IMPLEMENTED]` | `src/features/tasks/real-actions.ts`                    |
+| **Timelines & Milestones (Visual Gantt, Phases)**       | `[IMPLEMENTED]` | `src/features/timelines/real-actions.ts`                |
+| **Deliverables & Version Revisions**                    | `[IMPLEMENTED]` | `src/features/deliverables/real-actions.ts`             |
+| **File Asset Manager (Buckets, Folders, Versions)**     | `[IMPLEMENTED]` | `src/features/files/real-actions.ts`                    |
+| **Meetings Hub (Agenda, Decisions, Action Items)**      | `[IMPLEMENTED]` | `src/features/meetings/real-actions.ts`                 |
+| **Workforce Attendance (Clock-In, Breaks, Clock-Out)**  | `[IMPLEMENTED]` | `src/features/workforce/attendance/real-repository.ts`  |
+| **Attendance Punch Corrections & Review Queue**         | `[IMPLEMENTED]` | `src/features/workforce/corrections/real-repository.ts` |
+| **Team Live Attendance Board**                          | `[IMPLEMENTED]` | `src/features/workforce/attendance/`                    |
+| **Work Validation Calculation Engines**                 | `[IMPLEMENTED]` | `src/features/workforce/work-validation/`               |
+| **RBAC Engine (7 Roles, 22 Modules, 15 Actions)**       | `[IMPLEMENTED]` | `src/features/permissions/engine.ts`                    |
+| **PostgreSQL RLS Multi-Tenant Policies**                | `[IMPLEMENTED]` | `database/migrations/0001_security_rls_foundation.sql`  |
+| **Immutable Activity Logging**                          | `[IMPLEMENTED]` | `src/features/organizations/real-actions.ts`            |
+| **In-App Notification Dispatcher**                      | `[IMPLEMENTED]` | `src/features/notifications/real-actions.ts`            |
 
 ---
 
@@ -604,18 +616,18 @@ The following capabilities are fully verified and operational in code:
 
 The following capabilities are designed and scheduled for upcoming development phases:
 
-| Capability | Status | Target Phase |
-| :--- | :--- | :--- |
-| **Agency SaaS Marketing Landing Page (`/`)** | `[PLANNED]` | Phase 2 |
-| **Public SEO Infrastructure (`robots.ts`, `sitemap.ts`, OG Cards)** | `[PLANNED]` | Phase 2 |
-| **Dynamic Organization Code Prefixes (`code_prefix`)** | `[PLANNED]` | Phase 3 |
-| **White-Label Theme CSS Variable Injection** | `[PLANNED]` | Phase 3 |
-| **Additive Multi-Tenant Memberships (`organization_memberships`)** | `[PLANNED]` | Phase 4 |
-| **Header Organization Switcher Dropdown** | `[PLANNED]` | Phase 4 |
-| **Self-Service Agency Onboarding & Signup Flow (`/signup`)** | `[PLANNED]` | Phase 5 |
-| **Team Member Email Invitations (`/invite/[token]`)** | `[PLANNED]` | Phase 5 |
-| **Password Reset UI Flow (`/forgot-password`)** | `[PLANNED]` | Phase 5 |
-| **Workforce Capacity & Utilization Reports** | `[PLANNED]` | Phase 6 |
+| Capability                                                          | Status      | Target Phase |
+| :------------------------------------------------------------------ | :---------- | :----------- |
+| **Agency SaaS Marketing Landing Page (`/`)**                        | `[PLANNED]` | Phase 2      |
+| **Public SEO Infrastructure (`robots.ts`, `sitemap.ts`, OG Cards)** | `[PLANNED]` | Phase 2      |
+| **Dynamic Organization Code Prefixes (`code_prefix`)**              | `[PLANNED]` | Phase 3      |
+| **White-Label Theme CSS Variable Injection**                        | `[PLANNED]` | Phase 3      |
+| **Additive Multi-Tenant Memberships (`organization_memberships`)**  | `[PLANNED]` | Phase 4      |
+| **Header Organization Switcher Dropdown**                           | `[PLANNED]` | Phase 4      |
+| **Self-Service Agency Onboarding & Signup Flow (`/signup`)**        | `[PLANNED]` | Phase 5      |
+| **Team Member Email Invitations (`/invite/[token]`)**               | `[PLANNED]` | Phase 5      |
+| **Password Reset UI Flow (`/forgot-password`)**                     | `[PLANNED]` | Phase 5      |
+| **Workforce Capacity & Utilization Reports**                        | `[PLANNED]` | Phase 6      |
 
 ---
 
@@ -623,20 +635,21 @@ The following capabilities are designed and scheduled for upcoming development p
 
 The following features represent the long-term product roadmap:
 
-| Capability | Status | Description |
-| :--- | :--- | :--- |
-| **Custom Agency Subdomains** | `[FUTURE]` | Allowing agencies to serve workspaces on `acme.ai-nexos.com` or custom CNAME domains. |
-| **Client Portal Authenticated Accounts** | `[FUTURE]` | Optional persistent client accounts for high-volume enterprise clients. |
-| **AI Meeting Voice-to-Action Pipeline** | `[FUTURE]` | Native streaming transcription with real-time task extraction. |
-| **Automated Invoicing & Stripe Integration** | `[FUTURE]` | Generating client invoices directly from approved deliverables and time logs. |
-| **Figma & Adobe Creative Cloud Plugins** | `[FUTURE]` | Ingesting revisions directly from creative desktop software. |
-| **Enterprise SAML / Okta SSO** | `[FUTURE]` | Enterprise Single Sign-On for large multinational agency networks. |
+| Capability                                   | Status     | Description                                                                           |
+| :------------------------------------------- | :--------- | :------------------------------------------------------------------------------------ |
+| **Custom Agency Subdomains**                 | `[FUTURE]` | Allowing agencies to serve workspaces on `acme.ai-nexos.com` or custom CNAME domains. |
+| **Client Portal Authenticated Accounts**     | `[FUTURE]` | Optional persistent client accounts for high-volume enterprise clients.               |
+| **AI Meeting Voice-to-Action Pipeline**      | `[FUTURE]` | Native streaming transcription with real-time task extraction.                        |
+| **Automated Invoicing & Stripe Integration** | `[FUTURE]` | Generating client invoices directly from approved deliverables and time logs.         |
+| **Figma & Adobe Creative Cloud Plugins**     | `[FUTURE]` | Ingesting revisions directly from creative desktop software.                          |
+| **Enterprise SAML / Okta SSO**               | `[FUTURE]` | Enterprise Single Sign-On for large multinational agency networks.                    |
 
 ---
 
 ## 38. Explicit Non-Goals
 
 To maintain product discipline and engineering velocity, AI NEX OS will **NOT**:
+
 1. **Compete with Deep Creative Tools:** AI NEX OS is not a digital audio workstation (DAW), 3D renderer, or video editor. It manages the metadata, versions, and approvals of assets produced in external software.
 2. **Be an "AI-Only" Agency Tool:** The product will not force generative AI into workflows where traditional creative craft is preferred.
 3. **Build Generic Social Media Schedulers:** AI NEX OS is an operating system for production and approvals, not a consumer social media publishing buffer.
@@ -649,6 +662,7 @@ To maintain product discipline and engineering velocity, AI NEX OS will **NOT**:
 Refer to the companion document **[`docs/product/AI-NEX-OS-TERMINOLOGY.md`](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/docs/product/AI-NEX-OS-TERMINOLOGY.md)** for the complete terminology mapping table.
 
 Key canonical anchors:
+
 - **Product:** AI NEX OS
 - **Category:** Agency Operating System
 - **Tagline:** The Operating System for Creative Execution.

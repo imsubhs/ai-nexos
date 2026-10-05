@@ -58,7 +58,9 @@ describe("Phase 4F: Creative Assets + Deliverable Management / DAM", () => {
     });
 
     it("verifies at least 201 registered server actions are guarded", () => {
-      expect(Object.keys(ACTION_POLICY_REGISTRY).length).toBeGreaterThanOrEqual(201);
+      expect(Object.keys(ACTION_POLICY_REGISTRY).length).toBeGreaterThanOrEqual(
+        201,
+      );
     });
   });
 
@@ -73,7 +75,9 @@ describe("Phase 4F: Creative Assets + Deliverable Management / DAM", () => {
       expect(allFiles.length).toBeGreaterThan(0);
 
       // Query by specific project
-      const projectFiles = await mockGetFiles({ projectId: firstFile.projectId });
+      const projectFiles = await mockGetFiles({
+        projectId: firstFile.projectId,
+      });
       for (const file of projectFiles) {
         expect(file.projectId).toBe(firstFile.projectId);
       }
@@ -224,7 +228,9 @@ describe("Phase 4F: Creative Assets + Deliverable Management / DAM", () => {
       const res = await mockArchiveDeliverable(deliv.deliverableId);
       expect(res.status).toBe("archived");
 
-      const updated = store.deliverables.find((d) => d.deliverableId === deliv.deliverableId);
+      const updated = store.deliverables.find(
+        (d) => d.deliverableId === deliv.deliverableId,
+      );
       expect(updated?.status).toBe("archived");
 
       // Files count remains intact

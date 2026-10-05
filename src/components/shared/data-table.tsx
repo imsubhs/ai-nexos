@@ -59,7 +59,7 @@ export function DataTable<Row>({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-lg border border-border overflow-hidden shadow-xs">
+      <div className="bg-card border-border overflow-hidden rounded-lg border shadow-xs">
         <Table aria-label={ariaLabel}>
           <TableHeader>
             <TableRow>

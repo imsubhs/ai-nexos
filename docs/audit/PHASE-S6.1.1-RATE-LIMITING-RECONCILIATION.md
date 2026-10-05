@@ -6,59 +6,64 @@
 **Audit Type**: Local / Read-Only Forensic Reconciliation  
 **Auditor**: Senior Application Security Engineer (Forensic Review)  
 **Date**: September 28, 2026  
-**Status**: COMPLETE — READY FOR S6.2 POLICY SPECIFICATION  
+**Status**: COMPLETE — READY FOR S6.2 POLICY SPECIFICATION
 
 ---
 
 ## 1. Executive Summary
 
 ### 1.1 Purpose & Scope
+
 This audit performs a corrective forensic reconciliation of [PHASE-S6.1-RATE-LIMITING-INVENTORY.md](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/docs/audit/PHASE-S6.1-RATE-LIMITING-INVENTORY.md). The objective of Phase S6.1.1 is **NOT** to design or implement the rate-limiting architecture (which is reserved for Phase S6.2), but to verify, calibrate, and reconcile the forensic inventory so that Phase S6.2 can establish a robust, mathematically and architecturally sound rate-limiting policy.
 
 ### 1.2 Environment & Safety Status
+
 All forensic verification activities were executed under strict read-only constraints:
-* **Supabase Production Project** (`gsgseacjcalkhhmunjhx`): **PAUSED** (0 connections, 0 queries, 0 mutations).
-* **Supabase Staging Project** (`shnzzbbtydmvfhgeoysg`): **PAUSED** (0 connections, 0 queries, 0 mutations).
-* **Codebase & Schema**: 0 code modifications, 0 migrations executed, 0 package installations, 0 git commits, 0 git pushes.
-* **Verification Media**: Local Next.js build artifacts (`.next/server/server-reference-manifest.json`), TypeScript AST inspection, schema definitions, and static call graph analysis.
+
+- **Supabase Production Project** (`gsgseacjcalkhhmunjhx`): **PAUSED** (0 connections, 0 queries, 0 mutations).
+- **Supabase Staging Project** (`shnzzbbtydmvfhgeoysg`): **PAUSED** (0 connections, 0 queries, 0 mutations).
+- **Codebase & Schema**: 0 code modifications, 0 migrations executed, 0 package installations, 0 git commits, 0 git pushes.
+- **Verification Media**: Local Next.js build artifacts (`.next/server/server-reference-manifest.json`), TypeScript AST inspection, schema definitions, and static call graph analysis.
 
 ### 1.3 Key Forensic Findings Summary
+
 1. **Entry-Point Counts Reconciled**:
-   * Total Route Handlers: **5** (4 rate-limited, 1 unlimited health check).
-   * Total `"use server"` Modules: **62** (25 wrappers, 23 real implementations, 8 mock modules, 6 standalone modules).
-   * Total Exported Server Action Functions: **404** across all 62 modules.
-   * Distinct Production Business Actions: **189** (excluding demo-login; 190 including demo-login).
-   * S6.1 Catalog Reconciliation: The S6.1 count of 192 actions in `scratch/actions_inventory.json` is reconciled: 171 real actions + 18 standalone actions + 2 query wrapper functions (`notifications/queries.ts`) + 1 demo login (`demoLoginAction`) = **192**.
+   - Total Route Handlers: **5** (4 rate-limited, 1 unlimited health check).
+   - Total `"use server"` Modules: **62** (25 wrappers, 23 real implementations, 8 mock modules, 6 standalone modules).
+   - Total Exported Server Action Functions: **404** across all 62 modules.
+   - Distinct Production Business Actions: **189** (excluding demo-login; 190 including demo-login).
+   - S6.1 Catalog Reconciliation: The S6.1 count of 192 actions in `scratch/actions_inventory.json` is reconciled: 171 real actions + 18 standalone actions + 2 query wrapper functions (`notifications/queries.ts`) + 1 demo login (`demoLoginAction`) = **192**.
 2. **Dual-Export Server Action Finding: CONFIRMED**:
-   * Inspection of `.next/server/server-reference-manifest.json` confirms that Next.js registers **316** server action endpoints across 47 files.
-   * Both `features/<slice>/actions.ts` AND `features/<slice>/real-actions.ts` receive distinct, independently callable Action IDs in the compiled build.
-   * Wrapping only `actions.ts` does **not** protect `real-actions.ts` from direct invocations by an adversary armed with the compiled Action ID.
+   - Inspection of `.next/server/server-reference-manifest.json` confirms that Next.js registers **316** server action endpoints across 47 files.
+   - Both `features/<slice>/actions.ts` AND `features/<slice>/real-actions.ts` receive distinct, independently callable Action IDs in the compiled build.
+   - Wrapping only `actions.ts` does **not** protect `real-actions.ts` from direct invocations by an adversary armed with the compiled Action ID.
 3. **Direct PostgREST Claim: CORRECTED**:
-   * The Next.js application contains **0** client-side `supabase.from(...)`, `supabase.rpc(...)`, or `supabase.storage(...)` calls. `src/lib/supabase/client.ts` is imported by **0** application files.
-   * Direct PostgREST is an external Supabase infrastructure surface governed by PostgreSQL Row Level Security (RLS) and Supabase platform rate limiting, not an application code bypass.
+   - The Next.js application contains **0** client-side `supabase.from(...)`, `supabase.rpc(...)`, or `supabase.storage(...)` calls. `src/lib/supabase/client.ts` is imported by **0** application files.
+   - Direct PostgREST is an external Supabase infrastructure surface governed by PostgreSQL Row Level Security (RLS) and Supabase platform rate limiting, not an application code bypass.
 4. **IP Trust Model (`X-Forwarded-For`): PARTIALLY CONFIRMED / TOPOLOGY-DEPENDENT**:
-   * `getClientIp` in `src/lib/security/request.ts` parses the forwarded header from right to left using `chain.length - trustedHops`.
-   * It is **not** vulnerable to naive leftmost header spoofing. However, security depends directly on deployment topology matching `TRUSTED_PROXY_HOPS` (default: 1).
+   - `getClientIp` in `src/lib/security/request.ts` parses the forwarded header from right to left using `chain.length - trustedHops`.
+   - It is **not** vulnerable to naive leftmost header spoofing. However, security depends directly on deployment topology matching `TRUSTED_PROXY_HOPS` (default: 1).
 5. **High-Risk Surfaces: CONFIRMED**:
-   * All 6 critical surfaces identified in S6.1 (`createOrganizationAction`, `previewInvitationAction`, `globalSearch`, `getWorkforceReportAction`, `initializeFileUpload`, `inviteMemberAction`) are verified with severe resource/abuse vulnerabilities.
+   - All 6 critical surfaces identified in S6.1 (`createOrganizationAction`, `previewInvitationAction`, `globalSearch`, `getWorkforceReportAction`, `initializeFileUpload`, `inviteMemberAction`) are verified with severe resource/abuse vulnerabilities.
 6. **Numeric Limits**:
-   * All numeric thresholds cited in S6.1 are formally classified as **PROVISIONAL — REQUIRES S6.2 POLICY DECISION**.
+   - All numeric thresholds cited in S6.1 are formally classified as **PROVISIONAL — REQUIRES S6.2 POLICY DECISION**.
 
 ---
 
 ## 2. Counting Reconciliation & Methodology
 
 ### 2.1 Counting Methodology & Categorization
+
 To eliminate ambiguity, entry points are categorized according to rigorous compiler and architectural definitions:
 
-* **Route Handlers**: Distinct endpoints defined by `route.ts` / `route.tsx` files inside `src/app/`.
-* **"use server" Modules**: Distinct source files carrying the top-level directive `"use server"`.
-* **Exported Server Functions**: Every named function or const exported from a `"use server"` module. In Next.js App Router, every such export is assigned an internal Action ID and exposed as an HTTP POST endpoint.
-* **Wrapper Modules / Actions**: Slice entry points (`features/<slice>/actions.ts`, `queries.ts`) that inspect `isDemoMode()` and dynamically dispatch to real vs. mock modules.
-* **Real Implementation Modules / Actions**: Core business logic modules (`features/<slice>/real-actions.ts`, `real-queries.ts`, `real-index.ts`) that interact with Drizzle ORM and Supabase.
-* **Mock Modules / Actions**: In-memory demo simulation modules (`mock-actions.ts`, `mock-queries.ts`, `mock-index.ts`).
-* **Standalone Modules / Actions**: Specialized server action files not following the wrapper/real/mock split (e.g., `onboarding-actions.ts`, `form-actions.ts`, `search/actions.ts`, `policy-actions.ts`, `demo-login.ts`).
-* **Distinct Production Actions**: Independent business operations that execute production logic (Real Exports + Standalone Production Exports).
+- **Route Handlers**: Distinct endpoints defined by `route.ts` / `route.tsx` files inside `src/app/`.
+- **"use server" Modules**: Distinct source files carrying the top-level directive `"use server"`.
+- **Exported Server Functions**: Every named function or const exported from a `"use server"` module. In Next.js App Router, every such export is assigned an internal Action ID and exposed as an HTTP POST endpoint.
+- **Wrapper Modules / Actions**: Slice entry points (`features/<slice>/actions.ts`, `queries.ts`) that inspect `isDemoMode()` and dynamically dispatch to real vs. mock modules.
+- **Real Implementation Modules / Actions**: Core business logic modules (`features/<slice>/real-actions.ts`, `real-queries.ts`, `real-index.ts`) that interact with Drizzle ORM and Supabase.
+- **Mock Modules / Actions**: In-memory demo simulation modules (`mock-actions.ts`, `mock-queries.ts`, `mock-index.ts`).
+- **Standalone Modules / Actions**: Specialized server action files not following the wrapper/real/mock split (e.g., `onboarding-actions.ts`, `form-actions.ts`, `search/actions.ts`, `policy-actions.ts`, `demo-login.ts`).
+- **Distinct Production Actions**: Independent business operations that execute production logic (Real Exports + Standalone Production Exports).
 
 ### 2.2 Reconciled Entry-Point Inventory
 
@@ -82,6 +87,7 @@ To eliminate ambiguity, entry points are categorized according to rigorous compi
 ```
 
 ### 2.3 Reconciliation of S6.1 Inventory Count (192 Actions)
+
 In Phase S6.1, `scratch/actions_inventory.json` cataloged **192** actions across 31 files. The forensic breakdown reconciles the exact mathematical delta:
 
 ```
@@ -101,24 +107,25 @@ In Phase S6.1, `scratch/actions_inventory.json` cataloged **192** actions across
 
 ### 2.4 Authentication, Authorization & Rate-Limiting Tally
 
-| Metric | Server Actions | Route Handlers | Total |
-| :--- | :--- | :--- | :--- |
-| **Total Callable Production Endpoints** | 189 (+1 demo) | 5 | 195 |
-| **Anonymous (Unauthenticated)** | 2 (`previewInvitationAction`, `demoLoginAction`) | 4 (`health`, `verify`, `session`, `callback`) | 6 |
-| **Authenticated (Session Required)** | 188 | 1 (`portal/dashboard`) | 189 |
-| **Authorization Enforced (RBAC/Ownership)**| 186 | 1 (`portal/dashboard`) | 187 |
-| **Authorization Bypassed / Absent** | 3 (`previewInvitation`, `demoLogin`, `createOrg`*) | 4 (`health`, `verify`, `session`, `callback`) | 7 |
-| **Rate-Limited** | 2 (`signInWithPasswordAction`, `sendMagicLinkAction`) | 4 (`callback`, `verify`, `session`, `dashboard`) | 6 |
-| **Rate-Unlimited** | 187 | 1 (`api/health`) | 188 |
+| Metric                                      | Server Actions                                        | Route Handlers                                   | Total |
+| :------------------------------------------ | :---------------------------------------------------- | :----------------------------------------------- | :---- |
+| **Total Callable Production Endpoints**     | 189 (+1 demo)                                         | 5                                                | 195   |
+| **Anonymous (Unauthenticated)**             | 2 (`previewInvitationAction`, `demoLoginAction`)      | 4 (`health`, `verify`, `session`, `callback`)    | 6     |
+| **Authenticated (Session Required)**        | 188                                                   | 1 (`portal/dashboard`)                           | 189   |
+| **Authorization Enforced (RBAC/Ownership)** | 186                                                   | 1 (`portal/dashboard`)                           | 187   |
+| **Authorization Bypassed / Absent**         | 3 (`previewInvitation`, `demoLogin`, `createOrg`*)    | 4 (`health`, `verify`, `session`, `callback`)    | 7     |
+| **Rate-Limited**                            | 2 (`signInWithPasswordAction`, `sendMagicLinkAction`) | 4 (`callback`, `verify`, `session`, `dashboard`) | 6     |
+| **Rate-Unlimited**                          | 187                                                   | 1 (`api/health`)                                 | 188   |
 
-*\*Note: `createOrganizationAction` requires authentication, but allows unbounded creation of new organizations without requiring prior organization-level RBAC.*
+_\*Note: `createOrganizationAction` requires authentication, but allows unbounded creation of new organizations without requiring prior organization-level RBAC._
 
 ---
 
 ## 3. Authorization vs Rate Limiting Terminology
 
 ### 3.1 Terminology Correction
-Phase S6.1 occasionally utilized the colloquial shorthand *"unprotected action"* to refer to an endpoint lacking a rate limiter. This conflates **Authorization** with **Rate Limiting**.
+
+Phase S6.1 occasionally utilized the colloquial shorthand _"unprotected action"_ to refer to an endpoint lacking a rate limiter. This conflates **Authorization** with **Rate Limiting**.
 
 An endpoint can have strict, flaw-free authentication and authorization (e.g., verifying multi-tenant membership and requiring `files:upload` permission) while being entirely **unbounded** in call frequency, allowing an authenticated attacker to exhaust system memory, connection pools, or storage budgets.
 
@@ -161,12 +168,14 @@ Henceforth, AI NEX OS audits must evaluate endpoints across three **orthogonal d
 ## 4. Server Action Dual-Export Verification
 
 ### 4.1 Investigation & Manifest Inspection
+
 In Phase S6.1, a finding was raised that the dual presence of `"use server"` in both `features/<slice>/actions.ts` and `features/<slice>/real-actions.ts` causes Next.js to compile separate, independently reachable Server Action IDs for both files.
 
 To verify this without contacting remote servers, we examined the local compiled Next.js build artifact:
 [server-reference-manifest.json](file:///Users/subhamsaha/Downloads/My%20Docs%20/WebsiteCreation/NEXOS%20Comb%20/AIC%20NEXOS/ai-nexos/.next/server/server-reference-manifest.json).
 
 ### 4.2 Forensic Proof from Build Artifact
+
 The manifest contains **316** active action registrations across **47** files. Both wrapper and implementation modules are independently registered:
 
 ```json
@@ -192,12 +201,15 @@ The manifest contains **316** active action registrations across **47** files. B
 ```
 
 ### 4.3 Security Impact & Exploit Path
-* **Vulnerability Mechanism**: In Next.js App Router, clients invoke server actions by sending an HTTP POST request carrying the header `Next-Action: <ActionId>`.
-* If a security control (such as rate limiting, request validation, or CAPTCHA) is applied **only** inside `src/features/approvals/actions.ts`, an attacker who inspects the client JavaScript bundle or brute-forces the Action ID can send a POST request targeting `402aec70b241...` (`real-actions.ts`).
-* Next.js will route the request directly to the implementation function inside `real-actions.ts`, completely circumventing the wrapper logic in `actions.ts`.
+
+- **Vulnerability Mechanism**: In Next.js App Router, clients invoke server actions by sending an HTTP POST request carrying the header `Next-Action: <ActionId>`.
+- If a security control (such as rate limiting, request validation, or CAPTCHA) is applied **only** inside `src/features/approvals/actions.ts`, an attacker who inspects the client JavaScript bundle or brute-forces the Action ID can send a POST request targeting `402aec70b241...` (`real-actions.ts`).
+- Next.js will route the request directly to the implementation function inside `real-actions.ts`, completely circumventing the wrapper logic in `actions.ts`.
 
 ### 4.4 Affected Modules
+
 This vulnerability affects **all 22 slices** that utilize wrapper + real module pairs:
+
 1. `src/features/approvals/` (`actions.ts` & `real-actions.ts`)
 2. `src/features/auth/` (`actions.ts` & `real-actions.ts`)
 3. `src/features/calendar/` (`actions.ts` & `real-actions.ts`)
@@ -222,24 +234,28 @@ This vulnerability affects **all 22 slices** that utilize wrapper + real module 
 22. `src/lib/agents/` & `src/lib/automation/` (`actions.ts` & `real-actions.ts`)
 
 ### 4.5 Final Classification
+
 **CONFIRMED**.  
-*Architectural Mandate for S6.2*: Rate limiting must be implemented at the shared execution layer (e.g., inside the service layer or via a unified higher-order wrapper) or the dual `"use server"` directive must be removed from `real-actions.ts`.
+_Architectural Mandate for S6.2_: Rate limiting must be implemented at the shared execution layer (e.g., inside the service layer or via a unified higher-order wrapper) or the dual `"use server"` directive must be removed from `real-actions.ts`.
 
 ---
 
 ## 5. Direct PostgREST Surface Analysis
 
 ### 5.1 Static Analysis of Client-Side Supabase Calls
+
 A complete static search was performed across all TypeScript source files in `src/`:
-* `supabase.from(...)`: **0 occurrences**.
-* `supabase.rpc(...)`: **0 occurrences**.
-* `supabase.storage...`: **0 occurrences**.
-* `supabase.auth...`: **5 occurrences** (all strictly server-side: `src/proxy.ts`, `src/app/auth/callback/route.ts`, `src/features/auth/membership-service.ts`, `src/features/auth/real-actions.ts`, `src/features/auth/current-user.ts`).
-* `createBrowserClient` (`src/lib/supabase/client.ts`): Imported by **0** application files.
+
+- `supabase.from(...)`: **0 occurrences**.
+- `supabase.rpc(...)`: **0 occurrences**.
+- `supabase.storage...`: **0 occurrences**.
+- `supabase.auth...`: **5 occurrences** (all strictly server-side: `src/proxy.ts`, `src/app/auth/callback/route.ts`, `src/features/auth/membership-service.ts`, `src/features/auth/real-actions.ts`, `src/features/auth/current-user.ts`).
+- `createBrowserClient` (`src/lib/supabase/client.ts`): Imported by **0** application files.
 
 All application database operations are executed via server-side Drizzle ORM (`@/db`).
 
 ### 5.2 Correcting the S6.1 PostgREST Claim
+
 Phase S6.1 claimed that direct PostgREST calls represent an unrate-limited application bypass. This claim is **CORRECTED**:
 
 ```
@@ -259,20 +275,23 @@ Phase S6.1 claimed that direct PostgREST calls represent an unrate-limited appli
 ```
 
 ### 5.3 Classification: DIRECT DATA API SURFACE
-* **Table / Function**: Public Supabase PostgREST endpoints.
-* **Role**: `anon` (unauthenticated) or `authenticated` (valid Supabase JWT).
-* **RLS Dependency**: Complete (RLS is the sole barrier against unauthorized data read/write).
-* **Application Rate Limiter**: None (handled by Supabase API gateway / Kong).
-* **Resource Risk**: Supabase connection pool exhaustion if high-concurrency PostgREST requests bypass Cloudflare/Kong throttling.
+
+- **Table / Function**: Public Supabase PostgREST endpoints.
+- **Role**: `anon` (unauthenticated) or `authenticated` (valid Supabase JWT).
+- **RLS Dependency**: Complete (RLS is the sole barrier against unauthorized data read/write).
+- **Application Rate Limiter**: None (handled by Supabase API gateway / Kong).
+- **Resource Risk**: Supabase connection pool exhaustion if high-concurrency PostgREST requests bypass Cloudflare/Kong throttling.
 
 ---
 
 ## 6. Current Rate-Limit Implementation Verification
 
 ### 6.1 Architecture of `src/lib/security/rate-limit.ts`
+
 The existing rate-limiting system implements a **weighted sliding window** algorithm. For any request arriving at instant $t$ within window $[W_{start}, W_{start} + W_{size}]$, the effective request count is computed as:
 
-$$	ext{effectiveCount} = C_{	ext{current}} + C_{	ext{previous}} 	imes \max\left(0, 1 - rac{t - W_{start}}{W_{size}}ight)$$
+$$ ext{effectiveCount} = C_{	ext{current}} + C_{	ext{previous}} 	imes \max\left(0, 1 - rac{t - W_{start}}{W_{size}}
+ight)$$
 
 ### 6.2 Current Rate-Limit Policy Matrix
 
@@ -335,7 +354,7 @@ export function getClientIp(headers: Headers): string {
   3. With `TRUSTED_PROXY_HOPS=1`, `index = 2 - 1 = 1`, which evaluates to `203.0.113.195`. The spoofed IP `1.1.1.1` is **ignored**.
   4. However, if the deployment topology involves 2 reverse proxies (e.g. Cloudflare -> AWS ALB -> Next.js) and `TRUSTED_PROXY_HOPS` remains 1, Next.js extracts Cloudflare's IP instead of the client's.
   5. If the application is deployed directly to the public internet with no proxy (`hops=0`), an attacker can spoof the single entry in the list.
-* **Classification**: **PARTIALLY CONFIRMED / TOPOLOGY-DEPENDENT**.  
+* **Classification**: **PARTIALLY CONFIRMED / TOPOLOGY-DEPENDENT**.
   The code is sound against spoofing provided that `TRUSTED_PROXY_HOPS` is accurately configured to match the production proxy architecture.
 
 ---
@@ -571,3 +590,4 @@ $$\mathbf{S6.1.1	ext{ }RECONCILIATION	ext{ }PASSED	ext{ }—	ext{ }READY	ext{ }F
 
 ---
 *End of Phase S6.1.1 Reconciliation Report.*
+$$

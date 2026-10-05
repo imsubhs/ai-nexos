@@ -5,7 +5,7 @@
 **Status:** READY FOR HUMAN REVIEW  
 **Date:** 2026-10-03  
 **Branch:** `phase-2-production-readiness`  
-**Execution Mode:** Closure / Reconciliation / Verification Only (Zero database mutations, zero deployment changes)  
+**Execution Mode:** Closure / Reconciliation / Verification Only (Zero database mutations, zero deployment changes)
 
 ---
 
@@ -46,33 +46,37 @@ Phase 4B was authorized strictly to implement foundational workspace usability a
 
 All 10 modified repository files, 1 unit test suite, and Phase 4B documentation files were independently verified against source code:
 
-| File Path | Classification | Implemented Functionality |
-|---|---|---|
-| `src/config/navigation.ts` | Phase 4B Required | Extended `NavItem` with `children?: NavItem[]`. Consolidated Workforce to `My Time` (Punch Clock, History, Corrections) and `Team & People` (Team Attendance, Employees, Review Queue, Reports). |
-| `src/components/layout/app-shell.tsx` | Phase 4B Required | Upgraded `permittedHrefs` computation to evaluate parent containers and child routes hierarchically. |
-| `src/components/layout/app-sidebar.tsx` | Phase 4B Required | Rendered indented sub-navigation trees (`SidebarMenuSub*`); implemented child-aware active state matching. |
-| `src/features/search/components/global-search.tsx` | Phase 4B Required | Built Base UI Command Palette modal with desktop trigger, mobile icon button, `⌘K`/`Ctrl+K` listener, Arrow key navigation, debounced queries (250ms), and error handling. |
-| `src/app/(dashboard)/files/page.tsx` | Phase 4B Required | Guarded `getProjects()` with `hasPermission(user.permissions, "projects", "read")` and fallback to `[]`. |
-| `src/app/(dashboard)/deliverables/page.tsx` | Phase 4B Required | Guarded `getProjects()` with `hasPermission(user.permissions, "projects", "read")` and fallback to `[]`. |
-| `src/app/(dashboard)/meetings/page.tsx` | Phase 4B Required | Guarded `getProjects()` with `hasPermission(user.permissions, "projects", "read")` and fallback to `[]`. |
-| `src/app/(dashboard)/projects/[projectId]/page.tsx` | Phase 4B Supporting | Added semantic `<Breadcrumb>` landmark (`Projects / {projectName}`) with responsive truncation. |
-| `src/app/(dashboard)/clients/[clientId]/page.tsx` | Phase 4B Supporting | Added semantic `<Breadcrumb>` landmark (`Clients / {companyName}`) with responsive truncation. |
-| `src/app/(dashboard)/workforce/employees/[userId]/page.tsx` | Phase 4B Supporting | Added semantic `<Breadcrumb>` landmark (`Employees / {fullName}`) with responsive truncation. |
-| `tests/unit/phase-4b-core-workspace.test.ts` | Phase 4B Supporting | 8 automated unit tests asserting navigation consolidation, route preservation, permission filtering, and asset surface guards. |
+| File Path                                                   | Classification      | Implemented Functionality                                                                                                                                                                        |
+| ----------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/config/navigation.ts`                                  | Phase 4B Required   | Extended `NavItem` with `children?: NavItem[]`. Consolidated Workforce to `My Time` (Punch Clock, History, Corrections) and `Team & People` (Team Attendance, Employees, Review Queue, Reports). |
+| `src/components/layout/app-shell.tsx`                       | Phase 4B Required   | Upgraded `permittedHrefs` computation to evaluate parent containers and child routes hierarchically.                                                                                             |
+| `src/components/layout/app-sidebar.tsx`                     | Phase 4B Required   | Rendered indented sub-navigation trees (`SidebarMenuSub*`); implemented child-aware active state matching.                                                                                       |
+| `src/features/search/components/global-search.tsx`          | Phase 4B Required   | Built Base UI Command Palette modal with desktop trigger, mobile icon button, `⌘K`/`Ctrl+K` listener, Arrow key navigation, debounced queries (250ms), and error handling.                       |
+| `src/app/(dashboard)/files/page.tsx`                        | Phase 4B Required   | Guarded `getProjects()` with `hasPermission(user.permissions, "projects", "read")` and fallback to `[]`.                                                                                         |
+| `src/app/(dashboard)/deliverables/page.tsx`                 | Phase 4B Required   | Guarded `getProjects()` with `hasPermission(user.permissions, "projects", "read")` and fallback to `[]`.                                                                                         |
+| `src/app/(dashboard)/meetings/page.tsx`                     | Phase 4B Required   | Guarded `getProjects()` with `hasPermission(user.permissions, "projects", "read")` and fallback to `[]`.                                                                                         |
+| `src/app/(dashboard)/projects/[projectId]/page.tsx`         | Phase 4B Supporting | Added semantic `<Breadcrumb>` landmark (`Projects / {projectName}`) with responsive truncation.                                                                                                  |
+| `src/app/(dashboard)/clients/[clientId]/page.tsx`           | Phase 4B Supporting | Added semantic `<Breadcrumb>` landmark (`Clients / {companyName}`) with responsive truncation.                                                                                                   |
+| `src/app/(dashboard)/workforce/employees/[userId]/page.tsx` | Phase 4B Supporting | Added semantic `<Breadcrumb>` landmark (`Employees / {fullName}`) with responsive truncation.                                                                                                    |
+| `tests/unit/phase-4b-core-workspace.test.ts`                | Phase 4B Supporting | 8 automated unit tests asserting navigation consolidation, route preservation, permission filtering, and asset surface guards.                                                                   |
 
 ---
 
 ## 3. AuthZ Action-Count Reconciliation
 
 ### 3.1 Investigation of the "71 Actions" Claim
+
 The initial Phase 4B validation report contained a snippet claiming:
+
 ```text
 npm run audit:authz
 Total Actions Audited: 71
 Compliant Actions: 71
 Violations Found: 0
 ```
+
 Forensic code investigation revealed that:
+
 1. `npm run audit:authz` executes `scripts/audit-authorization.ts`.
 2. `scripts/audit-authorization.ts` does **not** output `Total Actions Audited: 71`. Its actual terminal output is:
    ```text
@@ -88,16 +92,16 @@ Forensic code investigation revealed that:
 
 ### 3.2 Inventory Reconciliation Table
 
-| Inventory Category | Count | Meaning & Scope |
-|---|---:|---|
-| **S6 Registered Production Business Actions** | **189** | Production business operations executing database logic (171 real actions + 18 standalone actions from `onboarding-actions.ts`, `read-model-actions.ts`, `form-actions.ts`, `search/actions.ts`, `policy-actions.ts`). Excludes demo login (190 total). |
-| **S6 Compiled Action IDs** | **316** | Registered server action endpoints in `.next/server/server-reference-manifest.json` across 47 files. Dual exports exist because both `actions.ts` wrappers and `real-actions.ts` receive compiled Next.js Action IDs. |
-| **Compiler Exported Async in `"use server"` Files** | **217** | Total async functions exported across all 39 source files carrying the top-level `"use server"` directive. |
-| **Public Slice Wrappers (`actions.ts`)** | **157** | Dynamic dispatcher functions in 23 `actions.ts` slice entry points that branch on `isDemoMode()`. |
-| **Static AuthZ Audit Target Actions** | **165** | All exported async functions in 28 core service modules (`real-actions.ts`, `real-index.ts`, `real-queries.ts`, `action-core.ts`) scanned by `scripts/audit-authorization.ts`. |
-| **Protected Actions Audited by `audit:authz`** | **161** | Target actions after excluding the 4 unauthenticated-by-design auth actions. All 161 reach verified guards (0 violations). |
-| **Reported Phase 4B Number** | **71** | Documentation inaccuracy in earlier draft; now fully reconciled and corrected. |
-| **Phase 4B Server Action Modifications** | **0** | Phase 4B modified zero server action definitions, deleted zero actions, and created zero new action files. All S6/S7 action guarantees remain identical. |
+| Inventory Category                                  |   Count | Meaning & Scope                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | ------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **S6 Registered Production Business Actions**       | **189** | Production business operations executing database logic (171 real actions + 18 standalone actions from `onboarding-actions.ts`, `read-model-actions.ts`, `form-actions.ts`, `search/actions.ts`, `policy-actions.ts`). Excludes demo login (190 total). |
+| **S6 Compiled Action IDs**                          | **316** | Registered server action endpoints in `.next/server/server-reference-manifest.json` across 47 files. Dual exports exist because both `actions.ts` wrappers and `real-actions.ts` receive compiled Next.js Action IDs.                                   |
+| **Compiler Exported Async in `"use server"` Files** | **217** | Total async functions exported across all 39 source files carrying the top-level `"use server"` directive.                                                                                                                                              |
+| **Public Slice Wrappers (`actions.ts`)**            | **157** | Dynamic dispatcher functions in 23 `actions.ts` slice entry points that branch on `isDemoMode()`.                                                                                                                                                       |
+| **Static AuthZ Audit Target Actions**               | **165** | All exported async functions in 28 core service modules (`real-actions.ts`, `real-index.ts`, `real-queries.ts`, `action-core.ts`) scanned by `scripts/audit-authorization.ts`.                                                                          |
+| **Protected Actions Audited by `audit:authz`**      | **161** | Target actions after excluding the 4 unauthenticated-by-design auth actions. All 161 reach verified guards (0 violations).                                                                                                                              |
+| **Reported Phase 4B Number**                        |  **71** | Documentation inaccuracy in earlier draft; now fully reconciled and corrected.                                                                                                                                                                          |
+| **Phase 4B Server Action Modifications**            |   **0** | Phase 4B modified zero server action definitions, deleted zero actions, and created zero new action files. All S6/S7 action guarantees remain identical.                                                                                                |
 
 ---
 
@@ -105,23 +109,25 @@ Forensic code investigation revealed that:
 
 Global search (`src/features/search/actions.ts::globalSearch`) executes parallel queries across 6 core entity types using defensive `tolerate(promise, fallback)` wrappers:
 
-| Entity | Server Source | Org Scoped | Auth Checked | Bounded | Cross-Tenant Tested | Route Target |
-|---|---|:---:|:---:|:---:|:---:|---|
-| **Projects** | `getProjects(query, 5, 0)` | **PASS** | **PASS** (`projects:read`) | **PASS** (`PER_GROUP = 5`) | **PASS** | `/projects/[projectId]` |
-| **Clients** | `getClients(query)` | **PASS** | **PASS** (`clients:read`) | **PASS** (sliced to 5) | **PASS** | `/clients/[clientId]` |
-| **Deliverables** | `searchDeliverables(query, 0, 5)` | **PASS** | **PASS** (`deliverables:read`) | **PASS** (`PER_GROUP = 5`) | **PASS** | `/deliverables?search=[title]` |
-| **People** | `listEmployeesAction({ search: query, page: 1, pageSize: 10 })` | **PASS** | **PASS** (`users:read`) | **PASS** (sliced to 5) | **PASS** | `/workforce/employees/[userId]` |
-| **Tasks** | `searchTasks(query, 0, 5)` | **PASS** | **PASS** (`tasks:read`) | **PASS** (`PER_GROUP = 5`) | **PASS** | `/tasks` |
-| **Files** | `searchFiles(query, 0, 5)` | **PASS** | **PASS** (`files:read`) | **PASS** (`PER_GROUP = 5`) | **PASS** | `/files?search=[title]` |
+| Entity           | Server Source                                                   | Org Scoped |          Auth Checked          |          Bounded           | Cross-Tenant Tested | Route Target                    |
+| ---------------- | --------------------------------------------------------------- | :--------: | :----------------------------: | :------------------------: | :-----------------: | ------------------------------- |
+| **Projects**     | `getProjects(query, 5, 0)`                                      |  **PASS**  |   **PASS** (`projects:read`)   | **PASS** (`PER_GROUP = 5`) |      **PASS**       | `/projects/[projectId]`         |
+| **Clients**      | `getClients(query)`                                             |  **PASS**  |   **PASS** (`clients:read`)    |   **PASS** (sliced to 5)   |      **PASS**       | `/clients/[clientId]`           |
+| **Deliverables** | `searchDeliverables(query, 0, 5)`                               |  **PASS**  | **PASS** (`deliverables:read`) | **PASS** (`PER_GROUP = 5`) |      **PASS**       | `/deliverables?search=[title]`  |
+| **People**       | `listEmployeesAction({ search: query, page: 1, pageSize: 10 })` |  **PASS**  |    **PASS** (`users:read`)     |   **PASS** (sliced to 5)   |      **PASS**       | `/workforce/employees/[userId]` |
+| **Tasks**        | `searchTasks(query, 0, 5)`                                      |  **PASS**  |    **PASS** (`tasks:read`)     | **PASS** (`PER_GROUP = 5`) |      **PASS**       | `/tasks`                        |
+| **Files**        | `searchFiles(query, 0, 5)`                                      |  **PASS**  |    **PASS** (`files:read`)     | **PASS** (`PER_GROUP = 5`) |      **PASS**       | `/files?search=[title]`         |
 
 ---
 
 ## 5. Permission-Tolerant Route Verification
 
 ### 5.1 Verification across `/files`, `/deliverables`, and `/meetings`
+
 In Phase 4A baseline code, all three pages executed an unguarded `await getProjects(undefined, 100, 0)`. When an authenticated user possessed access to the page (e.g., `files.read`, `deliverables.read`, or `meetings.read`) but lacked `projects.read`, `getProjects()` threw `PermissionDeniedError`, crashing the entire page with HTTP 500.
 
 In Phase 4B, each call site was hardened:
+
 ```typescript
 const projectRows = hasPermission(user.permissions, "projects", "read")
   ? await getProjects(undefined, 100, 0).catch(() => [])
@@ -130,14 +136,16 @@ const projectRows = hasPermission(user.permissions, "projects", "read")
 
 ### 5.2 Behavioral Matrix
 
-| Route | User With `projects.read` | User Without `projects.read` | Authorization Preserved | 500 Prevented |
-|---|---|---|:---:|:---:|
-| `/files` | Full project list loaded into filter dropdown | Page loads files; project dropdown is empty (`[]`) | **YES** | **YES** |
-| `/deliverables` | Full project list loaded into filter dropdown | Page loads deliverables; project dropdown is empty (`[]`) | **YES** | **YES** |
-| `/meetings` | Full project list loaded into filter dropdown | Page loads meetings; project dropdown is empty (`[]`) | **YES** | **YES** |
+| Route           | User With `projects.read`                     | User Without `projects.read`                              | Authorization Preserved | 500 Prevented |
+| --------------- | --------------------------------------------- | --------------------------------------------------------- | :---------------------: | :-----------: |
+| `/files`        | Full project list loaded into filter dropdown | Page loads files; project dropdown is empty (`[]`)        |         **YES**         |    **YES**    |
+| `/deliverables` | Full project list loaded into filter dropdown | Page loads deliverables; project dropdown is empty (`[]`) |         **YES**         |    **YES**    |
+| `/meetings`     | Full project list loaded into filter dropdown | Page loads meetings; project dropdown is empty (`[]`)     |         **YES**         |    **YES**    |
 
 ### 5.3 Flagged Implementation Detail: Runtime Rejection Handling
+
 The ternary condition `hasPermission(...) ? await getProjects(...).catch(() => []) : []` implements a `.catch(() => [])` fallback.
+
 - **Expected Benefit:** If `getProjects()` throws an unexpected runtime rejection, the host page (`/files`, `/deliverables`, `/meetings`) continues to render rather than crashing.
 - **Trade-off / Flagged Observation:** In the event of an infrastructure failure or database outage specific to the projects query, the error is swallowed and converted into an empty project list rather than surfacing an explicit error boundary.
 - **Conclusion:** This is an intentional resilience choice for Phase 4B that strictly preserves authorization (unauthorized users never receive project records). It is flagged here for review transparency.
@@ -147,6 +155,7 @@ The ternary condition `hasPermission(...) ? await getProjects(...).catch(() => [
 ## 6. Navigation Architecture Verification
 
 ### 6.1 Canonical Navigation Hierarchy
+
 The navigation tree in `src/config/navigation.ts` strictly implements 5 top-level sections and 11 primary navigation items:
 
 ```text
@@ -180,19 +189,21 @@ AI NEX OS (Canonical Phase 4B Navigation)
 ```
 
 ### 6.2 Workforce Destination Preservation Matrix
+
 All seven pre-existing Workforce destinations remain active, reachable, and permission-gated:
 
-| Original Route | New Navigation Location | Sub-Nav Item | Route Preserved? | Direct URL Preserved? | Permission Required |
-|---|---|---|:---:|:---:|---|
-| `/workforce/attendance` | Workforce → My Time | Punch Clock | **YES** | **YES** | `["attendance", "clock"]` |
-| `/workforce/history` | Workforce → My Time | History | **YES** | **YES** | `["attendance", "read"]` |
-| `/workforce/corrections` | Workforce → My Time | Corrections | **YES** | **YES** | `["corrections", "create"]` |
-| `/workforce/team` | Workforce → Team & People | Team Attendance | **YES** | **YES** | `["attendance", "view_team"]` |
-| `/workforce/employees` | Workforce → Team & People | Employees | **YES** | **YES** | `["users", "read"]` |
-| `/workforce/corrections/review` | Workforce → Team & People | Review Queue | **YES** | **YES** | `["corrections", "review"]` |
-| `/workforce/reports` | Workforce → Team & People | Reports (Soon) | **YES** | **YES** | `["reports", "read"]` |
+| Original Route                  | New Navigation Location   | Sub-Nav Item    | Route Preserved? | Direct URL Preserved? | Permission Required           |
+| ------------------------------- | ------------------------- | --------------- | :--------------: | :-------------------: | ----------------------------- |
+| `/workforce/attendance`         | Workforce → My Time       | Punch Clock     |     **YES**      |        **YES**        | `["attendance", "clock"]`     |
+| `/workforce/history`            | Workforce → My Time       | History         |     **YES**      |        **YES**        | `["attendance", "read"]`      |
+| `/workforce/corrections`        | Workforce → My Time       | Corrections     |     **YES**      |        **YES**        | `["corrections", "create"]`   |
+| `/workforce/team`               | Workforce → Team & People | Team Attendance |     **YES**      |        **YES**        | `["attendance", "view_team"]` |
+| `/workforce/employees`          | Workforce → Team & People | Employees       |     **YES**      |        **YES**        | `["users", "read"]`           |
+| `/workforce/corrections/review` | Workforce → Team & People | Review Queue    |     **YES**      |        **YES**        | `["corrections", "review"]`   |
+| `/workforce/reports`            | Workforce → Team & People | Reports (Soon)  |     **YES**      |        **YES**        | `["reports", "read"]`         |
 
 ### 6.3 Active Route & Breadcrumbs Verification
+
 - **Route Matching:** Top-level `/dashboard` enforces exact matching (`pathname === "/dashboard"`), preventing false positives. Parent items with sub-navigation remain active when any of their child routes match (`child.href` or `child.href/*`).
 - **Dynamic Breadcrumbs:** Semantic `<Breadcrumb>` landmarks with `aria-label="breadcrumb"` and `aria-current="page"` render properly on:
   - `/projects/[projectId]` (`Projects / {projectName}`)
@@ -290,6 +301,7 @@ Audit Totals:
 The full verification suite was executed live on the active working tree:
 
 ### 11.1 TypeScript Typecheck
+
 ```text
 $ npm run typecheck
 > tsc --noEmit
@@ -297,15 +309,18 @@ $ npm run typecheck
 ```
 
 ### 11.2 Vitest Unit Test Suite
+
 ```text
 $ npm test
 Test Files  65 passed (65)
 Tests       973 passed (973)
 Duration    8.34s
 ```
+
 Includes `tests/unit/phase-4b-core-workspace.test.ts` (8/8 tests passing).
 
 ### 11.3 Authorization & Tenant Isolation Audit
+
 ```text
 $ npm run audit:authz
 > tsx scripts/audit-authorization.ts
@@ -316,6 +331,7 @@ $ npm run audit:authz
 ```
 
 ### 11.4 Next.js Production Build
+
 ```text
 $ npm run build
 > next build
@@ -327,6 +343,7 @@ $ npm run build
 ✓ Generating static pages using 9 workers (38/38) in 137ms
   Finalizing page optimization in 18ms
 ```
+
 All 38 application routes compiled cleanly.
 
 ---
@@ -346,6 +363,7 @@ Status: READY FOR HUMAN REVIEW
 ```
 
 Phase 4B is fully implemented, verified, reconciled, and documented.
+
 - 0 database changes
 - 0 production changes
 - 0 git commits created

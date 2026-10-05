@@ -7,7 +7,8 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Clients Workspace | AI NEX OS",
-  description: "Executive client directory, brand guidelines, and active project engagements.",
+  description:
+    "Executive client directory, brand guidelines, and active project engagements.",
 };
 
 export default async function ClientsPage() {
@@ -33,27 +34,28 @@ export default async function ClientsPage() {
   });
 
   return (
-    <div className="flex-1 space-y-6 p-6 sm:p-8 pt-6 max-w-7xl mx-auto w-full">
+    <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 p-6 pt-6 sm:p-8">
       {/* Executive Workstation Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-5">
+      <div className="border-border-subtle flex flex-col justify-between gap-4 border-b pb-5 sm:flex-row sm:items-center">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-7 items-center justify-center rounded-md bg-surface-2 border border-border-subtle text-brand-primary">
+            <div className="bg-surface-2 border-border-subtle text-brand-primary flex size-7 items-center justify-center rounded-md border">
               <Building2 className="size-4" />
             </div>
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground-heading">
+            <h1 className="font-heading text-foreground-heading text-2xl font-bold tracking-tight">
               Client Directory
             </h1>
-            <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-[4px] bg-surface-2 border border-border text-foreground-muted">
+            <span className="bg-surface-2 border-border text-foreground-muted rounded-[4px] border px-2 py-0.5 font-mono text-xs font-semibold">
               {clients.length} {clients.length === 1 ? "account" : "accounts"}
             </span>
           </div>
-          <p className="text-xs text-foreground-muted max-w-2xl">
-            Executive accounts directory, stakeholder directory, brand identity kits, and active project relationships.
+          <p className="text-foreground-muted max-w-2xl text-xs">
+            Executive accounts directory, stakeholder directory, brand identity
+            kits, and active project relationships.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex shrink-0 items-center gap-2.5">
           <CreateClientModal />
         </div>
       </div>

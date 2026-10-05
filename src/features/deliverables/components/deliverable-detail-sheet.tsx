@@ -144,7 +144,9 @@ export function DeliverableDetailSheet({
   const [history, setHistory] = useState<History>(EMPTY_HISTORY);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(
+    null,
+  );
 
   // Link asset modal state
   const [linkModalOpen, setLinkModalOpen] = useState(false);
@@ -235,7 +237,11 @@ export function DeliverableDetailSheet({
       const attachedIds = new Set(attachedFiles.map((f) => f.fileId));
       const candidates = files
         .filter((f) => !attachedIds.has(f.fileId))
-        .map((f) => ({ fileId: f.fileId, title: f.title, fileType: f.fileType }));
+        .map((f) => ({
+          fileId: f.fileId,
+          title: f.title,
+          fileType: f.fileType,
+        }));
       setAvailableProjectFiles(candidates);
       if (candidates[0]) {
         setSelectedFileToLink(candidates[0].fileId);
@@ -272,7 +278,7 @@ export function DeliverableDetailSheet({
       open={deliverableId !== null}
       onOpenChange={(open) => !open && onClose()}
     >
-      <SheetContent className="sm:max-w-md overflow-y-auto">
+      <SheetContent className="overflow-y-auto sm:max-w-md">
         {loading ? (
           <div className="space-y-3 p-4">
             <Skeleton className="h-6 w-2/3" />
@@ -288,7 +294,7 @@ export function DeliverableDetailSheet({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-7 text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive size-7"
                     onClick={() => setArchiveOpen(true)}
                     title="Archive deliverable"
                   >
@@ -332,8 +338,8 @@ export function DeliverableDetailSheet({
               {/* Attached Creative Assets Section (Phase 4F DAM) */}
               <Separator className="my-3" />
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  <LinkIcon className="size-3.5 text-brand-primary" />
+                <p className="flex items-center gap-1.5 text-sm font-semibold">
+                  <LinkIcon className="text-brand-primary size-3.5" />
                   Attached Creative Assets ({attachedFiles.length})
                 </p>
                 <Button
@@ -348,7 +354,7 @@ export function DeliverableDetailSheet({
               </div>
 
               {attachedFiles.length === 0 ? (
-                <p className="text-muted-foreground text-xs py-2">
+                <p className="text-muted-foreground py-2 text-xs">
                   No files have been attached to this deliverable yet.
                 </p>
               ) : (
@@ -358,18 +364,19 @@ export function DeliverableDetailSheet({
                     return (
                       <div
                         key={file.mappingId || file.fileId}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 p-2.5 text-sm"
+                        className="border-border bg-surface-2 flex items-center justify-between gap-2 rounded-lg border p-2.5 text-sm"
                       >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div className="flex size-7 shrink-0 items-center justify-center rounded bg-surface-3 text-brand-primary">
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                          <div className="bg-surface-3 text-brand-primary flex size-7 shrink-0 items-center justify-center rounded">
                             <Icon className="size-3.5" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-medium text-xs text-foreground">
+                            <p className="text-foreground truncate text-xs font-medium">
                               {file.title}
                             </p>
-                            <p className="text-muted-foreground text-[10px] font-mono">
-                              {formatBytes(file.totalSizeBytes)} · v{file.versionNumber}
+                            <p className="text-muted-foreground font-mono text-[10px]">
+                              {formatBytes(file.totalSizeBytes)} · v
+                              {file.versionNumber}
                             </p>
                           </div>
                         </div>
@@ -378,8 +385,10 @@ export function DeliverableDetailSheet({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="size-7 text-muted-foreground hover:text-foreground"
-                            onClick={() => handleDownloadFile(file.fileId, file.title)}
+                            className="text-muted-foreground hover:text-foreground size-7"
+                            onClick={() =>
+                              handleDownloadFile(file.fileId, file.title)
+                            }
                             disabled={downloadingFileId === file.fileId}
                             title="Download asset"
                           >
@@ -392,8 +401,10 @@ export function DeliverableDetailSheet({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="size-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => handleUnlinkFile(file.fileId, file.title)}
+                            className="text-muted-foreground hover:text-destructive size-7"
+                            onClick={() =>
+                              handleUnlinkFile(file.fileId, file.title)
+                            }
                             title="Unlink asset"
                           >
                             <Trash2 className="size-3" />
@@ -522,17 +533,21 @@ export function DeliverableDetailSheet({
                               toast.success("Portal link copied to clipboard");
                             }}
                           >
-                            <Copy className="size-3 text-muted-foreground" />
+                            <Copy className="text-muted-foreground size-3" />
                           </Button>
                           <Button
                             size="icon-xs"
                             variant="ghost"
                             title="Open client portal"
                             onClick={() => {
-                              window.open(`/portal/s/${link.token}`, "_blank", "noopener,noreferrer");
+                              window.open(
+                                `/portal/s/${link.token}`,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
                             }}
                           >
-                            <ExternalLink className="size-3 text-muted-foreground" />
+                            <ExternalLink className="text-muted-foreground size-3" />
                           </Button>
                         </div>
                       </div>
@@ -570,7 +585,8 @@ export function DeliverableDetailSheet({
               )}
 
               <p className="text-muted-foreground pt-4 text-[11px]">
-                Deliverable outputs are connected to project execution and underlying creative files.
+                Deliverable outputs are connected to project execution and
+                underlying creative files.
               </p>
             </div>
           </>
@@ -594,11 +610,12 @@ export function DeliverableDetailSheet({
         <div className="space-y-4">
           {loadingProjectFiles ? (
             <div className="flex items-center justify-center p-4">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground size-5 animate-spin" />
             </div>
           ) : availableProjectFiles.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No unattached assets found in this project. Upload assets to this project first.
+              No unattached assets found in this project. Upload assets to this
+              project first.
             </p>
           ) : (
             <div className="space-y-2">
@@ -609,7 +626,7 @@ export function DeliverableDetailSheet({
                 id="select-asset"
                 value={selectedFileToLink}
                 onChange={(e) => setSelectedFileToLink(e.target.value)}
-                className="w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                className="border-border bg-surface-2 text-foreground focus:ring-brand-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
               >
                 {availableProjectFiles.map((file) => (
                   <option key={file.fileId} value={file.fileId}>

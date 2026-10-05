@@ -4,7 +4,7 @@
 **Target Milestone**: Phase 3 Multi-Membership & Identity Foundation  
 **System**: AI NEX OS (Agency Operating System)  
 **Execution Date**: September 26, 2026  
-**Security Clearance**: Enterprise B2B Multi-Tenant SaaS  
+**Security Clearance**: Enterprise B2B Multi-Tenant SaaS
 
 ---
 
@@ -13,6 +13,7 @@
 Phase 3 transitions AI NEX OS from a single-organization tightly-coupled identity model (`users.organization_id`, `users.role_id`) to a multi-tenant, agency-agnostic multi-membership architecture (`auth.users` → `public.users` → `public.organization_memberships` → `public.organizations`).
 
 Key architectural objectives achieved:
+
 1. **Decoupled Global Creator Identity**: Users represent global application actors who can independently hold memberships across multiple organizations.
 2. **Additive, Non-Destructive Schema Evolution**: Introduced `public.organization_memberships` without dropping or nulling legacy compatibility fields (`users.organization_id`, `users.role_id`).
 3. **Deterministic & Idempotent Backfill (Stage B)**: Formulated an automated, collision-safe backfill mapping existing single-org users to active default memberships.
@@ -26,6 +27,7 @@ Key architectural objectives achieved:
 ## 2. Files Changed
 
 ### Added Files
+
 1. `src/db/schema/organization-memberships.ts`: Core relational schema for `organization_memberships`, Drizzle relations, TypeScript types, and `membership_status` enum.
 2. `database/migrations/0016_organization_memberships.sql`: Additive migration DDL, composite and unique indexes, and Stage B deterministic backfill query.
 3. `src/features/auth/membership-service.ts`: Central identity abstraction, membership retrieval, active context resolution, cookie management, and backfill script.
@@ -34,6 +36,7 @@ Key architectural objectives achieved:
 6. `docs/audit/PHASE-3-MULTI-MEMBERSHIP-IMPLEMENTATION-AUDIT.md`: This audit document.
 
 ### Modified Files
+
 1. `src/db/schema/index.ts`: Exported `organization-memberships` schema and types.
 2. `src/db/schema/users.ts`: Documented `organization_id` and `role_id` explicitly as `LEGACY COMPATIBILITY FIELDS`.
 3. `database/migrations/meta/_journal.json`: Registered migration entry 16 (`0016_organization_memberships`).
@@ -53,26 +56,28 @@ Key architectural objectives achieved:
 ## 3. Database Changes
 
 ### Table: `public.organization_memberships`
-| Column Name | Type | Modifiers | Description |
-|---|---|---|---|
-| `membership_id` | `uuid` | `PRIMARY KEY DEFAULT gen_random_uuid()` | Unique membership identifier |
-| `user_id` | `uuid` | `NOT NULL REFERENCES users(user_id) ON DELETE CASCADE` | Global user identity reference |
-| `organization_id` | `uuid` | `NOT NULL REFERENCES organizations(organization_id) ON DELETE CASCADE` | Tenant workspace reference |
-| `role_id` | `uuid` | `NOT NULL REFERENCES roles(role_id) ON DELETE RESTRICT` | Scoped role assignment |
-| `department_id` | `uuid` | `REFERENCES departments(department_id) ON DELETE SET NULL` | Optional department |
-| `designation` | `text` | `NULL` | Organization-specific job title |
-| `employment_type` | `enum` | `NOT NULL DEFAULT 'full_time'` | Employment classification |
-| `working_hours` | `jsonb` | `NULL` | Schedule constraints |
-| `status` | `enum` | `NOT NULL DEFAULT 'active'` | `active`, `invited`, `suspended`, `pending` |
-| `is_default` | `boolean` | `NOT NULL DEFAULT false` | Primary organization flag |
-| `joined_at` | `timestamptz` | `DEFAULT now()` | Timestamp user joined tenant |
-| `invited_at` | `timestamptz` | `NULL` | Invitation timestamp |
-| `accepted_at` | `timestamptz` | `NULL` | Acceptance timestamp |
-| `suspended_at` | `timestamptz` | `NULL` | Suspension timestamp |
-| `removed_at` | `timestamptz` | `NULL` | Revocation timestamp |
-| Audit Fields | various | `created_at`, `created_by`, `updated_at`, etc. | Standard NEXOS audit trails |
+
+| Column Name       | Type          | Modifiers                                                              | Description                                 |
+| ----------------- | ------------- | ---------------------------------------------------------------------- | ------------------------------------------- |
+| `membership_id`   | `uuid`        | `PRIMARY KEY DEFAULT gen_random_uuid()`                                | Unique membership identifier                |
+| `user_id`         | `uuid`        | `NOT NULL REFERENCES users(user_id) ON DELETE CASCADE`                 | Global user identity reference              |
+| `organization_id` | `uuid`        | `NOT NULL REFERENCES organizations(organization_id) ON DELETE CASCADE` | Tenant workspace reference                  |
+| `role_id`         | `uuid`        | `NOT NULL REFERENCES roles(role_id) ON DELETE RESTRICT`                | Scoped role assignment                      |
+| `department_id`   | `uuid`        | `REFERENCES departments(department_id) ON DELETE SET NULL`             | Optional department                         |
+| `designation`     | `text`        | `NULL`                                                                 | Organization-specific job title             |
+| `employment_type` | `enum`        | `NOT NULL DEFAULT 'full_time'`                                         | Employment classification                   |
+| `working_hours`   | `jsonb`       | `NULL`                                                                 | Schedule constraints                        |
+| `status`          | `enum`        | `NOT NULL DEFAULT 'active'`                                            | `active`, `invited`, `suspended`, `pending` |
+| `is_default`      | `boolean`     | `NOT NULL DEFAULT false`                                               | Primary organization flag                   |
+| `joined_at`       | `timestamptz` | `DEFAULT now()`                                                        | Timestamp user joined tenant                |
+| `invited_at`      | `timestamptz` | `NULL`                                                                 | Invitation timestamp                        |
+| `accepted_at`     | `timestamptz` | `NULL`                                                                 | Acceptance timestamp                        |
+| `suspended_at`    | `timestamptz` | `NULL`                                                                 | Suspension timestamp                        |
+| `removed_at`      | `timestamptz` | `NULL`                                                                 | Revocation timestamp                        |
+| Audit Fields      | various       | `created_at`, `created_by`, `updated_at`, etc.                         | Standard NEXOS audit trails                 |
 
 ### Constraints & Indexes
+
 1. `uq_user_organization`: Unique index on `("user_id", "organization_id")`. Guarantees exactly one membership record per user per organization.
 2. `idx_memberships_org`: Index on `("organization_id")`.
 3. `idx_memberships_user`: Index on `("user_id")`.
@@ -147,6 +152,7 @@ The identity model separates authentication, global identity, and tenant members
 ## 7. Authorization Model
 
 Authorization follows a strict validation pipeline:
+
 ```
 1. Authenticate Request
    ↓ (Supabase auth.getUser())
@@ -165,6 +171,7 @@ Authorization follows a strict validation pipeline:
 ```
 
 **Security Invariants**:
+
 - Client-supplied organization IDs (query params, hidden inputs, form bodies) are **never** treated as authoritative.
 - Any request attempting to access an organization where the user lacks an `active` membership is immediately rejected with `MembershipError("ORGANIZATION_UNAUTHORIZED")` or `MembershipError("MEMBERSHIP_INACTIVE")`.
 
@@ -187,6 +194,7 @@ Authorization follows a strict validation pipeline:
 ## 9. Legacy Compatibility
 
 To ensure zero downtime and safe staged migration:
+
 1. `users.organization_id` and `users.role_id` remain intact on `public.users`.
 2. Explicitly annotated in `src/db/schema/users.ts` as `LEGACY COMPATIBILITY FIELDS`.
 3. In `src/features/auth/current-user.ts`, Stage C Dual-Read first checks `organization_memberships`. If memberships exist, the membership role and organization take precedence. If zero memberships are found (pre-migration state), it safely falls back to `users.organization_id` and `users.role_id`.
@@ -197,40 +205,42 @@ To ensure zero downtime and safe staged migration:
 ## 10. Tests
 
 ### Coverage Overview
+
 - **Phase 3 Multi-Membership Suite**: 20/20 passed in `tests/unit/phase3-multi-membership.test.ts`.
 - **Regression Suite**: 771/771 passed across 53 test files (0 failures).
 - **Baseline Comparison**: Baseline 747 tests → 771 tests (+24 tests).
 
 ### Minimum Requirement Traceability Matrix
-| Test ID | Description | Status |
-|---|---|---|
-| `TEST-P3-001` | Existing user receives membership during backfill | Passed |
-| `TEST-P3-002` | Backfill is idempotent | Passed |
-| `TEST-P3-003` | Duplicate membership is rejected/prevented | Passed |
-| `TEST-P3-004` | User can have memberships in multiple organizations | Passed |
-| `TEST-P3-005` | Inactive membership cannot authorize access | Passed |
-| `TEST-P3-006` | User A cannot access Organization B without membership | Passed |
-| `TEST-P3-007` | Changing active organization requires membership | Passed |
-| `TEST-P3-008` | Invalid active organization cookie is rejected | Passed |
-| `TEST-P3-009` | Legacy users.organization_id remains intact | Passed |
-| `TEST-P3-010` | Legacy users.role_id remains intact | Passed |
-| `TEST-P3-011` | Membership role is resolved correctly | Passed |
+
+| Test ID       | Description                                                      | Status |
+| ------------- | ---------------------------------------------------------------- | ------ |
+| `TEST-P3-001` | Existing user receives membership during backfill                | Passed |
+| `TEST-P3-002` | Backfill is idempotent                                           | Passed |
+| `TEST-P3-003` | Duplicate membership is rejected/prevented                       | Passed |
+| `TEST-P3-004` | User can have memberships in multiple organizations              | Passed |
+| `TEST-P3-005` | Inactive membership cannot authorize access                      | Passed |
+| `TEST-P3-006` | User A cannot access Organization B without membership           | Passed |
+| `TEST-P3-007` | Changing active organization requires membership                 | Passed |
+| `TEST-P3-008` | Invalid active organization cookie is rejected                   | Passed |
+| `TEST-P3-009` | Legacy users.organization_id remains intact                      | Passed |
+| `TEST-P3-010` | Legacy users.role_id remains intact                              | Passed |
+| `TEST-P3-011` | Membership role is resolved correctly                            | Passed |
 | `TEST-P3-012` | Tenant-bound repo cannot be constructed from unauthorized org ID | Passed |
-| `TEST-P3-013` | Server Actions do not accept caller-controlled identity | Passed |
-| `TEST-P3-014` | Query-string organization ID cannot bypass membership | Passed |
-| `TEST-P3-015` | Form/body organization ID cannot bypass membership | Passed |
-| `TEST-P3-016` | Cross-tenant resource access is rejected | Passed |
-| `TEST-P3-017` | Suspended membership cannot access tenant resources | Passed |
-| `TEST-P3-018` | Membership deletion/revocation does not delete user or org | Passed |
-| `TEST-P3-019` | Multiple memberships do not create duplicate global users | Passed |
-| `TEST-P3-020` | Global email uniqueness remains valid | Passed |
+| `TEST-P3-013` | Server Actions do not accept caller-controlled identity          | Passed |
+| `TEST-P3-014` | Query-string organization ID cannot bypass membership            | Passed |
+| `TEST-P3-015` | Form/body organization ID cannot bypass membership               | Passed |
+| `TEST-P3-016` | Cross-tenant resource access is rejected                         | Passed |
+| `TEST-P3-017` | Suspended membership cannot access tenant resources              | Passed |
+| `TEST-P3-018` | Membership deletion/revocation does not delete user or org       | Passed |
+| `TEST-P3-019` | Multiple memberships do not create duplicate global users        | Passed |
+| `TEST-P3-020` | Global email uniqueness remains valid                            | Passed |
 
 ---
 
 ## 11. Security Findings
 
 1. **Static AST Analysis**: Verified that no exported Server Action accepts caller-controlled tenant IDs.
-2. **Cookie Tampering Prevention**: The `nexos_active_org_id` cookie is treated strictly as an *intent hint*. The server validates that the authenticated user possesses an `active` membership for that exact UUID before binding the tenant context.
+2. **Cookie Tampering Prevention**: The `nexos_active_org_id` cookie is treated strictly as an _intent hint_. The server validates that the authenticated user possesses an `active` membership for that exact UUID before binding the tenant context.
 3. **Cascade Deletion Boundaries**: Verified that dropping or revoking a membership record cascades neither to the user identity nor to the organization, preserving audit history and parent records.
 
 ---
@@ -238,6 +248,7 @@ To ensure zero downtime and safe staged migration:
 ## 12. Deferred Work
 
 The following items are deliberately deferred to subsequent milestones per product specifications:
+
 1. **Self-Service Onboarding & Public Registration**: Registration modes (`INVITE_ONLY` vs `SELF_SERVICE` vs `APPROVAL_REQUIRED`) remain an open product decision.
 2. **Email Invitation Workflows**: Token generation, email delivery, and invitation claim flows.
 3. **UI Organization Switcher**: User interface dropdown in navigation header for interactive workspace switching.

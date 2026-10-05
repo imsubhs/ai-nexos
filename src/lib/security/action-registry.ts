@@ -778,14 +778,15 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "domain Zod schema bounds",
     authorization: "requireCurrentUser + requirePermission",
   },
-  "src/features/notifications/actions.ts::updateNotificationPreferencesAction": {
-    actionName: "updateNotificationPreferencesAction",
-    modulePath: "src/features/notifications/actions.ts",
-    policy: RATE_LIMITS.resourceMutation,
-    keyResolver: "userAndOrg",
-    resourceBounds: "domain Zod schema bounds",
-    authorization: "requireCurrentUser + requirePermission",
-  },
+  "src/features/notifications/actions.ts::updateNotificationPreferencesAction":
+    {
+      actionName: "updateNotificationPreferencesAction",
+      modulePath: "src/features/notifications/actions.ts",
+      policy: RATE_LIMITS.resourceMutation,
+      keyResolver: "userAndOrg",
+      resourceBounds: "domain Zod schema bounds",
+      authorization: "requireCurrentUser + requirePermission",
+    },
   "src/features/notifications/queries.ts::getNotificationsQuery": {
     actionName: "getNotificationsQuery",
     modulePath: "src/features/notifications/queries.ts",
@@ -882,14 +883,15 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "pagination page >= 1, pageSize <= 100",
     authorization: "requireCurrentUser + requirePermission",
   },
-  "src/features/organizations/onboarding-actions.ts::createOrganizationAction": {
-    actionName: "createOrganizationAction",
-    modulePath: "src/features/organizations/onboarding-actions.ts",
-    policy: RATE_LIMITS.orgCreation,
-    keyResolver: "userOrIp",
-    resourceBounds: "org name [2, 100], slug [2, 50], codePrefix [2, 8]",
-    authorization: "requireCurrentUser",
-  },
+  "src/features/organizations/onboarding-actions.ts::createOrganizationAction":
+    {
+      actionName: "createOrganizationAction",
+      modulePath: "src/features/organizations/onboarding-actions.ts",
+      policy: RATE_LIMITS.orgCreation,
+      keyResolver: "userOrIp",
+      resourceBounds: "org name [2, 100], slug [2, 50], codePrefix [2, 8]",
+      authorization: "requireCurrentUser",
+    },
   "src/features/organizations/onboarding-actions.ts::acceptInvitationAction": {
     actionName: "acceptInvitationAction",
     modulePath: "src/features/organizations/onboarding-actions.ts",
@@ -906,21 +908,23 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "rawToken max 256",
     authorization: "public / token verify",
   },
-  "src/features/organizations/onboarding-actions.ts::switchOrganizationAction": {
-    actionName: "switchOrganizationAction",
-    modulePath: "src/features/organizations/onboarding-actions.ts",
-    policy: RATE_LIMITS.resourceMutation,
-    keyResolver: "userAndOrg",
-    resourceBounds: "domain Zod schema bounds",
-    authorization: "requireCurrentUser + requirePermission",
-  },
+  "src/features/organizations/onboarding-actions.ts::switchOrganizationAction":
+    {
+      actionName: "switchOrganizationAction",
+      modulePath: "src/features/organizations/onboarding-actions.ts",
+      policy: RATE_LIMITS.resourceMutation,
+      keyResolver: "userAndOrg",
+      resourceBounds: "domain Zod schema bounds",
+      authorization: "requireCurrentUser + requirePermission",
+    },
   "src/features/organizations/onboarding-actions.ts::inviteMemberAction": {
     actionName: "inviteMemberAction",
     modulePath: "src/features/organizations/onboarding-actions.ts",
     policy: RATE_LIMITS.invitationIssuance,
     keyResolver: "userAndOrg",
     resourceBounds: "email max 255, roleId uuid, departmentId uuid",
-    authorization: "requireCurrentUser + requirePermission(organizations, manage)",
+    authorization:
+      "requireCurrentUser + requirePermission(organizations, manage)",
   },
   "src/features/organizations/onboarding-actions.ts::revokeInvitationAction": {
     actionName: "revokeInvitationAction",
@@ -928,7 +932,8 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     policy: RATE_LIMITS.invitationIssuance,
     keyResolver: "userAndOrg",
     resourceBounds: "email max 255, roleId uuid, departmentId uuid",
-    authorization: "requireCurrentUser + requirePermission(organizations, manage)",
+    authorization:
+      "requireCurrentUser + requirePermission(organizations, manage)",
   },
   "src/features/projects/actions.ts::createProject": {
     actionName: "createProject",
@@ -1490,22 +1495,24 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "domain Zod schema bounds",
     authorization: "requireCurrentUser + requirePermission",
   },
-  "src/features/workforce/attendance/read-model-actions.ts::getWorkforceDashboardMetricsAction": {
-    actionName: "getWorkforceDashboardMetricsAction",
-    modulePath: "src/features/workforce/attendance/read-model-actions.ts",
-    policy: RATE_LIMITS.reportExpensive,
-    keyResolver: "userAndOrg",
-    resourceBounds: "date range <= 31 days, max rows 1000",
-    authorization: "requireCurrentUser + requirePermission",
-  },
-  "src/features/workforce/attendance/read-model-actions.ts::getWorkforceReportAction": {
-    actionName: "getWorkforceReportAction",
-    modulePath: "src/features/workforce/attendance/read-model-actions.ts",
-    policy: RATE_LIMITS.reportExpensive,
-    keyResolver: "userAndOrg",
-    resourceBounds: "date range <= 31 days, max rows 1000",
-    authorization: "requireCurrentUser + requirePermission",
-  },
+  "src/features/workforce/attendance/read-model-actions.ts::getWorkforceDashboardMetricsAction":
+    {
+      actionName: "getWorkforceDashboardMetricsAction",
+      modulePath: "src/features/workforce/attendance/read-model-actions.ts",
+      policy: RATE_LIMITS.reportExpensive,
+      keyResolver: "userAndOrg",
+      resourceBounds: "date range <= 31 days, max rows 1000",
+      authorization: "requireCurrentUser + requirePermission",
+    },
+  "src/features/workforce/attendance/read-model-actions.ts::getWorkforceReportAction":
+    {
+      actionName: "getWorkforceReportAction",
+      modulePath: "src/features/workforce/attendance/read-model-actions.ts",
+      policy: RATE_LIMITS.reportExpensive,
+      keyResolver: "userAndOrg",
+      resourceBounds: "date range <= 31 days, max rows 1000",
+      authorization: "requireCurrentUser + requirePermission",
+    },
   "src/features/workforce/corrections/actions.ts::submitCorrectionAction": {
     actionName: "submitCorrectionAction",
     modulePath: "src/features/workforce/corrections/actions.ts",
@@ -1522,14 +1529,15 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "domain Zod schema bounds",
     authorization: "requireCurrentUser + requirePermission",
   },
-  "src/features/workforce/corrections/actions.ts::markCorrectionUnderReviewAction": {
-    actionName: "markCorrectionUnderReviewAction",
-    modulePath: "src/features/workforce/corrections/actions.ts",
-    policy: RATE_LIMITS.resourceMutation,
-    keyResolver: "userAndOrg",
-    resourceBounds: "domain Zod schema bounds",
-    authorization: "requireCurrentUser + requirePermission",
-  },
+  "src/features/workforce/corrections/actions.ts::markCorrectionUnderReviewAction":
+    {
+      actionName: "markCorrectionUnderReviewAction",
+      modulePath: "src/features/workforce/corrections/actions.ts",
+      policy: RATE_LIMITS.resourceMutation,
+      keyResolver: "userAndOrg",
+      resourceBounds: "domain Zod schema bounds",
+      authorization: "requireCurrentUser + requirePermission",
+    },
   "src/features/workforce/corrections/actions.ts::reviewCorrectionAction": {
     actionName: "reviewCorrectionAction",
     modulePath: "src/features/workforce/corrections/actions.ts",
@@ -1554,22 +1562,24 @@ export const ACTION_POLICY_REGISTRY: Record<string, ActionPolicyMapping> = {
     resourceBounds: "pagination page >= 1, pageSize <= 100",
     authorization: "requireCurrentUser + requirePermission",
   },
-  "src/features/workforce/corrections/actions.ts::listCorrectionReviewQueueAction": {
-    actionName: "listCorrectionReviewQueueAction",
-    modulePath: "src/features/workforce/corrections/actions.ts",
-    policy: RATE_LIMITS.resourceRead,
-    keyResolver: "userAndOrg",
-    resourceBounds: "pagination page >= 1, pageSize <= 100",
-    authorization: "requireCurrentUser + requirePermission",
-  },
-  "src/features/workforce/corrections/actions.ts::getCorrectionReviewContextAction": {
-    actionName: "getCorrectionReviewContextAction",
-    modulePath: "src/features/workforce/corrections/actions.ts",
-    policy: RATE_LIMITS.resourceRead,
-    keyResolver: "userAndOrg",
-    resourceBounds: "pagination page >= 1, pageSize <= 100",
-    authorization: "requireCurrentUser + requirePermission",
-  },
+  "src/features/workforce/corrections/actions.ts::listCorrectionReviewQueueAction":
+    {
+      actionName: "listCorrectionReviewQueueAction",
+      modulePath: "src/features/workforce/corrections/actions.ts",
+      policy: RATE_LIMITS.resourceRead,
+      keyResolver: "userAndOrg",
+      resourceBounds: "pagination page >= 1, pageSize <= 100",
+      authorization: "requireCurrentUser + requirePermission",
+    },
+  "src/features/workforce/corrections/actions.ts::getCorrectionReviewContextAction":
+    {
+      actionName: "getCorrectionReviewContextAction",
+      modulePath: "src/features/workforce/corrections/actions.ts",
+      policy: RATE_LIMITS.resourceRead,
+      keyResolver: "userAndOrg",
+      resourceBounds: "pagination page >= 1, pageSize <= 100",
+      authorization: "requireCurrentUser + requirePermission",
+    },
   "src/features/workforce/corrections/form-actions.ts::submitCorrection": {
     actionName: "submitCorrection",
     modulePath: "src/features/workforce/corrections/form-actions.ts",
@@ -1739,9 +1749,9 @@ export function verifyActionRegistry(
 
   for (const mod of PUBLIC_ACTION_MODULES) {
     const content = read(mod);
-    const matches = [...content.matchAll(/export\s+async\s+function\s+(\w+)/g)].map(
-      (m) => m[1],
-    );
+    const matches = [
+      ...content.matchAll(/export\s+async\s+function\s+(\w+)/g),
+    ].map((m) => m[1]);
 
     for (const action of matches) {
       const key = `${mod}::${action}`;

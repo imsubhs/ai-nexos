@@ -71,7 +71,9 @@ export async function createDeliverable(data: {
       .limit(1);
 
     if (!project) {
-      throw new Error("Project not found or does not belong to active organization.");
+      throw new Error(
+        "Project not found or does not belong to active organization.",
+      );
     }
 
     if (data.clientId) {
@@ -87,7 +89,9 @@ export async function createDeliverable(data: {
         )
         .limit(1);
       if (!client) {
-        throw new Error("Client not found or does not belong to active organization.");
+        throw new Error(
+          "Client not found or does not belong to active organization.",
+        );
       }
     }
 
@@ -104,7 +108,9 @@ export async function createDeliverable(data: {
         )
         .limit(1);
       if (!task) {
-        throw new Error("Task not found or does not belong to active organization.");
+        throw new Error(
+          "Task not found or does not belong to active organization.",
+        );
       }
     }
 
@@ -653,13 +659,23 @@ export async function getDeliverableFiles(
  * Strict project isolation: Asset and deliverable must belong to the same project.
  */
 export async function linkFileToDeliverable(
-  deliverableIdOrPayload: string | { deliverableId: string; fileId: string; revisionId?: string },
+  deliverableIdOrPayload:
+    string | { deliverableId: string; fileId: string; revisionId?: string },
   fileIdArg?: string,
   revisionIdArg?: string,
 ) {
-  const deliverableId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.deliverableId : deliverableIdOrPayload;
-  const fileId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.fileId : fileIdArg!;
-  const revisionId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.revisionId : revisionIdArg;
+  const deliverableId =
+    typeof deliverableIdOrPayload === "object"
+      ? deliverableIdOrPayload.deliverableId
+      : deliverableIdOrPayload;
+  const fileId =
+    typeof deliverableIdOrPayload === "object"
+      ? deliverableIdOrPayload.fileId
+      : fileIdArg!;
+  const revisionId =
+    typeof deliverableIdOrPayload === "object"
+      ? deliverableIdOrPayload.revisionId
+      : revisionIdArg;
 
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "deliverables", "update");
@@ -778,7 +794,14 @@ export async function linkFileToDeliverable(
       tx,
     );
 
-    return linked || { success: true, deliverableId, fileId, revisionId: targetRevisionId };
+    return (
+      linked || {
+        success: true,
+        deliverableId,
+        fileId,
+        revisionId: targetRevisionId,
+      }
+    );
   });
 }
 
@@ -786,13 +809,23 @@ export async function linkFileToDeliverable(
  * Unlinks a creative asset / file from a deliverable.
  */
 export async function unlinkFileFromDeliverable(
-  deliverableIdOrPayload: string | { deliverableId: string; fileId: string; revisionId?: string },
+  deliverableIdOrPayload:
+    string | { deliverableId: string; fileId: string; revisionId?: string },
   fileIdArg?: string,
   revisionIdArg?: string,
 ) {
-  const deliverableId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.deliverableId : deliverableIdOrPayload;
-  const fileId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.fileId : fileIdArg!;
-  const revisionId = typeof deliverableIdOrPayload === "object" ? deliverableIdOrPayload.revisionId : revisionIdArg;
+  const deliverableId =
+    typeof deliverableIdOrPayload === "object"
+      ? deliverableIdOrPayload.deliverableId
+      : deliverableIdOrPayload;
+  const fileId =
+    typeof deliverableIdOrPayload === "object"
+      ? deliverableIdOrPayload.fileId
+      : fileIdArg!;
+  const revisionId =
+    typeof deliverableIdOrPayload === "object"
+      ? deliverableIdOrPayload.revisionId
+      : revisionIdArg;
 
   const user = await requireCurrentUser();
   requirePermission(user.permissions, "deliverables", "update");
@@ -994,7 +1027,9 @@ export type PortalReviewResult = {
  * Resolves a share token to an explicit, safe Client Portal Review DTO.
  * Strictly projects only client-approved metadata; zero internal leakages.
  */
-export async function getPortalReviewData(token: string): Promise<PortalReviewResult> {
+export async function getPortalReviewData(
+  token: string,
+): Promise<PortalReviewResult> {
   // 1. Establish external client caller authorization via share token guard
   const shareLink = await validateToken(token);
 
@@ -1048,8 +1083,9 @@ export async function getPortalReviewData(token: string): Promise<PortalReviewRe
     )
     .orderBy(desc(deliverableRevisions.versionNumber));
 
-  const targetRevision =
-    revs.find((r) => r.revisionId === shareLink.revisionId) ||
+  const targetRevision = revs.find(
+    (r) => r.revisionId === shareLink.revisionId,
+  ) ||
     revs.find((r) => r.revisionId === deliverable.currentRevisionId) ||
     revs[0] || {
       revisionId: shareLink.revisionId,
@@ -1106,12 +1142,16 @@ export async function getPortalReviewData(token: string): Promise<PortalReviewRe
     .orderBy(desc(deliverableReviewComments.createdAt));
 
   // Determine review states
-  let currentStatus: "pending" | "in_review" | "approved" | "changes_requested" = "pending";
+  let currentStatus:
+    "pending" | "in_review" | "approved" | "changes_requested" = "pending";
   if (deliverable.status === "approved") {
     currentStatus = "approved";
   } else if (deliverable.status === "revision_requested") {
     currentStatus = "changes_requested";
-  } else if (deliverable.status === "client_review" || deliverable.status === "internal_review") {
+  } else if (
+    deliverable.status === "client_review" ||
+    deliverable.status === "internal_review"
+  ) {
     currentStatus = "in_review";
   }
 
@@ -1144,14 +1184,18 @@ export async function getPortalReviewData(token: string): Promise<PortalReviewRe
         versionNumber: targetRevision.versionNumber,
         reason: targetRevision.reason,
         status: targetRevision.status,
-        createdAt: targetRevision.createdAt ? new Date(targetRevision.createdAt).toISOString() : new Date().toISOString(),
+        createdAt: targetRevision.createdAt
+          ? new Date(targetRevision.createdAt).toISOString()
+          : new Date().toISOString(),
       },
       revisions: revs.map((r) => ({
         revisionId: r.revisionId,
         versionNumber: r.versionNumber,
         reason: r.reason,
         status: r.status,
-        createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
+        createdAt: r.createdAt
+          ? new Date(r.createdAt).toISOString()
+          : new Date().toISOString(),
       })),
       files: attachedFiles.map((f) => ({
         fileId: f.fileId,
@@ -1165,8 +1209,12 @@ export async function getPortalReviewData(token: string): Promise<PortalReviewRe
       currentStatus,
       canApprove,
       canRequestChanges,
-      approvedAt: latestApproval ? new Date(latestApproval.createdAt).toISOString() : null,
-      approvedBy: latestApproval ? latestApproval.clientApproverSignature : null,
+      approvedAt: latestApproval
+        ? new Date(latestApproval.createdAt).toISOString()
+        : null,
+      approvedBy: latestApproval
+        ? latestApproval.clientApproverSignature
+        : null,
       notes: latestApproval ? latestApproval.notes : null,
     },
     approvalHistory: approvalsList.map((a) => ({
@@ -1175,13 +1223,22 @@ export async function getPortalReviewData(token: string): Promise<PortalReviewRe
       approverName: a.clientApproverSignature,
       approverEmail: a.clientApproverEmail,
       notes: a.notes,
-      createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: a.createdAt
+        ? new Date(a.createdAt).toISOString()
+        : new Date().toISOString(),
     })),
     comments: commentsList.map((c) => ({
       commentId: c.commentId,
       authorName: c.clientAuthorName || "Reviewer",
-      content: typeof c.content === "object" && c.content !== null && "text" in c.content ? (c.content as any).text : String(c.content),
-      createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : new Date().toISOString(),
+      content:
+        typeof c.content === "object" &&
+        c.content !== null &&
+        "text" in c.content
+          ? (c.content as any).text
+          : String(c.content),
+      createdAt: c.createdAt
+        ? new Date(c.createdAt).toISOString()
+        : new Date().toISOString(),
     })),
   };
 
@@ -1222,7 +1279,9 @@ export async function submitPortalApproval(payload: {
   }
 
   if (shareLink.accessLevel !== "approval_only") {
-    throw new Error("You do not have approval permissions for this deliverable.");
+    throw new Error(
+      "You do not have approval permissions for this deliverable.",
+    );
   }
 
   return await db.transaction(async (tx) => {
@@ -1419,7 +1478,9 @@ export async function submitPortalChangeRequest(payload: {
   }
 
   if (shareLink.accessLevel === "view_only") {
-    throw new Error("You do not have permission to request changes for this deliverable.");
+    throw new Error(
+      "You do not have permission to request changes for this deliverable.",
+    );
   }
 
   return await db.transaction(async (tx) => {
@@ -1581,7 +1642,9 @@ export async function submitPortalComment(payload: {
   }
 
   if (shareLink.accessLevel === "view_only") {
-    throw new Error("You do not have permission to comment on this deliverable.");
+    throw new Error(
+      "You do not have permission to comment on this deliverable.",
+    );
   }
 
   return await db.transaction(async (tx) => {
@@ -1693,5 +1756,3 @@ export async function getPortalFileDownloadUrl(payload: {
     filename: version.originalFilename || file.title,
   };
 }
-
-

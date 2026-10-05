@@ -1,25 +1,27 @@
 # AI NEX OS — Canonical Product Requirement Document (PRD v2.0)
+
 ## The Operating System for Creative Execution
+
 ### Agency-Agnostic Multi-Tenant B2B SaaS Architecture & Specification
 
 ---
 
 ## 1. Document Control
 
-| Attribute | Specification Detail |
-| :--- | :--- |
-| **Document Name** | AI NEX OS Canonical Product Requirement Document (PRD V2) & Target Architecture Requirements |
-| **Canonical File Path** | `docs/product/AI-NEX-OS-PRD-V2.md` |
-| **Document Version** | 2.0.0 (Phase 1B Canonical Milestone) |
-| **Document Status** | **CANONICAL PRODUCT REQUIREMENT DOCUMENT · PHASE 1B AUTHORITATIVE** |
-| **Publication Date** | September 26, 2026 |
-| **Owner / Lead Architect** | Antigravity AI Engineering Assistant & Core Platform Team |
-| **Target Repository Root** | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`) |
-| **Implementation Git Branch** | `phase-2-production-readiness` |
-| **Target Production Host** | `https://ai-nexos.antideploy.com` |
-| **Superseded Documents** | `DOCS/AIC NexOS (PRD).md`, `DOCS/AIC Nex OS (SDS).md`, `DOCS/AIC Nex OS (TRD) .md`, `DOCS/AIC Nex OS (DBD).md` |
-| **Authoritative Baselines** | `docs/audit/AGENCY_SAAS_REARCHITECTURE_BASELINE.md`<br>`docs/product/AI-NEX-OS-PRODUCT-CONTEXT-V2.md`<br>`docs/product/AI-NEX-OS-TERMINOLOGY.md`<br>`docs/product/AI-COLLECTIVE-COUPLING-REGISTER.md`<br>`docs/AUTHORIZATION-CONTROLS.md` |
-| **Scope & Phase Boundary** | **PHASE 1B DOCUMENTATION-ONLY**. Strictly non-mutating. Zero source modifications, zero database mutations, zero deployments, zero secrets rotation. Defines target architecture and requirements for Phase 2+ execution. |
+| Attribute                     | Specification Detail                                                                                                                                                                                                                      |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Document Name**             | AI NEX OS Canonical Product Requirement Document (PRD V2) & Target Architecture Requirements                                                                                                                                              |
+| **Canonical File Path**       | `docs/product/AI-NEX-OS-PRD-V2.md`                                                                                                                                                                                                        |
+| **Document Version**          | 2.0.0 (Phase 1B Canonical Milestone)                                                                                                                                                                                                      |
+| **Document Status**           | **CANONICAL PRODUCT REQUIREMENT DOCUMENT · PHASE 1B AUTHORITATIVE**                                                                                                                                                                       |
+| **Publication Date**          | September 26, 2026                                                                                                                                                                                                                        |
+| **Owner / Lead Architect**    | Antigravity AI Engineering Assistant & Core Platform Team                                                                                                                                                                                 |
+| **Target Repository Root**    | `ai-nexos` (`NEXOS Comb / AIC NEXOS / ai-nexos`)                                                                                                                                                                                          |
+| **Implementation Git Branch** | `phase-2-production-readiness`                                                                                                                                                                                                            |
+| **Target Production Host**    | `https://ai-nexos.antideploy.com`                                                                                                                                                                                                         |
+| **Superseded Documents**      | `DOCS/AIC NexOS (PRD).md`, `DOCS/AIC Nex OS (SDS).md`, `DOCS/AIC Nex OS (TRD) .md`, `DOCS/AIC Nex OS (DBD).md`                                                                                                                            |
+| **Authoritative Baselines**   | `docs/audit/AGENCY_SAAS_REARCHITECTURE_BASELINE.md`<br>`docs/product/AI-NEX-OS-PRODUCT-CONTEXT-V2.md`<br>`docs/product/AI-NEX-OS-TERMINOLOGY.md`<br>`docs/product/AI-COLLECTIVE-COUPLING-REGISTER.md`<br>`docs/AUTHORIZATION-CONTROLS.md` |
+| **Scope & Phase Boundary**    | **PHASE 1B DOCUMENTATION-ONLY**. Strictly non-mutating. Zero source modifications, zero database mutations, zero deployments, zero secrets rotation. Defines target architecture and requirements for Phase 2+ execution.                 |
 
 ---
 
@@ -32,9 +34,11 @@
 3. **Workforce Operations**: Granular employee directory, department structures, verified shift punch-clocks, algorithmic work-validation, and manager review queues.
 
 ### Why AI NEX OS Is Being Rearchitected
+
 Originally prototyped with sponsorship from "AI Collective (AIC)" as a dedicated internal agency tool, the platform established exceptional engineering foundations: Next.js 16 App Router architecture, 52 relational tables in PostgreSQL via Drizzle ORM, strict runtime environment guards, an AST-based static safety gate preventing caller-supplied tenant IDs (`tests/unit/tenant-identity-surface.test.ts`), and 725+ passing unit tests.
 
 However, the prototype embodied a single-tenant mental model:
+
 - `public.users` directly references a single mandatory `organization_id NOT NULL` with a global unique email constraint (`uq_users_email`), precluding multi-organization membership and agency switching.
 - Core action generators hardcode the `AIC-` prefix into project codes (`AIC-YYYY-XXXX`), task codes (`AIC-T-YYYY-XXXX`), and meeting action items.
 - Root routing immediately redirects to `/dashboard` or `/login`, lacking a public marketing presence, pricing, and SEO infrastructure.
@@ -83,6 +87,7 @@ To replace the fragile web of spreadsheets, disconnected messaging apps, fragmen
 ## 6. Target Market
 
 The addressable market encompasses global commercial creative services and high-velocity digital production organizations:
+
 - Independent Creative & Design Agencies (5–250 employees)
 - Full-Service Advertising & Media Agencies
 - Video Production Studios & VFX Houses
@@ -106,35 +111,37 @@ The addressable market encompasses global commercial creative services and high-
 ## 8. Personas
 
 ### 8.1 Internal Agency Personas
+
 - **Agency Owner / Partner (`owner`)**:
-  - *Focus*: Margin, agency capacity, client retention, executive accountability.
-  - *Authority*: Unrestricted administrative, financial, and tenant-level destruction governance.
+  - _Focus_: Margin, agency capacity, client retention, executive accountability.
+  - _Authority_: Unrestricted administrative, financial, and tenant-level destruction governance.
 - **Super Administrator (`super_admin`)**:
-  - *Focus*: Security compliance, user lifecycle, department topology, billing, audit logging.
-  - *Authority*: Platform configuration excluding sole-owner demotion/deletion.
+  - _Focus_: Security compliance, user lifecycle, department topology, billing, audit logging.
+  - _Authority_: Platform configuration excluding sole-owner demotion/deletion.
 - **Creative Director (`creative_director`)**:
-  - *Focus*: Quality control, aesthetic cohesion, deliverable reviews, creative assignments.
-  - *Authority*: Project, deliverable, and revision approval authority; creative review sign-off.
+  - _Focus_: Quality control, aesthetic cohesion, deliverable reviews, creative assignments.
+  - _Authority_: Project, deliverable, and revision approval authority; creative review sign-off.
 - **Project Manager / Producer (`project_manager`)**:
-  - *Focus*: Timelines, deliverable milestones, task assignments, client communications, meeting minutes.
-  - *Authority*: Task, timeline, project, meeting, and share link management.
+  - _Focus_: Timelines, deliverable milestones, task assignments, client communications, meeting minutes.
+  - _Authority_: Task, timeline, project, meeting, and share link management.
 - **Creative Team Member (`team_member`)**:
-  - *Focus*: Task clarity, asset downloads, revision checklists, time recording, daily punch clock.
-  - *Authority*: Scoped task execution, revision uploads, individual time/attendance logging.
+  - _Focus_: Task clarity, asset downloads, revision checklists, time recording, daily punch clock.
+  - _Authority_: Scoped task execution, revision uploads, individual time/attendance logging.
 - **HR / Operations Lead (`hr`)**:
-  - *Focus*: Shift compliance, attendance punches, punch corrections, leave tracking, employee directory.
-  - *Authority*: Workforce management, attendance review queue approval, employee profile maintenance.
+  - _Focus_: Shift compliance, attendance punches, punch corrections, leave tracking, employee directory.
+  - _Authority_: Workforce management, attendance review queue approval, employee profile maintenance.
 - **Finance Lead (`finance`)**:
-  - *Focus*: Billable hours, project budgets, contractor timesheets, client invoice reconciliation.
-  - *Authority*: Financial reports, time audit logs, read-only project and client budget data.
+  - _Focus_: Billable hours, project budgets, contractor timesheets, client invoice reconciliation.
+  - _Authority_: Financial reports, time audit logs, read-only project and client budget data.
 
 ### 8.2 External Client Personas
+
 - **Client Executive / Brand Sponsor**:
-  - *Focus*: Milestone delivery, macro budget tracking, formal contract sign-off.
-  - *Interaction*: High-level summary view on branded share portal; formal approval with legal note.
+  - _Focus_: Milestone delivery, macro budget tracking, formal contract sign-off.
+  - _Interaction_: High-level summary view on branded share portal; formal approval with legal note.
 - **Client Creative Reviewer**:
-  - *Focus*: Detailed asset inspection, frame/timestamp annotations, itemized change requests.
-  - *Interaction*: Interactive review canvas on zero-login tokenized share portal.
+  - _Focus_: Detailed asset inspection, frame/timestamp annotations, itemized change requests.
+  - _Interaction_: Interactive review canvas on zero-login tokenized share portal.
 
 ---
 
@@ -182,6 +189,7 @@ The addressable market encompasses global commercial creative services and high-
 ## 13. Organization Model
 
 The **Organization (`public.organizations`)** is the sovereign commercial tenant in AI NEX OS:
+
 - **Tenancy Boundary**: Every business entity (clients, projects, tasks, deliverables, files, meetings, attendance, activity logs) belongs to exactly one organization.
 - **Attributes**:
   - `organization_id` (UUID PK): Global internal tenant identifier.
@@ -200,6 +208,7 @@ The **Organization (`public.organizations`)** is the sovereign commercial tenant
 ## 14. Identity Model
 
 AI NEX OS enforces strict separation between global identity and tenant authorization:
+
 ```
 ┌────────────────────────────────────────────────────────┐
 │             Supabase Auth (`auth.users`)               │
@@ -216,32 +225,34 @@ AI NEX OS enforces strict separation between global identity and tenant authoriz
 │          Tenant Affiliation, Role, Status, Default     │
 └────────────────────────────────────────────────────────┘
 ```
+
 - **Global Identity**: An authenticated identity represents an individual human creator in Supabase Auth.
 - **Decoupled Profile**: `public.users` contains creator biographical metadata (first name, last name, avatar, bio).
 - **Independence**: Changing an individual's personal email or profile details does not alter their historical audit records across organizations.
 
 ### 14.1 Current vs Target Architecture Comparison
 
-| Architectural Dimension | Current Implementation (Baseline) | Target SaaS Architecture (V2) |
-| :--- | :--- | :--- |
-| **Identity Entity** | Supabase Auth (`auth.users`) tied 1:1 to `public.users` | Supabase Auth (`auth.users`) as global auth identity; `public.users` as global creator profile |
-| **Application User** | `public.users` stores `organization_id NOT NULL`, `role_id NOT NULL`, and `department_id` directly on the row | `public.users` contains only identity/profile fields; all tenancy and permissions are decoupled |
-| **Organization (Tenant)** | Single-tenant bias; seeded via `.env.example` (`SEED_ORG_NAME="AI Collective"`) and `scripts/seed.ts` | Fully autonomous B2B SaaS tenant provisioned dynamically via self-serve onboarding or admin invitation |
-| **Membership Relationship** | Implicit 1:1 relationship hardcoded on `users` table | Explicit M:N relationship governed by `organization_memberships` join table |
-| **Multiple Organizations** | Strictly unsupported; database enforces unique constraint `uq_users_email` globally on `public.users` | Fully supported: 1 global identity can hold active memberships in N independent agency organizations |
-| **Onboarding Experience** | Unavailable; unprovisioned authenticated users are bounced to a hostile error screen at `/unprovisioned` | Canonical Tri-State Onboarding: State A (Active Member), State B (Create/Join Org), State C (Accept Invite) |
-| **Invitation Lifecycle** | Disabled; `realEmployeeAdminRepository.create()` explicitly throws: `"wired in Phase 7"` | First-class cryptographic token lifecycle: invite creation, email dispatch, redemption, and membership binding |
-| **Roles & Authority** | Global to user record (`users.role_id`), cannot vary across organizations | Organization-scoped (`organization_memberships.role_id`); user can be Owner in Org A and Designer in Org B |
-| **Permissions Evaluation** | Evaluated against `user.permissions` derived from single organization role | Evaluated dynamically against the caller's active organization membership role |
-| **Organization Switching** | Non-existent; requires manual database mutation or logging out into another account | Native top-navigation organization switcher dropdown backed by secure HTTP-only session context cookie |
-| **Sequential Identifiers** | Hardcoded prefixes: `AIC-YYYY-XXXX` (projects), `AIC-T-YYYY-XXXX` (tasks), `AIC-0001` (employees) | Dynamic tenant prefix: `{organization.code_prefix}-YYYY-XXXX` (defaulting to `NEX-`) |
-| **Client Portal Surface** | Domain-separated proxy rewrite (`portal.domain/s/{token}`) with zero-login signed token access | Preserved and hardened: zero-login cryptographic token validation with fine-grained action auditing |
+| Architectural Dimension     | Current Implementation (Baseline)                                                                             | Target SaaS Architecture (V2)                                                                                  |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------- |
+| **Identity Entity**         | Supabase Auth (`auth.users`) tied 1:1 to `public.users`                                                       | Supabase Auth (`auth.users`) as global auth identity; `public.users` as global creator profile                 |
+| **Application User**        | `public.users` stores `organization_id NOT NULL`, `role_id NOT NULL`, and `department_id` directly on the row | `public.users` contains only identity/profile fields; all tenancy and permissions are decoupled                |
+| **Organization (Tenant)**   | Single-tenant bias; seeded via `.env.example` (`SEED_ORG_NAME="AI Collective"`) and `scripts/seed.ts`         | Fully autonomous B2B SaaS tenant provisioned dynamically via self-serve onboarding or admin invitation         |
+| **Membership Relationship** | Implicit 1:1 relationship hardcoded on `users` table                                                          | Explicit M:N relationship governed by `organization_memberships` join table                                    |
+| **Multiple Organizations**  | Strictly unsupported; database enforces unique constraint `uq_users_email` globally on `public.users`         | Fully supported: 1 global identity can hold active memberships in N independent agency organizations           |
+| **Onboarding Experience**   | Unavailable; unprovisioned authenticated users are bounced to a hostile error screen at `/unprovisioned`      | Canonical Tri-State Onboarding: State A (Active Member), State B (Create/Join Org), State C (Accept Invite)    |
+| **Invitation Lifecycle**    | Disabled; `realEmployeeAdminRepository.create()` explicitly throws: `"wired in Phase 7"`                      | First-class cryptographic token lifecycle: invite creation, email dispatch, redemption, and membership binding |
+| **Roles & Authority**       | Global to user record (`users.role_id`), cannot vary across organizations                                     | Organization-scoped (`organization_memberships.role_id`); user can be Owner in Org A and Designer in Org B     |
+| **Permissions Evaluation**  | Evaluated against `user.permissions` derived from single organization role                                    | Evaluated dynamically against the caller's active organization membership role                                 |
+| **Organization Switching**  | Non-existent; requires manual database mutation or logging out into another account                           | Native top-navigation organization switcher dropdown backed by secure HTTP-only session context cookie         |
+| **Sequential Identifiers**  | Hardcoded prefixes: `AIC-YYYY-XXXX` (projects), `AIC-T-YYYY-XXXX` (tasks), `AIC-0001` (employees)             | Dynamic tenant prefix: `{organization.code_prefix}-YYYY-XXXX` (defaulting to `NEX-`)                           |
+| **Client Portal Surface**   | Domain-separated proxy rewrite (`portal.domain/s/{token}`) with zero-login signed token access                | Preserved and hardened: zero-login cryptographic token validation with fine-grained action auditing            |
 
 ---
 
 ## 15. Membership Model & Target Database Architecture
 
 The target membership model establishes an explicit M:N bridge between users and organizations:
+
 - **Entity**: `organization_memberships`
   - `membership_id` (UUID PK)
   - `user_id` (UUID FK → `public.users.user_id`)
@@ -259,6 +270,7 @@ The target membership model establishes an explicit M:N bridge between users and
 The following 10 core entities define the conceptual target relational architecture. **Note: In accordance with Phase 1B rules, these entities are documented conceptually; no migrations or schema changes are executed in this phase.**
 
 #### 1. `users` / `identities`
+
 - **Why It Exists**: Represents the global human creator profile, holding personal biographical details independent of any commercial agency.
 - **Relationship**: 1:1 with `auth.users` via `user_id`; 1:N with `organization_memberships`.
 - **Ownership**: Owned exclusively by the individual user.
@@ -267,6 +279,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: Existing `users` table already has `user_id` mirroring `auth.users.id`. In Phase 4, `organization_id` and `role_id` will transition from mandatory foreign keys to nullable/deprecated columns as memberships take over.
 
 #### 2. `organizations`
+
 - **Why It Exists**: Represents the sovereign commercial tenant (creative agency, production studio, design firm) that purchases subscriptions and owns operational data.
 - **Relationship**: 1:N with `organization_memberships`, `clients`, `projects`, `files`, `departments`, `roles`, `organization_sequences`.
 - **Ownership**: Subscribing agency customer.
@@ -275,6 +288,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: Already exists (`src/db/schema/organizations.ts`). Requires additive column `code_prefix text NOT NULL DEFAULT 'NEX'` in Phase 3.
 
 #### 3. `organization_memberships`
+
 - **Why It Exists**: Normalizes the M:N relationship between global identities and agency tenants, allowing individuals to collaborate across multiple organizations with distinct roles.
 - **Relationship**: N:1 with `users`, N:1 with `organizations`, N:1 with `roles`, N:1 with `departments`.
 - **Ownership**: Organization owns the membership record; user is the associated identity.
@@ -283,6 +297,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: New table to be introduced in Phase 4 (`0016_multi_tenant_memberships.sql`). Existing `users` records will be backfilled into `organization_memberships` during migration.
 
 #### 4. `roles`
+
 - **Why It Exists**: Defines named authorization levels (Owner, Super Admin, Creative Director, Project Manager, Team Member, HR, Finance) and their associated permission maps.
 - **Relationship**: N:1 with `organizations` (or system-wide defaults); referenced by `organization_memberships`.
 - **Ownership**: Organization owns custom roles; platform seeds standard system roles.
@@ -291,6 +306,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: Table already exists (`src/db/schema/roles.ts`). No schema alteration required; foreign keys update from `users.role_id` to `organization_memberships.role_id`.
 
 #### 5. `permissions`
+
 - **Why It Exists**: Represents the atomic capabilities across the 22 application modules and 15 operational actions.
 - **Relationship**: Defined in TypeScript constants (`src/features/permissions/constants.ts`) and serialized into JSONB within `roles.permissions`.
 - **Ownership**: Platform-defined governance specification.
@@ -299,6 +315,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: Existing JSONB representation (`roles.permissions`) is highly flexible and requires no database schema changes.
 
 #### 6. `role_permissions`
+
 - **Why It Exists**: Evaluated as an alternative relational join table to JSONB.
 - **Relationship**: M:N join between `roles` and granular permission definitions.
 - **Ownership**: Organization / Role.
@@ -306,6 +323,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Evaluation Decision**: **RETAIN JSONB**. The existing JSONB representation in `roles.permissions` (`Record<Module, Action[]>`) performs with zero join overhead, is cached with `CurrentUser`, and is evaluated with high efficiency in both TypeScript (`hasPermission`) and PostgreSQL RLS (`app.has_permission`). A dedicated `role_permissions` table is deemed unnecessary complexity.
 
 #### 7. `invitations` (`organization_invitations`)
+
 - **Why It Exists**: Manages the pre-membership onboarding state, allowing admins to invite collaborators via cryptographically secure, time-bound tokens.
 - **Relationship**: N:1 with `organizations`, N:1 with `roles`, N:1 with `departments`, N:1 with `users` (inviter).
 - **Ownership**: Owned by the inviting organization.
@@ -314,6 +332,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: New table planned for Phase 5 (`0017_organization_invitations.sql`).
 
 #### 8. `organization_settings`
+
 - **Why It Exists**: Isolates operational parameters (working days, punch tolerances, file size limits, default currencies) from core organization billing/legal attributes.
 - **Relationship**: 1:1 with `organizations`.
 - **Ownership**: Subscribing agency tenant.
@@ -322,6 +341,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: Can be implemented additively or stored as structured JSONB on `organizations.settings` to minimize relational bloat.
 
 #### 9. `organization_branding`
+
 - **Why It Exists**: Manages agency white-label visual identity (primary color, secondary color, logo URL, favicon URL, email banner, portal custom CSS).
 - **Relationship**: 1:1 with `organizations`.
 - **Ownership**: Subscribing agency tenant.
@@ -330,6 +350,7 @@ The following 10 core entities define the conceptual target relational architect
 - **Migration Implications**: Columns `brand_primary_color`, `brand_secondary_color`, `logo_url` already exist on `public.organizations`. Moving them to a separate table is unnecessary; expanding `public.organizations` with `favicon_url` and `portal_banner_url` is the recommended path.
 
 #### 10. `audit_logs` (`activity_logs`)
+
 - **Why It Exists**: Provides an immutable, legally defensible, tamper-evident chronological ledger of all operational events, approvals, mutations, and security actions.
 - **Relationship**: N:1 with `organizations`; N:1 with `users` (actor); polymorphically linked to entities (`project`, `task`, `deliverable`, `attendance`).
 - **Ownership**: Subscribing organization (read-only); platform compliance.
@@ -342,6 +363,7 @@ The following 10 core entities define the conceptual target relational architect
 ## 16. Authentication Model
 
 Authentication establishes **WHO** the caller is:
+
 1. **Supported Providers**:
    - Email & Password (`signInWithPassword`)
    - Magic Link Passwordless OTP (`signInWithOtp`, with `shouldCreateUser: false` for invited users)
@@ -396,15 +418,15 @@ Authorization establishes **WHAT** the caller may access. As codified in `docs/A
 
 AI NEX OS ships with seven canonical system roles seeded into `public.roles`:
 
-| Role Key | Role Name | Primary Authority | Permission Map Summary |
-| :--- | :--- | :--- | :--- |
-| `owner` | Organization Owner | Total operational, administrative, and legal governance | `{"*": ["*"]}` |
-| `super_admin` | Super Administrator | Operational configuration, user provisioning, departments | Full access across all modules; cannot demote sole owner |
-| `creative_director` | Creative Director | Quality assurance, deliverable sign-offs, creative review | Full permissions on `projects`, `tasks`, `deliverables`, `revisions`, `approvals` |
-| `project_manager` | Project Manager | Execution schedules, client contact, task assignment | Full on `clients`, `projects`, `timelines`, `tasks`, `meetings`, `shares` |
-| `team_member` | Team Member | Creative asset production, task updates, punch clock | Read assigned resources; update assigned tasks; clock in/out |
-| `hr` | Human Resources | Workforce administration, punch corrections, directory | Full on `attendance`, `corrections`, `users` (view/edit); review queue authority |
-| `finance` | Finance Lead | Time logs, billable tracking, client budgets | Read-only access to `clients`, `projects`, `tasks`, `reports`, `analytics` |
+| Role Key            | Role Name           | Primary Authority                                         | Permission Map Summary                                                            |
+| :------------------ | :------------------ | :-------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| `owner`             | Organization Owner  | Total operational, administrative, and legal governance   | `{"*": ["*"]}`                                                                    |
+| `super_admin`       | Super Administrator | Operational configuration, user provisioning, departments | Full access across all modules; cannot demote sole owner                          |
+| `creative_director` | Creative Director   | Quality assurance, deliverable sign-offs, creative review | Full permissions on `projects`, `tasks`, `deliverables`, `revisions`, `approvals` |
+| `project_manager`   | Project Manager     | Execution schedules, client contact, task assignment      | Full on `clients`, `projects`, `timelines`, `tasks`, `meetings`, `shares`         |
+| `team_member`       | Team Member         | Creative asset production, task updates, punch clock      | Read assigned resources; update assigned tasks; clock in/out                      |
+| `hr`                | Human Resources     | Workforce administration, punch corrections, directory    | Full on `attendance`, `corrections`, `users` (view/edit); review queue authority  |
+| `finance`           | Finance Lead        | Time logs, billable tracking, client budgets              | Read-only access to `clients`, `projects`, `tasks`, `reports`, `analytics`        |
 
 ---
 
@@ -423,6 +445,7 @@ AI NEX OS ships with seven canonical system roles seeded into `public.roles`:
 ## 20. Organization Switching
 
 In the target multi-tenant architecture:
+
 - Users belonging to multiple organizations can seamlessly toggle active tenant context via an **Organization Switcher** in the top navigation bar.
 - Switching updates the secure HTTP-only tenant context cookie.
 - The server validates that the user possesses an `active` membership in the requested organization before switching.
@@ -450,8 +473,8 @@ graph TD
 
 - **State A (Existing Member)**: Resolves default membership and enters `/dashboard`.
 - **State B (Unaffiliated User)**: Presented with two clear paths:
-  1. *Create Agency Workspace*: Name agency, select URL slug, pick code prefix, choose timezone → provisions organization, seeds default system roles, assigns creator as `owner`, redirects to dashboard.
-  2. *Join Existing Agency*: Enter invitation code or request admin invitation.
+  1. _Create Agency Workspace_: Name agency, select URL slug, pick code prefix, choose timezone → provisions organization, seeds default system roles, assigns creator as `owner`, redirects to dashboard.
+  2. _Join Existing Agency_: Enter invitation code or request admin invitation.
 - **State C (Pending Invitee)**: Resolves invitation token, shows agency invitation card (Agency Name, Inviter, Role), accepts invitation → binds membership and enters workspace.
 
 ---
@@ -491,6 +514,7 @@ graph TD
 ## 25. Workspace Module
 
 The **Workspace** encompasses all project management and creative production capabilities:
+
 - **Routes**: `/dashboard`, `/projects`, `/clients`, `/tasks`, `/timeline`, `/deliverables`, `/files`, `/meetings`, `/calendar`.
 - **Shell**: Wrapped in `AppShell` with dynamic sidebar navigation filtered by caller's permissions.
 - **State Management**: React Query for server cache invalidation, Zustand for client state, and Server Actions for data mutations.
@@ -601,6 +625,7 @@ The **Workspace** encompasses all project management and creative production cap
 ## 38. Workforce
 
 The **Workforce** domain governs people operations, employee records, and verified shift attendance:
+
 - **Unified Identity**: Uses the same user accounts and organization memberships as Workspace modules.
 - **Integrated Capacity**: Connects employee schedules and logged time directly to project delivery.
 
@@ -674,6 +699,7 @@ The **Workforce** domain governs people operations, employee records, and verifi
 ## 47. AI Capability Layer
 
 AI is an assistive capability layer that accelerates human creative workflows:
+
 - **AI Meeting Summarizer**: Parses meeting transcripts into structured decisions and action items.
 - **AI Revision Extractor**: Converts free-form client feedback into itemized revision tickets.
 - **AI Task Breakdown Assistant**: Generates subtasks and schedules from project briefs.
@@ -921,6 +947,7 @@ The MVP baseline encompasses the complete core creative workspace, verified work
 > [!NOTE]
 > **Implementation Maturity Scale**:
 > To prevent equating raw code existence with production verification, platform capability status is evaluated across a 5-tier maturity model:
+>
 > 1. `[IMPLEMENTED]` — Source code exists and compiles in the repository.
 > 2. `[VERIFIED]` — Automated unit/integration tests validate functionality and security boundaries.
 > 3. `[PRODUCTION VERIFIED]` — Validated via end-to-end user journeys and active production telemetry.
@@ -929,47 +956,47 @@ The MVP baseline encompasses the complete core creative workspace, verified work
 
 The following authoritative matrix audits every major platform capability, contrasting current implementation evidence against target SaaS requirements:
 
-| Capability | Current State | Status | Evidence in Codebase | Target SaaS State | Implementation Phase |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Authentication** | Supabase Auth session token verification in Node.js runtime proxy (`src/proxy.ts`) and server actions | `[IMPLEMENTED]` | `src/proxy.ts`, `src/features/auth/real-actions.ts` | Preserve session handling across multi-tenant contexts | Phase 0 (Baseline) |
-| **Google OAuth** | Google OAuth provider via PKCE redirect flow to `/auth/callback` | `[IMPLEMENTED]` | `src/features/auth/real-actions.ts`, `src/app/auth/callback/route.ts` | Preserve Google sign-in with multi-org onboarding | Phase 0 (Baseline) |
-| **Email Authentication** | Email + password login and passwordless Magic Link OTP | `[IMPLEMENTED]` | `src/features/auth/real-actions.ts` | Preserve email login with rate-limited brute force protection | Phase 0 (Baseline) |
-| **Users** | User profiles stored in `public.users` with `userId` mirroring `auth.users.id` | `[IMPLEMENTED]` | `src/db/schema/users.ts` | Decouple from tenant foreign keys (`organization_id`); pure global creator identity | Phase 4 |
-| **Organizations** | Sovereign tenant entity in `public.organizations` with URL slug and sequences | `[IMPLEMENTED]` | `src/db/schema/organizations.ts`, `src/features/organizations/real-actions.ts` | Add `code_prefix` and enable self-service creation | Phase 3 |
-| **Membership** | M:N association between users and organizations | `[PLANNED]` | Currently implicit 1:1 via `users.organization_id NOT NULL` | Explicit `organization_memberships` join table supporting multiple organizations per user | Phase 4 |
-| **Roles** | 7 system roles (`owner`, `super_admin`, `creative_director`, etc.) stored in `public.roles` | `[IMPLEMENTED]` | `src/db/schema/roles.ts`, `src/features/permissions/constants.ts` | Scoped to organization memberships with custom role support | Phase 4 |
-| **Permissions** | 22 modules × 15 actions JSONB permission matrix evaluated in TS and SQL | `[IMPLEMENTED]` | `src/features/permissions/engine.ts`, `database/migrations/0001_security_rls_foundation.sql` | Preserved and evaluated against active organization membership role | Phase 4 |
-| **Onboarding** | Direct redirection of unprovisioned users to `/unprovisioned` error route | `[PLANNED]` | `src/features/auth/current-user.ts` (L132) | Tri-State Onboarding flow: State A (Enter), State B (Create/Join Org), State C (Accept Invite) | Phase 5 |
-| **Invitations** | Email invitation tokens for adding members to an organization | `[PLANNED]` | `src/features/users/admin/real-repository.ts` (throws error: "wired in Phase 7") | Cryptographic single-use 7-day tokens with email dispatch and role assignment | Phase 5 |
-| **Organization Switching** | Seamless switching between multiple active organization workspaces | `[PLANNED]` | Schema currently lacks memberships table; single-tenant only | Top-nav dropdown switcher backed by secure session context cookie | Phase 4 |
-| **Clients** | Client CRM company directory and contacts | `[IMPLEMENTED]` | `src/features/clients/real-actions.ts`, `src/db/schema/clients.ts` | Preserved with expanded project and billing associations | Phase 0 (Baseline) |
-| **Projects** | Creative project directory, budgets, status, and members | `[IMPLEMENTED]` | `src/features/projects/real-actions.ts`, `src/db/schema/projects.ts` | Dynamic project code prefix (`{org.codePrefix}-YYYY-XXXX`) replacing hardcoded `AIC-` | Phase 3 |
-| **Tasks** | Kanban boards, task assignments, subtasks, dependencies, timers | `[IMPLEMENTED]` | `src/features/tasks/real-actions.ts`, `src/db/schema/tasks.ts` | Dynamic task code prefix (`{org.codePrefix}-T-YYYY-XXXX`) replacing hardcoded `AIC-T-` | Phase 3 |
-| **Timeline** | Visual Gantt chart, milestones, phases, dependency constraints | `[IMPLEMENTED]` | `src/features/timelines/real-actions.ts`, `src/db/schema/timelines.ts` | Preserved with critical path optimization | Phase 0 (Baseline) |
-| **Deliverables** | Creative asset delivery management across video, image, document, code | `[IMPLEMENTED]` | `src/features/deliverables/real-actions.ts`, `src/db/schema/deliverables.ts` | Preserved with multi-stage approval workflows | Phase 0 (Baseline) |
-| **Reviews** | Review sessions with timestamped video/image annotations and canvas tools | `[IMPLEMENTED]` | `src/features/approvals/authorization.ts`, `src/db/schema/approvals.ts` | Preserved with expanded client reviewer auditing | Phase 0 (Baseline) |
-| **Approvals** | Formal decision sign-offs with legal notes, approver metadata, version stamps | `[IMPLEMENTED]` | `src/features/approvals/real-actions.ts`, `src/db/schema/approvals.ts` | Preserved with multi-party sequential sign-off chains | Phase 0 (Baseline) |
-| **Files** | DAM folder hierarchy, versioning, storage bucket integration | `[IMPLEMENTED]` | `src/features/files/real-actions.ts`, `src/db/schema/files.ts` | Preserved with storage prefix isolation `/{organization_id}/*` | Phase 0 (Baseline) |
-| **Meetings** | Agenda management, decision registry, action items with one-click task conversion | `[IMPLEMENTED]` | `src/features/meetings/real-actions.ts`, `src/db/schema/meetings.ts` | Centralized task code generator using dynamic tenant prefix | Phase 3 |
-| **Workforce** | Unified human resources, employee directory, and capacity planning | `[IMPLEMENTED]` | `src/features/workforce/`, `src/db/schema/workforce.ts` | Preserved and unified with multi-tenant memberships | Phase 4 |
-| **Employees** | Directory, designations, employment types, working hours | `[IMPLEMENTED]` | `src/features/workforce/employees/`, `src/db/schema/users.ts` | Dynamic employee code prefix (`{org.codePrefix}-XXXX`) replacing `AIC-0001` | Phase 3 |
-| **Departments** | Agency departments (Creative, Design, Video, Operations, Leadership) | `[IMPLEMENTED]` | `src/db/schema/departments.ts`, `src/features/organizations/departments/` | Preserved with per-organization department administration | Phase 0 (Baseline) |
-| **Attendance** | Shift punch clock (in, break, out), IANA timezone resolution | `[IMPLEMENTED]` | `src/features/workforce/attendance/real-repository.ts` | Preserved with automated business day boundary anchoring | Phase 0 (Baseline) |
-| **Corrections** | Punch adjustment requests with manager review queue | `[IMPLEMENTED]` | `src/features/workforce/corrections/real-repository.ts` | Preserved with immutable correction audit trail | Phase 0 (Baseline) |
-| **Capacity** | Real-time team availability and capacity utilization analytics | `[PLANNED]` | Working hours schema in `users.workingHours`; reports route is placeholder | Automated capacity dashboards against task allocations | Phase 6 |
-| **Client Portal** | Dedicated external portal on `portal.<domain>` for zero-login client review | `[IMPLEMENTED]` | `src/proxy.ts`, `src/lib/portal/services/PortalServiceLayer.ts` | Preserved with white-label client branding | Phase 0 (Baseline) |
-| **Secure Share Links** | Cryptographically signed tokens with nonces, expiry, and revocation | `[IMPLEMENTED]` | `src/db/schema/shares.ts`, `src/lib/portal/services/PortalServiceLayer.ts` | Preserved with password protection and download permissions | Phase 0 (Baseline) |
-| **Notifications** | In-app notification center with real-time counters and channel routing | `[IMPLEMENTED]` | `src/features/notifications/real-actions.ts`, `src/db/schema/notifications.ts` | Preserved with email digest worker | Phase 0 (Baseline) |
-| **Search** | Scoped search filters across tasks, deliverables, projects, clients | `[IMPLEMENTED]` | Module query filters in real actions | Global command palette (`Cmd + K`) indexed by organization | Phase 2 |
-| **AI** | Meeting summarization, revision extraction, context windows, token tracking | `[IMPLEMENTED]` | `src/db/schema/ai-workspace.ts`, `src/lib/ai/governance.ts` | Preserved as assistive layer with per-org monthly budgets | Phase 0 (Baseline) |
-| **Analytics** | Operational project metrics and deliverable cycle counters | `[IMPLEMENTED]` | Metric aggregators in `/dashboard` | Agency-wide financial and billable hour analytics | Phase 6 |
-| **Audit Logs** | Immutable append-only activity logging with RLS protection | `[IMPLEMENTED]` | `src/db/schema/activity-logs.ts`, `database/migrations/0001_security_rls_foundation.sql` | Preserved with automated audit export tooling | Phase 0 (Baseline) |
-| **Billing** | Multi-tenant SaaS subscription plans, customer portal, usage limits | `[FUTURE]` | Schema currently lacks billing tables | Stripe Customer Portal integration and tier limits (Starter, Pro, Enterprise) | Phase 7 |
-| **Public Website** | Public marketing landing page at root `/` | `[PLANNED]` | `src/app/page.tsx` currently redirects to `/dashboard` or `/login` | Agency SaaS marketing landing page with interactive demo and pricing | Phase 2 |
-| **SEO** | Search engine metadata, descriptions, structured JSON-LD data | `[PLANNED]` | `src/app/layout.tsx` contains bare title/description strings | Comprehensive Open Graph, Twitter cards, and structured schema | Phase 2 |
-| **Sitemap** | Dynamic `sitemap.xml` for search crawler indexing | `[PLANNED]` | Missing `src/app/sitemap.ts` | Automated sitemap generation covering public routes | Phase 2 |
-| **Robots** | `robots.txt` configuration for crawler guidance | `[PLANNED]` | Missing `src/app/robots.ts` | Generated robots configuration disallowing internal dashboard routes | Phase 2 |
-| **Open Graph** | Social media preview cards (`opengraph-image.tsx`) | `[PLANNED]` | Missing `src/app/opengraph-image.tsx` | Dynamic branded social cards with product title and tagline | Phase 2 |
+| Capability                 | Current State                                                                                         | Status          | Evidence in Codebase                                                                         | Target SaaS State                                                                              | Implementation Phase |
+| :------------------------- | :---------------------------------------------------------------------------------------------------- | :-------------- | :------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------- | :------------------- |
+| **Authentication**         | Supabase Auth session token verification in Node.js runtime proxy (`src/proxy.ts`) and server actions | `[IMPLEMENTED]` | `src/proxy.ts`, `src/features/auth/real-actions.ts`                                          | Preserve session handling across multi-tenant contexts                                         | Phase 0 (Baseline)   |
+| **Google OAuth**           | Google OAuth provider via PKCE redirect flow to `/auth/callback`                                      | `[IMPLEMENTED]` | `src/features/auth/real-actions.ts`, `src/app/auth/callback/route.ts`                        | Preserve Google sign-in with multi-org onboarding                                              | Phase 0 (Baseline)   |
+| **Email Authentication**   | Email + password login and passwordless Magic Link OTP                                                | `[IMPLEMENTED]` | `src/features/auth/real-actions.ts`                                                          | Preserve email login with rate-limited brute force protection                                  | Phase 0 (Baseline)   |
+| **Users**                  | User profiles stored in `public.users` with `userId` mirroring `auth.users.id`                        | `[IMPLEMENTED]` | `src/db/schema/users.ts`                                                                     | Decouple from tenant foreign keys (`organization_id`); pure global creator identity            | Phase 4              |
+| **Organizations**          | Sovereign tenant entity in `public.organizations` with URL slug and sequences                         | `[IMPLEMENTED]` | `src/db/schema/organizations.ts`, `src/features/organizations/real-actions.ts`               | Add `code_prefix` and enable self-service creation                                             | Phase 3              |
+| **Membership**             | M:N association between users and organizations                                                       | `[PLANNED]`     | Currently implicit 1:1 via `users.organization_id NOT NULL`                                  | Explicit `organization_memberships` join table supporting multiple organizations per user      | Phase 4              |
+| **Roles**                  | 7 system roles (`owner`, `super_admin`, `creative_director`, etc.) stored in `public.roles`           | `[IMPLEMENTED]` | `src/db/schema/roles.ts`, `src/features/permissions/constants.ts`                            | Scoped to organization memberships with custom role support                                    | Phase 4              |
+| **Permissions**            | 22 modules × 15 actions JSONB permission matrix evaluated in TS and SQL                               | `[IMPLEMENTED]` | `src/features/permissions/engine.ts`, `database/migrations/0001_security_rls_foundation.sql` | Preserved and evaluated against active organization membership role                            | Phase 4              |
+| **Onboarding**             | Direct redirection of unprovisioned users to `/unprovisioned` error route                             | `[PLANNED]`     | `src/features/auth/current-user.ts` (L132)                                                   | Tri-State Onboarding flow: State A (Enter), State B (Create/Join Org), State C (Accept Invite) | Phase 5              |
+| **Invitations**            | Email invitation tokens for adding members to an organization                                         | `[PLANNED]`     | `src/features/users/admin/real-repository.ts` (throws error: "wired in Phase 7")             | Cryptographic single-use 7-day tokens with email dispatch and role assignment                  | Phase 5              |
+| **Organization Switching** | Seamless switching between multiple active organization workspaces                                    | `[PLANNED]`     | Schema currently lacks memberships table; single-tenant only                                 | Top-nav dropdown switcher backed by secure session context cookie                              | Phase 4              |
+| **Clients**                | Client CRM company directory and contacts                                                             | `[IMPLEMENTED]` | `src/features/clients/real-actions.ts`, `src/db/schema/clients.ts`                           | Preserved with expanded project and billing associations                                       | Phase 0 (Baseline)   |
+| **Projects**               | Creative project directory, budgets, status, and members                                              | `[IMPLEMENTED]` | `src/features/projects/real-actions.ts`, `src/db/schema/projects.ts`                         | Dynamic project code prefix (`{org.codePrefix}-YYYY-XXXX`) replacing hardcoded `AIC-`          | Phase 3              |
+| **Tasks**                  | Kanban boards, task assignments, subtasks, dependencies, timers                                       | `[IMPLEMENTED]` | `src/features/tasks/real-actions.ts`, `src/db/schema/tasks.ts`                               | Dynamic task code prefix (`{org.codePrefix}-T-YYYY-XXXX`) replacing hardcoded `AIC-T-`         | Phase 3              |
+| **Timeline**               | Visual Gantt chart, milestones, phases, dependency constraints                                        | `[IMPLEMENTED]` | `src/features/timelines/real-actions.ts`, `src/db/schema/timelines.ts`                       | Preserved with critical path optimization                                                      | Phase 0 (Baseline)   |
+| **Deliverables**           | Creative asset delivery management across video, image, document, code                                | `[IMPLEMENTED]` | `src/features/deliverables/real-actions.ts`, `src/db/schema/deliverables.ts`                 | Preserved with multi-stage approval workflows                                                  | Phase 0 (Baseline)   |
+| **Reviews**                | Review sessions with timestamped video/image annotations and canvas tools                             | `[IMPLEMENTED]` | `src/features/approvals/authorization.ts`, `src/db/schema/approvals.ts`                      | Preserved with expanded client reviewer auditing                                               | Phase 0 (Baseline)   |
+| **Approvals**              | Formal decision sign-offs with legal notes, approver metadata, version stamps                         | `[IMPLEMENTED]` | `src/features/approvals/real-actions.ts`, `src/db/schema/approvals.ts`                       | Preserved with multi-party sequential sign-off chains                                          | Phase 0 (Baseline)   |
+| **Files**                  | DAM folder hierarchy, versioning, storage bucket integration                                          | `[IMPLEMENTED]` | `src/features/files/real-actions.ts`, `src/db/schema/files.ts`                               | Preserved with storage prefix isolation `/{organization_id}/*`                                 | Phase 0 (Baseline)   |
+| **Meetings**               | Agenda management, decision registry, action items with one-click task conversion                     | `[IMPLEMENTED]` | `src/features/meetings/real-actions.ts`, `src/db/schema/meetings.ts`                         | Centralized task code generator using dynamic tenant prefix                                    | Phase 3              |
+| **Workforce**              | Unified human resources, employee directory, and capacity planning                                    | `[IMPLEMENTED]` | `src/features/workforce/`, `src/db/schema/workforce.ts`                                      | Preserved and unified with multi-tenant memberships                                            | Phase 4              |
+| **Employees**              | Directory, designations, employment types, working hours                                              | `[IMPLEMENTED]` | `src/features/workforce/employees/`, `src/db/schema/users.ts`                                | Dynamic employee code prefix (`{org.codePrefix}-XXXX`) replacing `AIC-0001`                    | Phase 3              |
+| **Departments**            | Agency departments (Creative, Design, Video, Operations, Leadership)                                  | `[IMPLEMENTED]` | `src/db/schema/departments.ts`, `src/features/organizations/departments/`                    | Preserved with per-organization department administration                                      | Phase 0 (Baseline)   |
+| **Attendance**             | Shift punch clock (in, break, out), IANA timezone resolution                                          | `[IMPLEMENTED]` | `src/features/workforce/attendance/real-repository.ts`                                       | Preserved with automated business day boundary anchoring                                       | Phase 0 (Baseline)   |
+| **Corrections**            | Punch adjustment requests with manager review queue                                                   | `[IMPLEMENTED]` | `src/features/workforce/corrections/real-repository.ts`                                      | Preserved with immutable correction audit trail                                                | Phase 0 (Baseline)   |
+| **Capacity**               | Real-time team availability and capacity utilization analytics                                        | `[PLANNED]`     | Working hours schema in `users.workingHours`; reports route is placeholder                   | Automated capacity dashboards against task allocations                                         | Phase 6              |
+| **Client Portal**          | Dedicated external portal on `portal.<domain>` for zero-login client review                           | `[IMPLEMENTED]` | `src/proxy.ts`, `src/lib/portal/services/PortalServiceLayer.ts`                              | Preserved with white-label client branding                                                     | Phase 0 (Baseline)   |
+| **Secure Share Links**     | Cryptographically signed tokens with nonces, expiry, and revocation                                   | `[IMPLEMENTED]` | `src/db/schema/shares.ts`, `src/lib/portal/services/PortalServiceLayer.ts`                   | Preserved with password protection and download permissions                                    | Phase 0 (Baseline)   |
+| **Notifications**          | In-app notification center with real-time counters and channel routing                                | `[IMPLEMENTED]` | `src/features/notifications/real-actions.ts`, `src/db/schema/notifications.ts`               | Preserved with email digest worker                                                             | Phase 0 (Baseline)   |
+| **Search**                 | Scoped search filters across tasks, deliverables, projects, clients                                   | `[IMPLEMENTED]` | Module query filters in real actions                                                         | Global command palette (`Cmd + K`) indexed by organization                                     | Phase 2              |
+| **AI**                     | Meeting summarization, revision extraction, context windows, token tracking                           | `[IMPLEMENTED]` | `src/db/schema/ai-workspace.ts`, `src/lib/ai/governance.ts`                                  | Preserved as assistive layer with per-org monthly budgets                                      | Phase 0 (Baseline)   |
+| **Analytics**              | Operational project metrics and deliverable cycle counters                                            | `[IMPLEMENTED]` | Metric aggregators in `/dashboard`                                                           | Agency-wide financial and billable hour analytics                                              | Phase 6              |
+| **Audit Logs**             | Immutable append-only activity logging with RLS protection                                            | `[IMPLEMENTED]` | `src/db/schema/activity-logs.ts`, `database/migrations/0001_security_rls_foundation.sql`     | Preserved with automated audit export tooling                                                  | Phase 0 (Baseline)   |
+| **Billing**                | Multi-tenant SaaS subscription plans, customer portal, usage limits                                   | `[FUTURE]`      | Schema currently lacks billing tables                                                        | Stripe Customer Portal integration and tier limits (Starter, Pro, Enterprise)                  | Phase 7              |
+| **Public Website**         | Public marketing landing page at root `/`                                                             | `[PLANNED]`     | `src/app/page.tsx` currently redirects to `/dashboard` or `/login`                           | Agency SaaS marketing landing page with interactive demo and pricing                           | Phase 2              |
+| **SEO**                    | Search engine metadata, descriptions, structured JSON-LD data                                         | `[PLANNED]`     | `src/app/layout.tsx` contains bare title/description strings                                 | Comprehensive Open Graph, Twitter cards, and structured schema                                 | Phase 2              |
+| **Sitemap**                | Dynamic `sitemap.xml` for search crawler indexing                                                     | `[PLANNED]`     | Missing `src/app/sitemap.ts`                                                                 | Automated sitemap generation covering public routes                                            | Phase 2              |
+| **Robots**                 | `robots.txt` configuration for crawler guidance                                                       | `[PLANNED]`     | Missing `src/app/robots.ts`                                                                  | Generated robots configuration disallowing internal dashboard routes                           | Phase 2              |
+| **Open Graph**             | Social media preview cards (`opengraph-image.tsx`)                                                    | `[PLANNED]`     | Missing `src/app/opengraph-image.tsx`                                                        | Dynamic branded social cards with product title and tagline                                    | Phase 2              |
 
 ---
 
@@ -1023,6 +1050,7 @@ The following authoritative matrix audits every major platform capability, contr
 ## 82. Architecture Requirements
 
 ### AR-001: Identity Independence
+
 - **Requirement**: User identity in `auth.users` and `public.users` must exist independently of any specific organization.
 - **Rationale**: Enables creators, contractors, and agency founders to belong to multiple organizations using a single login.
 - **Current State**: `public.users` contains mandatory `organization_id NOT NULL` and `uq_users_email` constraint. [IMPLEMENTED - SINGLE TENANT]
@@ -1034,6 +1062,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-ID-001
 
 ### AR-002: Organization Independence
+
 - **Requirement**: Organizations must operate as sovereign, isolated commercial tenants with independent configurations.
 - **Rationale**: Fundamental requirement for B2B SaaS operations.
 - **Current State**: Modeled in `public.organizations` but seeded via environment variables. [IMPLEMENTED]
@@ -1045,6 +1074,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-ORG-001
 
 ### AR-003: Membership Independence
+
 - **Requirement**: An explicit `organization_memberships` table must govern the M:N relationship between users and organizations.
 - **Rationale**: Normalizes tenancy relationships and allows distinct roles per organization.
 - **Current State**: Implicit 1:1 relationship via `users.organization_id`. [IMPLEMENTED - LEGACY]
@@ -1056,6 +1086,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-MEM-001
 
 ### AR-004: Role Isolation
+
 - **Requirement**: User roles must be scoped strictly to the active organization membership.
 - **Rationale**: Prevents privilege leakage between different organizations.
 - **Current State**: Role stored on `users.role_id`. [IMPLEMENTED]
@@ -1067,6 +1098,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-ROL-001
 
 ### AR-005: Permission Isolation
+
 - **Requirement**: Permissions must be evaluated exclusively against the active organization's role permissions map.
 - **Rationale**: Guarantees that actions in Tenant A cannot be authorized by Tenant B roles.
 - **Current State**: Evaluated against `user.permissions` derived from single org role. [IMPLEMENTED]
@@ -1078,6 +1110,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-PRM-001
 
 ### AR-006: Tenant Isolation
+
 - **Requirement**: All database queries, mutations, and storage requests must enforce organization isolation.
 - **Rationale**: Prevents data leakage between competing agencies.
 - **Current State**: Enforced via application predicates and PostgreSQL RLS. [IMPLEMENTED]
@@ -1089,6 +1122,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-TEN-001
 
 ### AR-007: Multi-Membership Support
+
 - **Requirement**: An authenticated user can hold memberships in multiple organizations concurrently.
 - **Rationale**: Accommodates freelancers, holding companies, and contractors.
 - **Current State**: Blocked by database schema and unique email constraint. [PLANNED]
@@ -1100,6 +1134,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-MEM-002
 
 ### AR-008: Organization Switching
+
 - **Requirement**: Users with multiple memberships can switch active tenant context without re-authenticating.
 - **Rationale**: Smooth user experience for multi-workspace operators.
 - **Current State**: Non-existent. [PLANNED]
@@ -1111,6 +1146,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-SWT-001
 
 ### AR-009: Invitation Lifecycle
+
 - **Requirement**: Full lifecycle for inviting team members via email tokens.
 - **Rationale**: Enables agency administrators to onboard staff self-serve.
 - **Current State**: Disabled in real mode (`realEmployeeAdminRepository.create()` throws error). [PLANNED]
@@ -1122,6 +1158,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-INV-001
 
 ### AR-010: Onboarding Lifecycle
+
 - **Requirement**: Tri-state onboarding guiding new, invited, and existing users.
 - **Rationale**: Eliminates the dead-end `/unprovisioned` error route.
 - **Current State**: Redirects unprovisioned users to `/unprovisioned`. [IMPLEMENTED - LEGACY]
@@ -1133,6 +1170,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-ONB-001
 
 ### AR-011: Workspace / Workforce Identity Unification
+
 - **Requirement**: Workspace and Workforce domains must share unified identity and permissions.
 - **Rationale**: Eliminates duplicate logins and synchronizes project capacity with attendance.
 - **Current State**: Unified under single user model. [IMPLEMENTED]
@@ -1144,6 +1182,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-ID-002
 
 ### AR-012: Client Access Isolation
+
 - **Requirement**: External clients must never receive internal workspace user accounts or RLS access.
 - **Rationale**: Enforces strict boundary between internal agency operations and client feedback.
 - **Current State**: Segregated via dual-domain proxy routing and share link tokens. [IMPLEMENTED]
@@ -1155,6 +1194,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-CLI-001
 
 ### AR-013: Secure Share Links
+
 - **Requirement**: Share links must use cryptographically signed tokens with expiration and revocation support.
 - **Rationale**: Protects agency deliverables while maintaining zero-login client access.
 - **Current State**: Implemented via `PortalServiceLayer` and token nonces. [IMPLEMENTED]
@@ -1166,6 +1206,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-SHR-001
 
 ### AR-014: Organization Branding Isolation
+
 - **Requirement**: White-label branding tokens and logos must be isolated per tenant.
 - **Rationale**: Agencies require their own branding in portals and workspaces.
 - **Current State**: Colors stored in DB but not dynamically injected into CSS variables. [PLANNED]
@@ -1177,6 +1218,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-BRD-001
 
 ### AR-015: Data Ownership
+
 - **Requirement**: All creative artifacts and operational data remain the sole property of the subscribing organization.
 - **Rationale**: Legal and enterprise compliance.
 - **Current State**: Enforced by schema foreign keys. [IMPLEMENTED]
@@ -1188,6 +1230,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-OWN-001
 
 ### AR-016: Auditability
+
 - **Requirement**: All state mutations must generate immutable records in `activity_logs`.
 - **Rationale**: Compliance, dispute resolution, and security forensics.
 - **Current State**: Implemented with RLS append-only protection. [IMPLEMENTED]
@@ -1199,6 +1242,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-AUD-001
 
 ### AR-017: Configuration Isolation
+
 - **Requirement**: Organization-specific settings must be stored in the database, not in environment variables.
 - **Rationale**: Environment variables cannot scale to thousands of SaaS tenants.
 - **Current State**: Seed values in `.env.example`; runtime settings in `public.organizations`. [IMPLEMENTED]
@@ -1210,6 +1254,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-CFG-001
 
 ### AR-018: Storage Isolation
+
 - **Requirement**: File uploads must be partitioned by organization ID in storage buckets.
 - **Rationale**: Prevents path traversal and unauthorized asset downloads.
 - **Current State**: Implemented with `/{organization_id}/*` bucket prefix. [IMPLEMENTED]
@@ -1221,6 +1266,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-STR-001
 
 ### AR-019: Notification Isolation
+
 - **Requirement**: Notifications must be addressed and delivered strictly within tenant boundaries.
 - **Rationale**: Prevents cross-agency communication leaks.
 - **Current State**: Scoped by `organization_id` in `public.notifications`. [IMPLEMENTED]
@@ -1232,6 +1278,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-NTF-001
 
 ### AR-020: Search Isolation
+
 - **Requirement**: Search indexes and queries must enforce organization boundaries.
 - **Rationale**: Prevents sensitive client or project names appearing in another tenant's search.
 - **Current State**: Scoped via query predicates. [IMPLEMENTED]
@@ -1243,6 +1290,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-SCH-001
 
 ### AR-021: Analytics Isolation
+
 - **Requirement**: Reporting and analytics must aggregate data strictly per organization.
 - **Rationale**: Prevents performance or financial data contamination.
 - **Current State**: Scoped by tenant ID. [IMPLEMENTED]
@@ -1254,6 +1302,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-ANL-001
 
 ### AR-022: AI Context Isolation
+
 - **Requirement**: AI prompt contexts must assemble data exclusively from the caller's active organization.
 - **Rationale**: Prevents cross-tenant training data or prompt leakage.
 - **Current State**: Enforced via `ai_contexts` foreign keys. [IMPLEMENTED]
@@ -1265,6 +1314,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-AIC-001
 
 ### AR-023: AI Cost Isolation
+
 - **Requirement**: LLM token consumption must be tracked and billed per organization.
 - **Rationale**: Enables usage-based billing and prevents resource exhaustion.
 - **Current State**: Implemented via `ai_cost_tracking` and `AICostGovernance`. [IMPLEMENTED]
@@ -1276,6 +1326,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-CST-001
 
 ### AR-024: API Tenant Enforcement
+
 - **Requirement**: All Server Actions and API endpoints must derive tenant context from verified session claims.
 - **Rationale**: Fundamental rule: "The tenant is never a parameter."
 - **Current State**: Enforced statically via `tenant-identity-surface.test.ts`. [IMPLEMENTED]
@@ -1287,6 +1338,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-API-001
 
 ### AR-025: Server-Side Authorization
+
 - **Requirement**: Authorization must execute server-side on every mutation and data fetch.
 - **Rationale**: Client-side UI gating is cosmetic and provides zero security.
 - **Current State**: Enforced via `requirePermission()` in real actions. [IMPLEMENTED]
@@ -1298,6 +1350,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-AUT-001
 
 ### AR-026: Database-Level Tenant Protection
+
 - **Requirement**: PostgreSQL Row Level Security (RLS) policies must validate tenant membership.
 - **Rationale**: Defense-in-depth against application-level query bugs.
 - **Current State**: Configured via `app.is_org_member(organization_id)`. [IMPLEMENTED]
@@ -1309,6 +1362,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-RLS-001
 
 ### AR-027: Production / Staging Separation
+
 - **Requirement**: Production and staging environments must maintain complete operational segregation.
 - **Rationale**: Protects live tenant data from staging tests and regressions.
 - **Current State**: Verified with fail-closed configuration guards. [IMPLEMENTED]
@@ -1320,6 +1374,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-ENV-001
 
 ### AR-028: Observability
+
 - **Requirement**: Structured telemetry capturing errors, performance, and security events with sanitized data.
 - **Rationale**: Rapid incident detection and resolution.
 - **Current State**: Application logging implemented. [IMPLEMENTED]
@@ -1331,6 +1386,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-OBS-001
 
 ### AR-029: Rate Limiting
+
 - **Requirement**: Rate limiting on public and authenticated endpoints to mitigate DDoS and brute force.
 - **Rationale**: Protects application availability and authentication endpoints.
 - **Current State**: Implemented on auth actions. [IMPLEMENTED]
@@ -1342,6 +1398,7 @@ The following authoritative matrix audits every major platform capability, contr
 - **Acceptance Criteria**: AC-RAT-001
 
 ### AR-030: Secure Onboarding
+
 - **Requirement**: Self-service onboarding must create organizations safely without granting unearned system privileges.
 - **Rationale**: Protects platform integrity during open signups.
 - **Current State**: Registration closed. [PLANNED]
@@ -1403,20 +1460,20 @@ The following authoritative matrix audits every major platform capability, contr
 ## 85. Open Questions
 
 1. **Subdomain vs. Path-Based Tenancy**:
-   - *Question*: Should organizations receive custom subdomains (e.g., `acme.ai-nexos.com`) or rely on path/header routing on `app.ai-nexos.com`?
-   - *Status*: **OPEN**. Phase 1B baseline assumes header/cookie-based routing with slug identifier; custom subdomains targeted for Enterprise tier [FUTURE].
+   - _Question_: Should organizations receive custom subdomains (e.g., `acme.ai-nexos.com`) or rely on path/header routing on `app.ai-nexos.com`?
+   - _Status_: **OPEN**. Phase 1B baseline assumes header/cookie-based routing with slug identifier; custom subdomains targeted for Enterprise tier [FUTURE].
 2. **Membership Transition Strategy**:
-   - *Question*: Should Phase 4 maintain a transitional dual-write on `users.organization_id` while introducing `organization_memberships` to prevent breaking existing queries?
-   - *Status*: **OPEN**. Recommended approach is additive table with backward-compatible view.
+   - _Question_: Should Phase 4 maintain a transitional dual-write on `users.organization_id` while introducing `organization_memberships` to prevent breaking existing queries?
+   - _Status_: **OPEN**. Recommended approach is additive table with backward-compatible view.
 3. **Self-Service Registration Gating**:
-   - *Question*: Should public signup immediately provision a 14-day trial workspace, or require email verification / approval waitlist initially?
-   - *Status*: **OPEN**. Product decision required prior to Phase 5.
+   - _Question_: Should public signup immediately provision a 14-day trial workspace, or require email verification / approval waitlist initially?
+   - _Status_: **OPEN**. Product decision required prior to Phase 5.
 4. **Custom Code Prefix Collisions**:
-   - *Question*: Should organization code prefixes (e.g., `NEX`, `ACME`) be globally unique across all tenants, or unique only within each tenant's namespace?
-   - *Status*: **OPEN**. Scoping within tenant namespace is architecturally simpler; global uniqueness provides cleaner cross-tenant identification.
+   - _Question_: Should organization code prefixes (e.g., `NEX`, `ACME`) be globally unique across all tenants, or unique only within each tenant's namespace?
+   - _Status_: **OPEN**. Scoping within tenant namespace is architecturally simpler; global uniqueness provides cleaner cross-tenant identification.
 5. **Client Portal Account Evolution**:
-   - *Question*: Should long-term high-volume enterprise clients eventually have optional persistent logins, or permanently remain zero-login tokenized guests?
-   - *Status*: **OPEN**. Zero-login remains the canonical baseline; authenticated client portal is flagged as [FUTURE].
+   - _Question_: Should long-term high-volume enterprise clients eventually have optional persistent logins, or permanently remain zero-login tokenized guests?
+   - _Status_: **OPEN**. Zero-login remains the canonical baseline; authenticated client portal is flagged as [FUTURE].
 
 ---
 

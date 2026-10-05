@@ -30,14 +30,17 @@ export default async function ProjectsPage({
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Projects</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage and track creative execution workspaces, timelines, and deliverables across your organization.
+          <h1 className="text-foreground text-3xl font-bold tracking-tight">
+            Projects
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Manage and track creative execution workspaces, timelines, and
+            deliverables across your organization.
           </p>
         </div>
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex shrink-0 items-center space-x-2">
           <CreateProjectModal
             defaultOpen={create === "true"}
             initialClientId={clientId}
@@ -49,7 +52,7 @@ export default async function ProjectsPage({
       <div className="space-y-4">
         <Suspense
           fallback={
-            <div className="bg-surface-1/40 h-[400px] w-full animate-pulse rounded-xl border border-border" />
+            <div className="bg-surface-1/40 border-border h-[400px] w-full animate-pulse rounded-xl border" />
           }
         >
           <ProjectList query={query} status={status} health={health} />
@@ -58,4 +61,3 @@ export default async function ProjectsPage({
     </div>
   );
 }
-
