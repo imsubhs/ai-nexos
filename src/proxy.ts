@@ -165,9 +165,11 @@ export async function proxy(request: NextRequest) {
     return withCsp(redirect, nonce);
   };
 
-  const isPublicPath = PUBLIC_INTERNAL_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
+  const isPublicPath =
+    pathname === "/" ||
+    PUBLIC_INTERNAL_PATHS.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    );
 
   if (!user && !isPublicPath) {
     // API routes get a machine-readable 401, never a login redirect.

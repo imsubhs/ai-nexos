@@ -13,7 +13,7 @@
   --color-foreground-subtle: var(--foreground-subtle);
 
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
   --font-heading: var(--font-geist-sans);
 
   /* Deep Navy Surface Strata */
@@ -191,27 +191,27 @@
      ========================================================================== */
 
   /* 1. Tonal Stratification */
-  --background: #06151e;              /* Surface 0: Deep Navy Canvas Floor */
-  --surface-0: #06151e;               /* Deep Navy Ground */
-  --surface-1: #06151e;               /* Surface 1: Navigation Chrome, Sidebar, Table Wells */
-  --surface-2: #06151e;               /* Surface 2: Primary Workstation Cards, Tables, Inspectors */
-  --surface-3: #545a5b;               /* Surface 3: Dark Secondary Surfaces, Hover, Active Tabs */
-  --surface-4: #545a5b;               /* Surface 4: Elevated Dialogs, Command Center ⌘K */
+  --background: #06151e; /* Surface 0: Deep Navy Canvas Floor */
+  --surface-0: #06151e; /* Deep Navy Ground */
+  --surface-1: #06151e; /* Surface 1: Navigation Chrome, Sidebar, Table Wells */
+  --surface-2: #06151e; /* Surface 2: Primary Workstation Cards, Tables, Inspectors */
+  --surface-3: #545a5b; /* Surface 3: Dark Secondary Surfaces, Hover, Active Tabs */
+  --surface-4: #545a5b; /* Surface 4: Elevated Dialogs, Command Center ⌘K */
 
   --steel-slate: #545a5b;
   --soft-silver: #d6d6d6;
 
   /* 2. Typographic Luminance Hierarchy */
-  --foreground: #ffffff;              /* Primary text (high contrast, WCAG AAA 19.3:1) */
-  --foreground-heading: #ffffff;      /* Display headings & critical metric numbers */
-  --foreground-secondary: #d6d6d6;    /* Secondary text, column headers, timestamps */
-  --foreground-muted: #898a8c;        /* Muted narrative, helper labels */
-  --foreground-subtle: #898a8c;       /* Subtitle/metadata, shortcut pills (⌘K) */
+  --foreground: #ffffff; /* Primary text (high contrast, WCAG AAA 19.3:1) */
+  --foreground-heading: #ffffff; /* Display headings & critical metric numbers */
+  --foreground-secondary: #d6d6d6; /* Secondary text, column headers, timestamps */
+  --foreground-muted: #898a8c; /* Muted narrative, helper labels */
+  --foreground-subtle: #898a8c; /* Subtitle/metadata, shortcut pills (⌘K) */
 
   /* 3. shadcn/ui Standard Compatibility Mappings */
-  --card: #06151e;                    /* Matches Surface 2 / Primary dark surfaces */
+  --card: #06151e; /* Matches Surface 2 / Primary dark surfaces */
   --card-foreground: #ffffff;
-  --popover: #545a5b;                 /* Matches Surface 4 / Elevated secondary surfaces */
+  --popover: #545a5b; /* Matches Surface 4 / Elevated secondary surfaces */
   --popover-foreground: #ffffff;
 
   /* 4. Brand Accent & Primary Controls */
@@ -231,11 +231,16 @@
   --accent-foreground: #ffffff;
 
   /* 5. Hairline Micro-Borders & Optical Outlines */
-  --border-subtle: rgba(214, 214, 214, 0.08);   /* Structural grid lines & table dividers */
-  --border: #545a5b;                             /* Default card outlines & control groups */
-  --border-strong: #d6d6d6;                      /* Elevated controls, hovered cards, dialogs */
-  --input: #545a5b;                              /* Form inputs */
-  --ring: #d6d6d6;                               /* High-contrast focus ring (13.1:1 ratio) */
+  --border-subtle: rgba(
+    214,
+    214,
+    214,
+    0.08
+  ); /* Structural grid lines & table dividers */
+  --border: #545a5b; /* Default card outlines & control groups */
+  --border-strong: #d6d6d6; /* Elevated controls, hovered cards, dialogs */
+  --input: #545a5b; /* Form inputs */
+  --ring: #d6d6d6; /* High-contrast focus ring (13.1:1 ratio) */
 
   /* 6. Sidebar Navigation System */
   --sidebar: #06151e;
@@ -248,19 +253,19 @@
   --sidebar-ring: #d6d6d6;
 
   /* 7. Functional Semantic Tokens (Translucent Chips + Solid Text) */
-  --success: #34d399;                            /* Emerald (Approved, Completed) */
+  --success: #34d399; /* Emerald (Approved, Completed) */
   --success-foreground: #06151e;
   --success-bg: rgba(52, 211, 153, 0.12);
-  --warning: #fbbf24;                            /* Amber (In Review, At Risk) */
+  --warning: #fbbf24; /* Amber (In Review, At Risk) */
   --warning-foreground: #06151e;
   --warning-bg: rgba(251, 191, 36, 0.12);
-  --destructive: #f43f5e;                        /* Rose (Critical, Blocked, Delete) */
+  --destructive: #f43f5e; /* Rose (Critical, Blocked, Delete) */
   --destructive-foreground: #ffffff;
   --destructive-bg: rgba(244, 63, 94, 0.12);
-  --info: #898a8c;                               /* Neutral Info (Active, In Progress) */
+  --info: #898a8c; /* Neutral Info (Active, In Progress) */
   --info-foreground: #06151e;
   --info-bg: rgba(137, 138, 140, 0.12);
-  --neutral-status: #898a8c;                    /* Slate (Planning, Backlog) */
+  --neutral-status: #898a8c; /* Slate (Planning, Backlog) */
   --neutral-status-bg: rgba(137, 138, 140, 0.12);
 
   /* 8. Priority Scale */
@@ -309,7 +314,9 @@
 }
 
 .elevation-4 {
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .electric-glow {
@@ -356,4 +363,3 @@
     scroll-behavior: auto !important;
   }
 }
-
