@@ -72,7 +72,7 @@ function runGate(overrides: Record<string, string | undefined>): GateResult {
     // Only what a child process genuinely needs to start.
     PATH: process.env.PATH ?? "",
     HOME: process.env.HOME ?? "",
-    TMPDIR: process.env.TMPDIR ?? "/tmp",
+    TMPDIR: process.env["TMPDIR"] ?? "/tmp",
     // The script also derives this from `--production`; setting it explicitly
     // mirrors how a deploy runner invokes the gate and keeps the child's
     // environment a complete `ProcessEnv` rather than a partial record.

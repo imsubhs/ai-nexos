@@ -28,7 +28,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const LOCAL_DB_URL =
-  process.env.REHEARSAL_DATABASE_URL ||
+  process.env["REHEARSAL_DATABASE_URL"] ||
   "postgresql://postgres@localhost:5432/nexos_rehearsal_5d";
 
 interface VerificationItem {

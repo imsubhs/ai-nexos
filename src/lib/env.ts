@@ -144,7 +144,7 @@ export const publicEnv: PublicEnv = parsedPublicEnv.success
  * Reads a public variable that the calling code genuinely cannot work without,
  * failing with a message that names the variable and how to obtain it.
  *
- * This replaces the `process.env.X!` non-null assertions that used to be spread
+ * This replaces individual non-null assertions on `process.env` that used to be spread
  * across the Supabase clients, where a missing value surfaced as an opaque
  * third-party error ("supabaseUrl is required") with no indication of which
  * deployment setting was wrong.

@@ -376,7 +376,7 @@ function productionIssues(env: NodeJS.ProcessEnv): string[] {
     if (value === undefined || value === "") {
       const hint =
         name === "SUPABASE_SERVICE_ROLE_KEY"
-          ? "Copy it from Supabase › Project Settings › API. Never prefix it with NEXT_PUBLIC_."
+          ? "Copy it from Supabase › Project Settings › API. Never prefix it with the public prefix."
           : "Generate one with: openssl rand -base64 48";
       issues.push(`${name}: ${name} is required in production. ${hint}`);
     }

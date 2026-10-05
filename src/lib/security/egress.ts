@@ -115,7 +115,7 @@ function isPrivateIpv6(address: string): boolean {
  * on the list in the first place.
  */
 function egressAllowlist(): string[] | undefined {
-  const raw = process.env.EGRESS_ALLOWED_HOSTS;
+  const raw = process.env["EGRESS_ALLOWED_HOSTS"];
   if (!raw) return undefined;
   const hosts = raw
     .split(",")

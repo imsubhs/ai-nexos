@@ -87,7 +87,7 @@ async function main() {
   const ownerEmail = requireEnv("SEED_OWNER_EMAIL").toLowerCase();
   const ownerPassword = requireEnv("SEED_OWNER_PASSWORD");
   const ownerFirstName = requireEnv("SEED_OWNER_FIRST_NAME");
-  const ownerLastName = process.env.SEED_OWNER_LAST_NAME ?? null;
+  const ownerLastName = process.env["SEED_OWNER_LAST_NAME"] ?? null;
 
   const client = postgres(databaseUrl, { prepare: false, max: 1 });
   const db = drizzle(client, { schema, casing: "snake_case" });
@@ -115,10 +115,10 @@ async function main() {
           organizationName: orgName,
           slug: orgSlug,
           codePrefix:
-            process.env.SEED_ORG_CODE_PREFIX ??
+            process.env["SEED_ORG_CODE_PREFIX"] ??
             (orgSlug === "ai-collective" ? "AIC" : "NEX"),
-          timezone: process.env.SEED_ORG_TIMEZONE ?? "Asia/Kolkata",
-          currency: process.env.SEED_ORG_CURRENCY ?? "INR",
+          timezone: process.env["SEED_ORG_TIMEZONE"] ?? "Asia/Kolkata",
+          currency: process.env["SEED_ORG_CURRENCY"] ?? "INR",
           contactEmail: ownerEmail,
         })
         .returning();
@@ -227,7 +227,7 @@ async function main() {
       lastName: ownerLastName,
       email: ownerEmail,
       designation: "Owner",
-      timezone: process.env.SEED_ORG_TIMEZONE ?? "Asia/Kolkata",
+      timezone: process.env["SEED_ORG_TIMEZONE"] ?? "Asia/Kolkata",
     });
     console.log(`  ✓ owner profile created`);
   } else {
