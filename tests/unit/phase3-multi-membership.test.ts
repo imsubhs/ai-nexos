@@ -18,6 +18,8 @@ vi.mock("next/headers", () => ({
       const v = cookieMap.get(key);
       return v ? { name: key, value: v } : undefined;
     },
+    getAll: () =>
+      Array.from(cookieMap.entries()).map(([name, value]) => ({ name, value })),
     set: (name: string, value: string) => {
       cookieMap.set(name, value);
     },
