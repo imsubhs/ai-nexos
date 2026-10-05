@@ -7,7 +7,7 @@
  *   publicEnv   — NEXT_PUBLIC_* only. Safe in the browser bundle. Parsed at
  *                 import with every field optional, so importing this module can
  *                 never crash a page render. Every value is referenced as a
- *                 literal `process.env.NEXT_PUBLIC_…` so Next's build-time
+ *                 literal public environment keys so Next's build-time
  *                 inlining still works (a dynamic lookup would yield undefined).
  *   serverEnv   — secrets and connection strings. Validated lazily on first
  *                 access and cached, so importing this module never throws in a

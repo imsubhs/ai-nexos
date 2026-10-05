@@ -21,7 +21,7 @@ export function createServiceClient() {
   const serviceRoleKey = getServerEnv().SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceRoleKey) {
     throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY is not set. The service-role client bypasses RLS and has no anon-key fallback by design; copy the key from Supabase › Project Settings › API into .env.local (server-side only — never prefix it with NEXT_PUBLIC_).",
+      "SUPABASE_SERVICE_ROLE_KEY is not set. The service-role client bypasses RLS and has no anon-key fallback by design; copy the key from Supabase › Project Settings › API into .env.local (server-side only — never prefix it with the public prefix).",
     );
   }
 
